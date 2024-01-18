@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="ja" data-lang="ja">
+<head>
+	<!-- 基本（開始） -->
+	<meta http-equiv="Pragma" content="no-cache">
+	<meta http-equiv="Cache-Control" content="no-cache">
+	<meta http-equiv="Expires" content="0">
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title>列車運行情報｜JR北海道- Hokkaido Railway Company</title>
+	<meta name="description" content="JR北海道の列車運行情報を提供しています。">
+	<meta name="keywords" content="JR北海道,JR北海道列車運行情報">
+	<meta name="author" content="北海道旅客鉄道株式会社">
+	<!-- 基本（終了） -->
+	<!-- メンテ判定処理（開始） -->
+	<script>
+		fetch("https://corsproxy.org/?https://www3.jrhokkaido.co.jp/trainlocation/mainte/location_maintenance.json?" + (Date.now() >>> 16)).then(response => response.json()).then(json => {
+		  if (json.status) window.location.replace("https://corsproxy.org/?https://www3.jrhokkaido.co.jp/trainlocation/mainte/location_maintenance.html");
+		});
+	</script>
+	<!-- メンテ判定処理（終了） -->
+	<!-- ヘッダ・フッタ（開始） -->
+	<link rel="stylesheet" href="./css/common_header.css" type="text/css" media="screen,print">
+	<!-- ヘッダ・フッタ（終了） -->
+	<!-- 共通（開始） -->
+	<link rel="apple-touch-icon" href="https://www3.jrhokkaido.co.jp/apple-touch-icon.png">
+	<link rel="icon" href="https://www3.jrhokkaido.co.jp/favicon.ico" sizes="any">
+	<link rel="icon" type="image/png" href="https://www3.jrhokkaido.co.jp/favicon.png">
+	<link rel="icon" type="image/svg+xml" href="https://www3.jrhokkaido.co.jp/favicon.svg">
+	<link rel="stylesheet" href="./css/common.css" type="text/css" media="screen,print">
+	<link rel="stylesheet" href="./css/common_location.css" type="text/css" media="screen,print">
+	<link rel="stylesheet" href="./css/common_eki_icon.css" type="text/css" media="screen,print">
+	<link rel="stylesheet" href="./css/common_attention_section.css" type="text/css" media="screen,print">
+	<link rel="stylesheet" href="./css/common_oshirase_section.css" type="text/css" media="screen,print">
+	<link rel="stylesheet" href="./css/common_guide.css" type="text/css" media="screen,print">
+	<link rel="stylesheet" href="./css/common_side_menu.css" type="text/css" media="screen,print">
+	<link rel="stylesheet" href="./css/common_train_detail.css" type="text/css" media="screen,print">
+	<link rel="stylesheet" href="./css/common_unkou_info_menu_section.css" type="text/css" media="screen,print">
+	<script src="./js/jquery-3.6.4.min.js"></script>
+	<script src="./js/common.js"></script>
+	<script src="./js/common_pos_info.js"></script>
+	<script src="./js/common_oshirase.js"></script>
+	<script src="./js/common_function_name.js"></script>
+	<script src="./js/common_location.js"></script>
+	<script src="./js/common_train_detail.js"></script>
+	<script type="text/javascript" src="./common/js/ga.js"></script>
+	<!-- 共通（終了） -->
+	<!-- 専用（開始） -->
+	<link rel="stylesheet" href="./css/top.css" type="text/css" media="screen,print">
+	<script src="./js/top.js"></script>
+	<!-- 専用（終了） -->
+	<!--やさしいブラウザ用（開始）-->
+	<script src="./common/js/ewbc.min.js"></script>
+	<!--やさしいブラウザ用（終了）-->
+</head>
+<body>
+	<header>
+		<!-- call_common_header.html に記載 -->
+	</header>
+	<div id="commonMainDiv">
+		<noscript>
+			<div>
+				<div>
+					このページではJavaScriptを使用しています。<br>
+					JavaScriptを有効にしてご利用ください。<br>
+				</div>
+			</div>
+		</noscript>
+		<h1 id="title" class="common-maintitle"><span class="sub">列車走行位置</span><span class="main">路線選択</span></h1>
+
+		<div id="message" hidden></div>
+
+		<!-- お知らせセクション ここから -->
+		<section id="commonOshirase" hidden>
+			<h2 class="common-subtitle toggle">お知らせ</h2>
+			<div id="commonOshiraseContents" class="common-contents-frame" data-url="https://corsproxy.org/?https://www3.jrhokkaido.co.jp/trainlocation/CMUNKOU/inc_location_top.html"></div>
+		</section>
+		<!-- お知らせセクション ここまで -->
+
+		<div id="trainLocMain">
+			<div class="train-location-contents">
+				<!-- サイドメニュー ここから -->
+				<section id="sidemenu">
+					<!-- 近くの駅に移動 ここから -->
+					<div class="train-location-contents header">
+						<div id="posEkiBtn" class="common-button pos">
+							<svg viewBox="0 0 20 32">
+								<path d="M10 0c-6 0-10 5-10 10s5 13 10 22c5-9 10-16 10-22s-5-10-10-10Z m0 14c-2 0-4-2-4-4s2-4 4-4s4 2 4 4s-2 4-4 4Z"/>
+							</svg>
+							<span class="name">近くの駅に移動</span>
+						</div>
+					</div>
+					<!-- 近くの駅に移動 ここまで -->
+					<!-- エリア/特急列車　選択タブ ここから -->
+					<div class="side-select-panel">
+						<div class="side-select">
+							<input id="sideSelectArea" type="radio" name="sideSelect" value="Local">
+							<label class="side-select-label" for="sideSelectArea" id="sideSelectLabelArea">
+								<span>エリアから選択</span>
+							</label>
+							<input id="sideSelectExp" type="radio" name="sideSelect" value="Exp">
+							<label class="side-select-label exp" for="sideSelectExp" id="sideSelectLabelExp">
+								<span>本日の特急から選択</span>
+							</label>
+						</div>
+					</div>
+					<!-- エリア/特急列車　選択タブ ここまで -->
+					<div class="side-menu">
+						<!-- エリアタブ ここから -->
+						<div id="localTab">
+							<!-- スマホ用エリア選択ボタン　ここから-->
+							<div class="area-operation-list">
+								<ul>
+									<li id="spo">
+										<input id="areaOperationSpoTab" type="radio" name="areaOperationTab" value="1">
+										<label class="area-grid" for="areaOperationSpoTab">
+											<span class="area-name">札幌近郊</span>
+										</label>
+									</li>
+									<li id="doo">
+										<input id="areaOperationDooTab" type="radio" name="areaOperationTab" value="2">
+										<label class="area-grid" for="areaOperationDooTab">
+											<span class="area-name">道央エリア</span>
+										</label>
+									</li>
+									<li id="donan">
+										<input id="areaOperationDonanTab" type="radio" name="areaOperationTab" value="3">
+										<label class="area-grid" for="areaOperationDonanTab">
+											<span class="area-name">道南エリア</span>
+										</label>
+									</li>
+									<li id="dohoku">
+										<input id="areaOperationDohokuTab" type="radio" name="areaOperationTab"	value="4">
+										<label class="area-grid" for="areaOperationDohokuTab">
+											<span class="area-name">道北エリア</span>
+										</label>
+									</li>
+									<li id="doto">
+										<input id="areaOperationDotoTab" type="radio" name="areaOperationTab" value="5">
+										<label class="area-grid" for="areaOperationDotoTab">
+											<span class="area-name">道東エリア</span>
+										</label>
+									</li>
+									<li id="shin">
+										<input id="areaOperationShinTab" type="radio" name="areaOperationTab" value="6">
+										<label class="area-grid" for="areaOperationShinTab">
+											<span class="area-name">北海道新幹線</span>
+										</label>
+									</li>
+								</ul>
+							</div>
+							<!-- スマホ用エリア選択ボタン　ここまで-->
+							<div class="area-contents spo">
+								<div class="area-name-label spo">札幌近郊</div>
+								<div class="rosen-name-list spo">
+									<div value="01" class="rosen-name-contents">
+										<span class="eki-icon icon-A kigo-bg">
+											<span class="kigo">A</span>
+										</span>
+										<span class="eki-icon icon-S kigo-bg eki-icon-second">
+											<span class="kigo">S</span>
+										</span>
+										<span class="rosen-name-label">
+											<span class="main">函館線</span>
+											<span class="sub">[岩見沢～小樽間]</span>
+										</span>
+									</div>
+									<div value="02" class="rosen-name-contents">
+										<span class="eki-icon icon-H kigo-bg">
+											<span class="kigo">H</span>
+										</span>
+										<span class="rosen-name-label">
+											<span class="main">千歳線</span>
+											<span class="sub">[札幌～新千歳空港・苫小牧間]</span>
+										</span>
+									</div>
+									<div value="03" class="rosen-name-contents">
+										<span class="eki-icon icon-G kigo-bg">
+											<span class="kigo">G</span>
+										</span>
+										<span class="rosen-name-label">
+											<span class="main">学園都市線</span>
+											<span class="sub">[北海道医療大学～札幌間]</span>
+										</span>
+									</div>
+								</div>
+								<div class="area-map spo">
+									<object id="areaMapspo" data="https://corsproxy.org/?https://www3.jrhokkaido.co.jp/trainlocation/map/area_01.svg" type="image/svg+xml"	title="列車運行情報"></object>
+								</div>
+							</div>
+							<div class="area-contents doo">
+								<div class="area-name-label doo">道央エリア</div>
+								<div class="rosen-name-list doo">
+									<div value="05" class="rosen-name-contents">
+										<span class="eki-icon icon-A kigo-bg">
+											<span class="kigo">A</span>
+										</span>
+										<span class="rosen-name-label">
+											<span class="main">函館線</span>
+											<span class="sub">[旭川～岩見沢間]</span>
+										</span>
+									</div>
+									<div value="01" class="rosen-name-contents">
+										<span class="eki-icon icon-A kigo-bg">
+											<span class="kigo">A</span>
+										</span>
+										<span class="eki-icon icon-S kigo-bg eki-icon-second">
+											<span class="kigo">S</span>
+										</span>
+										<span class="rosen-name-label">
+											<span class="main">函館線</span>
+											<span class="sub">[岩見沢～小樽間]</span>
+										</span>
+									</div>
+									<div value="04" class="rosen-name-contents">
+										<span class="eki-icon icon-S kigo-bg">
+											<span class="kigo">S</span>
+										</span>
+										<span class="rosen-name-label">
+											<span class="main">函館線</span>
+											<span class="sub">[小樽～長万部間]</span>
+										</span>
+									</div>
+									<div value="02" class="rosen-name-contents">
+										<span class="eki-icon icon-H kigo-bg">
+											<span class="kigo">H</span>
+										</span>
+										<span class="rosen-name-label">
+											<span class="main">千歳線</span>
+											<span class="sub">[札幌～新千歳空港・苫小牧間]</span>
+										</span>
+									</div>
+									<div value="03" class="rosen-name-contents">
+										<span class="eki-icon icon-G kigo-bg">
+											<span class="kigo">G</span>
+										</span>
+										<span class="rosen-name-label">
+											<span class="main">学園都市線</span>
+											<span class="sub">[北海道医療大学～札幌間]</span>
+										</span>
+									</div>
+									<div value="06" class="rosen-name-contents">
+										<span class="eki-icon icon- kigo-bg">
+											<span class="kigo"></span>
+										</span>
+										<span class="rosen-name-label">
+											<span class="main">室蘭線</span>
+											<span class="sub">[岩見沢～苫小牧間]</span>
+										</span>
+									</div>
+									<div value="07" class="rosen-name-contents">
+										<span class="eki-icon icon-H kigo-bg">
+											<span class="kigo">H</span>
+										</span>
+										<span class="rosen-name-label">
+											<span class="main">室蘭線</span>
+											<span class="sub">[苫小牧～長万部間]</span>
+										</span>
+									</div>
+									<div value="08" class="rosen-name-contents">
+										<span class="eki-icon icon-M kigo-bg">
+											<span class="kigo">M</span>
+										</span>
+										<span class="rosen-name-label">
+											<span class="main">室蘭線</span>
+											<span class="sub">[東室蘭～室蘭間]</span>
+										</span>
+									</div>
+								</div>
+								<div class="area-map doo">
+									<object id="areaMapdoo" data="https://corsproxy.org/?https://www3.jrhokkaido.co.jp/trainlocation/map/area_02.svg" type="image/svg+xml" title="列車運行情報"></object>
+								</div>
+							</div>
+							<div class="area-contents donan">
+								<div class="area-name-label donan">道南エリア</div>
+								<div class="rosen-name-list donan">
+									<div value="09" class="rosen-name-contents">
+										<span class="eki-icon icon-H kigo-bg">
+											<span class="kigo">H</span>
+										</span>
+										<span class="rosen-name-label">
+											<span class="main">函館線</span>
+											<span class="sub">[長万部～函館間]</span>
+										</span>
+									</div>
+									<div value="10" class="rosen-name-contents">
+										<span class="eki-icon icon-H kigo-bg">
+											<span class="kigo">H</span>
+										</span>
+										<span class="rosen-name-label">
+											<span class="main">函館線(渡島砂原経由)</span>
+											<span class="sub">[森～大沼間]</span>
+										</span>
+									</div>
+								</div>
+								<div class="area-map donan">
+									<object id="areaMapdonan" data="https://corsproxy.org/?https://www3.jrhokkaido.co.jp/trainlocation/map/area_03.svg" type="image/svg+xml" title="列車運行情報"></object>
+								</div>
+							</div>
+							<div class="area-contents dohoku">
+								<div class="area-name-label dohoku">道北エリア</div>
+								<div class="rosen-name-list dohoku">
+									<div value="11" class="rosen-name-contents">
+										<span class="eki-icon icon-W kigo-bg">
+											<span class="kigo">W</span>
+										</span>
+										<span class="rosen-name-label">
+											<span class="main">宗谷線</span>
+											<span class="sub">[名寄～旭川間]</span>
+										</span>
+									</div>
+									<div value="12" class="rosen-name-contents">
+										<span class="eki-icon icon-A kigo-bg">
+											<span class="kigo">A</span>
+										</span>
+										<span class="rosen-name-label">
+											<span class="main">石北線</span>
+											<span class="sub">[上川～旭川間]</span>
+										</span>
+									</div>
+								</div>
+								<div class="area-map dohoku">
+									<object id="areaMapdohoku" data="https://corsproxy.org/?https://www3.jrhokkaido.co.jp/trainlocation/map/area_04.svg" type="image/svg+xml" title="列車運行情報"></object>
+								</div>
+							</div>
+							<div class="area-contents doto">
+								<div class="area-name-label doto">道東エリア</div>
+								<div class="rosen-name-list doto">
+									<div value="13" class="rosen-name-contents">
+										<span class="eki-icon icon-K kigo-bg">
+											<span class="kigo">K</span>
+										</span>
+										<span class="rosen-name-label">
+											<span class="main">石勝線・根室線</span>
+											<span class="sub">[南千歳～釧路間]</span>
+										</span>
+									</div>
+									<div value="14" class="rosen-name-contents">
+										<span class="eki-icon icon-T kigo-bg">
+											<span class="kigo">T</span>
+										</span>
+										<span class="rosen-name-label">
+											<span class="main">根室線</span>
+											<span class="sub">[滝川～新得間]</span>
+										</span>
+									</div>
+								</div>
+								<div class="area-map doto">
+									<object id="areaMapdoto" data="https://corsproxy.org/?https://www3.jrhokkaido.co.jp/trainlocation/map/area_05.svg" type="image/svg+xml" title="列車運行情報"></object>
+								</div>
+							</div>
+							<div class="area-contents shin">
+								<div class="area-name-label shin">北海道新幹線</div>
+								<div class="rosen-name-list shin">
+									<div value="15" class="rosen-name-contents">
+										<span class="eki-icon icon- kigo-bg">
+											<span class="kigo"></span>
+										</span>
+										<span class="rosen-name-label">
+											<span class="main">北海道新幹線</span>
+											<span class="sub">[新函館北斗～奥津軽いまべつ間]</span>
+										</span>
+									</div>
+								</div>
+								<div class="area-map shin">
+									<object id="areaMapshin" data="https://corsproxy.org/?https://www3.jrhokkaido.co.jp/trainlocation/map/senku_24.svg" type="image/svg+xml" title="列車運行情報"></object>
+								</div>
+							</div>
+						</div>
+						<!-- エリアタブ ここまで -->
+						<!-- 特急列車タブ ここから -->
+						<div id="expTab">
+							<!-- スマホ用特急列車選択ボタン　ここから-->
+							<div class="exp-operation-list">
+								<ul>
+									<template>
+										<li class="sp-express-item area-grid">
+											<input type="radio" name="areaOperationTab">
+											<label>
+												<span class="sp-express-name-label">
+													<span class="main"></span><span class="sub"></span>
+												</span>
+											</label>
+										</li>
+									</template>
+								</ul>
+							</div>
+							<!-- スマホ用特急列車選択ボタン　ここまで-->
+							<template id="expItemTemplate">
+								<div class="area-contents">
+									<div class="express-name-label">
+										<span class="aisho"><span class="main"></span><span class="sub"></span></span>
+									</div>
+									<div class="express-train-list">
+										<template>
+											<div class="express-train-contents">
+												<span class="train-name"></span>
+												<span class="unkou-label"></span>
+											</div>
+										</template>
+									</div>
+								</div>
+							</template>
+						</div>
+						<!-- 特急列車タブ ここまで -->
+					</div>
+				</section>
+				<!-- サイドメニュー ここまで-->
+				<!-- トップ画面　路線図 ここから -->
+				<section id="rosenzuContents">
+					<h2 class="top-sel-title">地図から選択</h2>
+					<div class="eikyo-map">
+						<object id="svgTopMap" data="https://corsproxy.org/?https://www3.jrhokkaido.co.jp/trainlocation/map/top.svg" type="image/svg+xml" title="列車運行情報"></object>
+						<div class="eikyo-map-remarks">
+							<dl>
+								<dt><svg height="12" width="36"><path d="m0 7h32" stroke="#ccc" stroke-width="4"></path></svg></dt>
+								<dd>サービス対象外</dd>
+							</dl>
+						</div>
+					</div>
+				</section>
+				<!-- トップ画面　路線図 ここまで -->
+			</div>
+		</div>
+		<div class="border"></div>
+		<!-- 運行情報メニューセクション ここから -->
+		<section id="commonUnkouInfoMenu" data-url="https://corsproxy.org/?https://www3.jrhokkaido.co.jp/trainlocation/call_common_unkou_info_menu.html"></section>
+		<!-- 運行情報メニューセクション ここまで -->
+		<!-- ご利用上注意のセクション ここから -->
+		<section id="commonAttention">
+			<h2 class="common-subtitle">ご利用上の注意</h2>
+			<div id="commonAttentionBody" class="common-contents-frame" data-url="https://corsproxy.org/?https://www3.jrhokkaido.co.jp/trainlocation/call_goriyo_location.html"></div>
+		</section>
+		<!-- ご利用上注意のセクション ここまで -->
+	</div>
+
+	<!-- 使い方セクション ここから -->
+	<section id="guideDetail"></section>
+	<!-- 使い方セクション ここまで -->
+
+	<!-- 列車詳細情報ダイアログ ここから -->
+	<section id="trainDetail" data-url="https://corsproxy.org/?https://www3.jrhokkaido.co.jp/trainlocation/call_train_detail.html"></section>
+	<!-- 列車詳細情報ダイアログ ここまで -->
+
+	<!-- お知らせダイアログ　ここから -->
+	<section id="oshiraseDetail">
+		<div class="dialog-outer">
+			<div class="dialog">
+				<h2 class="common-subtitle header">お知らせ<span class="close"><img src="./images/home/close.svg" alt="閉じる"></span></h2>
+				<div id="oshiraseDetailMain">
+					<div class="text">現在はこの列車の営業時間外です。</div>
+					<div class="dialog-btn-contents">
+						<div class="common-button close">閉じる</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</section>
+	<!-- お知らせダイアログ　ここまで -->
+
+	<!-- ローディングアニメーション ここから-->
+	<div id="loaderBg">
+		<div class="loader"></div>
+	</div>
+	<!-- ローディングアニメーション ここまで-->
+
+	<p id="commonPageTop"><span class="common-arrow common-up"></span></p>
+<script type="text/javascript" src="/_Incapsula_Resource?SWJIYLWA=719d34d31c8e3a6e6fffd425f7e032f3&ns=1&cb=587783205" async></script></body>
+</html>
