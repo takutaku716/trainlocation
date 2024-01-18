@@ -1,0 +1,412 @@
+@charset "UTF-8";
+/**
+ * 列車走行位置ページのサイドメニューのスタイル定義
+ */
+
+/* サイドメニュー（開始） */
+.side-menu {
+	width: 320px;
+	z-index: 21;
+	position: relative;
+	background-color: #fff;
+	overflow-y: scroll;
+	height: 100%;
+	max-height: 0px;
+}
+
+	/* サイドメニュー内のスクロール領域 */
+	.side-menu .side-menu-scroll {
+		height: calc(100% - 52px);
+		overflow-y: scroll;
+	}
+		/* 英語版 */
+		[data-lang='en'] .side-menu .side-menu-scroll {
+			height: calc(100% - 61px);
+			overflow-y: scroll;
+		}
+
+	/* サイドメニューのヘッダー */
+	.side-menu .area-contents-header {
+		align-items: center;
+		background-color: #5b3;
+		color: #fff;
+		cursor: pointer;
+		display: none;
+		font-size: 17px;
+		font-weight: bold;
+		max-height: 35px;
+		min-height: 35px;
+		padding: 5px;
+	}
+
+		/* サイドメニューのヘッダーのラベル */
+		.side-menu .area-contents-header span {
+			align-items: center;
+			display: flex;
+			height: 35px;
+			line-height: 20px;
+		}
+
+		/* サイドメニューのヘッダーの｢閉じる｣ボタン */
+		.side-menu .area-contents-header .close {
+			line-height: 15px;
+			position: absolute;
+			right: 0;
+			width: 36px;
+			top: 0px;
+			padding: 5px 6px;
+			background-color: #444;
+			font-size: 12px;
+			text-align: center;
+			font-weight: normal;
+		}
+
+			/* サイドメニューのヘッダーの｢閉じる｣ボタン にマウスカーソルを重ねたとき */
+			.side-menu .area-contents-header .close:hover {
+				background-color: #666;
+			}
+
+	/* サイドメニュー内のエリア毎の領域 */
+	.side-menu .area-contents {
+		border-right-width: 0px;
+		font-weight: bold;
+		font-size: 18px;
+		color: #111;
+		margin: 5px 0px;
+	}
+
+		/* サイドメニュー内のエリア毎の領域の見出し */
+		.side-menu .area-contents .area-name-label {
+			align-items: center;
+			background-color: #fff;
+			background-image: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath fill='none' stroke='%233a4' stroke-width='2.5' d='m1 1 5 5 5-5'/%3E%3C/svg%3E");
+			background-position: right 5px center;
+			background-repeat: no-repeat;
+			background-size: 22px;
+			border-left: 5px solid #5b3;
+			cursor: pointer;
+			display: flex;
+			margin: 7px 0 0 1px;
+			min-height: 35px;
+			padding: 3px 40px 5px 5px;
+		}
+			/* サイドメニュー内のエリア毎の領域の見出し 折り畳み展開時 */
+			.side-menu .area-contents .area-name-label.open {
+				background-image: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath fill='none' stroke='%233a4' stroke-width='2.5' d='m1 7 5-5 5 5'/%3E%3C/svg%3E");
+			}
+			/* サイドメニュー内のエリア毎の領域の見出し 英語版 */
+			[data-lang='en'] .side-menu .area-contents .area-name-label {
+				font-size: 17px;
+			}
+
+		/* サイドメニュー内の路線名のリスト */
+		.side-menu .area-contents .rosen-name-list {
+			display: none;
+			padding-bottom: 5px;
+		}
+
+			/* サイドメニュー内の路線名のリスト内の路線毎の領域 */
+			.side-menu .area-contents .rosen-name-list .rosen-name-contents {
+				align-items: center;
+				background-color: #fff;
+				background-image: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 12'%3E%3Cpath fill='none' stroke='%233a4' stroke-width='2' d='m1 1 5 5-5 5'/%3E%3C/svg%3E");
+				background-position: right 3px center;
+				background-repeat: no-repeat;
+				background-size: 9px;
+				border: 2px solid #ccc;
+				color: #111;
+				cursor: pointer;
+				display: flex;
+				margin: 4px 4px 0 8px;
+				min-height: 60px;
+				padding: 0 20px 0 5px;
+				position: relative;
+				text-decoration: none;
+			}
+				/* サイドメニュー内の路線名のリスト内の路線毎の領域 にマウスカーソルを重ねたとき */
+				.side-menu .area-contents .rosen-name-list .rosen-name-contents:hover {
+					background-color: #ffc;
+				}
+
+					/* サイドメニュー内の路線名のリスト内の路線毎の領域の見出し */
+					.side-menu .area-contents .rosen-name-list .rosen-name-contents .rosen-name-label {
+						margin: 0 0 0 5px;
+						font-weight: bold;
+						font-size: 13.5px;
+						display: inline-grid;
+						line-height: 25px;
+					}
+						/* サイドメニュー内の路線名のリスト内の路線毎の領域の見出し 英語 */
+						[data-lang='en'] .side-menu .area-contents .rosen-name-list .rosen-name-contents .rosen-name-label,
+						[data-lang='kr'] .side-menu .area-contents .rosen-name-list .rosen-name-contents .rosen-name-label {
+							line-height: 20px;
+							margin: 5px 0 5px 5px;
+						}
+
+						/* サイドメニュー内の路線名のリスト内の路線毎の領域の見出し 路線名表示部のサブ */
+						.side-menu .area-contents .rosen-name-list .rosen-name-contents .rosen-name-label .main.sub {
+							font-size: 13px;
+						}
+
+						/* サイドメニュー内の路線名のリスト内の路線毎の運行情報のラベル 遅延用 */
+						.side-menu .area-contents .rosen-name-list .rosen-name-contents .unkou-label.chien {
+							position: absolute;
+							right: 20px;
+							top: 7px;
+						}
+							/* サイドメニュー内の路線名のリスト内の路線毎の運行情報のラベル 遅延用 英語 */
+							[data-lang='en'] .side-menu .area-contents .rosen-name-list .rosen-name-contents .unkou-label.chien {
+								width: 93px;
+								white-space: normal;
+								top: 2px;
+								right: 11px;
+							}
+							/* サイドメニュー内の路線名のリスト内の路線毎の運行情報のラベル 遅延用 韓国語 */
+							[data-lang='kr'] .side-menu .area-contents .rosen-name-list .rosen-name-contents .unkou-label.chien {
+								top: 7px;
+							}
+								/* サイドメニュー内の路線名のリスト内の路線毎の運行情報のラベル 大幅遅れ用 英語 */
+								[data-lang='en'] .side-menu .area-contents .rosen-name-list .rosen-name-contents .unkou-label.chien.very-late {
+									top: 10px;
+									width: auto;
+								}
+
+					/* サイドメニュー内の路線に駅アイコンが2個ある場合の余白 */
+					.side-menu .area-contents .rosen-name-list .rosen-name-contents .eki-icon-second {
+						margin-left: 3px;
+					}
+
+		/* サイドメニュー内の運行情報のラベル */
+		.side-menu .area-contents .unkou-label {
+			font-size: 10.5px;
+			margin-left: auto;
+			white-space: nowrap;
+		}
+			/* サイドメニュー内の運行情報のラベル 遅延用 */
+			.side-menu .area-contents .unkou-label.chien {
+				color: red;
+			}
+
+		/* サイドメニュー内の特急列車毎の領域の見出し */
+		.side-menu .area-contents .express-name-label {
+			align-items: center;
+			background-color: #fff;
+			background-image: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath fill='none' stroke='%233a4' stroke-width='2.5' d='m1 1 5 5 5-5'/%3E%3C/svg%3E");
+			background-position: right 5px center;
+			background-repeat: no-repeat;
+			background-size: 22px;
+			border-left: 5px solid #5b3;
+			cursor: pointer;
+			display: flex;
+			margin: 7px 0 0 1px;
+			min-height: 35px;
+			padding: 3px 40px 5px 5px;
+		}
+			/* サイドメニュー内の特急列車毎の領域の見出し 折り畳み展開時 */
+			.side-menu .area-contents .express-name-label.open {
+				background-image: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath fill='none' stroke='%233a4' stroke-width='2.5' d='m1 7 5-5 5 5'/%3E%3C/svg%3E");
+			}
+			/* サイドメニュー内の特急列車毎の領域の見出し 英語用 */
+			[data-lang='en'] .side-menu .area-contents .express-name-label {
+				line-height: 17px;
+			}
+			/* サイドメニュー内の特急列車毎の領域の見出し 愛称表示部 */
+			.side-menu .area-contents .express-name-label .sub {
+				display: inline-block;
+			}
+			/* サイドメニュー内の特急列車毎の領域の見出し 区間表示部 */
+			.side-menu .area-contents .express-name-label .sub {
+				font-size: 12px;
+				line-height: 13px;
+				margin: 0 0 0 5px;
+				display: inline-block;
+			}
+
+		/* サイドメニュー内の特急列車のリスト */
+		.side-menu .area-contents .express-train-list {
+			display: none;
+			padding-bottom: 5px;
+		}
+
+			/* サイドメニュー内の特急列車のリスト内の列車毎の領域 */
+			.side-menu .area-contents .express-train-list .express-train-contents {
+				align-items: center;
+				background-color: #fff;
+				background-image: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 12'%3E%3Cpath fill='none' stroke='%233a4' stroke-width='2' d='m1 1 5 5-5 5'/%3E%3C/svg%3E");
+				background-position: right 3px center;
+				background-repeat: no-repeat;
+				background-size: 9px;
+				border: 2px solid #ccc;
+				color: #111;
+				cursor: pointer;
+				display: flex;
+				font-size: 14px;
+				line-height: 20px;
+				margin: 4px 4px 0 8px;
+				min-height: 50px;
+				padding: 0 20px 0 10px;
+				position: relative;
+				text-decoration: none;
+			}
+				/* サイドメニュー内の特急列車のリスト内の列車毎の領域 にマウスカーソルを重ねたとき */
+				.side-menu .area-contents .express-train-list .express-train-contents:hover {
+					background-color: #ffc;
+				}
+				/* サイドメニュー内の特急列車のリスト内の列車毎の領域 韓国語*/
+				[data-lang='kr'] .side-menu .area-contents .express-train-list .express-train-contents {
+					padding: 0 20px 0 5px;
+				}
+				/* サイドメニュー内の特急列車のリスト内の列車名 */
+				.side-menu .area-contents .express-train-list .express-train-contents .train-name {
+					margin-right: 50px;
+				}
+					/* サイドメニュー内の特急列車のリスト内の列車名 英語・韓国語 */
+					[data-lang='en'] .side-menu .area-contents .express-train-list .express-train-contents .train-name,
+					[data-lang='kr'] .side-menu .area-contents .express-train-list .express-train-contents .train-name {
+						margin-right: 80px;
+					}
+					/* サイドメニュー内の特急列車のリスト内の列車名 繁体字・簡体字 */
+					[data-lang='tc'] .side-menu .area-contents .express-train-list .express-train-contents .train-name,
+					[data-lang='sc'] .side-menu .area-contents .express-train-list .express-train-contents .train-name {
+						margin-right: 60px;
+					}
+
+				/* サイドメニュー内の特急列車のリスト内の路線毎の運行情報のラベル */
+				.side-menu .area-contents .express-train-list .express-train-contents .unkou-label {
+					position: absolute;
+					right: 20px;
+				}
+
+/* サイドメニュー内のエリアマップ */
+.area-map {
+	display: none;
+}
+
+/* サイドメニューの特急列車から選択タブ内の領域 */
+#expTab {
+	display: none;
+}
+
+/* サイドメニューの外枠領域 */
+.side-menu-outer {
+	width: 100%;
+	height: 100%;
+	z-index: 40;
+	position: fixed;
+	left: 0;
+	top: 0;
+	display: none;
+}
+
+/* 選択タブ（エリアから選択・特急列車から選択） */
+input[type=radio] {
+	display: none;
+}
+
+/* サイドメニュー内のタブ領域 */
+.side-select-panel {
+	position: relative;
+	margin: 0 0 2px 0;
+}
+
+/* サイドメニュー内のタブ表示領域 */
+.side-select {
+	flex-wrap: wrap;
+	display: flex;
+	justify-content: center;
+	position: relative;
+}
+
+/* サイドメニュー内のタブ内の文字領域 */
+.side-select-label {
+	align-items: center;
+	background-color: #fff;
+	border-radius: 10px 10px 0 0;
+	border: 3px solid #999;
+	color: #888;
+	cursor: pointer;
+	display: flex;
+	font-size: 15px;
+	font-weight: bold;
+	justify-content: center;
+	margin: 0px;
+	min-height: 42px;
+	position: relative;
+	text-align: center;
+	width: calc(50% - 6px);
+}
+	/* サイドメニュー エリアから選択タブ用 */
+	.side-select-label:nth-of-type(1) {
+		border-bottom: 4px solid #5b3;
+		border-right: none;
+	}
+	/* サイドメニュー 特急列車から選択タブ用 */
+	.side-select-label:nth-of-type(2) {
+		border-bottom: 4px solid #5b3;
+		border-right: 3px solid #999;
+	}
+
+	/* サイドメニュー タブ選択時 */
+	input[type="radio"]:checked + .side-select-label {
+		background: #ffc;
+		color: #111;
+		border-width: 4px;
+		border-color: #5b3;
+	}
+		/* サイドメニュー エリアから選択タブ用 エリアから選択タブ選択時*/
+		input[id="sideSelectArea"]:checked + .side-select-label:nth-of-type(1) {
+			border-right: 4px solid #5b3;
+			border-bottom-color: #fff;
+		}
+		/* サイドメニュー 特急列車から選択タブ用 エリアから選択タブ選択時*/
+		input[id="sideSelectArea"]:checked ~ .side-select-label:nth-of-type(2) {
+			border-left: none;
+			border-right: 3px solid #999;
+		}
+		/* サイドメニュー 特急列車から選択タブ用 特急列車から選択タブ選択時*/
+		input[id="sideSelectExp"]:checked + .side-select-label:nth-of-type(2) {
+			border-right: 4px solid #5b3;
+			border-left: 4px solid #5b3;
+			border-bottom-color: #fff;
+		}
+
+		.side-select-label:nth-of-type(2) > span {
+			margin: 0 5px;
+		}
+			[data-lang='tc'] .side-select-label:nth-of-type(2) > span,
+			[data-lang='sc'] .side-select-label:nth-of-type(2) > span {
+				margin: 0 2px;
+			}
+
+			.side-select-label:nth-of-type(2) span span {
+				display: inline-block;
+			}
+
+/* firefoxでのレイアウト調整 */
+@-moz-document url-prefix(){
+	[data-lang="en"] .side-menu .area-contents .rosen-name-list .rosen-name-contents[value="01"] .rosen-name-label .main {
+		margin-right: 80px;
+	}
+	[data-lang="en"] .side-menu .area-contents .rosen-name-list .rosen-name-contents[value="03"] .rosen-name-label .main {
+		margin-right: 90px;
+	}
+	[data-lang="ja"] .side-menu .area-contents .rosen-name-list .rosen-name-contents[value="10"] .rosen-name-label .main,
+	[data-lang="tc"] .side-menu .area-contents .rosen-name-list .rosen-name-contents[value="10"] .rosen-name-label .main,
+	[data-lang="sc"] .side-menu .area-contents .rosen-name-list .rosen-name-contents[value="10"] .rosen-name-label .main {
+		margin-right: 95px;
+		overflow-wrap: break-word;
+  		word-break: keep-all;
+	}
+	[data-lang="en"] .side-menu .area-contents .rosen-name-list .rosen-name-contents .unkou-label.chien {
+		width: 105px;
+	}
+	.side-menu .area-contents .express-train-list .express-train-contents .train-name {
+		overflow-wrap: break-word;
+		word-break: keep-all;
+	}
+	[data-lang="en"] .side-menu .area-contents .express-train-list .express-train-contents .train-name,
+	[data-lang="kr"] .side-menu .area-contents .express-train-list .express-train-contents .train-name {
+		margin-right: 85px;
+	}
+}
+/* サイドメニュー（終了） */

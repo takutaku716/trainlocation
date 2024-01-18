@@ -1,0 +1,284 @@
+@charset "UTF-8";
+/**
+ * 列車詳細情報ダイアログのスタイル定義
+ */
+
+/* 列車詳細情報ダイアログの背景を含めた全要素 */
+.trainDetailDialog {
+	height: 100%;
+	left: 0;
+	position: fixed;
+	top: 0;
+	width: 100%;
+	z-index: 12000;
+	display: none;
+}
+	/* 列車詳細情報ダイアログの外枠要素 */
+	.trainDetailDialog .dialog-outer {
+		align-items: center;
+		display: flex;
+		justify-content: center;
+		height: 100%;
+		width: 100%;
+	}
+		/* 列車詳細情報ダイアログの本体要素 */
+		.trainDetailDialog .dialog-outer .dialog {
+			background-color: #fff;
+			display: flex;
+			flex-direction: column;
+			max-height: calc(100vh - 180px);
+			width: 500px;
+		}
+/* 列車詳細情報ダイアログのヘッダ部分 */
+.trainDetailDialog .header {
+	align-items: stretch;
+	background-color: #5b3;
+	border: none;
+	color: #fff;
+	display: flex;
+	min-height: fit-content;
+	padding: 0;
+}
+	/* ヘッダのラベル部分 */
+	.trainDetailDialog .header .label {
+		align-items: center;
+		font-size: 16px;
+		font-weight: bold;
+		padding: 8px 10px;
+		margin: auto 0;
+	}
+	/* ヘッダの｢閉じる｣ボタン */
+	.trainDetailDialog .header .close {
+		align-items: center;
+		display: flex;
+		height: auto;
+		margin: 0 0 0 auto;
+		min-height: 46px;
+		padding: 0 6px;
+	}
+		/* ヘッダの｢閉じる｣ボタン(マウスホバー時) */
+		.trainDetailDialog .header .close:hover {
+			background-color: #6c4;
+			cursor: pointer;
+		}
+		/* ヘッダの｢閉じる｣ボタンの画像 */
+		.trainDetailDialog .header .close img {
+			width: 32px;
+		}
+/* 列車詳細情報ダイアログの列車情報部分 */
+.trainDetailDialog .train-info {
+	border-bottom: 1px solid #ccc;
+	margin: 5px;
+	padding: 0;
+}
+	/* 列車情報のリスト全体要素 */
+	.trainDetailDialog .train-info dl {
+		align-items: center;
+		display: grid;
+		grid-template-columns: 100px auto;
+		margin: 0;
+	}
+		/* 列車情報のリスト定義部 */
+		.trainDetailDialog .train-info dl dt {
+			margin: 5px;
+		}
+			/* 列車情報のリスト定義部のアイコン要素 */
+			.trainDetailDialog .train-info dl dt .icon {
+				align-items: center;
+				color: #fff;
+				display: flex;
+				justify-content: center;
+				min-height: 32px;
+				min-width: 86px;
+				text-align: center;
+			}
+		/* 列車情報のリスト内容部 */
+		.trainDetailDialog .train-info dl dd {
+			border-top: 1px solid #ccc;
+			display: flex;
+			flex-direction: column;
+			height: 100%;
+			justify-content: center;
+			margin: 0 0 0 5px;
+		}
+			/* 列車情報のリスト内容部(最後の要素) */
+			.trainDetailDialog .train-info dl dd:first-of-type {
+				border: none;
+			}
+			/* 列車情報のリスト内容部(行項目) */
+			.trainDetailDialog .train-info dl dd p {
+				align-items: center;
+				display: inline-flex;
+				margin: 0;
+				min-height: 23px;
+			}
+		/* ｢列車種別｣のアイコン */
+		.trainDetailDialog .train-info dl dt.type-item .type-label {
+		}
+			/* ｢列車種別｣のアイコン (1:特急、6:ライナー) */
+			.trainDetailDialog .train-info dl dt.type-item .type-label[data-type='1'],
+			.trainDetailDialog .train-info dl dt.type-item .type-label[data-type='6'] {
+				background-color: #f00;
+			}
+			/* ｢列車種別｣のアイコン (2:快速、5:特別快速) */
+			.trainDetailDialog .train-info dl dt.type-item .type-label[data-type='2'],
+			.trainDetailDialog .train-info dl dt.type-item .type-label[data-type='5'] {
+				background-color: #f82;
+			}
+			/* ｢列車種別｣のアイコン (3:普通) */
+			.trainDetailDialog .train-info dl dt.type-item .type-label[data-type='3'] {
+				background-color: #789;
+			}
+			/* ｢列車種別｣のアイコン (4:北海道新幹線) */
+			.trainDetailDialog .train-info dl dt.type-item .type-label[data-type='4'] {
+				background-color: #080;
+			}
+			/* ｢列車種別｣のアイコン (7:臨時列車) */
+			.trainDetailDialog .train-info dl dt.type-item .type-label[data-type='7'] {
+				background-color: #fff;
+				border: #444 solid 2px;
+				color: #444;
+			}
+			/* ｢列車種別｣のアイコン (8:快速（札幌～手稲・小樽間普通）) */
+			.trainDetailDialog .train-info dl dt.type-item .type-label[data-type='8'] {
+				background-color: #07c;
+			}
+		/* ｢現在地｣のアイコン */
+		.trainDetailDialog .train-info dl dt.pos-item .pos-label {
+			background-color: #777;
+		}
+		/* ｢遅れ｣のアイコン */
+		.trainDetailDialog .train-info dl dt.chien-item .chien-label {
+			background-color: #fa2;
+		}
+		/* ｢運行状態｣のアイコン */
+		.trainDetailDialog .train-info dl dt.status-item .status-label {
+			margin: auto;
+		}
+			/* ｢運行状態｣のアイコン (全区間運休) */
+			.trainDetailDialog .train-info dl dt.status-item .status-label[data-status='0'] {
+				background-color: #f00;
+			}
+			/* ｢運行状態｣のアイコン (部分運休) */
+			.trainDetailDialog .train-info dl dt.status-item .status-label[data-status='2'] {
+				background-color: #f0f;
+			}
+		/* 発車情報のラベル */
+		.trainDetailDialog .train-info dl dd.type-item .sha-label {
+			margin-right: 1em;
+		}
+			/* 発車駅名 */
+			.trainDetailDialog .train-info dl dd.type-item .sha-label .sha-eki {
+				margin-right: 1em;
+			}
+		/* 列車名のラベル */
+		.trainDetailDialog .train-info dl dd.type-item .name-label {
+			margin-right: 1em;
+		}
+		/* 遅れのラベル */
+		.trainDetailDialog .train-info dl dd.chien-item .chien-text {
+			color: #f00;
+			font-weight: bold;
+		}
+/* 列車詳細情報ダイアログのダイヤデータ部分 */
+.trainDetailDialog .station-list {
+	flex-grow: 1;
+	overflow-y: auto;
+	margin: 10px 0 0 0;
+}
+	/* ダイヤデータの時刻表部分の外枠 */
+	.trainDetailDialog .station-list .timetable {
+		margin: 0 10px;
+	}
+		/* ダイヤデータの時刻表部分 */
+		.trainDetailDialog .station-list .timetable table {
+			border: 2px solid #444;
+			border-collapse: collapse;
+			margin: 0 auto;
+			min-width: 80%;
+		}
+			/* 時刻表のヘッダ行 */
+			.trainDetailDialog .station-list .timetable table thead tr {
+				height: 25px;
+			}
+				/* 時刻表のヘッダ行セル */
+				.trainDetailDialog .station-list .timetable table thead tr th {
+					background-color: #444;
+					color: #fff;
+					font-weight: normal;
+					padding: 0;
+				}
+					/* 時刻表のヘッダ行セル(1列目) */
+					.trainDetailDialog .station-list .timetable table thead tr th:nth-child(1) {
+						border-right: 2px solid #666;
+					}
+			/* 時刻表のデータ行 */
+			.trainDetailDialog .station-list .timetable table tbody tr {
+				height: 27px;
+			}
+				/* 時刻表のデータ行(テンプレート行) */
+				.trainDetailDialog .station-list .timetable table tbody tr.template {
+					display: none;
+				}
+					/* 時刻表のデータ行セル */
+					.trainDetailDialog .station-list .timetable table tbody tr td {
+						border: 2px solid #444;
+						padding: 1px 5px;
+					}
+						/* 時刻表のデータ行セル(1列目) */
+						.trainDetailDialog .station-list .timetable table tbody tr td:nth-child(1) {
+							width: 65%;
+						}
+						/* 時刻表のデータ行セル(2列目) */
+						.trainDetailDialog .station-list .timetable table tbody tr td:nth-child(2) {
+							text-align: center;
+							width: 35%;
+						}
+	/* ダイヤデータの注意書きリストの全体要素 */
+	.trainDetailDialog .station-list .notice ul {
+		font-size: 12px;
+		margin: 5px 10px;
+		padding: 0;
+	}
+		/* ダイヤデータの注意書きリストの項目要素 */
+		.trainDetailDialog .station-list .notice ul li {
+			align-items: center;
+			display: flex;
+			min-height: 18px;
+			list-style: none;
+			padding: 0 0 0 1em;
+			text-indent: -1em;
+		}
+/* 列車詳細情報ダイアログのエラーメッセージ部分 */
+.trainDetailDialog .error {
+	margin: 5px;
+}
+	/* 列車詳細情報ダイアログのエラーメッセージ部分 */
+	.trainDetailDialog .error p {
+		margin: 20px 0 10px 0;
+		text-align: center;
+	}
+/* 列車詳細情報ダイアログのフッタ部分 */
+.trainDetailDialog .footer {
+	display: flex;
+	justify-content: center;
+	margin: 0 5px;
+	min-height: fit-content;
+	padding: 10px 0;
+}
+	/* フッタの｢閉じる｣ボタン */
+	.trainDetailDialog .footer .common-button.close {
+		background-color: #5b3;
+		color: #fff;
+		cursor: pointer;
+		min-height: 34px;
+		width: 160px;
+	}
+		/* フッタの｢閉じる｣ボタン(マウスホバー時) */
+		.trainDetailDialog .footer .common-button.close:hover {
+			background-color: #6c4;
+		}
+/* 列車詳細情報ダイアログの非表示要素 */
+.trainDetailDialog .hide {
+	display: none !important;
+}

@@ -1,0 +1,83 @@
+@charset "UTF-8";
+/**
+ * ご利用上の注意セクションのスタイル定義
+ */
+
+/* ご利用上の注意セクション全体 */
+#commonAttention {
+	display: none;
+	margin: 0 0 20px 0;
+}
+	/* ご利用上の注意セクションの見出し（表示／非表示切替属性がある場合） */
+	#commonAttention .common-subtitle.toggle {
+		background-image: url("../images/home/arrow_green_down.svg");
+		background-size: 20px;
+		background-repeat: no-repeat;
+		background-position: right 2% bottom 50%;
+		cursor: pointer;
+	}
+		/* ご利用上の注意セクションの見出し（本文を表示時） */
+		#commonAttention .common-subtitle.toggle.open {
+			background-image: url("../images/home/arrow_green_up.svg");
+		}
+		/* ご利用上の注意セクションの見出し（本文を非表示時） */
+		#commonAttention .common-subtitle.toggle + div {
+			display: none;
+		}
+
+	/* ご利用上の注意セクションの本文領域 */
+	#commonAttention #commonAttentionBody {
+		padding: 15px 8px;
+	}
+		/* 本文内に記載されたリスト項目の親要素 */
+		#commonAttention #commonAttentionBody ul {
+			list-style: none;
+			margin: 0;
+			padding: 0 0 0 18px;
+		}
+			/* 本文内に記載されたリスト項目 */
+			#commonAttention #commonAttentionBody ul li {
+				margin: 1px 0;
+			}
+				/* 本文内に記載されたリスト項目（前置記号の置換） */
+				#commonAttention #commonAttentionBody ul li::before {
+					content: "・";
+					display: inline-block;
+					height: 0;
+					margin-left: -18px;
+					width: 18px;
+				}
+				/* 本文内に記載されたリスト項目 中点なし */
+				#commonAttention #commonAttentionBody ul li.non-point::before {
+					content: "";
+				}
+				/* 本文内に記載されたリスト項目のサブリスト見出し */
+				#commonAttention #commonAttentionBody ul li h3 {
+					font: inherit;
+					margin: inherit;
+				}
+				/* 本文内に記載されたリスト項目のサブリスト項目の親要素 */
+				#commonAttention #commonAttentionBody ul li ul {
+					margin: inherit;
+				}
+				/* 本文内に記載されたリスト項目の使い方の画像 */
+				#commonAttention #commonAttentionBody ul li #attentionGuide {
+					vertical-align: top;
+					cursor: pointer;
+				}
+					#commonAttention #commonAttentionBody ul li #attentionGuide:hover {
+						background-color: #ffc;
+					}
+		/* 本文内に記載されたリスト項目の室蘭線 */
+		#commonAttention #commonAttentionBody .muroran-line {
+			display: flex;
+		}
+		/* 本文内で赤色にする部分 */
+		#commonAttention #commonAttentionBody .red {
+			color: #f00;
+		}
+		/* 本文内のリンク文字列 */
+		#commonAttention #commonAttentionBody a {
+			color: #039;
+			text-decoration: underline;
+		}

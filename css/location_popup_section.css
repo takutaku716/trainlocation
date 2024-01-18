@@ -1,0 +1,78 @@
+@charset "UTF-8";
+/**
+ * 列車走行位置ページのポップアップセクションのスタイル定義
+ */
+
+section#popupDetail {
+	background-color: rgba(0, 0, 0, 0.5);
+	display: none;
+	height: 100%;
+	left: 0;
+	position: fixed;
+	top: 0;
+	width: 100%;
+	z-index: 20000;
+}
+	/* オーバーレイ領域内の列車詳細ダイアログ要素を中央寄せするための外枠領域 */
+	section#popupDetail .dialog-outer {
+		align-items: center;
+		display: flex;
+		justify-content: center;
+		height: 100%;
+		width: 100%;
+	}
+		/* ポップアップダイアログ領域 */
+		section#popupDetail .dialog {
+			background-color: #fff;
+			width: 502px;
+		}
+			/* ポップアップダイアログのヘッダー */
+			section#popupDetail .dialog .header {
+				justify-content: center;
+				background-color: #fc0;
+				color:black;
+				border-width: 0px;
+			}
+				/* ポップアップダイアログのヘッダーの｢×｣ボタン */
+				section#popupDetail .dialog .header .close {
+					line-height: 10px;
+					position: absolute;
+					right: 0;
+					width: 32px;
+					top: 0px;
+					padding: 7px 6px;
+				}
+/* ポップアップダイアログのヘッダーの｢×｣ボタン にマウスカーソルを重ねたとき */
+section#popupDetail .dialog .header .close:hover {
+	background-color: #fd4;
+	cursor: pointer;
+}
+
+/* ポップアップダイアログの本文情報 */
+section#popupDetail .dialog .popup-detail-main {
+	align-items: center;
+	display: grid;
+	gap: 0 10px;
+	margin: 5px 5px 15px 5px;
+	max-height: 60vh;
+	overflow: auto;
+}
+
+/* ポップアップダイアログ内のボタン領域 */
+section#popupDetail .dialog .dialog-btn-contents {
+	display: flex;
+	justify-content:center;
+	padding: 10px;
+}
+	/* ポップアップダイアログ内の｢閉じる｣ボタン */
+	section#popupDetail .dialog .dialog-btn-contents .common-button.close {
+		border: 1px solid #3a0;
+		border-bottom: 3px solid #3a1;
+		min-height: 34px;
+		width: 140px;
+		cursor: pointer;
+	}
+		/* ポップアップダイアログ内の｢閉じる｣ボタンにマウスを当てたとき */
+		section#popupDetail .dialog .dialog-btn-contents .common-button.close:hover {
+			background-color: #ffc;
+		}

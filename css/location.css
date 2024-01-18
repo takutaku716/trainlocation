@@ -1,0 +1,2659 @@
+@charset "UTF-8";
+/* 列車走行位置ページ用 */
+
+body {
+	margin: 60px 0 5px 0;
+	overflow-y: scroll;
+	width: 100%;
+}
+
+header {
+	border-bottom-width: 0px;
+	width: 100%;
+}
+	/* ヘッダーの本体 */
+	header #header {
+		margin: 0px 5px;
+		max-width: none;
+		padding: 0;
+	}
+
+	/* メニュー領域 */
+	#menuLayer .menu {
+		width: 99.3%;
+	}
+
+/* ローディングアニメーション（開始） */
+#loaderBg {
+	display: flex;
+}
+
+/* お知らせのコンテンツを囲む枠 */
+#commonOshirase .common-contents-frame {
+	padding: 3px 5px 3px 14px;
+}
+
+/* 英語版 */
+[data-lang='en'] #commonOshirase .common-subtitle {
+	padding: 7px 0;
+}
+
+/* *TOPへ戻る */
+.common-arrow {
+	right: 2%;
+	bottom: 40px;
+}
+
+/* メイン領域 */
+.main-div {
+	display: flex;
+	flex-direction: column;
+}
+
+/* 路線表示部メイン領域 */
+.main-contents {
+	display: flex;
+	flex-direction: row;
+	flex-grow: 1;
+	transform-origin: top left;
+	position: relative;
+}
+	.main-contents::after {
+		content: "";
+		background-color: #fff;
+		width: 100%;
+		height: 3px;
+		position: absolute;
+		bottom: -1px;
+		z-index: 20;
+	}
+
+/* 路線表示部 */
+.station-list-contents {
+	margin-top: 90px;
+	margin-right: 4px;
+	overflow: hidden;
+}
+
+/* 路線表示部メイン領域 */
+.train-guide-contents {
+	margin-left: 325px;
+}
+
+/* メッセージ文 */
+.msg-bg {
+	font-size: 20px;
+	line-height: 50px;
+	overflow-wrap: break-word;
+	border-bottom: 2px solid black;
+	text-align: center;
+	margin: 120px 30px;
+}
+
+/* サイドメニュー（開始） */
+.side-menu {
+	width: 325px;
+	z-index: 41;
+	position: fixed;
+	top: 61px;
+	background-color: #fff;
+	overflow-y: auto;
+	height: auto;
+	max-height: none;
+	border-right: 2px solid #ccc;
+	transition: transform .2s ease-out 0s,-webkit-transform .2s ease-out 0s;
+}
+
+	/* サイドメニュー内のエリア毎の領域の見出し */
+	.side-menu .area-contents .area-name-label {
+		margin: 7px 0 0 6px;
+	}
+
+	/* サイドメニュー内の路線名のリスト内の路線毎の領域 */
+	.side-menu .area-contents .rosen-name-list .rosen-name-contents {
+		margin: 4px 4px 0 13px;
+	}
+
+	/* サイドメニュー内の特急列車毎の領域の見出し */
+	.side-menu .area-contents .express-name-label {
+		margin: 7px 0 0 6px;
+	}
+
+	/* サイドメニュー内の特急列車のリスト内の列車毎の領域 */
+	.side-menu .area-contents .express-train-list .express-train-contents {
+		margin: 4px 4px 0 13px;
+	}
+
+/* サイドメニュー内のタブ領域 */
+.side-select-panel {
+	margin: 0 0 2px 5px;
+}
+/* サイドメニュー（終了） */
+
+/* サブヘッダー（開始） */
+.sub-header {
+	text-align: center;
+	position: fixed;
+	width: calc(100% - 325px);
+	z-index: 21;
+	border-top: 1px solid #ccc;
+}
+
+	/* サブヘッダー内の路線名表示領域 */
+	.sub-header .sub-header-contents {
+		padding: 4px;
+		margin: auto;
+		position: relative;
+		background-color: #b8d5e6;
+	}
+
+		/* サブヘッダー内の路線名 */
+		.sub-header .sub-header-contents .maintitle {
+			font-weight: bold;
+			font-size: 16px;
+			color: #444;
+		}
+
+			.sub-header .sub-header-contents .maintitle span {
+				display: inline-block;
+			}
+
+	/* サブヘッダー内の方面表示領域 */
+	.sub-header .homen-header-contents {
+		background-color: #fff;
+		border-bottom: 2px solid #444;
+		display: flex;
+		justify-content: flex-end;
+		margin: auto;
+		min-height: 28px;
+		padding: 4px;
+		position: relative;
+	}
+
+		/* サブヘッダー内の方面名 */
+		.sub-header .homen-header-contents #homenNameUp {
+			font-weight: bold;
+			font-size: 16px;
+			left: 0;
+			position: absolute;
+			right: 0;
+			top: 8px;
+			z-index: 19;
+		}
+
+		/* サブヘッダー内の方面表示領域 */
+		.sub-header .homen-header-contents .header-btn {
+			display: flex;
+			align-items: center;
+		}
+
+		/* サブヘッダー内のお知らせ表示領域の区切り線 */
+		.sub-header .oshirase-header-contents .location-oshirase.border {
+			border-top: 1px solid #444;
+		}
+
+		/* サブヘッダー内のお知らせ表示領域のエリア名・路線名 */
+		.sub-header .oshirase-header-contents .common-subtitle {
+			padding: 4px 45px;
+			min-height: auto;
+			line-height: normal;
+		}
+
+		/* サブヘッダー内のお知らせ文章表示領域 */
+		.sub-header .oshirase-header-contents .common-contents-frame {
+			background-color: #fff;
+			text-align: left;
+		}
+
+	/* サブヘッダー内のボタン */
+	.sub-header .header-btn {
+		border-radius: 5px;
+		background-color: #444;
+		color: #fff;
+		cursor: pointer;
+		font-size: 12px;
+		margin: 0 0 0 4px;
+		padding: 4px 4px;
+		position: relative;
+		z-index: 20;
+	}
+
+		/* サブヘッダー内のボタン にマウスカーソルを重ねたとき */
+		.sub-header .header-btn:hover {
+			background-color: #666;
+		}
+
+		.sub-header .header-btn.pos div span span {
+			display: inline-block;
+		}
+
+		.sub-header #expSelBtn div span span {
+			display: inline-block;
+		}
+
+	/* サブヘッダー内のボタン表示領域 */
+	.sub-header .btn-header-contents {
+		display: none;
+	}
+/* サブヘッダー（終了） */
+
+/* サブフッター（開始） */
+#unkouInfo {
+	display: none;
+}
+
+.sub-footer {
+	padding: 5px 0;
+	position: fixed;
+	margin-top: 1px;
+	width: 190px;
+	bottom: 45px;
+	right: 5px;
+	z-index: 21;
+}
+
+	/* サブフッター内のお知らせ領域 */
+	.sub-footer .sub-footer-contents {
+		max-width: 900px;
+		position: relative;
+		box-shadow: 5px 5px 10px rgb(0 0 0 / 40%);
+		opacity: 0.9;
+		margin-top: 8px;
+	}
+		/* サブフッター内の重要なお知らせ領域 */
+		.sub-footer .sub-footer-contents.popup {
+			display: none;
+		}
+
+		/* サブフッター内のお知らせ表示領域 */
+		.sub-footer .sub-footer-contents .unko-info-header {
+			background-color: #fa0;
+			display: flex;
+			font-size: 16px;
+			font-weight: bold;
+			align-items: center;
+			padding: 5px 8px 8px 8px;
+			border-top-left-radius: 5px;
+			border-top-right-radius: 5px;
+			cursor: pointer;
+		}
+			/* サブフッター内のお知らせ表示領域 にマウスカーソルを重ねたとき */
+			.sub-footer .sub-footer-contents .unko-info-header:hover {
+				background-color: #fd4;
+			}
+
+		/* サブフッター内の△！マーク */
+		.sub-footer .sub-footer-contents img {
+			height: 35px;
+			width: 35px;
+		}
+
+		/* サブフッター内の運行情報のヘッダー部 */
+		.sub-footer .sub-footer-contents .sub-footer-unkou-msg {
+			padding: 5px;
+			margin-top: 5px;
+			margin-left: 8px;
+			width: 105px;
+		}
+			/* サブフッター内の重要なお知らせのヘッダー部 */
+			.sub-footer .sub-footer-contents.popup .sub-footer-unkou-msg {
+				width: 115px;
+			}
+
+	/* サブフッター内の方面表示領域 */
+	.sub-footer .homen-footer-contents {
+		display: flex;
+		justify-content: center;
+		padding: 4px 0;
+		background-color: #fff;
+		position: fixed;
+		width: calc(100% - 325px);
+		bottom: -120px;
+		right: 0;
+		font-weight: bold;
+		font-size: 16px;
+		border-top: 2px solid #444;
+		min-height: 28px;
+		height: 150px;
+	}
+
+		/* サブフッター内の方面名 */
+		.sub-footer .homen-footer-contents #homenNameDown {
+			position: relative;
+			top: 6px;
+		}
+/* サブフッター（終了） */
+
+/* 走行位置の駅のリスト（開始） */
+#stationList {
+	width: 100%;
+	flex-grow: 1;
+	overflow: hidden;
+	position: relative;
+}
+
+	/* 駅・駅間の領域 */
+	#stationList .eki-panel {
+		position: relative;
+		border: 3px solid transparent;
+		min-height: 60px;
+		border-radius: 15px;
+		width: calc(100% - 12px);
+		z-index: 18;
+		left: 5px;
+	}
+		/* 駅 */
+		#stationList .eki-panel.eki {
+			background-color: #f0f0f0;
+			border-color: #f0f0f0;
+			min-height: 118px;
+			max-height: 185px;
+			padding: 0 0 5px 0;
+		}
+		/* TID非対象の駅 */
+		#stationList .eki-panel.hirendo {
+			border: 3px dashed #777;
+			border-radius: 15px;
+			background-color: #fff;
+			background-image: linear-gradient(
+				-65deg,
+				#fff 3%,
+				#f0f0f0 3%, #f0f0f0 8%,
+				#fff 8%, #fff 13%,
+				#f0f0f0 13%, #f0f0f0 18%,
+				#fff 18%, #fff 23%,
+				#f0f0f0 23%, #f0f0f0 28%,
+				#fff 28%, #fff 33%,
+				#f0f0f0 33%, #f0f0f0 38%,
+				#fff 38%, #fff 43%,
+				#f0f0f0 43%, #f0f0f0 48%,
+				#fff 48%, #fff 53%,
+				#f0f0f0 53%, #f0f0f0 58%,
+				#fff 58%, #fff 63%,
+				#f0f0f0 63%, #f0f0f0 68%,
+				#fff 68%, #fff 73%,
+				#f0f0f0 73%, #f0f0f0 78%,
+				#fff 78%, #fff 83%,
+				#f0f0f0 83%, #f0f0f0 88%,
+				#fff 88%, #fff 93%,
+				#f0f0f0 93%, #f0f0f0 98%,
+				#fff 98%, #fff 100%
+			);
+			margin: 8px 0;
+		}
+			/* TID非対象の駅 釧路駅の先の線路 */
+			#stationList .eki-panel.hirendo.non-service-area {
+				margin: 8px 0 0 0;
+				border-color: #fff;
+				border-style: solid;
+				border-radius: 30px;
+			}
+			/* TID非対象の駅 名寄、上川駅の先の線路 */
+			#stationList .eki-panel.hirendo.non-service-area.top {
+				margin: 0 0 8px 0;
+			}
+
+		/* 函館・五稜郭周辺 */
+		#stationList .eki-panel.hakodate,
+		#stationList .eki-panel.goryokaku {
+			background-color: transparent;
+			background-image: none;
+			border-width: 0;
+			padding: 3px;
+		}
+			#stationList .eki-panel.goryokaku {
+				margin-bottom: 12px;
+			}
+				[data-lang='tc'] #stationList .eki-panel.goryokaku,
+				[data-lang='sc'] #stationList .eki-panel.goryokaku {
+					margin-bottom: 15px;
+				}
+		/* 追分駅 */
+		#stationList .eki-panel.eki.oiwake {
+			max-height: 265px;
+		}
+		/* 別路線へのリンクが存在する駅間 */
+		#stationList .eki-panel.hoka-rosen {
+			min-height: 145px;
+		}
+		#stationList .eki-panel.hoka-rosen-panel {
+			min-height: 75px;
+			background-color: #fff;
+		}
+		#stationList .eki-panel.white-panel {
+			background-color: #fff;
+			height: 60px;
+		}
+			#stationList .eki-panel.white-panel.hakodate {
+				position: absolute;
+				top: 0;
+				height: 320px;
+			}
+			#stationList .eki-panel.hoka-rosen-panel.two-row {
+				min-height: 60px;
+			}
+			#stationList .eki-panel.hoka-rosen-panel.four-row {
+				min-height: 90px;
+			}
+		/* 別路線へのリンクが存在する駅間で線路を上に表示させる場合 */
+		#stationList .eki-panel.hoka-rosen.top {
+			align-items: end;
+			display: flex;
+			min-height: 149px;
+		}
+		/* 路線の描画が駅間から始まる場合 */
+		#stationList .eki-panel.ekikan-start {
+			align-items: flex-end;
+			display: flex;
+			min-height: 100px;
+		}
+		/* 下部の駅間 */
+		#stationList .eki-panel.end {
+			min-height: 139px;
+		}
+		/* 下部の駅 */
+		#stationList .eki-panel.eki.end {
+			min-height: 118px;
+		}
+		/* 北海道新幹線の最下部の駅間 */
+		#stationList .eki-panel.shinkansen-end {
+			min-height: 195px;
+		}
+
+		/* 駅の表示領域 */
+		#stationList .eki-panel .eki-contents {
+			text-align: center;
+			width: 100%;
+		}
+
+			/* 駅のリンク領域 */
+			#stationList .eki-panel .eki-contents .stalist-eki-link {
+				border: 2px solid #5b3;
+				border-radius: 13px;
+				background-color: #fff;
+				min-width: 160px;
+				max-width: 213px;
+				text-align: center;
+				position: relative;
+				z-index: 19;
+				font-size: 15px;
+				display: inline-grid;
+				height: 46px;
+				align-items: center;
+				margin: 0 5px;
+				max-height: 44px;
+			}
+				/* 駅のリンク領域 2駅 */
+				#stationList .eki-panel .eki-contents .stalist-eki-link.two-eki {
+					height: 94px;
+					max-height: none;
+				}
+				/* 駅のリンク領域 3駅 */
+				#stationList .eki-panel .eki-contents .stalist-eki-link.three-eki {
+					height: 144px;
+					max-height: none;
+				}
+				/* 駅のリンク領域 追分駅 */
+				#stationList .eki-panel.oiwake .eki-contents .stalist-eki-link {
+					margin: 80px 5px 0 5px;
+				}
+
+				/* 駅のリンク */
+				#stationList .eki-panel .eki-contents .stalist-eki-link a {
+					cursor: pointer;
+					color: #111;
+					font-weight: bold;
+					text-decoration: none;
+					padding: 3px 10px 3px 5px;
+				}
+					/* 駅のリンク 英語版 */
+					[data-lang='en'] #stationList .eki-panel .eki-contents .stalist-eki-link a {
+						margin-left: 3px;
+						margin-right: 3px;
+					}
+
+				/* 駅名の表示領域 */
+				#stationList .eki-panel .eki-contents .stalist-eki-link .stalist-eki-contents {
+					display: flex;
+					align-items: center;
+				}
+					/* 駅名の表示領域 アイコンなしの駅 */
+					#stationList .eki-panel .eki-contents .stalist-eki-link .stalist-eki-contents.non-icon {
+						justify-content: center;
+					}
+
+					/* 駅名 */
+					#stationList .eki-panel .eki-contents .stalist-eki-link .stalist-eki-contents div {
+						text-decoration: underline;
+						line-height: 16px;
+					}
+						/* 韓国語の場合 */
+						[data-lang='kr'] #stationList .eki-panel .eki-contents .stalist-eki-link .stalist-eki-contents div {
+							line-height: 20px;
+						}
+
+				/* TID非対象の駅の領域内に複数の駅・列車を表示する場合の領域 */
+				#stationList .eki-panel .eki-contents .hirendo-eki-contents {
+					display: inline-grid;
+				}
+
+					/* 駅のリンク領域 */
+					#stationList .eki-panel .eki-contents .hirendo-eki-contents .stalist-eki-link {
+						margin: 10px 5px;
+					}
+
+				/* 列車アイコンの表示領域 */
+				#stationList .eki-panel .ressha-contents {
+					width: 100%;
+					min-height: 68px;
+					display: flex;
+					justify-content: center;
+					text-align: initial;
+					align-items: center;
+					overflow: hidden;
+					align-items: start;
+				}
+					/* 列車アイコンの表示領域 駅 */
+					#stationList .eki-panel.eki .ressha-contents {
+						align-items: start;
+						max-height: 135px;
+					}
+					/* TID非対象の駅の列車アイコンの表示領域 */
+					#stationList .eki-panel.hirendo .ressha-contents {
+						width: 80px;
+						position: relative;
+						text-align: center;
+						max-height: none;
+					}
+					#stationList .eki-panel.hoka-rosen.top .ressha-contents {
+						margin-top: 85px;
+					}
+						#stationList .eki-panel.hoka-rosen.top .ressha-contents.two-row {
+							margin-top: 65px;
+						}
+
+					/* TID非対象の駅の列車アイコンの表示領域 */
+					#stationList .eki-panel.hirendo .ressha-contents .hirendo-ressha-panel {
+						border: 2px dashed #111;
+						border-radius: 15px;
+						width: 78px;
+						align-items: center;
+						display: inline-grid;
+						padding: 3px 0;
+					}
+						/* TID非対象の駅の列車アイコンの表示領域 函館駅・サービス対象エリア外 */
+						#stationList .eki-panel.hirendo.hakodate .ressha-contents .hirendo-ressha-panel,
+						#stationList .eki-panel.hirendo.non-service .ressha-contents .hirendo-ressha-panel {
+							border-width: 0px;
+						}
+						/* TID非対象の駅の列車アイコンの表示領域 ２つ表示する場合 */
+						#stationList .eki-panel .eki-contents .hirendo-contents.two-ressha-contents .hirendo-ressha-panel {
+							gap: 5px;
+							padding: 5px 0;
+							min-height: 140px;
+						}
+						/* TID非対象の駅の列車アイコンの表示領域 ３つ表示する場合 */
+						#stationList .eki-panel .eki-contents .hirendo-contents.three-ressha-contents .hirendo-ressha-panel {
+							gap: 5px;
+							padding-top: 20px;
+						}
+						/* TID非対象の駅の列車アイコンの表示領域 ４つ表示する場合 */
+						#stationList .eki-panel .eki-contents .hirendo-contents.four-ressha-contents .hirendo-ressha-panel {
+							gap: 5px;
+							padding: 20px 0;
+						}
+						/* TID非対象の駅の列車アイコンの表示領域 稲穂・星置・ほしみ用 */
+						#stationList .eki-panel .eki-contents .hirendo-contents.two-ressha-contents.three-eki .hirendo-ressha-panel {
+							gap: 75px;
+							padding: 56px 0;
+						}
+
+							/* TID非対象の駅の列車アイコンの表示領域 ２つ表示する場合 */
+							#stationList .eki-panel .eki-contents .hirendo-contents.two-ressha-contents .hirendo-ressha-panel .ressha-icon {
+								min-height: 66px;
+								top: 0;
+								padding: 0;
+							}
+							/* TID非対象の駅の列車アイコンの表示領域 ３つ表示する場合 */
+							#stationList .eki-panel .eki-contents .hirendo-contents.three-ressha-contents .hirendo-ressha-panel .ressha-icon {
+								min-height: 66px;
+								top: 0;
+								padding: 0;
+							}
+							/* TID非対象の駅の列車アイコンの表示領域 ４つ表示する場合 */
+							#stationList .eki-panel .eki-contents .hirendo-contents.four-ressha-contents .hirendo-ressha-panel .ressha-icon {
+								min-height: 66px;
+								top: 0;
+								padding: 0;
+							}
+							/* TID非対象の駅の列車アイコンの表示領域 稲穂・星置・ほしみ用 */
+							#stationList .eki-panel .eki-contents .hirendo-contents.two-ressha-contents.three-eki .hirendo-ressha-panel .ressha-icon {
+								min-height: 66px;
+								top: 0;
+								padding: 0;
+							}
+
+							/* TID非対象の駅の列車アイコンの表示領域 */
+							#stationList .eki-panel .eki-contents .hirendo-contents .hirendo-ressha-panel .ressha-icon div {
+								top: -1px;
+							}
+								/* TID非対象の駅の列車アイコンの表示領域 */
+								#stationList .eki-panel .eki-contents .hirendo-contents .hirendo-ressha-panel .ressha-icon.up div {
+									top: 14px;
+								}
+
+					/* 列車アイコン 駅間用 */
+					#stationList .eki-panel .ressha-contents .ressha-icon {
+						display: table-cell;
+						width: 52px;
+						z-index: 18;
+						position: relative;
+						top: -5px;
+						margin: 0 0px 0px 19px;
+					}
+						/* 英語版、簡体字版、韓国語版 */
+						[data-lang='en'] #stationList .eki-panel .ressha-contents .ressha-icon,
+						[data-lang='sc'] #stationList .eki-panel .ressha-contents .ressha-icon,
+						[data-lang='kr'] #stationList .eki-panel .ressha-contents .ressha-icon {
+							top: -3px;
+						}
+						/* 列車アイコン 駅用 */
+						#stationList .eki-panel.eki .ressha-contents .ressha-icon {
+							width: 156px;
+						}
+						/* 列車アイコン 上向きの列車用 */
+						#stationList .eki-panel .ressha-contents .ressha-icon.up {
+							direction: rtl;
+							top: 3px;
+							margin: 0 19px 0 0;
+						}
+
+						/* TID非対象の駅の列車アイコンの表示領域 */
+						#stationList .eki-panel.hirendo .ressha-contents .hirendo-ressha-panel .ressha-icon {
+							display: inline-grid;
+							width: auto;
+							min-height: 128px;
+							padding: 8px 0;
+							align-items: center;
+							justify-content: center;
+							max-height: 385px;
+							overflow: hidden;
+							margin: 0;
+						}
+
+						/* 列車アイコン内の領域 */
+						#stationList .eki-panel .ressha-contents .ressha-icon div.ressha {
+							display: inline-grid;
+							grid-template-rows: 11px 36px;
+							width: 52px;
+							position: relative;
+							cursor: pointer;
+							margin-bottom: 14.3px;
+						}
+							/* 列車アイコン要素が7つ以上になったら列車アイコンを非表示にする */
+							#stationList .eki-panel .ressha-contents .ressha-icon div.ressha:nth-of-type(n+7) {
+								display: none;
+							}
+							/* 列車アイコン内の領域 上向きの列車用 */
+							#stationList .eki-panel .ressha-contents .ressha-icon.up div {
+								grid-template-rows: 35px 12px;
+								margin-bottom: 19px;
+								top: 11px;
+							}
+							/* 列車アイコン内の領域 非TID区間 */
+							#stationList .eki-panel.hirendo .ressha-contents .ressha-icon div {
+								margin-bottom: 17px;
+							}
+								/* 列車アイコン内の領域 非TID区間 上向きの列車用 */
+								#stationList .eki-panel.hirendo .ressha-contents .ressha-icon.up div {
+									margin-bottom: 18.5px;
+								}
+
+						/* 列車アイコン内の遅れ */
+						#stationList .eki-panel .ressha-contents .ressha-icon .okure-label {
+							color: red;
+							font-size: 11px;
+							text-align: center;
+							position: relative;
+							top: 0.3px;
+						}
+							/* 英語版 */
+							[data-lang='en'] #stationList .eki-panel .ressha-contents .ressha-icon:not(.up) .okure-label {
+								top: 2.4px;
+								left: 1px;
+							}
+							/* 簡体字版 韓国語版 */
+							[data-lang='sc'] #stationList .eki-panel .ressha-contents .ressha-icon:not(.up) .okure-label,
+							[data-lang='kr'] #stationList .eki-panel .ressha-contents .ressha-icon:not(.up) .okure-label {
+								top: 2.4px;
+							}
+							/* 列車アイコン 上向きの列車用（遅れ分数） */
+							#stationList .eki-panel .ressha-contents .ressha-icon.up .okure-label {
+								direction: ltr;
+							}
+
+						/* 列車アイコンの表示エリア */
+						#stationList .eki-panel .ressha-contents .ressha-icon .icon-img {
+							background-image: url(../images/home/train_icon.svg);
+							background-position: center center;
+							background-repeat: no-repeat;
+							background-size: 52px;
+							display: flex;
+							height: 52px;
+							justify-content: center;
+							width: 52px;
+						}
+						/* 列車アイコン（赤） 特急・ライナー*/
+						#stationList .eki-panel .ressha-contents .ressha-icon .ressha[data-ressha_type='1'] .icon-img {
+							background-image: url(../images/home/train_icon_red.svg);
+						}
+						/* 列車アイコン（橙） 快速・特別快速*/
+						#stationList .eki-panel .ressha-contents .ressha-icon .ressha[data-ressha_type='2'] .icon-img{
+							background-image: url(../images/home/train_icon_orange.svg);
+						}
+						/* 列車アイコン（青） 快速（普通区間あり）*/
+						#stationList .eki-panel .ressha-contents .ressha-icon .ressha[data-ressha_type='3'] .icon-img {
+							background-image: url(../images/home/train_icon_blue.svg);
+						}
+						/* 列車アイコン（緑） 北海道新幹線*/
+						#stationList .eki-panel .ressha-contents .ressha-icon .ressha[data-ressha_type='5'] .icon-img {
+							background-image: url(../images/home/train_icon_green.svg);
+						}
+						/* 列車アイコン（白） 臨時列車*/
+						#stationList .eki-panel .ressha-contents .ressha-icon .ressha[data-ressha_type='6'] .icon-img {
+							background-image: url(../images/home/train_icon_white.svg);
+						}
+
+							/* 列車アイコン内の列車種別 */
+							#stationList .eki-panel .ressha-contents .ressha-icon .icon-img .ressha-sbt {
+								color: #fff;
+								font-size: 17px;
+								font-weight: bold;
+								margin-top: 6px;
+							}
+							/* 列車アイコン内の列車種別 (臨時列車)*/
+							#stationList .eki-panel .ressha-contents .ressha-icon .ressha[data-ressha_type='6'] .ressha-sbt {
+								color: #444;
+							}
+							/* 英字の場合 */
+							[data-lang='en'] #stationList .eki-panel .ressha-contents .ressha-icon .ressha-sbt {
+								margin-top: 8px;
+							}
+							/* 簡体字の場合 */
+							[data-lang='sc'] #stationList .eki-panel .ressha-contents .ressha-icon .ressha-sbt[sbt="HL"] {
+								margin-top: 8px;
+							}
+							/* 韓国語版 */
+							[data-lang='kr'] #stationList .eki-panel .ressha-contents .ressha-icon .ressha-sbt {
+								font-size: 19px;
+							}
+							/* 英語以外の特別快速の場合 */
+							#stationList .eki-panel .ressha-contents .ressha-icon .ressha-sbt[sbt="特快"],
+							[data-lang='kr'] #stationList .eki-panel .ressha-contents .ressha-icon .ressha-sbt[sbt="특쾌"] {
+								font-size: 13px;
+								margin-top: 9px;
+							}
+
+						/* 列車アイコン内の矢印 */
+						#stationList .eki-panel .ressha-contents .ressha-icon .arrow {
+							position: absolute;
+							width: 52px;
+							top: 34px;
+							right: -8px;
+						}
+							/* 列車アイコン内の矢印 上向きの列車用 */
+							#stationList .eki-panel .ressha-contents .ressha-icon.up .arrow {
+								top: -26px;
+								right: -7px;
+							}
+
+						/* 列車アイコン内の行先 */
+						#stationList .eki-panel .ressha-contents .ressha-icon .yukisaki-label {
+							position: absolute;
+							font-size: 13px;
+							top: 47px;
+							right: 29px;
+						}
+							/* 列車アイコン内の行先 上向きの列車用 */
+							#stationList .eki-panel .ressha-contents .ressha-icon.up .yukisaki-label {
+								top: -13px;
+								right: 30px;
+							}
+
+						/* 列車アイコン内の！マーク */
+						#stationList .eki-panel .ressha-contents .ressha-icon .exclamation {
+							position: absolute;
+							width: 28px;
+							top: 3px;
+							right: 38px;
+							z-index: 1;
+						}
+							/* 列車アイコン内の！マーク 上向きの列車用 */
+							#stationList .eki-panel .ressha-contents .ressha-icon.up .exclamation {
+								top: -8px;
+							}
+
+		/* 縦の線路 */
+		#stationList .eki-panel .senro-img {
+			left: 0;
+			right: 0;
+			top: 252px;
+			margin: auto;
+			z-index: 17;
+			position: absolute;
+			transform: scale(4.8);
+			width: 50px;
+		}
+			/* 縦の線路 上部 */
+			#stationList .eki-panel .senro-img.start {
+				top: 229px;
+			}
+			/* 縦の線路 下部 */
+			#stationList .eki-panel .senro-img.end {
+				top: 321px;
+			}
+			/* 縦の線路 駅用 */
+			#stationList .eki-panel.eki .senro-img {
+				top: 290px;
+			}
+			/* 縦の線路 追分駅用 */
+			#stationList .eki-panel.oiwake .senro-img {
+				top: 280px;
+			}
+			/* 縦の線路 南千歳駅用 */
+			#stationList .eki-panel.minami-chitose .senro-img {
+				top: 315px;
+			}
+			/* 縦の線路 上部 駅用 */
+			#stationList .eki-panel.eki .senro-img.start {
+				top: 287px;
+			}
+			/* 縦の線路 下部 駅用 */
+			#stationList .eki-panel.eki .senro-img.end {
+				top: 211px;
+			}
+			/* 縦の線路 五稜郭駅用 */
+			#stationList .eki-panel.eki.goryokaku .senro-img {
+				top: 282px;
+			}
+			/* 横の線路 上部 */
+			#stationList .eki-panel.hoka-rosen .senro-img.start {
+				top: 228px;
+			}
+			/* 横の線路 下部 */
+			#stationList .eki-panel.hoka-rosen .senro-img.end {
+				top: 315px;
+			}
+			/* 縦の線路 上部 路線の最上部がTID非対象駅の場合 */
+			#stationList .eki-panel.hirendo .senro-img.start {
+				top: 383px;
+			}
+			/* 縦の線路 TID区間外 */
+			#stationList .eki-panel .senro-img.start.kukangai {
+				top: 346px;
+			}
+			/* 縦の線路 SP1、SP3、DT2の縦の線路 */
+			#stationList .eki-panel .senro-img.long {
+				transform: scale(14.5);
+				top: 1015px;
+			}
+				/* 縦の線路 SP1、SP3、DT2 TID非対象の駅 */
+				#stationList .eki-panel .senro-img.long.hirendo {
+					top: 977px;
+				}
+				/* 縦の線路 SP1、SP3、DT2 駅間 */
+				#stationList .eki-panel .senro-img.long.ekikan {
+					top: 1008px;
+				}
+				/* 縦の線路 SP1、SP3、DT2 上部 */
+				#stationList .eki-panel .senro-img.long.start {
+					top: 956px;
+				}
+			/* 縦の線路 他の路線が下部にある場合 */
+			#stationList .eki-panel.hoka-rosen-panel .senro-img {
+				top: 282px;
+			}
+				/* 縦の線路 他の路線が下部にある場合 SP1、SP3、DT2 */
+				#stationList .eki-panel.hoka-rosen-panel .senro-img.long {
+					top: 1010px;
+				}
+				/* 縦の線路 他の路線が下部にある場合 上部 */
+				#stationList .eki-panel.hoka-rosen-panel .senro-img.start {
+					top: 253px;
+				}
+			/* 縦の線路 他の路線が上部にある場合 */
+			#stationList .eki-panel.hoka-rosen-panel .senro-img.top {
+				top: 259px;
+			}
+			/* 縦の線路 釧路駅の先の線路 */
+			#stationList .eki-panel.non-service-area .senro-img {
+				opacity: 0.5;
+				top: 250px;
+			}
+				/* 縦の線路 名寄、上川駅の先の線路 */
+				#stationList .eki-panel.non-service-area.top .senro-img {
+					top: 236px;
+				}
+
+			/* 横の線路 */
+			#stationList .eki-panel .senro-img.hoka-rosen {
+				height: 10px;
+				width: 270px;
+				left: -1044px;
+				transform: scale(3.8);
+				right: 0;
+				bottom: 5px;
+				top: auto;
+			}
+				/* 横の線路 追分駅 */
+				#stationList .eki-panel.oiwake .senro-img.hoka-rosen {
+					bottom: auto;
+					top: 99px;
+				}
+				/* 横の線路 線路を上に表示させる場合 */
+				#stationList .eki-panel.top .senro-img.hoka-rosen {
+					bottom: auto;
+					top: 57px;
+				}
+				/* 横の線路 方面名が２行で線路を上に表示させる場合 */
+				#stationList .eki-panel.top .senro-img.hoka-rosen.two-row {
+					bottom: auto;
+					top: 42px;
+				}
+				/* 横の線路 TID非対象の駅の場合 */
+				#stationList .eki-panel .senro-img.hoka-rosen.hirendo {
+					bottom: auto;
+					top: 63px;
+				}
+				/* 横の線路 方面名が２行でTID非対象の駅の場合 */
+				#stationList .eki-panel .senro-img.hoka-rosen.hirendo.two-row {
+					bottom: auto;
+					top: 48px;
+				}
+				/* 横の線路 右側表示 */
+				#stationList .eki-panel .senro-img.hoka-rosen.right {
+					right: -2076px;
+				}
+				/* 横の線路 TID非対象の駅 ほかの路線を下に表示する場合 */
+				#stationList .eki-panel.hoka-rosen-under .senro-img.hoka-rosen.hirendo {
+					bottom: 8px;
+					top: auto;
+				}
+				/* 横の線路 サービス対象エリア外 */
+				#stationList .eki-panel .senro-img.hoka-rosen.non-service {
+					opacity: 0.5;
+				}
+
+		/* 別路線のリンク */
+		#stationList .eki-panel .hoka-rosen-link {
+			position: absolute;
+			top: auto;
+			bottom: 18px;
+			z-index: 18;
+			margin-left: 28px;
+			line-height: 18px;
+			max-width: 160px;
+			text-align: left;
+			align-items: flex-end;
+			display: flex;
+			height: 60px;
+			max-width: 145px;
+		}
+			/* 別路線のリンク 線路を上に表示させる場合 */
+			#stationList .eki-panel.top .hoka-rosen-link {
+				bottom: auto;
+				top: -5px;
+			}
+				/* 英語版 */
+				[data-lang='en'] #stationList .eki-panel.top .hoka-rosen-link {
+					top: -8px;
+				}
+			/* 別路線のリンク 追分駅 */
+			#stationList .eki-panel.oiwake .hoka-rosen-link {
+				bottom: auto;
+				top: 35px;
+			}
+			/* 別路線のリンク 方面名が２行で線路を上に表示させる場合 */
+			#stationList .eki-panel.top .hoka-rosen-link.two-row {
+				bottom: auto;
+				top: -22px;
+			}
+			/* 別路線のリンク TID非対象の駅の場合 */
+			#stationList .eki-panel .hoka-rosen-link.hirendo {
+				bottom: auto;
+				top: 1px;
+			}
+			/* 別路線のリンク 方面名が２行でTID非対象の駅の場合 */
+			#stationList .eki-panel .hoka-rosen-link.hirendo.two-row {
+				bottom: auto;
+				top: -16px;
+			}
+			/* 別路線のリンク 右側表示 */
+			#stationList .eki-panel .hoka-rosen-link.right {
+				right: 23px;
+			}
+			/* 別路線のリンク TID非対象の駅 ほかの路線を下に表示する場合 */
+			#stationList .eki-panel.hoka-rosen-under .hoka-rosen-link.hirendo {
+				bottom: 22px;
+				top: auto;
+			}
+
+			/* 別路線のリンクの方面名 */
+			#stationList .eki-panel .hoka-rosen-link a {
+				font-size: 15px;
+				text-decoration: none;
+				cursor: pointer;
+				font-weight: bold;
+			}
+				/* 英語版・韓国語版 */
+				[data-lang='en'] #stationList .eki-panel .hoka-rosen-link a,
+				[data-lang='kr'] #stationList .eki-panel .hoka-rosen-link a {
+					font-size: 14px;
+				}
+				/* 別路線のリンクの方面名 にマウスカーソルを重ねたとき */
+				#stationList .hoka-rosen-link a:hover {
+					text-decoration: underline;
+				}
+
+			/* 別路線のリンクの方面名 留萌線・日高線・富良野線 */
+			#stationList .eki-panel .hoka-rosen-link div {
+				font-size: 15px;
+				text-decoration: none;
+				font-weight: bold;
+				opacity: 0.5;
+			}
+				/* 留萌線・日高線・富良野線 英語版・韓国語版 */
+				[data-lang='en'] #stationList .eki-panel .hoka-rosen-link div,
+				[data-lang='kr'] #stationList .eki-panel .hoka-rosen-link div {
+					font-size: 14px;
+				}
+
+			/* 別路線のリンクの矢印アイコン */
+			#stationList .hoka-rosen-link img {
+				position: absolute;
+				top: 30px;
+				left: -28px;
+				width: 23px;
+			}
+				/* 別路線のリンクの矢印アイコン 右側表示 */
+				#stationList .hoka-rosen-link.right img {
+					left: auto;
+					right: -23px;
+				}
+
+				/* 別路線のリンクの矢印アイコン 左側表示 */
+				#stationList .hoka-rosen-link.left img {
+					transform: scale(-1,1);
+				}
+
+		/* ページの一番上に表示する別路線のリンク */
+		#stationList .up-rosen-link {
+			position: relative;
+			line-height: 18px;
+			align-items: end;
+			display: flex;
+			justify-content: center;
+			width: calc(100% - 12px);
+			z-index: 19;
+			margin-left: 7.5px;
+		}
+
+			/* ページの一番上に表示する別路線のリンク内の領域 */
+			#stationList .up-rosen-link div {
+				padding: 0px 0px 10px 0px;
+				display: inline-grid;
+				justify-items: center;
+			}
+
+			/* ページの一番上に表示する別路線の方面名 */
+			#stationList .up-rosen-link a {
+				z-index: 18;
+				position: relative;
+				font-size: 15px;
+				text-decoration: none;
+				cursor: pointer;
+				font-weight: bold;
+				margin-top: 4px;
+				display: inline-grid;
+			}
+				/* ページの一番上に表示する別路線の方面名 にマウスカーソルを重ねたとき */
+				#stationList .up-rosen-link a:hover {
+					text-decoration: underline;
+				}
+
+			/* ページの一番上に表示する別路線のアイコン領域 */
+			#stationList .up-rosen-link .link-img {
+				text-align: center;
+			}
+
+			/* ページの一番上に表示する別路線の矢印アイコン */
+			#stationList .up-rosen-link img {
+				width: 23px;
+			}
+
+		/* ページの一番下に表示する別路線のリンク */
+		#stationList .down-rosen-link {
+			position: relative;
+			line-height: 18px;
+			align-items: end;
+			display: flex;
+			justify-content: center;
+			width: 100%;
+			z-index: 20;
+			background-color: #fff;
+			padding-left: 1px;
+		}
+
+			/* ページの一番下に表示する別路線のリンク内の領域 */
+			#stationList .down-rosen-link div {
+				padding: 10px 0px 0px 0px;
+				display: inline-grid;
+				justify-items: center;
+			}
+
+			/* ページの一番下に表示する別路線の方面名 */
+			#stationList .down-rosen-link a {
+				z-index: 18;
+				position: relative;
+				font-size: 15px;
+				text-decoration: none;
+				cursor: pointer;
+				font-weight: bold;
+				display: inline-grid;
+			}
+
+				/* ページの一番下に表示する別路線の方面名 にマウスカーソルを重ねたとき */
+				#stationList .down-rosen-link a:hover {
+					text-decoration: underline;
+				}
+
+				/* ページの一番下に表示する別路線のアイコン領域 */
+				#stationList .down-rosen-link .link-img {
+					text-align: center;
+				}
+
+				/* ページの一番下に表示する別路線の矢印アイコン */
+				#stationList .down-rosen-link img {
+					width: 23px;
+				}
+
+		/* 北海道新幹線への路線のリンク */
+		#stationList .eki-panel .shin-link {
+			position: absolute;
+			left: 10px;
+			top: 8px;
+			z-index: 17;
+			margin-left: 15px;
+			margin-right: 200px;
+		}
+			/* 英語版の場合 */
+			[data-lang='en'] #stationList .eki-panel .shin-link {
+				right: 3px;
+			}
+			/* 繁体字・簡体字版の場合 */
+			[data-lang='tc'] #stationList .eki-panel .shin-link,
+			[data-lang='sc'] #stationList .eki-panel .shin-link {
+				margin-right: 190px;
+			}
+			/* 韓国語版の場合 */
+			[data-lang='kr'] #stationList .eki-panel .shin-link {
+				width: 60px;
+				margin-left: 10px;
+			}
+			/* 北海道新幹線への路線のリンク 函館線へのリンク */
+			#stationList .eki-panel .shin-link.hakodate {
+				right: 15px;
+				top: 14px;
+			}
+				/* 韓国語版の場合 */
+				[data-lang='kr'] #stationList .eki-panel .shin-link.hakodate {
+					width: auto;
+					right: 5px;
+				}
+
+			/* 北海道新幹線への路線名 */
+			#stationList .eki-panel .shin-link a {
+				font-size: 15px;
+				text-decoration: none;
+				font-weight: bold;
+				cursor: pointer;
+			}
+				/* 北海道新幹線への路線名 函館線へのリンク */
+				#stationList .eki-panel .shin-link.hakodate a {
+					font-size: 15px;
+				}
+				/* 北海道新幹線への路線名 にマウスカーソルを重ねたとき */
+				#stationList .eki-panel .shin-link a:hover {
+					text-decoration: underline;
+				}
+
+				#stationList .eki-panel .shin-link a span {
+					display: inline-block;
+				}
+
+			/* 北海道新幹線への路線の矢印アイコン */
+			#stationList .shin-link img {
+				position: absolute;
+				bottom: 1px;
+				left: -25px;
+				width: 23px;
+				transform: scale(-1,1);
+			}
+				/* 英語版の場合 */
+				[data-lang='en'] #stationList .shin-link img {
+					right: -22px;
+					bottom: 4px;
+				}
+				/* 繁体字版、簡体字版の場合 */
+				[data-lang='tc'] #stationList .shin-link img,
+				[data-lang='sc'] #stationList .shin-link img {
+					bottom: -2px;
+				}
+				/* 韓国語版の場合 */
+				[data-lang='kr'] #stationList .shin-link img {
+					bottom: 6px;
+					left: -21px;
+				}
+				/* 北海道新幹線への路線の矢印アイコン 函館線へのリンク */
+				#stationList .shin-link.hakodate img {
+					right: -30px;
+				}
+					/* 韓国語版の場合 */
+					[data-lang='kr'] #stationList .shin-link.hakodate img {
+						bottom: -1px;
+						right: -24px;
+					}
+
+		/* TID非対象駅のメッセージ */
+		#stationList .eki-panel .hirendo-msg {
+			font-size: 14px;
+			line-height: 14px;
+			position: absolute;
+			right: 2px;
+			text-align: left;
+			top: 12px;
+		}
+			/* 日本版 */
+			[data-lang='ja'] #stationList .eki-panel .hirendo-msg {
+				right: 10px;
+				top: 6px;
+			}
+			/* 英語版 */
+			[data-lang='en'] #stationList .eki-panel .hirendo-msg {
+				font-size: 12px;
+				top: 6px;
+			}
+			/* 韓国語版 */
+			[data-lang='kr'] #stationList .eki-panel .hirendo-msg {
+				top: 6px;
+			}
+			/* TID非対象駅のメッセージ 右側にほかの路線が存在する場合 */
+			#stationList .eki-panel.right-link .hirendo-msg {
+				top: 72px;
+			}
+				/* TID非対象駅のメッセージ 右側にほかの路線が存在する場合 3行表示 */
+				#stationList .eki-panel.right-link.three-row .hirendo-msg {
+					top: 82px;
+				}
+
+			/* サービス対象外のメッセージ */
+			#stationList .eki-panel .hirendo-msg.non-service {
+				top: 8px;
+			}
+				/* サービス対象外のメッセージ 函館駅 */
+				#stationList .eki-panel.hakodate .hirendo-msg.non-service {
+					top: 18px;
+					right: 10px;
+				}
+
+		/* TID非対象駅の駅・列車の領域 */
+		#stationList .eki-panel .hirendo-contents {
+			align-items: center;
+			display: flex;
+			justify-content: center;
+			padding: 55px 0 10px 0;
+		}
+			/* TID非対象駅の駅・列車の領域 ほかの路線が存在する場合 */
+			#stationList .eki-panel.hoka-rosen .hirendo-contents {
+				padding: 70px 0 10px 0;
+			}
+			/* TID非対象駅の駅・列車の領域 サービス対象エリア外 */
+			#stationList .eki-panel.non-service .hirendo-contents {
+				padding: 15px 0 10px 0;
+			}
+			/* TID非対象駅の駅・列車の領域  釧路、名寄、上川駅の先の線路 */
+			#stationList .eki-panel.non-service-area .hirendo-contents {
+				padding: 8px 0;
+			}
+			/* TID非対象駅の駅・列車の領域 右側にほかの路線が存在する場合 */
+			#stationList .eki-panel.hoka-rosen.right-link .hirendo-contents {
+				padding: 125px 0 10px 0;
+			}
+				/* TID非対象駅の駅・列車の領域 右側にほかの路線が存在する場合 3行表示 */
+				#stationList .eki-panel.hoka-rosen.right-link.three-row .hirendo-contents {
+					padding: 135px 0 10px 0;
+				}
+			/* TID非対象駅の駅・列車の領域 */
+			#stationList .eki-panel .hirendo-contents.start {
+				padding: 50px 0 10px 0;
+				align-items: start;
+			}
+			/* TID非対象駅の駅・列車の領域 ほかの路線のリンクが下の場合 */
+			#stationList .eki-panel.hoka-rosen-under .hirendo-contents {
+				padding-bottom: 70px;
+			}
+				/* TID非対象駅の駅・列車の領域 ほかの路線のリンクが下の場合 方面が3行で表示されるリンク */
+				#stationList .eki-panel.hoka-rosen-under .hirendo-contents.three-row-link {
+					padding-bottom: 80px;
+				}
+
+				/* TID非対象駅の駅・列車の領域  釧路、名寄、上川駅の先の線路のメッセージ */
+				#stationList .eki-panel.non-service-area .hirendo-contents .non-service-area-msg {
+					background-color: #fff;
+					border: 1px solid #444;
+					border-radius: 15px;
+					z-index: 18;
+					width: 98%;
+					padding: 10px;
+					min-height: 45px;
+					display: flex;
+					align-items: center;
+					justify-content: center;
+				}
+					#stationList .eki-panel.non-service-area .hirendo-contents .non-service-area-msg span {
+						display: inline-block;
+					}
+
+		/* 新千歳空港や藤城線のようにページ内に別の路線が表示されている場合の領域 */
+		#stationList .hoka-line-area {
+			display: flex;
+			width: 100%;
+		}
+			/* 本線（新函館北斗～仁山）の表示領域 */
+			#stationList .hoka-line-area .honsen {
+				width: calc(50% + 85px);
+				position: relative;
+			}
+				/* 本線（植苗～苫小牧）の表示領域 */
+				#stationList .hoka-line-area.airport .honsen {
+					width: 50%;
+				}
+
+				/* 本線の駅・駅間の領域 */
+				#stationList .hoka-line-area .honsen .eki-panel {
+					width: calc(100% - 6px);
+				}
+					/* 本線の駅・駅の領域 */
+					#stationList .hoka-line-area .honsen .eki-panel.eki {
+						max-height: 315px
+					}
+
+					/* 新千歳空港 */
+					#stationList .hoka-line-area.airport .eki-panel .eki-contents {
+						text-align: -webkit-right;
+					}
+						/* 新千歳空港 firefox用*/
+						@-moz-document url-prefix(){
+							#stationList .hoka-line-area.airport .eki-panel .eki-contents {
+								text-align: -moz-right;
+							}
+						}
+						/* 新千歳空港 3つ目以降の列車アイコンを非表示　*/
+						#stationList .hoka-line-area.airport .R1P119U .ressha:nth-child(n + 3),
+						#stationList .hoka-line-area.airport .R1P119D .ressha:nth-child(n + 3) {
+							display: none;
+						}
+					/* 新千歳空港の下の余白　*/
+					#stationList .hoka-line-area.airport .white-panel{
+						border-bottom: 0px;
+    					border-top: 0px;
+						height: 0px;
+						min-height: 0px;
+					}
+						#stationList .hoka-line-area.airport .white-panel .eki-contents {
+							background-color: #fff;
+						}
+
+					/* 本線の駅・駅間の領域 */
+					#stationList .hoka-line-area.airport .honsen .eki-panel {
+						z-index: 17;
+					}
+
+					/* 本線の駅の表示領域 */
+					#stationList .hoka-line-area .honsen .eki-panel .eki-contents {
+						text-align: right;
+					}
+
+						/* 本線の駅のリンク領域 */
+						#stationList .hoka-line-area .honsen .eki-panel .eki-contents .stalist-eki-link {
+							margin: 2px
+					}
+
+						/* 本線の列車アイコンの表示領域 駅間 */
+						#stationList .hoka-line-area .honsen .eki-panel .eki-contents .ressha-contents {
+							justify-content: flex-end;
+							position: relative;
+							left: -5px;
+							max-height: 268px;
+							overflow: hidden;
+						}
+							/* 本線の列車アイコンの表示領域 駅 */
+							#stationList .hoka-line-area .honsen .eki-panel.eki .eki-contents .ressha-contents {
+								left: -5px;
+								max-height: 265px;
+							}
+
+							/* 本線の列車アイコン 駅間 */
+							#stationList .hoka-line-area .honsen .eki-panel .eki-contents .ressha-contents .ressha-icon {
+								margin: 0 10px 0 18px;
+							}
+								/* 本線の列車アイコン 駅間 上り */
+								#stationList .hoka-line-area .honsen .eki-panel .eki-contents .ressha-contents .ressha-icon.up {
+									margin: 0 20px 0 34px;
+								}
+								/* 本線の列車アイコン 駅 */
+								#stationList .hoka-line-area .honsen .eki-panel.eki .eki-contents .ressha-contents .ressha-icon {
+									width: 52px;
+								}
+
+					/* 本線（新函館北斗～仁山）の縦の線路 */
+					#stationList .hoka-line-area .honsen .eki-panel .senro-img {
+						left: auto;
+						right: 60px;
+						top: 360px;
+						transform: scale(5.6);
+					}
+						/* 本線（植苗～苫小牧）の縦の線路 */
+						#stationList .hoka-line-area.airport .honsen .eki-panel .senro-img {
+							left: -21px;
+							right: auto;
+							top: 30px;
+							transform: scale(4.8);
+						}
+
+				/* 本線（植苗～苫小牧）の横の線路 */
+				#stationList .hoka-line-area.airport .honsen .senro-img.hoka-rosen {
+					top: -5px;
+					left: 415px;
+					transform: scale(3.7);
+					right: auto;
+					position: absolute;
+				}
+					/* 本線（植苗～苫小牧）の横の線路 英語版 */
+					[data-lang='en'] #stationList .hoka-line-area.airport .honsen .senro-img.hoka-rosen {
+						top: 10px;
+					}
+
+				/* 本線（植苗～苫小牧）の他路線へのリンク */
+				#stationList .hoka-line-area.airport .honsen .hoka-rosen-link {
+					top: 0px;
+					right: 16px;
+					position: absolute;
+					z-index: 18;
+					line-height: 18px;
+					text-align: left;
+					align-items: flex-end;
+					display: flex;
+					height: 60px;
+					max-width: 140px;
+				}
+					/* 本線（植苗～苫小牧）の他路線へのリンク 英語版 */
+					[data-lang='en'] #stationList .hoka-line-area.airport .honsen .hoka-rosen-link {
+						top: 15px;
+					}
+
+					/* 本線（植苗～苫小牧）の他路線の方面名 */
+					#stationList .hoka-line-area.airport .honsen .hoka-rosen-link a {
+						font-size: 15px;
+						text-decoration: none;
+						cursor: pointer;
+						font-weight: bold;
+					}
+						/* 本線（植苗～苫小牧）の他路線の方面名 にマウスカーソルを重ねたとき */
+						#stationList .hoka-line-area.airport .honsen .hoka-rosen-link a:hover {
+							text-decoration: underline;
+						}
+
+			/* 藤城線の表示領域 */
+			#stationList .hoka-line-area .hoka-line-panel {
+				width: calc(50% - 85px);
+				text-align: left;
+				position: relative;
+				z-index: 10;
+			}
+				/* 新千歳空港への路線の表示領域 */
+				#stationList .hoka-line-area.airport .hoka-line-panel {
+					width: calc(50% - 10px);
+					z-index: 18;
+				}
+
+				/* 南千歳～新千歳空港の線路 */
+				#stationList .hoka-line-area .senro-img.airport-line {
+					position: absolute;
+					right: -90px;
+					bottom: -12px;
+					width: 72px;
+					height: 210px;
+					transform: scale(2.8);
+				}
+
+				/* 藤城線の点線内の領域 */
+				#stationList .hoka-line-area .fujishiro-panel {
+					border: 3px dashed #444;
+					border-radius: 15px;
+					margin: 10px 0px 30px 9px;
+					height: 95.9%;
+					width: 85px;
+					display: inline-grid;
+					position: relative;
+				}
+
+					/* 藤城線経由のメッセージ */
+					#stationList .hoka-line-area .fujishiro-label {
+						font-size: 14px;
+						margin-top: 10px;
+						text-align: center;
+					}
+						/* 英語版 */
+						[data-lang='en'] #stationList .hoka-line-area .fujishiro-label {
+							font-size: 12px;
+						}
+
+					/* 藤城線の列車アイコンの表示領域 */
+					#stationList .hoka-line-area .fujishiro-panel .ressha-contents {
+						width: 100%;
+						min-height: 150px;
+						display: flex;
+						justify-content: flex-end;
+						text-align: initial;
+						max-height: 295px;
+						overflow: hidden;
+					}
+
+						/* 藤城線の列車アイコン */
+						#stationList .hoka-line-area .fujishiro-panel .ressha-icon.up {
+							display: table-cell;
+							width: 54px;
+							z-index: 18;
+							position: relative;
+							margin-top: 19px;
+						}
+
+						/* 藤城線・本線（新函館北斗～仁山） 5つ目以降の列車アイコンを非表示　*/
+						#stationList .hoka-line-area .fujishiro-panel .R9P26U .ressha:nth-child(n + 5),
+						#stationList .hoka-line-area .honsen .R9P9U .ressha:nth-child(n + 5),
+						#stationList .hoka-line-area .honsen .R9P9D .ressha:nth-child(n + 5),
+						#stationList .hoka-line-area .honsen .R9P10U .ressha:nth-child(n + 5),
+						#stationList .hoka-line-area .honsen .R9P10D .ressha:nth-child(n + 5),
+						#stationList .hoka-line-area .honsen .R9P11U .ressha:nth-child(n + 5),
+						#stationList .hoka-line-area .honsen .R9P11D .ressha:nth-child(n + 5) {
+							display: none;
+						}
+
+							/* 藤城線の列車アイコン内の領域 */
+							#stationList .hoka-line-area .fujishiro-panel .ressha-icon.up div {
+								display: inline-grid;
+								grid-template-rows: 35px 12px;
+								width: 52px;
+								position: relative;
+								cursor: pointer;
+								margin-bottom: 19px;
+							}
+
+							/* 藤城線の列車アイコン内の遅れ */
+							#stationList .hoka-line-area .fujishiro-panel .ressha-icon.up .okure-label {
+								color: red;
+								font-size: 10.5px;
+								text-align: center;
+								margin-top: 2px;
+								direction: ltr;
+							}
+
+							/* 藤城線の列車アイコン内の表示エリア */
+							#stationList .hoka-line-area .fujishiro-panel .ressha-icon .icon-img {
+								background-image: url(../images/home/train_icon.svg);
+								background-position: center center;
+								background-repeat: no-repeat;
+								background-size: 52px;
+								display: flex;
+								height: 52px;
+								justify-content: center;
+								width: 52px;
+							}
+								/* 列車アイコン（赤） 特急・ライナー*/
+								#stationList .hoka-line-area .fujishiro-panel .ressha-icon .ressha[data-ressha_type='1'] .icon-img {
+									background-image: url(../images/home/train_icon_red.svg);
+								}
+								/* 列車アイコン（橙） 快速・特別快速*/
+								#stationList .hoka-line-area .fujishiro-panel .ressha-icon .ressha[data-ressha_type='2'] .icon-img{
+									background-image: url(../images/home/train_icon_orange.svg);
+								}
+								/* 列車アイコン（青） 快速（普通区間あり）*/
+								#stationList .hoka-line-area .fujishiro-panel .ressha-icon .ressha[data-ressha_type='3'] .icon-img {
+									background-image: url(../images/home/train_icon_blue.svg);
+								}
+								/* 列車アイコン（緑） 北海道新幹線*/
+								#stationList .hoka-line-area .fujishiro-panel .ressha-icon .ressha[data-ressha_type='5'] .icon-img {
+									background-image: url(../images/home/train_icon_green.svg);
+								}
+								/* 列車アイコン（白） 臨時列車*/
+								#stationList .hoka-line-area .fujishiro-panel .ressha-icon .ressha[data-ressha_type='6'] .icon-img {
+									background-image: url(../images/home/train_icon_white.svg);
+								}
+
+								/* 列車アイコン内の列車種別 */
+								#stationList .hoka-line-area .fujishiro-panel .ressha-icon .icon-img .ressha-sbt {
+									color: #fff;
+									font-size: 17px;
+									font-weight: bold;
+									margin-top: 6px;
+								}
+									/* 列車アイコン内の列車種別 (臨時列車)*/
+									#stationList .hoka-line-area .fujishiro-panel .ressha-icon .ressha[data-ressha_type='6'] .ressha-sbt {
+										color: #444;
+									}
+									/* 英字の場合 */
+									[data-lang='en'] #stationList .hoka-line-area .fujishiro-panel .ressha-icon .ressha-sbt {
+										margin-top: 8px;
+									}
+									/* 簡体字の場合 */
+									[data-lang='sc'] #stationList .hoka-line-area .fujishiro-panel .ressha-icon .ressha-sbt[sbt="HL"] {
+										margin-top: 8px;
+									}
+									/* 韓国語版 */
+									[data-lang='kr'] #stationList .hoka-line-area .fujishiro-panel .ressha-icon .ressha-sbt {
+										font-size: 18px;
+										right: 18.4px;
+									}
+
+							/* 藤城線の列車アイコン内の行先 */
+							#stationList .hoka-line-area .fujishiro-panel .ressha-icon.up .yukisaki-label {
+								position: absolute;
+								font-size: 13px;
+								top: -13px;
+								right: 30px;
+							}
+
+							/* 藤城線の列車アイコン内の矢印 */
+							#stationList .hoka-line-area .fujishiro-panel .ressha-icon.up .arrow {
+								position: absolute;
+								width: 52px;
+								top: -26px;
+								right: -7px;
+							}
+
+							/* 列車アイコン内の！マーク */
+							#stationList .hoka-line-area .fujishiro-panel .ressha-icon .exclamation {
+								position: absolute;
+								width: 28px;
+								top: -8px;
+								right: 38px;
+								z-index: 1;
+							}
+
+					/* 藤城線の線路 上部 */
+					#stationList .hoka-line-area .fujishiro-panel .senro-img {
+						right: 80px;
+						top: 141px;
+						margin: auto;
+						z-index: 17;
+						position: absolute;
+						width: 70px;
+						height: 276px;
+						transform: scale(2.35);
+					}
+						/* 藤城線の線路 下部 */
+						#stationList .hoka-line-area .fujishiro-panel .senro-img.fujishiro2 {
+							top: auto;
+							bottom: 101px;
+						}
+
+					/* 南千歳～新千歳空港の駅間 */
+					#stationList .hoka-line-area.airport .hoka-line-panel .eki-panel.hoka-rosen {
+						min-height: 100px;
+						padding-top: 25px;
+					}
+
+						/* 南千歳～新千歳空港の列車アイコンの表示領域 */
+						#stationList .hoka-line-area.airport .hoka-line-panel .ressha-contents {
+							justify-content: flex-end;
+							margin-left: 2px;
+							max-height: 265px;
+							overflow: hidden;
+						}
+
+							/* 南千歳～新千歳空港の列車アイコンの表示領域 */
+							#stationList .hoka-line-area.airport .hoka-line-panel .ressha-contents .ressha-icon {
+								width: 52px;
+								top: -5px;
+								margin: 0 0 0 20px;
+								left: -8px;
+							}
+								/* 南千歳～新千歳空港の列車アイコンの表示領域 上向きの列車用 */
+								#stationList .hoka-line-area.airport .hoka-line-panel .ressha-contents .ressha-icon.up {
+									top: 3px;
+									left: -5px;
+									margin: 0 20px 0 0;
+								}
+
+						/* 南千歳～新千歳空港の線路 */
+						#stationList .hoka-line-area.airport .hoka-line-panel .senro-img {
+							right: 50px;
+							left: 50px;
+						}
+							/* 新千歳空港の線路 */
+							#stationList .hoka-line-area.airport .hoka-line-panel .senro-img.start {
+								top: 263px;
+							}
+							/* 南千歳～新千歳空港間の線路 */
+							#stationList .hoka-line-area.airport .hoka-line-panel .senro-img.airport-line {
+								left: auto;
+								top: 205px;
+								transform: scale(2.96);
+							}
+
+						/* 新千歳空港駅のリンク */
+						#stationList .hoka-line-area.airport .eki-panel .eki-contents a {
+							text-decoration: none;
+							color: #111;
+							display: flex;
+							padding: 3px 5px 3px 5px;
+							align-items: center;
+						}
+
+							/* 新千歳空港駅のリンク領域 */
+							#stationList .hoka-line-area.airport .eki-panel .eki-contents .stalist-eki-link {
+								width: 140px;
+								min-width: auto;
+								max-width: none;
+								display: flex;
+								align-items: center;
+								padding: 3px 5px 3px 0px;
+							}
+
+								/* 新千歳空港駅の駅名 */
+								#stationList .hoka-line-area.airport .eki-panel .eki-contents .stalist-eki-link div {
+									font-weight: bold;
+								}
+
+								/* 新千歳空港駅の駅アイコン */
+								#stationList .hoka-line-area.airport .eki-panel .eki-contents .stalist-eki-link span.eki-icon {
+									margin: 1px 5px 1px 8px;
+								}
+									/* 新千歳空港駅の駅アイコン 英語版 */
+									[data-lang='en'] #stationList .hoka-line-area.airport .eki-panel .eki-contents .stalist-eki-link span.eki-icon {
+										margin: 1px 1px 1px 4px;
+									}
+
+#fujishiro1Long, #fujishiro2Long, #goryokakuLong {
+	display: none;
+}
+
+	/* 列車の赤枠の強調 */
+	#stationList .ressha-icon .ressha-animation {
+		position: absolute;
+		left: -16px;
+		width: 86px;
+		top: -6.5px;
+	}
+		/* 列車の赤枠の強調 上向きの列車用 */
+		#stationList .ressha-icon.up .ressha-animation {
+			top: -21px;
+		}
+		/* 列車の赤枠の強調 点滅用 */
+		#stationList .ressha-icon .ressha-animation.hidden {
+			display: none;
+		}
+
+.margin-left05 {
+	margin-left: 5px;
+}
+.margin-left09 {
+	margin-left: 9px;
+}
+.margin-left12 {
+	margin-left: 12px;
+}
+
+/* 函館駅周辺のデザイン */
+#stationList .hakodate-goryokaku-panel {
+	position: absolute;
+	width: 100%;
+	bottom: 2px;
+	transform: scale(-1);
+	margin-left: 3px;
+	z-index: 18;
+}
+
+	/* 函館駅周辺のグリッド領域 */
+	#stationList .grid {
+		display: grid;
+		grid-template-columns: 1fr 82px 92px 3px 1fr;
+		grid-template-rows: auto 3px 8px 50px auto;
+		position: relative;
+		width: calc(100% - 6px);
+		z-index: 18;
+		left: 5px;
+		min-height: 350px;
+		background-color: #fff;
+		background-image: linear-gradient(
+			-65deg,
+			#fff 3%,
+			#f0f0f0 3%, #f0f0f0 8%,
+			#fff 8%, #fff 13%,
+			#f0f0f0 13%, #f0f0f0 18%,
+			#fff 18%, #fff 23%,
+			#f0f0f0 23%, #f0f0f0 28%,
+			#fff 28%, #fff 33%,
+			#f0f0f0 33%, #f0f0f0 38%,
+			#fff 38%, #fff 43%,
+			#f0f0f0 43%, #f0f0f0 48%,
+			#fff 48%, #fff 53%,
+			#f0f0f0 53%, #f0f0f0 58%,
+			#fff 58%, #fff 63%,
+			#f0f0f0 63%, #f0f0f0 68%,
+			#fff 68%, #fff 73%,
+			#f0f0f0 73%, #f0f0f0 78%,
+			#fff 78%, #fff 83%,
+			#f0f0f0 83%, #f0f0f0 88%,
+			#fff 88%, #fff 93%,
+			#f0f0f0 93%, #f0f0f0 98%,
+			#fff 98%, #fff 100%
+		);
+	}
+
+		/* 函館駅周辺のグリッド内の要素 */
+		#stationList .item {
+			border: 3px dashed #777;
+			border-radius: 2px;
+			line-height: 20px;
+		}
+		#stationList .item.hakodate {
+			height: 212px;
+		}
+		#stationList .item.goryokaku {
+			height: 78px;
+		}
+		#stationList .item:nth-child(1) {
+			grid-column: 1;
+			grid-row-start: 1;
+			grid-row-end: 3;
+			border-width: 3px 0 3px 3px;
+			border-top-left-radius: 15px;
+			border-bottom-left-radius: 15px;
+			border-bottom-right-radius: 0;
+		}
+		#stationList .item:nth-child(2) {
+			grid-column-start: 2;
+			grid-column-end: 4;
+			grid-row: 1;
+			border-width: 3px 0 0 0;
+			border-radius: 0;
+		}
+		#stationList .item:nth-child(3) {
+			grid-column-start: 4;
+			grid-column-end: 6;
+			grid-row-start: 1;
+			grid-row-end: 4;
+			border-width: 3px 3px 0 0;
+			border-top-right-radius: 15px;
+			border-top-left-radius: 0;
+			border-bottom-right-radius: 0;
+		}
+		#stationList .item:nth-child(4) {
+			grid-column: 5;
+			grid-row-start: 2;
+			grid-row-end: 5;
+			border-width: 0 3px 0 0;
+			border-radius: 0;
+		}
+		#stationList .item:nth-child(5) {
+			grid-column-start: 4;
+			grid-column-end: 6;
+			grid-row-start: 5;
+			grid-row-end: 7;
+			border-width: 0 3px 3px 3px;
+			border-bottom-right-radius: 19px;
+			border-bottom-left-radius: 19px;
+			border-top-left-radius: 0;
+			border-top-left-radius: 0;
+		}
+		#stationList .item:nth-child(6) {
+			background: #fff;
+			grid-column: 1;
+			grid-row-start: 3;
+			grid-row-end: 5;
+			border-width: 0;
+		}
+		#stationList .item:nth-child(7) {
+			background: #fff;
+			grid-column-start: 2;
+			grid-column-end: 5;
+			grid-row-start: 2;
+			grid-row-end: 5;
+			border-width: 3px 3px 0 0;
+			border-top-right-radius: 13px;
+			border-top-left-radius: 0;
+			border-bottom-right-radius: 0;
+		}
+		#stationList .item:nth-child(8) {
+			background: #f0f0f0;
+			grid-column-start: 1;
+			grid-column-end: 4;
+			grid-row-start: 4;
+			grid-row-end: 7;
+			border-width: 0;
+			border: 3px solid transparent;
+			border-radius: 15px;
+			margin-right: 3px;
+			z-index: 1;
+		}
+		#stationList .item:nth-child(9) {
+			background: #fff;
+			grid-column-start: 2;
+			grid-column-end: 5;
+			grid-row-start: 2;
+			grid-row-end: 7;
+			border-width: 0;
+			border-top-right-radius: 15px;
+			margin: 3px;
+		}
+
+/* 路線の最後が駅で終わる場合のサブフッター用の余白 */
+#stationList .end-eki-sub-footer-margin {
+	position: relative;
+	z-index: 20;
+	background-color: #fff;
+}
+/* 走行位置の駅のリスト（終了）*/
+
+/* 列車詳細ダイアログ（開始） */
+section#resshaDetail {
+	display: none;
+	height: 100%;
+	left: 0;
+	position: fixed;
+	top: 0;
+	width: 100%;
+	z-index: 20000;
+}
+	/* オーバーレイ領域内の列車詳細ダイアログ要素を中央寄せするための外枠領域 */
+	section#resshaDetail .dialog-outer {
+		align-items: center;
+		display: flex;
+		justify-content: center;
+		height: 100%;
+		width: 100%;
+	}
+	/* 列車詳細ダイアログ領域 */
+	section#resshaDetail .dialog {
+		background-color: #fff;
+		width: 502px;
+		max-height: calc(100vh - 80px);
+	}
+
+		/* 列車詳細ダイアログのヘッダー */
+		section#resshaDetail .dialog .header {
+			justify-content: center;
+			background-color: #5b3;
+			border-width: 0px;
+			color: #fff;
+		}
+			/* 列車詳細ダイアログのヘッダーの｢×｣ボタン */
+			section#resshaDetail .dialog .header .close {
+				line-height: 10px;
+				position: absolute;
+				right: 0;
+				width: 32px;
+				top: 0px;
+				padding: 7px 6px;
+		}
+				/* 列車詳細ダイアログのヘッダーの｢×｣ボタン にマウスカーソルを重ねたとき */
+				section#resshaDetail .dialog .header .close:hover {
+					background-color: #6c4;
+					cursor: pointer;
+				}
+
+		/* 列車詳細ダイアログの本文情報 */
+		section#resshaDetail .dialog .ressha-detail-main {
+			align-items: center;
+			display: grid;
+			gap: 0 10px;
+			grid-template-columns: 100px 1fr;
+			justify-items: center;
+			margin: 5px 5px 15px 5px;
+		}
+			/* 列車詳細ダイアログの列車種別セル */
+			section#resshaDetail .dialog .ressha-detail-main .type {
+				grid-row: 1 / span 2;
+			}
+			/* 列車詳細ダイアログのテキストセル */
+			section#resshaDetail .dialog .ressha-detail-main .text {
+				border-bottom: 1px solid #ccc;
+				line-height: 18px;
+				padding: 10px 0;
+				text-align: left;
+				width: 100%;
+			}
+			/* 列車詳細ダイアログのアイコン要素 */
+			section#resshaDetail .dialog .icon {
+				align-items: center;
+				display: flex;
+				justify-content: center;
+				padding: 5px 2px;
+				text-align: center;
+				margin: 5px 0 5px 5px;
+				min-width: 90px;
+				min-height: 23px;
+				width: 90px;
+			}
+				section#resshaDetail .dialog .icon.pos {
+					background-color: #727272;
+					color: white;
+				}
+				section#resshaDetail .dialog .icon.chien {
+					background-color: #fa2;
+					color: white;
+				}
+				section#resshaDetail .dialog .icon.detail {
+					color: white;
+				}
+
+	/* 列車詳細ダイアログの列車種別（その他） */
+	section#resshaDetail .dialog #resshaTypeName {
+		background-color: #789;
+		color: #fff;
+	}
+		/* 列車詳細ダイアログの列車種別（赤） */
+		section#resshaDetail[dataResshaTypeColor='1'] .dialog #resshaTypeName {
+			background-color: #f00;
+		}
+		/* 列車詳細ダイアログの列車種別（橙） */
+		section#resshaDetail[dataResshaTypeColor='2'] .dialog #resshaTypeName {
+			background-color: #f82;
+		}
+		/* 列車詳細ダイアログの列車種別（青） */
+		section#resshaDetail[dataResshaTypeColor='3'] .dialog #resshaTypeName {
+			background-color: #07c;
+		}
+		/* 列車詳細ダイアログの列車種別（緑） */
+		section#resshaDetail[dataResshaTypeColor='5'] .dialog #resshaTypeName {
+			background-color: #080;
+		}
+		/* 列車詳細ダイアログの列車種別（白） */
+		section#resshaDetail[dataResshaTypeColor='6'] .dialog #resshaTypeName {
+			background-color: #fff;
+			border: #444 solid 2px;
+			color: #444;
+			min-width: 88px;
+			width: 88px;
+		}
+
+	/* 列車詳細ダイアログの運行状態（全区間運休） */
+	section#resshaDetail[dataUnkou='0'] .dialog #resshaDetailUnkouName {
+		background-color: #f00;
+		color: #fff;
+	}
+	/* 列車詳細ダイアログの運行状態（部分運休） */
+	section#resshaDetail[dataUnkou='2'] .dialog #resshaDetailUnkouName {
+		background-color: #f0f;
+		color: #fff;
+	}
+
+	/* 列車詳細ダイアログ内のボタン領域 */
+	section#resshaDetail .dialog .dialog-btn-contents {
+		display: flex;
+		justify-content: center;
+		padding: 0 0 10px 0;
+	}
+		/* 列車詳細ダイアログの閉じるボタン */
+		section#resshaDetail .dialog .dialog-btn-contents .common-button.close {
+			background-color: #5b3;
+			color: #fff;
+			cursor: pointer;
+			min-height: 34px;
+			width: 160px;
+		}
+			/* 列車詳細ダイアログの閉じるボタンにマウスを当てたとき */
+			section#resshaDetail .dialog .dialog-btn-contents .common-button.close:hover {
+				background-color: #6c4;
+			}
+
+	/* 列車詳細ダイアログ内の注意文言 */
+	section#resshaDetail .dialog .notice {
+		font-size: 12px;
+		line-height: 14px;
+		margin: 5px 10px;
+		padding-left:1em;
+		text-indent:-1em;
+	}
+		/* 英語版の場合 */
+		[data-lang='en'] section#resshaDetail .dialog .notice {
+			padding-left:0.5em;
+			text-indent:-0.5em;
+		}
+
+/* 列車詳細のエラーメッセージ表示用 */
+.ressha-detail-message {
+	text-align: center;
+}
+
+/* 運行詳細ダイアログ */
+section#unkouDetail {
+	background-color: rgba(0, 0, 0, 0.5);
+	display: none;
+	height: 100%;
+	left: 0;
+	position: fixed;
+	top: 0;
+	width: 100%;
+	z-index: 20000;
+}
+
+		/* 運行詳細ダイアログ内の線区別運行状況ボタン */
+		section#resshaDetail #commonSenkuOperation ul {
+			grid-template-columns: repeat(1, 1fr);
+		}
+
+		/* 運行詳細ダイアログのメイン情報 */
+		section#resshaDetail .dialog #unkouDetailMain {
+			padding: 0 10px;
+			max-height: 60vh;
+			overflow-y: scroll;
+			margin-bottom: 10px;
+		}
+
+		/* 運行詳細ダイアログ内の線区別運行状況ボタン */
+		section#resshaDetail .dialog #unkouDetailMain .common-maintitle {
+			border-width: 0px;
+		}
+
+		/* 運行詳細ダイアログの概況 */
+		section#resshaDetail .dialog #dialogGaikyo {
+			margin-bottom: 20px;
+		}
+
+			/* 運行詳細ダイアログの概況リスト */
+			section#resshaDetail .dialog .gaikyo-list {
+				list-style: none;
+				margin-block-start: 0em;
+				margin-block-end: 0em;
+				padding-inline-start: 0px;
+			}
+
+			/* 運行詳細ダイアログの概況リストの影響エリア */
+			section#resshaDetail .dialog .gaikyo-list .gaikyo-list-area {
+				display: inline;
+				margin-right: 15px;
+			}
+
+		section#resshaDetail .dialog .gaikyo-frame > * {
+			border-bottom: 1px solid black;
+			padding: 15px 0;
+		}
+
+			section#resshaDetail .dialog .gaikyo-frame > *:first-child {
+				border-bottom: 1px solid black;
+				padding-top: 5px;
+			}
+
+			section#resshaDetail .dialog .gaikyo-frame > *:last-child {
+				border-bottom: 0px solid black;
+				padding-bottom: 5px;
+			}
+
+	/* 列車詳細ダイアログ内のスクロール領域 */
+	section#resshaDetail .dialog .ressha-detail-scroll-contents {
+		max-height: 30vh;
+		overflow-y: scroll;
+	}
+
+/* 列車運行情報停車駅テーブル */
+#teisyaTable {
+	border-collapse: collapse;
+	margin: 0 auto;
+}
+	/* 列車運行情報停車駅テーブルのセル */
+	#teisyaTable th,
+	#teisyaTable td {
+		border-color: black;
+		border-width: 2px;
+		font-weight: normal;
+		height: 23px;
+		padding: 0 5px;
+	}
+	/* 列車運行情報停車駅テーブルのヘッダー */
+	#teisyaTable th {
+		background-color: black;
+		color: white;
+	}
+
+/* ダイアログ内のスクロール */
+#teisyaTableArea {
+	max-height: calc(100vh - 408px);
+	margin: 10px;
+	overflow-y: auto;
+}
+
+#teisyaTableArea div {
+	margin-bottom: 10px;
+}
+
+/* ダイアログ内の項目 */
+#resshaDetailMain .ressha-info-item {
+	align-items: center;
+	border-bottom: 1px solid lightgray;
+	display: flex;
+	justify-content: space-between;
+	margin: 0 5px;
+	padding: 5px;
+}
+
+/* ダイアログ項目内のレイアウト */
+#resshaDetail .ressha-info-content {
+	align-items: center;
+	display: flex;
+}
+
+/* ダイアログ項目内のメイン領域 */
+#resshaDetail #dialogsSurface {
+	align-items: center;
+	border-bottom: 1px solid #ccc;
+	display: grid;
+	gap: 0 10px;
+	grid-template-columns: 99px 1fr;
+	margin: 5px 5px 15px 5px;
+
+}
+
+/* ダイアログ項目内のテキスト */
+#resshaDetail .text {
+	font-size: 15px;
+	width: 100%;
+}
+	#resshaDetail .text.type {
+		border-bottom: 1px solid #ccc;
+	}
+	#resshaDetail .text.pos {
+		border-bottom: 1px solid #ccc;
+		padding: 10px 0; margin-bottom: -1px;
+		align-items: center;
+	}
+		[data-lang='en'] #resshaDetail .text.pos {
+			min-height: 30px;
+			display: inherit;
+		}
+
+	#resshaDetail .text.chien {
+		color: red;
+		font-weight: bold;
+		border-bottom: 1px solid #ccc;
+		padding: 10px 0;
+		margin-bottom: -1px;
+	}
+	#resshaDetail .text.detail {
+		padding: 10px 0;
+	}
+/* 運行詳細ダイアログ（終了） */
+
+/* 駅選択ダイアログ（開始） */
+section#searchDetail {
+	background-color: rgba(0, 0, 0, 0.5);
+	display: none;
+	height: 100%;
+	left: 0;
+	position: fixed;
+	top: 0;
+	width: 100%;
+	z-index: 20000;
+}
+	/* オーバーレイ領域内の使い方ダイアログ要素を中央寄せするための外枠領域 */
+	section#searchDetail .dialog-outer {
+		align-items: center;
+		display: flex;
+		justify-content: center;
+		height: 100%;
+		width: 100%;
+	}
+	/* 駅選択ダイアログ領域 */
+	section#searchDetail .dialog {
+		background-color: #fff;
+		width: 502px;
+	}
+
+		/* 駅選択ダイアログのヘッダー */
+		section#searchDetail .dialog .header {
+			background-color: #5b3;
+		border-width: 0px;
+		color: #fff;
+			cursor: pointer;
+		}
+			/* 駅選択ダイアログのヘッダーの｢×｣ボタン */
+			section#searchDetail .dialog .header .close {
+				line-height: 10px;
+				position: absolute;
+				right: 0;
+				width: 32px;
+				top: 0px;
+				padding: 7px 6px;
+			}
+				/* 駅選択ダイアログのヘッダーの｢×｣ボタン にマウスカーソルを重ねたとき */
+				section#searchDetail .dialog .header .close:hover {
+					background-color: #6c4;
+					cursor: pointer;
+				}
+
+		/* 駅選択ダイアログのメイン情報 */
+		section#searchDetail .dialog #searchDetailMain {
+			padding: 10px;
+			max-height: 60vh;
+			overflow-y: scroll;
+		}
+
+			/* 駅選択ダイアログの文章 */
+			section#searchDetail .dialog #searchDetailMain .search-detail-message {
+				margin: 10px;
+				font-size: 15px;
+			}
+
+			/* 駅選択ダイアログの駅のリスト */
+			section#searchDetail .dialog #searchDetailMain .train-link ul {
+				margin: 15px;
+				padding: 0px;
+			}
+
+			/* 駅選択ダイアログの駅 */
+			section#searchDetail .dialog #searchDetailMain .train-link li {
+				border: 1px solid #8c5;
+				border-bottom: 3px solid #8c5;
+				list-style: none;
+				margin: 10px;
+				min-height: 36px;
+				display: flex;
+				position: relative;
+				padding: 4px 0px;
+				cursor: pointer;
+				background-image: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath fill='none' stroke='%233a4' stroke-width='2.5' d='m3 1 5 5-5 5'/%3E%3C/svg%3E");
+				background-repeat: no-repeat;
+				background-position: right 9px center;
+				background-size: 26px;
+			}
+
+			/* 駅選択ダイアログの駅 にマウスカーソルを重ねたとき */
+			section#searchDetail .dialog #searchDetailMain .train-link li:hover {
+				background-color: #ffc;
+			}
+
+			/* 駅選択ダイアログの駅名 */
+			section#searchDetail .dialog #searchDetailMain .train-link div {
+				align-items: center;
+				color: #111;
+				display: flex;
+				font-size: 16px;
+				justify-content: space-between;
+				margin-left: 10px;
+				padding: 5px 0px;
+				text-decoration: none;
+			}
+
+			/* 駅選択ダイアログの駅アイコン */
+			section#searchDetail .dialog #searchDetailMain .train-link img {
+				height: 26px;
+				margin-right: 5px;
+				width: 26px;
+				position: absolute;
+				right: 5px;
+			}
+
+			section#searchDetail .dialog #searchDetailMain .train-link .eki-icon {
+				margin: 1px 10px 1px 13px;
+			}
+				section#searchDetail .dialog #searchDetailMain .train-link .eki-icon.hide {
+					display: block;
+					width: auto;
+				}
+/* 列車検索ダイアログ（終了） */
+
+/* ウィンドウサイズを縮小したとき */
+@media (max-width:1200px) {
+	/* サブフッター */
+	.sub-footer {
+		width: 160px;
+	}
+
+	/* サブフッター内のお知らせ表示領域 */
+	.sub-footer .sub-footer-contents .unko-info-header {
+		font-size: 14px;
+		padding: 2px 5px 5px 5px;
+	}
+
+	/* サブフッター内の△！マーク */
+	.sub-footer .sub-footer-contents img {
+		height: 28px;
+		width: 28px;
+	}
+
+	/* サブフッター内の運行情報のヘッダー部 */
+	.sub-footer .sub-footer-contents .sub-footer-unkou-msg {
+		margin-left: 5px;
+		width: 100px;
+	}
+
+	/* サブフッター内の重要なお知らせのヘッダー部 */
+	.sub-footer .sub-footer-contents.popup .sub-footer-unkou-msg {
+		width: 100px;
+	}
+}
+
+@media (max-width:1000px) {
+	/* 選択タブ非表示 */
+	.side-select-panel {
+		display: none;
+	}
+
+	/* 路線表示部メイン領域 */
+	.main-contents {
+		width: 100%;
+	}
+
+	/* サイドメニュー */
+	.side-menu {
+		transform: translateX(-327px);
+	}
+
+	/* サイドメニュー内のエリア毎の領域の見出し */
+	.side-menu .area-contents .area-name-label {
+		margin: 7px 0 0 3px;
+	}
+
+	/* サイドメニュー内の特急列車毎の領域の見出し */
+	.side-menu .area-contents .express-name-label {
+		margin: 7px 0 0 3px;
+	}
+
+	/* サブヘッダー */
+	.sub-header {
+		width: 100%;
+	}
+		/* サブヘッダー内のボタン表示領域 */
+		.sub-header .btn-header-contents {
+			background-color: #fff;
+			display: block;
+		}
+			/* サブヘッダー内のボタン表示メイン領域 */
+			.sub-header .btn-header-contents ul {
+				background-color: #666;
+				border-radius: 5px;
+				display: flex;
+				list-style: none;
+				margin: 0;
+				padding: 0;
+				justify-content:center;
+			}
+				/* サブヘッダー内のボタン */
+				.sub-header .btn-header-contents ul li {
+					background-color: transparent;
+					border: none;
+					line-height: 12px;
+					margin: 0;
+					padding: 4px 0;
+					width: 100%;
+				}
+					/* サブヘッダー内のボタンにマウスを当てたとき */
+					.sub-header .btn-header-contents ul li:hover {
+						background-color: #888;
+					}
+					/* サブヘッダー内のボタン文字領域 */
+					.sub-header .btn-header-contents ul li div {
+						align-items: center;
+						display: flex;
+						flex-wrap: wrap;
+						height: 100%;
+						justify-content: center;
+						min-height: 20px;
+						padding: 0 4px;
+					}
+						/* サブヘッダー内のボタン(境界線) */
+						.sub-header .btn-header-contents ul li:not(:last-child) div {
+							border-right: 0.5px solid #eee;
+						}
+
+	/* サブフッター内の方面表示領域 */
+	.sub-footer .homen-footer-contents {
+		width: 100%;
+	}
+
+	/* サブヘッダー内の方面表示領域内のボタン */
+	.sub-header .homen-header-contents .header-btn {
+		display: none;
+	}
+
+	/* 路線表示部メイン領域 */
+	.train-guide-contents {
+		margin-left: 0px;
+	}
+
+	/* サブフッター */
+	.sub-footer {
+		width: 100px;
+	}
+
+	/* サブフッター内のお知らせ領域 */
+	.sub-footer .sub-footer-contents {
+		margin-top: 5px;
+	}
+
+	/* サブフッター内のお知らせ表示領域 */
+	.sub-footer .sub-footer-contents .unko-info-header {
+		border-bottom-left-radius: 5px;
+		font-size: 13px;
+		padding: 6px 3px;
+	}
+		/* 英語版 */
+		[data-lang='en'] .sub-footer .sub-footer-contents .unko-info-header {
+			font-size: 12px;
+		}
+
+	/* サブフッター内の重要なお知らせ表示領域 */
+	.sub-footer .sub-footer-contents.popup .unko-info-header {
+		padding: 0px 3px;
+	}
+		/* 英語版 */
+		[data-lang='en'] .sub-footer .sub-footer-contents.popup .unko-info-header,
+		[data-lang='tc'] .sub-footer .sub-footer-contents.popup .unko-info-header,
+		[data-lang='sc'] .sub-footer .sub-footer-contents.popup .unko-info-header {
+			padding: 6px 3px;
+		}
+
+	/* サブフッター内の△！マーク */
+	.sub-footer .sub-footer-contents img {
+		height: 25px;
+		width: 25px;
+	}
+
+	/* サブフッター内の運行情報のヘッダー部 */
+	.sub-footer .sub-footer-contents .sub-footer-unkou-msg {
+		margin-left: 3px;
+		margin-top: 2px;
+		padding: 2px;
+		line-height: 18px;
+		width: 57px;
+	}
+		/* 英語版 */
+		[data-lang='en'] .sub-footer .sub-footer-contents .sub-footer-unkou-msg {
+			margin-left: 1px;
+			line-height: 14px;
+		}
+
+	/* 列車アイコン 上向きの列車用 */
+	#stationList .eki-panel .ressha-contents .ressha-icon.up {
+		left: 4.5px;
+	}
+
+	/* 列車アイコン内の領域 非TID区間 上向きの列車用 */
+	#stationList .eki-panel.hirendo .ressha-contents .ressha-icon.up {
+		left: 0;
+	}
+}
+@media (max-width:550px) {
+	/* 別路線のリンク 追分駅 */
+	#stationList .eki-panel.oiwake .hoka-rosen-link {
+		top: 18px;
+	}
+}
+@media (max-width:480px) {
+	/* 北海道新幹線への路線のリンク */
+	#stationList .eki-panel .shin-link {
+		width: 50px;
+	}
+		/* 英語版 */
+		[data-lang='en'] #stationList .eki-panel .shin-link {
+			width: auto;
+			top: auto;
+			bottom: 8px;
+			font-size: 14px;
+		}
+		/* 北海道新幹線への路線のリンク 函館線へのリンク */
+		#stationList .eki-panel .shin-link.hakodate {
+			width: auto;
+		}
+			/* 英語版 */
+			[data-lang='en'] #stationList .eki-panel .shin-link.hakodate {
+				right: 5px;
+				top: 8px;
+				bottom: auto;
+			}
+			/* 韓国語版 */
+			[data-lang='kr'] #stationList .eki-panel .shin-link.hakodate {
+				right: 5px;
+			}
+
+		/* 北海道新幹線への路線名 英語版 */
+		[data-lang='en'] #stationList .eki-panel .shin-link a {
+			font-size: 14px;
+		}
+
+	/* 北海道新幹線への路線の矢印アイコン 日本語版 */
+	[data-lang='ja'] #stationList .shin-link img {
+		bottom: 12px;
+	}
+	/* 繁体字版、簡体字版 */
+	[data-lang='tc'] #stationList .shin-link img,
+	[data-lang='sc'] #stationList .shin-link img {
+		bottom: 7px;
+	}
+
+		/* 北海道新幹線への路線の矢印アイコン 函館線へのリンク 日本語版 */
+		[data-lang='ja'] #stationList .shin-link.hakodate img {
+			bottom: 1px;
+		}
+		/* 英語版 */
+		[data-lang='en'] #stationList .shin-link.hakodate img {
+			right: -24px;
+		}
+		/* 繁体字版、簡体字版 */
+		[data-lang='tc'] #stationList .shin-link.hakodate img,
+		[data-lang='sc'] #stationList .shin-link.hakodate img {
+			bottom: -2px;
+		}
+}

@@ -1,0 +1,366 @@
+@charset "UTF-8";
+/*列車走行位置トップページ用*/
+
+body {
+	width: calc(100% - 10px);
+}
+
+/* ページトップの見出し */
+.common-maintitle {
+	padding-top: 6px;
+}
+
+/* 駅番号アイコン */
+span.eki-icon {
+	margin: 1px 7px 1px 5px;
+}
+
+/* お知らせセクション全体 */
+#commonOshirase {
+	margin: 0 2px 20px 2px;
+}
+
+/* メイン領域 */
+#commonMainDiv {
+	max-width: 1200px;
+}
+
+/* 路線選択メイン領域 */
+#trainLocMain {
+	position: relative;
+}
+
+/* サイドメニュー・地図描画領域 */
+.train-location-contents {
+	display: flex;
+}
+	/* 近くの駅に移動ボタン・地図から選択の見出し描画領域 */
+	.train-location-contents.header {
+		margin-bottom: 20px;
+		gap: 5px;
+	}
+
+/* 近くの駅に移動ボタン */
+.common-button.pos {
+	background-image: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 9 12'%3E%3Cpath fill='none' stroke='%235b3' stroke-width='2' d='m2 1 5 5-5 5'/%3E%3C/svg%3E");
+	background-position: right 5px center;
+	background-repeat: no-repeat;
+	background-size: 20px;
+	cursor: pointer;
+	margin: 0 2px;
+	width: 100%;
+}
+	/* 近くの駅に移動ボタン内のアイコン画像要素 */
+	.common-button.pos svg {
+		fill: #0af;
+		height: 32px;
+		margin: 0 10px;
+		width: 20px;
+	}
+	/* 近くの駅に移動ボタン内のテキスト */
+	.common-button.pos .name {
+		margin: 0 30px 0 0;
+	}
+
+/* サイドメニューの下部用の枠線 */
+.border {
+	border-bottom: 2px solid #ccc;
+	margin-right: 10px;
+	position: relative;
+	top: -2px;
+	margin-bottom: 20px;
+}
+
+/* パソコン用路線図（開始） */
+#rosenzuContents {
+	width: 100%;
+	flex-grow: 1;
+	overflow: hidden;
+	position: relative;
+	margin: 0 2px 0 5px;
+}
+	/* 地図から選択の見出し */
+	#rosenzuContents .top-sel-title {
+		border: 2px solid #5b3;
+		font-size: 16px;
+		font-weight: bold;
+		line-height: 50px;
+		margin: 0 0 20px 0;
+		padding: 0 10px;
+		text-align: center;
+	}
+	/* 全道マップ外枠 */
+	#rosenzuContents .eikyo-map {
+		border: 2px solid #ccc;
+		border-radius: 6px;
+		background-color: #dff;
+	}
+		/* 全道マップ */
+		#rosenzuContents .eikyo-map #svgTopMap {
+			position: relative;
+			width: 100%;
+			align-items: center;
+			display: flex;
+		}
+
+/* 全道マップ 凡例 */
+#rosenzuContents .eikyo-map-remarks {
+	display: flex;
+}
+	#rosenzuContents .eikyo-map-remarks dl {
+		background-color: #fff;
+		border: 1px solid #4c4;
+		display: inline-grid;
+		font-size: 12px;
+		line-height: 12px;
+		margin: 2px 2px 2px auto;
+		padding: 2px 4px;
+	}
+		#rosenzuContents .eikyo-map-remarks dt {
+			grid-column: 1;
+			margin: 0;
+		}
+		#rosenzuContents .eikyo-map-remarks dd {
+			align-self: center;
+			grid-column: 2;
+			margin: 0;
+		}
+/* パソコン用路線図（終了） */
+
+/* スマホ用エリア・特急列車選択タブ（開始）*/
+.area-operation-list {
+	display: none;
+	margin: 0 0 5px 0;
+}
+	/* エリアから選択タブ内のエリアのリスト */
+	.area-operation-list ul {
+		display: flex;
+		list-style: none;
+		margin: 0 auto;
+		padding: 0;
+	}
+		/* エリアから選択タブ内の各エリア */
+		.area-operation-list ul li {
+			align-content: space-between;
+			text-align: center;
+			width: 100%;
+			height: 45px;
+			margin-right: 2px;
+			margin-bottom: 6px;
+		}
+			/* エリアから選択タブ内の北海道新幹線 */
+			.area-operation-list ul li:last-child {
+				border-right: 0;
+			}
+
+			/* エリアから選択タブ内の各エリアの領域 */
+			.area-operation-list ul li .area-grid {
+				display: grid;
+				grid-auto-flow: column;
+				gap: 5px;
+				text-decoration: none;
+				align-items: center;
+				height: 100%;
+				cursor: pointer;
+				line-height: 15px;
+			}
+
+			/* エリアから選択タブ内のエリア名 */
+			.area-operation-list ul li span.area-name {
+				display: block;
+				margin: 0 5px 0 5px;
+			}
+
+/* 特急列車から選択タブ */
+.exp-operation-list {
+	display: none;
+	margin: 0 0 5px 0;
+}
+	/* 特急列車から選択タブ内の特急列車のリスト */
+	.exp-operation-list ul {
+		display: grid;
+		gap: 4px 3px;
+		grid-template-columns: 1fr 1fr;
+		list-style: none;
+		margin: 0 1px 0 0;
+		padding: 0;
+	}
+		/* 特急列車から選択タブ内の各特急列車 */
+		.exp-operation-list ul li {
+			align-items: center;
+			display: flex;
+			justify-content: center;
+			min-height: 45px;
+			text-align: center;
+			cursor: pointer;
+		}
+			/* 特急列車から選択タブ内の特急列車名 */
+			.exp-operation-list ul li span.sp-express-name-label {
+				display: block;
+				margin: 2px 5px;
+				line-height: 20px;
+			}
+				/* 特急列車から選択タブ内の区間名 */
+				.exp-operation-list ul li span.sp-express-name-label span {
+					display: inline-block;
+				}
+
+			.exp-operation-list ul li label {
+				cursor: pointer;
+			}
+
+/* タブ未選択時 */
+.area-grid {
+	background-color: #fff;
+	color: #888;
+	border: 3px solid #999;
+	border-radius: 5px;
+}
+
+/* タブ選択時 */
+input[type="radio"]:checked + .area-grid {
+	background: #ffc;
+	color: #111;
+	border: 3px solid #5b3;
+}
+.area-grid.on {
+	background: #ffc;
+	color: #111;
+	border: 3px solid #5b3;
+}
+/* スマホ用エリア・特急列車選択タブ（終了）*/
+
+/* ウィンドウサイズを縮小したとき */
+@media (max-width:1000px) {
+	/* サイドメニュー内のタブ領域 */
+	.side-select-panel {
+		margin: 0;
+	}
+
+	/* サイドメニュー内のタブ表示領域 */
+	.side-select {
+		justify-content: left;
+	}
+
+	/* サイドメニュー内のタブ内の文字領域 */
+	.side-select-label {
+		width: calc(50% - 6px);
+	}
+
+	/* サイドメニューセクション全体 */
+	#sidemenu {
+		width: 100%;
+		max-height: none;
+		height: auto;
+	}
+
+	/* サイドメニュー */
+	.side-menu {
+		width: 100%;
+		max-height: none;
+		overflow: auto;
+		height: auto;
+	}
+
+		/* サイドメニュー内のエリア毎の領域 */
+		.side-menu .area-contents {
+			min-height: 0px;
+		}
+
+			/* サイドメニュー内の路線名のリスト内の路線毎の領域 */
+			.side-menu .area-contents .rosen-name-list .rosen-name-contents {
+				margin: 2px 2px 3px 1px;
+			}
+
+	/* パソコン用路線図 */
+	#rosenzuContents {
+		display: none;
+	}
+
+	/* エリアから選択タブ */
+	.area-operation-list {
+		display: block;
+		margin: 5px 0px 0px 0;
+	}
+
+	/* 特急列車から選択タブ */
+	.exp-operation-list {
+		display: block;
+		margin: 5px 0px 0px 0;
+	}
+
+	/* サイドメニュー内のエリア毎の領域の見出し */
+	.side-menu .area-contents .area-name-label {
+		display: none;
+	}
+
+	/* サイドメニュー内の特急列車毎の領域の見出し */
+	.side-menu .area-contents .express-name-label {
+		display: none;
+	}
+
+	/* エリアから選択タブ内のエリアのリスト */
+	.area-operation-list ul {
+		border: none;
+		flex-wrap: wrap;
+	}
+
+		/* エリアから選択タブ内の各エリア */
+		.area-operation-list ul li {
+			width: calc(50% - 2px);
+			margin-right: 3px;
+			margin-bottom: 10px;
+		}
+			/* エリアから選択タブ内の道東エリア・北海道新幹線 */
+			.area-operation-list ul li:nth-child(n + 5) {
+				margin-bottom: 6px;
+			}
+			/* エリアから選択タブ内の道央エリア・道北エリア・北海道新幹線 */
+			.area-operation-list ul li:nth-child(2n) {
+				margin-right: 0px;
+			}
+
+	/* サイドメニュー内の特急列車のリスト内の列車毎の領域 */
+	.side-menu .area-contents .express-train-list .express-train-contents {
+		margin: 2px 2px 3px 1px;
+	}
+
+	/* サイドメニュー内の運行情報のラベル */
+	.side-menu .area-contents .unkou-label {
+		right: 40px;
+	}
+}
+
+@media (max-width:350px) {
+	/* エリアから選択タブ内のエリア名 */
+	.area-operation-list ul li span.area-name {
+		font-size: 13px;
+	}
+
+	/* 特急列車から選択タブ内の特急列車名 */
+	.exp-operation-list ul li span.sp-express-name-label {
+		font-size: 13px;
+	}
+}
+
+@media (max-width:250px) {
+	/* エリアから選択タブ内の各エリア */
+	.area-operation-list ul li {
+		border-right: none;
+		width: 100%;
+	}
+		/* エリアから選択タブ内の道東エリア・北海道新幹線 */
+		.area-operation-list ul li:nth-child(n + 5) {
+			margin-bottom: 10px;
+		}
+		/* エリアから選択タブ内の道央エリア・道北エリア・北海道新幹線 */
+		.area-operation-list ul li:nth-child(2n) {
+			margin-right: 3px;
+		}
+
+	/* 特急列車から選択タブ内の各特急列車 */
+	.exp-operation-list ul li {
+		border-right: none;
+		width: 100%;
+	}
+}

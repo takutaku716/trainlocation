@@ -1,0 +1,236 @@
+@charset "UTF-8";
+/**
+ * 運行情報メニューセクションのスタイル定義
+ */
+
+/* 運行情報メニューセクション全体 */
+#unkouInfoMenuList {
+	border: 2px solid #cdf;
+	display: grid;
+    grid-template-columns: repeat(5, 1fr);
+	padding: 0;
+}
+	#unkouInfoMenuList li.item {
+		align-items: center;
+		display: flex;
+		flex-direction: row;
+		list-style: none;
+		padding: 5px 2px;
+		position: relative;
+	}
+		#unkouInfoMenuList li.item:first-child::before {
+			border: none;
+		}
+		#unkouInfoMenuList li.item:hover {
+			background-color: #ffc;
+		}
+		#unkouInfoMenuList li.item::before{
+			border-left: #315818 solid 1px;
+			content: '';
+			position: absolute;
+			left: 0%;
+    		height: 90%;
+		}
+	#unkouInfoMenuList a {
+		align-items: center;
+		color: #444;
+		display: flex;
+		margin-left: 3px;
+		text-decoration: none;
+		width: 100%;
+    	height: 100%;
+	}
+		#unkouInfoMenuList a:visited {
+			color: #444;
+		}
+		html:not([lang='ja']) #unkouInfoMenuList a {
+			flex-direction: column;
+			margin-left: 0;
+		}
+	#unkouInfoMenuList .icon {
+		border-radius: 10px;
+		display: flex;
+		height: 46px;
+		justify-content: center;
+		min-height: 46px;
+		min-width: 46px;
+		width: 46px;
+	}
+	#unkouInfoMenuList img {
+		background-color: white;
+		border-radius: 8px;
+		width: 50px;
+	}
+	#unkouInfoMenuList .text-area {
+		height: 100%;
+		margin: 0 3px;
+	}
+		html:not([lang='ja']) #unkouInfoMenuList .text-area {
+			margin: 3px 3px 0 3px;
+			text-align: center;
+		}
+	#unkouInfoMenuList .title {
+		color: #315818;
+		font-weight: bold;
+	}
+		#unkouInfoMenuList .title span {
+			display: inline-block;
+		}
+	#unkouInfoMenuList .text {
+		min-height: 51px;
+		margin: 2px;
+		font-size: 12px;
+	}
+
+	/* マイページ */
+	#unkouInfoMenuList .mypage-button {
+		background-color: white;
+		border: #ccc 2px solid;
+	}
+	#unkouInfoMenuList img[src$="favorite_on.svg"] {
+		width: 35px;
+	}
+
+	/* 遅延証明書 */
+	#unkouInfoMenuList .chien-button {
+		background-color: #315818;
+		border: #315818 2px solid;
+	}
+	#unkouInfoMenuList img[src$="file_icon.svg"] {
+		background: none;
+		transform: scale(-1,1);
+		width: 30px;
+	}
+
+	/* X(旧Twitter) */
+	#unkouInfoMenuList .x-button {
+		background-color: black;
+		border: black 2px solid;
+	}
+	#unkouInfoMenuList .twitter-area .title{
+		margin: 0 2px;
+	}
+	#unkouInfoMenuList img[src$="x_logo_white.svg"] {
+		background: none;
+		width: 35px;
+	}
+	#unkouInfoMenuList li.twitter {
+		position: relative;
+	}
+		#unkouInfoMenuList li.twitter div.twitter-area {
+			align-items: center;
+			cursor: pointer;
+			display: flex;
+			width: 100%;
+    		height: 100%;
+			margin-left: 3px;
+			justify-content: center;
+		}
+		#unkouInfoMenuList li.twitter .title {
+			text-align: center;
+		}
+		/* 運行情報メニューのTwitterのリスト */
+		#unkouInfoMenuList li.twitter ul {
+			display: none;
+			z-index: 1;
+			position: absolute;
+			top: calc(100% + 15px);
+			right: -115px;
+			width: 250px;
+			margin: 0;
+			padding: 0;
+			transform: translateX(-50%) translateZ(0);
+			border: 1px solid #c9c9c9;
+			border-radius: 3px;
+			background: #fff;
+			list-style-type: none;
+			text-align: left;
+			filter: drop-shadow(0 0 6px rgba(0, 0, 0, .16));
+		}
+			/* 運行情報メニューのTwitterの上矢印 */
+			#unkouInfoMenuList li.twitter ul::after {
+				position: absolute;
+				top: -24px;
+				right: 20px;
+				width: 0;
+				height: 0;
+				margin-left: -8px;
+				border-width: 13px 8px;
+				border-style: solid;
+				border-color: transparent transparent #fff transparent;
+				content: "";
+				pointer-events: none;
+			}
+
+			/* 運行情報メニューのTwitterの各リスト項目 */
+			#unkouInfoMenuList li.twitter li {
+				background-color: #fff;
+				border-width: 0;
+				background-image: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 12'%3E%3Cpath fill='none' stroke='%233a4' stroke-width='2' d='m1 1 5 5-5 5'/%3E%3C/svg%3E");
+				background-position: right 3px center;
+				background-repeat: no-repeat;
+				background-size: 9px;
+			}
+				/* 運行情報メニューのTwitterの各リスト項目 (マウスホバー時) */
+				#unkouInfoMenuList li.twitter li:hover {
+					background-color: #ffc;
+					background-image: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 12'%3E%3Cpath fill='none' stroke='%233a4' stroke-width='2' d='m1 1 5 5-5 5'/%3E%3C/svg%3E");
+					background-position: right 3px center;
+					background-repeat: no-repeat;
+					background-size: 9px;
+				}
+				#unkouInfoMenuList li.twitter li:not(:last-child) {
+					border-bottom: 1px solid #c9c9c9;
+				}
+
+				/* 運行情報メニューのTwitterの各リスト項目のアンカー要素 */
+				#unkouInfoMenuList li.twitter li a {
+					color: #444;
+					display: block;
+					position: relative;
+					padding: .8em 1.5em .8em 1em;
+					text-decoration: none;
+					min-height: 0;
+					text-align: left;
+					width: 211px;
+				}
+				#unkouInfoMenuList li.twitter li span:hover {
+					background-image: none;
+				}
+
+	/* スマホ表示 */
+	@media (max-width: 767px) {
+		#unkouInfoMenuList li.item {
+			align-items: flex-start;
+			justify-content: center;
+		}
+			#unkouInfoMenuList li.item a {
+				flex-direction: column;
+				margin-left: 0;
+			}
+			#unkouInfoMenuList li.item div {
+				margin-left: 0;
+			}
+			[data-lang='tc'] #unkouInfoMenuList li.item,
+			[data-lang='sc'] #unkouInfoMenuList li.item {
+				padding: 5px 1px;
+			}
+
+		#unkouInfoMenuList li.twitter div.twitter-area {
+			margin-left: 0;
+		}
+		#unkouInfoMenuList .twitter-area .title{
+			margin: 3px 1px 1px 1px;
+		}
+		#unkouInfoMenuList .title {
+			font-size: 12px;
+			text-align: center;
+			margin: 3px 1px 1px 1px;
+		}
+		#unkouInfoMenuList .text {
+			display: none;
+		}
+		html:not([lang='ja']) #unkouInfoMenuList .text-area {
+			margin: 0 3px;
+		}
+	}

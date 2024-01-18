@@ -1,0 +1,360 @@
+@charset "UTF-8";
+
+/*共通内容*/
+html {
+	height: 100%;
+}
+
+body {
+	background-color: #fff;
+	color: #111;
+	font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif;
+	font-size: 15px;
+	margin: 65px 5px 5px 5px;
+	padding-bottom: 45px;
+}
+	@supports (-webkit-text-size-adjust: 100%) {
+		body {
+			-webkit-text-size-adjust: 100%;
+		}
+	}
+	@supports (-moz-text-size-adjust: 100%) {
+		body {
+			-moz-text-size-adjust: 100%;
+		}
+	}
+	@supports (-ms-text-size-adjust: 100%) {
+		body {
+			-ms-text-size-adjust: 100%;
+		}
+	}
+	@supports (text-size-adjust: 100%) {
+		body {
+			text-size-adjust: 100%;
+		}
+	}
+	[lang='ja'] body {
+		font-family: "ヒラギノ角ゴ Pro W3", "Hiragino Kaku Gothic Pro", "メイリオ", Meiryo, Osaka, "ＭＳ Ｐゴシック", "MS PGothic", sans-serif;
+	}
+	[lang='zh-cmn-Hant'] body {
+		font-family: '微軟正黑體', 'Microsoft JhengHei', 'PMingLiU';
+	}
+
+/* メインエリア 開始 */
+#commonMainDiv {
+	max-width: 900px;
+	margin: 0 auto;
+}
+/* メインエリア 終了 */
+
+/**** 全画面共通で使用する見出し系のパーツ 開始 ****/
+
+/* ページトップの見出し */
+.common-maintitle {
+	align-items: center;
+	border: 5px solid transparent;
+	display: flex;
+	flex-direction: column;
+	font-weight: bold;
+	justify-content: center;
+	margin: 10px 0;
+	min-height: 72px;
+	position: relative;
+	text-align: center;
+}
+	/* ページトップの見出し(サブ) */
+	.common-maintitle .sub {
+		font-size: 16px;
+	}
+	/* ページトップの見出し(メイン) */
+	.common-maintitle .main {
+		font-size: 30px;
+	}
+
+/* サブタイトルの帯見出し */
+.common-subtitle {
+	background-color: #fff;
+	border: 2px solid #999;
+	color: #444;
+	font-size: 16px;
+	font-weight: bold;
+	line-height: 30px;
+	margin: 0;
+	min-height: 30px;
+	padding: 8px 8px 8px 10px;
+	position: relative;
+}
+
+/* 現在日時を表すバー */
+#commonTimestamp {
+	border-left: 5px solid #5b3;
+	font-size: 22px;
+	font-weight: bold;
+	margin: 0 0 5px 0;
+	padding: 4px 0 4px 8px;
+	text-align: left;
+}
+/* 幅500px以下の場合 */
+@media (max-width: 500px) {
+	#commonTimestamp {
+		font-size: 20px;
+	}
+}
+
+/* コンテンツを囲む枠 */
+.common-contents-frame {
+	clear: both;
+	border: 2px solid #ccc;
+	border-top: none;
+	padding: 5px;
+}
+/**** 全画面共通で使用する見出し系のパーツ 終了 ****/
+
+/**** 全画面共通で使用するボタン系のパーツ 開始 ****/
+
+/* 共通スタイルボタン */
+.common-button {
+	align-items: center;
+	border: 1px solid #8c5;
+	border-bottom: 3px solid #8c5;
+	display: flex;
+	line-height: 15px;
+	min-height: 50px;
+	justify-content: center;
+	position: relative;
+	text-align: center;
+}
+	/* 共通スタイルボタンにマウスを当てたとき */
+	.common-button:hover {
+		background-color: #ffc;
+	}
+	/* spanタグを折り返し単位とする */
+	.common-button span {
+		display: inline-block;
+	}
+/* 要素をリンク化する場合 */
+.common-button-link {
+	display: block;
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+}
+
+/**** 全画面共通で使用するボタン系のパーツ 終了 ****/
+
+/**** 全画面共通で使用するアイコン系のパーツ 開始 ****/
+
+/* PDFアイコン */
+span.icon-pdf::before {
+	content: "\e91e";
+	color: #f00;
+	font-family: icon;
+}
+
+.common-area-operation-remarks tr .icon-pdf::before {
+	content: "\e91e";
+	color: #f00;
+	font-family: icon;
+	font-size: 18px;
+}
+
+/* 運行状況アイコン */
+img.unkou-icon {
+	min-width: 30px;
+	width: 30px;
+}
+/* 共通スタイルボタン内部に右寄せ表示する場合 */
+.common-button img.unkou-icon {
+	margin: 0 15px 0 auto;
+}
+
+/**** 全画面共通で使用するアイコン系のパーツ 終了 ****/
+
+
+
+
+/*汎用デザイン 開始 */
+.common-padd-bottom05 {
+	padding-bottom: 5px;
+}
+
+.common-padd-bottom10 {
+	padding-bottom: 10px;
+}
+
+.common-padd-bottom20 {
+	padding-bottom: 20px;
+}
+
+.common-color-red {
+	color: red;
+}
+/*汎用デザイン終了*/
+
+/*パンくずリスト 開始 */
+.common-breadcrumb {
+	background: #f2f4f3;
+	font-size: 15px;
+	line-height: 23px;
+	position: relative;
+	padding: 0 5px;
+}
+
+	.common-breadcrumb::after {
+		content: " ";
+		position: absolute;
+		z-index: 1;
+		right: 0;
+		top: 0;
+		bottom: 0;
+		width: 25px;
+		background: linear-gradient(to right, rgba(242, 244, 243, 0) 0%, #f2f4f3 70%);
+	}
+
+.common-breadcrumb-list {
+	list-style: none;
+	padding: 6px 0px;
+	margin: 0 auto;
+	max-width: 900px;
+	overflow-x: auto;
+	white-space: nowrap;
+}
+
+	.common-breadcrumb-list > li {
+		display: inline-block;
+	}
+
+		.common-breadcrumb-list > li > a {
+			text-decoration: none;
+			color: #59bb32;
+		}
+
+		.common-breadcrumb-list > li + li::before {
+			content: ">";
+			padding: 0 5px;
+			color: #59bb32;
+		}
+
+		.common-breadcrumb-list li:last-child {
+			margin-right: 20px;
+		}
+
+	.common-breadcrumb-list > .active {
+		color: #676767;
+	}
+/*パンくずリスト 終了 */
+
+/*TOPへ戻る 開始 */
+#commonPageTop {
+	display: none;
+}
+
+.common-arrow {
+	display: inline-block;
+	position: relative;
+	border-radius: 70%;
+	min-width: 70px;
+	min-height: 70px;
+	cursor: pointer;
+	border: 1px solid #808080;
+	vertical-align: middle;
+	margin-bottom: 4px;
+	opacity: .8;
+	background: #F2F0E9;
+	position: fixed;
+	right: 2%;
+	bottom: 10px;
+	z-index: 10000;
+}
+
+@media screen and (min-width: 1310px) {
+	.common-arrow {
+		right: calc(50% - 630px);
+	}
+}
+
+.common-arrow::before {
+	content: '';
+	position: absolute;
+	min-width: 2em;
+	min-height: 2em;
+	border-left: 3px solid #808080;
+	border-bottom: 3px solid #808080;
+}
+
+.common-up::before {
+	top: 40%;
+	left: 26%;
+	transform: rotate(135deg);
+}
+/* 幅600px以下の場合 */
+@media (max-width: 600px) {
+	.common-arrow {
+		min-width: 50px;
+		min-height: 50px;
+	}
+
+		.common-arrow::before {
+			min-width: 1.2em;
+			min-height: 1.2em;
+			border-left: 2px solid #808080;
+			border-bottom: 2px solid #808080;
+		}
+
+	.common-up::before {
+		left: 29%;
+	}
+}
+/*TOPへ戻る 終了 */
+
+@font-face {
+	font-family: 'icon';
+	font-weight: normal;
+	font-style: normal;
+	src: url('../fonts/icon.woff?-j0v31x') format('woff'), url('../fonts/icon.ttf?-j0v31x') format('truetype'), url('../fonts/icon.svg?-j0v31x#icons') format('svg');
+}
+
+[class^='icons-'],
+[class*=' icons-'] {
+	font-family: 'icon';
+	font-weight: normal;
+	font-style: normal;
+	font-variant: normal;
+	line-height: 1;
+	text-transform: none;
+	/* Better Font Rendering =========== */
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+}
+
+/* やさしいブラウザ用 */
+.yasashi-btn {
+	padding-left: 10px;
+}
+
+.yasashi-btn img {
+	margin-bottom: 5px;
+	height: 55px;
+}
+
+@media print {
+	body {
+		margin-top: 0px;
+		-webkit-print-color-adjust: exact;
+	}
+
+	header {
+		position: initial;
+	}
+}
+
+/* 共通タイトルの帯見出し */
+.common-title {
+	font-size: 22px;
+	font-weight: bold;
+	margin: 0 0;
+	padding: 0px 0 0px 12px;
+	text-align: left;
+}

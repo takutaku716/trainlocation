@@ -1,0 +1,33 @@
+@charset "UTF-8";
+/**
+ * 線区別運行状況セクションのスタイル定義
+ */
+
+/* 線区別運行状況セクションの外枠 */
+section#commonSenkuOperation {
+	clear: both;
+	margin: 0 0 20px 0;
+}
+	/* 線区別運行状況ボタンを列挙した親要素：横2列で表示する */
+	section#commonSenkuOperation ul {
+		display: grid;
+		gap: 5px;
+		grid-template-columns: repeat(2, 1fr);
+		margin: 5px 0 0 0;
+		padding: 0;
+	}
+/* 幅400px以下の場合 */
+@media (max-width: 400px) {
+	/* 線区別運行状況ボタンを列挙した親要素：横1列で表示する */
+	section#commonSenkuOperation ul {
+		grid-template-columns: repeat(1, 1fr);
+	}
+}
+/* 線区別運行状況ボタンの各項目 */
+section#commonSenkuOperation ul li {
+	list-style-type: none;
+}
+	/* 線区別運行状況ボタンの内部に表示するテキスト */
+	section#commonSenkuOperation ul li .name {
+		margin: 0 0 0 15px;
+	}

@@ -1,0 +1,360 @@
+@charset "UTF-8";
+/**
+ * 列車走行位置ページの使い方セクションのスタイル定義
+ */
+
+/* 使い方ダイアログ（開始） */
+section#guideDetail {
+	background-color: rgba(0, 0, 0, 0.5);
+	display: none;
+	height: 100%;
+	left: 0;
+	position: fixed;
+	top: 0;
+	width: 100%;
+	z-index: 20000;
+}
+	/* オーバーレイ領域内の使い方ダイアログ要素を中央寄せするための外枠領域 */
+	section#guideDetail .dialog-outer {
+		align-items: center;
+		display: flex;
+		justify-content: center;
+		height: 100%;
+		width: 100%;
+	}
+	/* 使い方ダイアログ領域 */
+	section#guideDetail .dialog {
+		background-color: #fff;
+		max-width: 100%;
+		width: 875px;
+	}
+		/* 使い方ダイアログのヘッダー */
+		section#guideDetail .dialog .header {
+			background-color: #5b3;
+			border-width: 0px;
+			color: #fff;
+			cursor: pointer;
+		}
+			/* 使い方ダイアログのヘッダーの｢×｣ボタン */
+			section#guideDetail .dialog .header .close {
+				line-height: 10px;
+				position: absolute;
+				right: 0;
+				width: 32px;
+				top: 0px;
+				padding: 7px 6px;
+			}
+				/* 使い方ダイアログのヘッダーの｢×｣ボタン にマウスカーソルを重ねたとき */
+				section#guideDetail .dialog .header .close:hover {
+					background-color: #6c4;
+					cursor: pointer;
+				}
+
+		/* 使い方ダイアログのメイン情報 */
+		section#guideDetail .dialog #guideDetailMain {
+			padding: 10px;
+			max-height: 60vh;
+			overflow-y: scroll;
+			overflow-x: hidden;
+		}
+
+			/* 使い方ダイアログ内のサブタイトルの帯見出し */
+			section#guideDetail .dialog #guideDetailMain .common-subtitle {
+				border-width: 0px;
+				border-left: 5px solid #5b3;
+				margin: 10px 0;
+			}
+
+			/* 使い方ダイアログ内の文章 */
+			section#guideDetail .dialog #guideDetailMain .text-list ul {
+				list-style: none;
+				margin: 0 0 10px 0;
+				padding: 0 0 0 18px;
+			}
+				/* 使い方ダイアログ内のリスト項目 */
+				#commonAttention #commonAttentionBody ul li {
+					margin: 1px 0;
+				}
+					/* 使い方ダイアログ内の文章の中点 */
+					section#guideDetail .dialog #guideDetailMain .text-list ul li::before {
+						content: "・";
+						display: inline-block;
+						height: 0;
+						margin-left: -18px;
+						width: 18px;
+					}
+					/* 本文内に記載されたリスト項目 中点なし */
+					section#guideDetail .dialog #guideDetailMain .text-list ul li.non-point::before {
+						content: "";
+					}
+
+					/* 使い方ダイアログ内のリスト項目の使い方の画像 */
+					section#guideDetail .dialog #guideDetailMain .text-list ul li #attentionGuide {
+						vertical-align: top;
+					}
+
+			/* 使い方ダイアログの列車種別のリスト */
+			section#guideDetail .dialog #guideDetailMain ul.ressha-list {
+				margin: 5px 0;
+				padding-left: 10px;
+			}
+
+				/* 使い方ダイアログの列車種別 */
+				section#guideDetail .dialog #guideDetailMain ul.ressha-list li {
+					display: flex;
+					margin: -3px 0 0 -12px;
+				}
+
+					/* 使い方ダイアログの列車種別の列車アイコン領域 */
+					section#guideDetail .dialog #guideDetailMain ul.ressha-list li .ressha-type-icon {
+						background-image: url(../images/home/train_icon.svg);
+						background-position: center center;
+						background-repeat: no-repeat;
+						background-size: 41px;
+						display: flex;
+						height: 41px;
+						justify-content: center;
+						min-width: 41px;
+						width: 41px;
+					}
+
+					/* 列車アイコン（赤） 特急・ライナー*/
+					section#guideDetail .dialog #guideDetailMain ul.ressha-list li .ressha-type-icon[data-ressha_type='1'] {
+						background-image: url(../images/home/train_icon_red.svg);
+					}
+					/* 列車アイコン（橙） 快速・特別快速*/
+					section#guideDetail .dialog #guideDetailMain ul.ressha-list li .ressha-type-icon[data-ressha_type='2']{
+						background-image: url(../images/home/train_icon_orange.svg);
+					}
+					/* 列車アイコン（青） 快速（普通区間あり）*/
+					section#guideDetail .dialog #guideDetailMain ul.ressha-list li .ressha-type-icon[data-ressha_type='3']{
+						background-image: url(../images/home/train_icon_blue.svg);
+					}
+					/* 列車アイコン（緑） 北海道新幹線*/
+					section#guideDetail .dialog #guideDetailMain ul.ressha-list li .ressha-type-icon[data-ressha_type='5']{
+						background-image: url(../images/home/train_icon_green.svg);
+					}
+					/* 列車アイコン（白） 臨時列車*/
+					section#guideDetail .dialog #guideDetailMain ul.ressha-list li .ressha-type-icon[data-ressha_type='6']{
+						background-image: url(../images/home/train_icon_white.svg);
+					}
+
+					/* 使い方ダイアログの列車種別の名前 */
+					section#guideDetail .dialog #guideDetailMain ul.ressha-list li .ressha-type-name {
+						padding-left:1em;
+						padding-top: 3px;
+						text-indent:-1em;
+					}
+
+					section#guideDetail .dialog #guideDetailMain ul.ressha-list li .ressha-type-name:before {
+						content: "：";
+					}
+
+						/* 使い方ダイアログの列車アイコン内の列車種別 */
+						section#guideDetail .dialog #guideDetailMain ul.ressha-list li span.ressha-sbt {
+							color: #fff;
+							font-size: 14px;
+							font-weight: bold;
+							margin-top: 5px;
+						}
+						/* 使い方ダイアログの列車アイコン内の列車種別 文字位置 特別快速*/
+						section#guideDetail .dialog #guideDetailMain ul.ressha-list li span.ressha-sbt.tokukai {
+							font-size: 10px;
+							margin-top: 7px;
+						}
+
+						/* 使い方ダイアログの列車アイコン内の列車種別 文字位置 英語2文字*/
+						section#guideDetail .dialog #guideDetailMain ul.ressha-list li span.ressha-sbt.two-char {
+							margin-top: 7px;
+						}
+
+						/* 使い方ダイアログの列車アイコン内の列車種別 黒文字*/
+						section#guideDetail .dialog #guideDetailMain ul.ressha-list li span.ressha-sbt.black {
+							color: #444;
+						}
+
+			/* 使い方ダイアログの運行状況 */
+			section#guideDetail .dialog #guideDetailMain .unkou-joukyou {
+				align-items: center;
+				display: grid;
+				grid-template-columns: 1fr 1fr;
+				justify-items: center;
+			}
+
+			/* 使い方ダイアログの運行状況 遅れ*/
+			section#guideDetail .dialog #guideDetailMain #unkouJoukyouOkure {
+				align-items: center;
+				display: grid;
+				grid-template-columns: 1fr 1fr;
+				justify-items: center;
+			}
+
+			/* 使い方ダイアログの運行状況 運行情報説明画像 */
+			section#guideDetail .dialog #guideDetailMain #unkou-jouhou {
+				display: flex;
+				justify-content: center;
+			}
+
+			/* 運行状況　説明画像エリア */
+			section#guideDetail .dialog #guideDetailMain .ressha-icon {
+				align-items: center;
+				background-color: #f0f0f0;
+				display: flex;
+				height: 100px;
+				justify-content: center;
+				margin: 10px;
+				position: relative;
+				width: 100px;
+			}
+				/* 運行状況　！マーク画像 */
+				section#guideDetail .dialog #guideDetailMain .ressha-icon.exclamation {
+					width: 100px;
+				}
+
+				/* 運行状況　遅れ時分 */
+				section#guideDetail .dialog #guideDetailMain .ressha-icon .okure-label {
+					color: red;
+					font-size: 11px;
+					left: 34px;
+					position: absolute;
+					top: 10px;
+				}
+
+				/* 運行状況　列車画像 */
+				section#guideDetail .dialog #guideDetailMain .ressha-icon .icon-img {
+					background-image: url(../images/home/train_icon.svg);
+					background-position: center center;
+					background-repeat: no-repeat;
+					background-size: 52px;
+					display: flex;
+					height: 52px;
+					justify-content: center;
+					width: 52px;
+				}
+
+					/* 運行状況　画像内のimg要素 */
+					section#guideDetail .dialog #guideDetailMain .ressha-icon.exclamation img {
+						left: 23px;
+					}
+
+				/* 運行状況　列車種別 */
+				section#guideDetail .dialog #guideDetailMain .ressha-icon .ressha-sbt {
+					color: #fff;
+					font-size: 17px;
+					font-weight: bold;
+					margin-top: 6px;
+				}
+
+				/* 運行状況　列車種別 文字位置 英語2文字*/
+				section#guideDetail .dialog #guideDetailMain .ressha-icon .ressha-sbt.two-char {
+					margin-top: 8px;
+				}
+					/* 運行状況　！マーク画像内の列車種別 文字位置 英語2文字*/
+					section#guideDetail .dialog #guideDetailMain .ressha-icon.exclamation .ressha-sbt.two-char {
+						margin-top: 8px;
+					}
+
+				/* 運行状況　矢印 */
+				section#guideDetail .dialog #guideDetailMain .ressha-icon .arrow {
+					left: 30px;
+					position: absolute;
+					top: 46px;
+					width: 52px;
+				}
+					/* 運行状況　！マーク画像内の矢印 */
+					section#guideDetail .dialog #guideDetailMain .ressha-icon.exclamation .arrow {
+						left: 29px;
+					}
+
+				/* 運行状況　行先 */
+				section#guideDetail .dialog #guideDetailMain .ressha-icon .yukisaki-label {
+					bottom: 20px;
+					font-size: 13px;
+					left: 34px;
+					position: absolute;
+				}
+					/* 運行状況　！マーク画像内の行先 */
+					section#guideDetail .dialog #guideDetailMain .ressha-icon.exclamation .yukisaki-label {
+						left: 33px;
+					}
+
+				/* 運行状況　！マーク */
+				section#guideDetail .dialog #guideDetailMain .ressha-icon.exclamation .exclamation {
+					position: absolute;
+					width: 28px;
+					top: 15px;
+					left: 9px;
+				}
+
+			/* 使い方ダイアログ内の画像 */
+			section#guideDetail .dialog #guideDetailMain .guide-image-list {
+				display: grid;
+				gap:15px;
+				grid-template-columns: 1fr 1fr;
+			}
+
+				/* 使い方ダイアログ内の画像（枠線あり） */
+				section#guideDetail .dialog #guideDetailMain img.guide-img-border {
+					border: 2px solid #ddd;
+					margin-bottom: 20px;
+				}
+
+				/* 使い方ダイアログ内の列車詳細情報のimg要素 */
+				section#guideDetail .dialog #guideDetailMain .guide-image-list img {
+					width: 100%;
+				}
+
+			/* 使い方ダイアログ内のご利用上の注意　室蘭線 */
+			section#guideDetail .dialog #guideDetailMain .muroran-line {
+				display: flex;
+			}
+
+/* スマホ版 */
+@media screen and (max-width:630px) {
+	/* 使い方ダイアログの幅 */
+	section#guideDetail .dialog {
+		width: 502px;
+	}
+
+	/* 使い方ダイアログ内の画像 */
+	section#guideDetail .dialog #guideDetailMain .guide-image-list {
+		grid-template-columns: 1fr;
+	}
+
+	/* 使い方ダイアログの運行状況 遅れ*/
+	section#guideDetail .dialog #guideDetailMain #unkouJoukyouOkure {
+		display: grid;
+		grid-template-columns: 1fr;
+		grid-template-areas:
+			"notOkureTitle"
+			"notOkureImage"
+			"okureTitle"
+			"okureImage";
+		justify-items: start;
+		margin-left: 10px;
+	}
+
+	/* 使い方ダイアログの運行状況 */
+	section#guideDetail .dialog #guideDetailMain .unkou-joukyou {
+		justify-items: start;
+		margin-left: 10px;
+	}
+
+	section#guideDetail .dialog #notOkureTitle {
+		grid-area: notOkureTitle;
+	}
+
+	section#guideDetail .dialog #okureTitle {
+		grid-area: okureTitle;
+	}
+
+	section#guideDetail .dialog #notOkureImage {
+		grid-area: notOkureImage;
+	}
+
+	section#guideDetail .dialog #okureImage {
+		grid-area: okureImage;
+	}
+}
+
+/* 使い方ダイアログ（終了） */

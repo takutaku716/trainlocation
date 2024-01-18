@@ -1,0 +1,96 @@
+@charset "UTF-8";
+/**
+ * 駅番号アイコンのスタイル定義
+ */
+
+/* 駅番号アイコン */
+span.eki-icon {
+	align-items: center;
+	border: 4px solid transparent;
+	border-radius: 50%;
+	display: flex;
+	flex-flow: column;
+	font-size: 13px;
+	font-weight: bold;
+	justify-content: center;
+	line-height: 13px;
+	margin: 1px 13px 1px 5px;
+	max-height: 30px;
+	max-width: 30px;
+	min-height: 30px;
+	min-width: 30px;
+	white-space: nowrap;
+}
+	/* 英語版アイコン */
+	[data-lang='en'] span.eki-icon {
+		margin: 1px 8px 1px 0px;
+	}
+	/* 札幌駅用 */
+	span.eki-icon.icon-01 {
+		border-color: #030000;
+		font-size: 16px;
+	}
+	/* 函館線・千歳線・室蘭線（苗穂～東室蘭～函館）用 */
+	span.eki-icon.icon-H {
+		border-color: #036fc2;
+	}
+	/* 室蘭線（輪西～室蘭）用 */
+	span.eki-icon.icon-M {
+		border-color: #036fc2;
+	}
+	/* 函館線（東森～鹿部）用 */
+	span.eki-icon.icon-N {
+		border-color: #036fc2;
+	}
+	/* 函館線・石北線（厚別～旭川～網走）用 */
+	span.eki-icon.icon-A {
+		border-color: #f17714;
+	}
+	/* 宗谷線（永山～稚内）用 */
+	span.eki-icon.icon-W {
+		border-color: #983a4a;
+	}
+	/* 石勝線・根室線（追分～釧路）用 */
+	span.eki-icon.icon-K {
+		border-color: #31c04c;
+	}
+	/* 新千歳空港駅用 */
+	span.eki-icon.icon-AP {
+		border-color: #19beee;
+	}
+	/* 函館線（桑園～小樽～二股）用 */
+	span.eki-icon.icon-S {
+		border-color: #e50500;
+	}
+	/* 学園都市線（八軒～北海道医療大学）用 */
+	span.eki-icon.icon-G {
+		border-color: #0c9436;
+	}
+	/* 根室線（東滝川～富良野～落合）用 */
+	span.eki-icon.icon-T {
+		border-color: #ec9fcf;
+	}
+	/* 富良野線（神楽岡～学田）用 */
+	span.eki-icon.icon-F {
+		border-color: #9830cf;
+	}
+	/* 釧網線（東釧路～桂台）用 */
+	span.eki-icon.icon-B {
+		border-color: #e0429b;
+	}
+	/* 枝番用 */
+	span.eki-icon .eda {
+		font-size: 12px;
+		letter-spacing: -0.1em;
+		margin: 0 0 0 -0.2em;
+	}
+
+	span.eki-icon.kigo-bg {
+		font-size: 18px;
+		margin: 0;
+	}
+
+	span.eki-icon.hide {
+		display: none;
+		width: 0;
+	}
