@@ -45,7 +45,7 @@ $(function ($) {
 				// 初回クリック時は、｢使い方｣をロードして埋め込む。
 				if (!$("#guideDetail").children().length) {
 					// ｢使い方｣HTMLのURLを算出する。
-					const url = (lang === "ja" ? "https://corsproxy.org/?https://www3.jrhokkaido.co.jp/trainlocation/call_guide.html" : "https://corsproxy.org/?https://www3.jrhokkaido.co.jp/trainlocation/call_guide_" + lang + ".html")
+					const url = (lang === "ja" ? "./guide/call_guide.html" : "https://corsproxy.org/?https://www3.jrhokkaido.co.jp/trainlocation/call_guide_" + lang + ".html")
 					// ｢使い方｣を埋め込む。
 					$("#guideDetail").load(url, () => {
 						// 使い方ボックス内の｢閉じる｣ボタンをクリックしたときのイベントを追加する。
