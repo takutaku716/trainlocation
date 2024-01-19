@@ -1,0 +1,74 @@
+<div class="trainDetailDialog" data-cbango="4D" data-type="1" data-status="2">
+	<div class="dialog-outer">
+		<div class="dialog">
+			<div class="header">
+				<span class="label">列車詳細情報</span>
+				<span class="close"><img src="./images/home/close.svg" alt="閉じる"></span>
+			</div>
+			<div class="train-info hide">
+				<dl>
+					<dt class="type-item"><span class="type-label icon hide"></span></dt>
+					<dd class="type-item">
+						<p>
+							<span>
+								<span class="sha-label hide">
+									<span class="sha-eki"></span><span class="sha-time"></span> 発
+								</span>
+								<span class="shu-label hide">
+									<span class="shu-eki"></span> 行き
+								</span>
+							</span>
+						</p>
+						<p>
+							<span>
+								<span class="name-label hide">
+									<span class="name"></span>
+								</span>
+								<span class="ryosu-label hide">
+									<span class="ryosu"></span>両
+								</span>
+							</span>
+						</p>
+					</dd>
+					<dt class="pos-item hide"><span class="pos-label icon">列車番号</span></dt>
+					<dd class="pos-item hide"><span class="cbango"></span></dd>
+					<dt class="pos-item hide"><span class="pos-label icon">現在地</span></dt>
+					<dd class="pos-item hide"><span class="pos-name"></span></dd>
+					<dt class="chien-item hide"><span class="chien-label icon">遅れ</span></dt>
+					<dd class="chien-item hide"><span class="chien-text"></span></dd>
+					<dt class="status-item hide"><span class="status-label icon"></span></dt>
+					<dd class="status-item hide"><span class="status-text"></span></dd>
+				</dl>
+			</div>
+			<div class="station-list hide">
+				<div class="timetable">
+					<table>
+						<thead>
+							<tr>
+								<th>停車駅</th>
+								<th>定刻</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr class="dep template"><td><span class="name"></span></td><td><span class="time"></span> 発</td></tr>
+							<tr class="arr template"><td><span class="name"></span></td><td><span class="time"></span> 着</td></tr>
+						</tbody>
+					</table>
+				</div>
+				<div class="notice">
+					<ul>
+						<li>※定刻の時間を表示しています。</li>
+						<li>※終着駅と行先が違う場合[　]で表示しています。</li>
+						<li>※実際の列車情報と異なる場合があります。</li>
+					</ul>
+				</div>
+			</div>
+			<div class="error hide">
+				<p>データを取得できませんでした。</p>
+			</div>
+			<div class="footer">
+				<div class="common-button close">閉じる</div>
+			</div>
+		</div>
+	</div>
+</div>
