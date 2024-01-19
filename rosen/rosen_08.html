@@ -1,0 +1,173 @@
+<script type="text/javascript" src="./common/js/ga.js"></script>
+<div id="homenNameUpText" hidden>東室蘭方面</div>
+<div id="homenNameDownText" hidden>室蘭方面</div>
+<div class='up-rosen-link'><div><a value="07"><span class="link-img"><img src="data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath fill='none' stroke='%233a4' stroke-width='2.5' d='m1 9 5-5 5 5'/%3E%3C/svg%3E" alt="" /></span><span>室蘭線<br>長万部・苫小牧方面</span></a></div></div>
+
+<!-- 東室蘭から別路線の駅間 -->
+<div class="eki-panel">
+	<div class="eki-contents">
+		<div class="ressha-contents">
+			<div class="ressha-icon"></div>
+			<div class="ressha-icon"></div>
+		</div>
+	</div>
+	<svg class="senro-img start"><use xlink:href="#senroStart"></use></svg>
+</div>
+
+<!-- 東室蘭 -->
+<div class="eki-panel eki">
+	<div class="eki-contents">
+		<div class="stalist-eki-link">
+			<a href="https://www3.jrhokkaido.co.jp/webunkou/timetable.html?id=201">
+				<div class="stalist-eki-contents">
+					<span class="eki-icon icon-H"><span class="kigo">H</span><span>32</span></span>
+					<div key="201">東室蘭</div>
+				</div>
+			</a>
+		</div>
+		<div class="ressha-contents">
+			<div class="ressha-icon R1P150U"></div>
+			<div class="ressha-icon R1P150D"></div>
+		</div>
+	</div>
+	<svg class="senro-img"><use xlink:href="#senro"></use></svg>
+</div>
+
+<!-- 東室蘭～輪西・御崎・母恋～室蘭 -->
+<div class="eki-panel hirendo">
+	<div class="eki-contents">
+		<div class='hirendo-msg'>この区間は実際の<br>走行位置と異なる<br>場合があります</div>
+		<div class="hirendo-contents">
+			<div class="ressha-contents">
+				<div class="hirendo-ressha-panel one-eki-contents"><div class="ressha-icon R1P153U"></div></div>
+			</div>
+			<div class="stalist-eki-link three-eki">
+				<a href="https://www3.jrhokkaido.co.jp/webunkou/timetable.html?id=228">
+					<div class="stalist-eki-contents">
+						<span class="eki-icon icon-M"><span class="kigo">M</span><span>33</span></span>
+						<div key="228" class="margin-left05">輪西</div>
+					</div>
+				</a>
+				<a href="https://www3.jrhokkaido.co.jp/webunkou/timetable.html?id=229">
+					<div class="stalist-eki-contents">
+						<span class="eki-icon icon-M"><span class="kigo">M</span><span>34</span></span>
+						<div key="229" class="margin-left05">御崎</div>
+					</div>
+				</a>
+				<a href="https://www3.jrhokkaido.co.jp/webunkou/timetable.html?id=230">
+					<div class="stalist-eki-contents">
+						<span class="eki-icon icon-M"><span class="kigo">M</span><span>35</span></span>
+						<div key="230" class="margin-left05">母恋</div>
+					</div>
+				</a>
+			</div>
+			<div class="ressha-contents">
+				<div class="hirendo-ressha-panel one-eki-contents"><div class="ressha-icon R1P153D"></div></div>
+			</div>
+		</div>
+	</div>
+	<svg class="senro-img"><use xlink:href="#senro"></use></svg>
+</div>
+
+<!-- 室蘭 -->
+<div class="eki-panel eki end">
+	<div class="eki-contents">
+		<div class="stalist-eki-link">
+			<a href="https://www3.jrhokkaido.co.jp/webunkou/timetable.html?id=231">
+				<div class="stalist-eki-contents">
+					<span class="eki-icon icon-M"><span class="kigo">M</span><span>36</span></span>
+					<div key="231" class="margin-left05">室蘭</div>
+				</div>
+			</a>
+		</div>
+		<div class="ressha-contents">
+			<div class="ressha-icon R1P154U"></div>
+			<div class="ressha-icon R1P154D"></div>
+		</div>
+	</div>
+</div>
+
+<!-- 線路の画像の定義 -->
+<svg style="display:none;" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" role="img">
+	<!-- 縦の線路（開始） -->
+	<symbol id="senroStart" viewbox="0 0 8 300">
+		<rect width="6" height="10" x="1" y="20" fill="#fff" stroke="#000" />
+
+		<rect width="6" height="10" x="1" y="30" fill="#000" stroke="#000" />
+
+		<rect width="6" height="10" x="1" y="40" fill="#fff" stroke="#000" />
+
+		<rect width="6" height="10" x="1" y="50" fill="#000" stroke="#000" />
+
+		<rect width="6" height="10" x="1" y="60" fill="#fff" stroke="#000" />
+
+		<rect width="6" height="10" x="1" y="70" fill="#000" stroke="#000" />
+
+		<rect width="6" height="10" x="1" y="80" fill="#fff" stroke="#000" />
+
+		<rect width="6" height="10" x="1" y="90" fill="#000" stroke="#000" />
+
+		<rect width="6" height="10" x="1" y="100" fill="#fff" stroke="#000" />
+
+		<rect width="6" height="10" x="1" y="110" fill="#000" stroke="#000" />
+	</symbol>
+
+	<!-- 縦の線路 -->
+	<symbol id="senro"viewbox="0 0 8 300">
+		<line x1="1" y1="0" x2="1" y2="10" stroke="#000" stroke-width="1"/>
+		<line x1="7" y1="0" x2="7" y2="10" stroke="#000" stroke-width="1"/>
+
+		<rect width="6" height="10" x="1" y="10" fill="#000" stroke="#000" />
+
+		<rect width="6" height="10" x="1" y="20" fill="#fff" stroke="#000" />
+
+		<rect width="6" height="10" x="1" y="30" fill="#000" stroke="#000" />
+
+		<rect width="6" height="10" x="1" y="40" fill="#fff" stroke="#000" />
+
+		<rect width="6" height="10" x="1" y="50" fill="#000" stroke="#000" />
+
+		<rect width="6" height="10" x="1" y="60" fill="#fff" stroke="#000" />
+
+		<rect width="6" height="10" x="1" y="70" fill="#000" stroke="#000" />
+
+		<rect width="6" height="10" x="1" y="80" fill="#fff" stroke="#000" />
+
+		<rect width="6" height="10" x="1" y="90" fill="#000" stroke="#000" />
+
+		<rect width="6" height="10" x="1" y="100" fill="#fff" stroke="#000" />
+
+		<rect width="6" height="10" x="1" y="110" fill="#000" stroke="#000" />
+
+		<rect width="6" height="10" x="1" y="120" fill="#fff" stroke="#000" />
+
+		<rect width="6" height="10" x="1" y="130" fill="#000" stroke="#000" />
+
+		<rect width="6" height="10" x="1" y="140" fill="#fff" stroke="#000" />
+
+		<rect width="6" height="10" x="1" y="150" fill="#000" stroke="#000" />
+
+		<rect width="6" height="10" x="1" y="160" fill="#fff" stroke="#000" />
+
+		<rect width="6" height="10" x="1" y="170" fill="#000" stroke="#000" />
+
+		<rect width="6" height="10" x="1" y="180" fill="#fff" stroke="#000" />
+
+		<rect width="6" height="10" x="1" y="190" fill="#000" stroke="#000" />
+
+		<rect width="6" height="10" x="1" y="200" fill="#fff" stroke="#000" />
+
+		<rect width="6" height="10" x="1" y="210" fill="#000" stroke="#000" />
+
+		<rect width="6" height="10" x="1" y="220" fill="#fff" stroke="#000" />
+
+		<rect width="6" height="10" x="1" y="230" fill="#000" stroke="#000" />
+
+		<rect width="6" height="10" x="1" y="240" fill="#fff" stroke="#000" />
+
+		<rect width="6" height="10" x="1" y="250" fill="#000" stroke="#000" />
+
+		<rect width="6" height="10" x="1" y="260" fill="#fff" stroke="#000" />
+
+	</symbol>
+</svg>
