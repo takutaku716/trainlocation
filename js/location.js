@@ -369,7 +369,7 @@ $(function ($) {
 		const trnNow = Date.now() >>> 10;
 		// 最新の列車運行情報を取得する。
 		$.when(
-			$.getJSON("https://corsproxy.org/?https://www3.jrhokkaido.co.jp/webunkou/json/daiya/daiya_00" + (lang === "ja" ? "" : "_" + lang) + ".json?" + mstNow),
+			$.getJSON("https://api.allorigins.win/raw?url=https://www3.jrhokkaido.co.jp/webunkou/json/daiya/daiya_00" + (lang === "ja" ? "" : "_" + lang) + ".json?" + mstNow),
 			$.getJSON("https://api.allorigins.win/raw?url=https://www3.jrhokkaido.co.jp/trainlocation/json/express/now/express_now.json?" + trnNow)
 		)
 		.done((daiyaBase, expressNowBase) => {
@@ -709,7 +709,11 @@ function set_disp_scroll_spo() {
 function set_responsive() {
 	let userAgent = navigator.userAgent;
 	let windowWidth = window.innerWidth;
-	let scrollbarWidth = window.innerWidth - document.body.clientWidth;
+	let scrollbarWidth; // グローバルスコープで宣言
+	document.addEventListener('DOMContentLoaded', (event) => {
+   	scrollbarWidth = window.innerWidth - document.body.clientWidth;
+    	// このスコープ内でscrollbarWidthの値を設定
+	});
 	let margin = 0;
 	let lang = document.documentElement.dataset.lang;
 	if (!(userAgent.indexOf('iPhone') > 0 || userAgent.indexOf('iPad') > 0 || userAgent.indexOf('Android') > 0 || userAgent.indexOf('Mobile') > 0 )) {

@@ -63,10 +63,10 @@ function showTrainDetailDialog(target, train, isError) {
 		const mstNow = Date.now() >>> 16;
 		// マスタファイル類を読み込んで、列車詳細情報を描画する。
 		$.when(
-			$.getJSON("https://corsproxy.org/?https://www3.jrhokkaido.co.jp/webunkou/json/master/eki_master.json?" + mstNow),
+			$.getJSON("https://corsproxy.org/??https://www3.jrhokkaido.co.jp/webunkou/json/master/eki_master.json?" + mstNow),
 			$.getJSON("https://corsproxy.org/?https://www3.jrhokkaido.co.jp/webunkou/json/master/ressha_type_master.json?" + mstNow),
-			$.getJSON("https://corsproxy.org/?https://takutaku716.web.fc2.com/JRH_TRAINLOC_NEW/ORIGINAL/location_master" + (lang === "ja" ? "" : "_" + lang) + ".json?" + mstnow),
-			$.getJSON("https://corsproxy.org/?https://www3.jrhokkaido.co.jp/webunkou/json/daiya/daiya_" + train.senku + (lang === "ja" ? "" : "_" + lang) + ".json?" + mstNow)
+			$.getJSON("./ORIGINAL/location_master" + (lang === "ja" ? "" : "_" + lang) + ".json?" + mstnow),
+			$.getJSON("https://api.allorigins.win/raw?url=https://www3.jrhokkaido.co.jp/webunkou/json/daiya/daiya_" + train.senku + (lang === "ja" ? "" : "_" + lang) + ".json?" + mstNow)
 		)
 		.done(function(ekiMasterBase, resshaTypeMasterBase, posNameMasterBase, daiyaBase) {
 			const ekiMaster = ekiMasterBase[0];
