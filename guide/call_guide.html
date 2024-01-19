@@ -1,0 +1,103 @@
+<script type="text/javascript" src="./common/js/ga.js"></script>
+<div class="dialog-outer">
+<div class="dialog">
+	<h2 class="common-subtitle header">使い方<span class="close"><img src="./images/home/close.svg" alt="閉じる"></span></h2>
+	<div id="guideDetailMain">
+		<div>このページでは、ＪＲ北海道管内の列車の走行位置や遅れ時分をご確認いただけます。</div>
+		<h2 class="common-subtitle">列車の種別</h2>
+		<div>
+			<ul class="ressha-list">
+				<li><span class="ressha-type-icon" data-ressha_type="1"><span class="ressha-sbt">特</span></span><span class="ressha-type-name">特急</span></li>
+				<li><span class="ressha-type-icon" data-ressha_type="2"><span class="ressha-sbt tokukai">特快</span></span><span class="ressha-type-name">特別快速</span></li>
+				<li><span class="ressha-type-icon" data-ressha_type="2"><span class="ressha-sbt">快</span></span><span class="ressha-type-name">快速</span></li>
+				<li><span class="ressha-type-icon" data-ressha_type="3"><span class="ressha-sbt">快</span></span><span class="ressha-type-name">快速（普通区間あり）</span></li>
+				<li><span class="ressha-type-icon"><span class="ressha-sbt">普</span></span><span class="ressha-type-name">普通</span></li>
+				<li><span class="ressha-type-icon" data-ressha_type="1"><span class="ressha-sbt">ラ</span></span><span class="ressha-type-name">ホームライナー</span></li>
+				<li><span class="ressha-type-icon" data-ressha_type="6"><span class="ressha-sbt black">臨</span></span><span class="ressha-type-name">臨時</span></li>
+				<li><span class="ressha-type-icon" data-ressha_type="5"></span><span class="ressha-type-name">北海道新幹線</span></li>
+			</ul>
+		</div>
+		<h2 class="common-subtitle">運行状況</h2>
+		<div class="text-list">
+			<ul>
+				<li>列車が遅れている場合は、列車アイコンの上に「遅れ時分」を１分単位で表示します。遅れ時分が「99分」を超える場合は、「+大幅」と表示します。</li>
+			</ul>
+		</div>
+		<div id="unkouJoukyouOkure">
+			<span id="notOkureTitle">【遅れがない場合】</span><span id="okureTitle">【遅れがある場合】</span>
+			<div id="notOkureImage" class="ressha-icon">
+				<span class="okure-label"></span>
+				<div class="icon-img">
+					<span class="ressha-sbt">普</span>
+				</div>
+				<img class="arrow" src="./images/home/train_icon_arrow_down.svg" alt="">
+				<span class="yukisaki-label">札</span>
+			</div>
+			<div id="okureImage" style="display: flex;">
+				<div class="ressha-icon">
+					<span class="okure-label">　+5</span>
+					<div class="icon-img">
+						<span class="ressha-sbt">普</span>
+					</div>
+					<img class="arrow" src="./images/home/train_icon_arrow_down.svg" alt="">
+					<span class="yukisaki-label">札</span>
+				</div>
+				<div class="ressha-icon">
+					<span class="okure-label">+大幅</span>
+					<div class="icon-img">
+						<span class="ressha-sbt">普</span>
+					</div>
+					<img class="arrow" src="./images/home/train_icon_arrow_down.svg" alt="">
+					<span class="yukisaki-label">札</span>
+				</div>
+			</div>
+		</div>
+		<div class="text-list">
+			<ul>
+				<li>列車に部分運休が発生している場合は、列車アイコンの横に「！マーク」が表示されます。</li>
+			</ul>
+		</div>
+		<div class="unkou-joukyou">
+			<div class="ressha-icon exclamation">
+				<span class="okure-label"></span>
+				<div class="icon-img">
+					<span class="ressha-sbt">普</span>
+				</div>
+				<img class="arrow" src="./images/home/train_icon_arrow_down.svg" alt="">
+				<span class="yukisaki-label">札</span>
+				<img class="exclamation" src="./images/home/exclamation.svg" alt="">
+			</div>
+		</div>
+		<div class="text-list">
+			<ul>
+				<li>「30分以上の遅延が発生または見込まれる場合の運行情報、および運休情報」がある場合にお知らせが表示されます。</li>
+			</ul>
+		</div>
+		<div id="unkou-jouhou">
+			<img src="./images/guide/unkou_info_ja.png" alt="" class="guide-img-border" style="max-width: 300px; max-height: 400px;">
+		</div>
+		<h2 class="common-subtitle">列車詳細情報</h2>
+		<div class="text-list">
+			<ul>
+				<li>列車のアイコンを選択すると列車の詳細情報が表示され、列車の運休情報や時刻表をご確認いただけます。</li>
+			</ul>
+		</div>
+		<div class="guide-image-list">
+			<img src="./images/guide/train_icon_ja.png" alt="" class="guide-img-border">
+			<img src="./images/guide/train_detail_ja.png" alt="" class="guide-img-border">
+		</div>
+		<h2 class="common-subtitle">各駅運行情報へのリンク</h2>
+		<div class="text-list">
+			<ul>
+				<li>駅名を選択すると「各駅運行情報」が表示され、発車時刻表形式で運休または遅れをご確認いただけます。</li>
+			</ul>
+		</div>
+		<div class="guide-image-list">
+			<img src="./images/guide/station_icon_ja.png" alt="" class="guide-img-border">
+			<img src="./images/guide/station_timetable_ja.png" alt="" class="guide-img-border">
+		</div>
+		<h2 class="common-subtitle">ご利用上の注意</h2>
+		<div id="guideDetailAttention" class="text-list" data-url="./guide/call_goriyo_location.html"></div>
+	</div>
+</div>
+</div>
