@@ -72,7 +72,7 @@ $(function ($) {
 			let senku = dataset.senku;
 			let now = Date.now() >>> 16;
 			$.when(
-				$.getJSON("https://corsproxy.org/?https://takutaku716.web.fc2.com/JRH_TRAINLOC_NEW/original/location_master" + (lang === "ja" ? "" : "_" + lang) + ".json?" + now),
+				$.getJSON("./original/location_master" + (lang === "ja" ? "" : "_" + lang) + ".json?" + now),
 				$.getJSON("https://corsproxy.org/?https://www3.jrhokkaido.co.jp/webunkou/json/master/eki_master.json?" + now),
 				$.getJSON("https://corsproxy.org/?https://www3.jrhokkaido.co.jp/webunkou/json/daiya/daiya_" + senku + (lang === "ja" ? "" : "_" + lang) + ".json?" + now)
 			)
