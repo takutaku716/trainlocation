@@ -498,7 +498,7 @@ function set_station_list(_param_rosen, _scrollKey, _callback) {
 	// 走行位置ページメンテナンスJSONファイルを読み込んで、メンテナンスページに切り替えるか判定を行う。
 	let mstNow = Date.now() >>> 16;
 	let now = Date.now() >>> 10;
-	let rosen_html = lang == "ja" ? `https://corsproxy.org/?https://www3.jrhokkaido.co.jp/trainlocation/rosen_${_param_rosen}.html` : `https://corsproxy.org/?https://www3.jrhokkaido.co.jp/trainlocation/rosen_${_param_rosen}_${lang}.html`;
+	let rosen_html = lang == "ja" ? `./rosen/rosen_${_param_rosen}.html` : `https://corsproxy.org/?https://www3.jrhokkaido.co.jp/trainlocation/rosen_${_param_rosen}_${lang}.html`;
 	let maintenance_html = lang == "ja" ? "https://corsproxy.org/?https://www3.jrhokkaido.co.jp/trainlocation/mainte/rosen_maintenance.html" : "https://corsproxy.org/?https://www3.jrhokkaido.co.jp/trainlocation/mainte/rosen_maintenance_" + lang + ".html";
 
 	$.when(
