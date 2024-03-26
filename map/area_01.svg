@@ -1,0 +1,232 @@
+<svg id="areamap" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="100%" height="100%" viewBox="-35 215 400 165">
+	<style>
+		/* テキストオブジェクト */
+		text {
+			fill: #444;
+			font-size: 7px;
+			font-family: "ヒラギノ角ゴ Pro W3", "Hiragino Kaku Gothic Pro", "メイリオ", Meiryo, Osaka, "ＭＳ Ｐゴシック", "MS PGothic", sans-serif;
+		}
+			text.left {
+				text-anchor: start;
+			}
+			text.center {
+				text-anchor: middle;
+			}
+			text.right {
+				text-anchor: end;
+			}
+			text.top {
+				dominant-baseline: text-before-edge;
+			}
+			text.middle {
+				dominant-baseline: central;
+			}
+			text.bottom {
+				/* dominant-baseline: text-after-edge;は
+				iPhoneで位置がずれるため「dy="-0.25em"」で調節しています。 */
+			}
+
+		/* 方面を表す線オブジェクト */
+		g.homen path {
+			fill: none;
+			stroke: #668;
+			stroke-dasharray: 2px;
+			stroke-width: 3px;
+			marker-end: url(#homen-arrow);
+		}
+			g.homen text {
+				fill: #668;
+				font-size: 6.5px;
+				font-style: italic;
+			}
+		marker.homen-arrow polygon {
+			fill: #668;
+		}
+
+		/* 区間を表す線オブジェクト */
+		g.kukan path {
+			stroke: #91ccff;
+			stroke-width: 4px;
+			fill: none;
+			stroke-linejoin: round;
+		}
+			/* サービス未提供を表す線オブジェクト */
+			g.kukan path[data-nonService="1"] {
+				stroke: #ccc;
+			}
+			/* 路線選択区間 */
+			g.kukan path[data-status="2"] {
+				stroke: #04c;
+				stroke-width: 10px;
+			}
+
+		/* 駅を表す点オブジェクト */
+		g.station circle {
+			fill: #fff;
+			stroke: #aaa;
+			stroke-width: 1px;
+			r: 5px;
+		}
+			g.station a:hover circle {
+				fill: #ffc;
+			}
+		g.station g.major text {
+			font-size: 10px;
+			font-weight: bold;
+		}
+
+		/* 北海道の枠線 */
+		g.hokkaido .sea {
+			fill: #bff;
+			stroke: none;
+		}
+		g.hokkaido .land {
+			fill: #fec;
+			stroke: #aaa;
+			stroke-width: 0.5px;
+		}
+		g.hokkaido .area {
+			fill: #5b3;
+			stroke: #4a2;
+			stroke-width: 4px;
+		}
+	</style>
+
+	<!-- 北海道テンプレート -->
+	<symbol id="hokkaido" viewBox="0 0 500 520">
+		<g class="hokkaido">
+			<rect class="sea" x="0" y="0" width="500" height="520"/>
+			<path class="land" d="M170 5 L47 220 L47 290 L3 345 L3 465 L130 465 L130 443 L200 443 L270 480 L340 410 L497 410 L497 360 L470 330 L470 270 L497 240 L497 185 L430 185 L245 5 Z"/>
+			<path class="land" d="M3 520 L3 480 L130 480 L130 520"/>
+			<path class="area" d="M50 220 L47 310 L100 340 L160 340 L160 390 L200 390 L200 320 L245 280 L245 250 L200 250 L150 220 Z"/>
+		</g>
+	</symbol>
+
+	<!-- 方面を表す線オブジェクトの矢印マーカー -->
+	<marker id="homen-arrow" class="homen-arrow" viewBox="0 0 2 2" refX="1" refY="1" markerUnits="strokeWidth" markerWidth="2" orient="auto">
+		<polygon points="0,0 0,2 2,1"/>
+	</marker>
+
+	<!-- 方面を表す線 -->
+	<g class="homen">
+		<!-- 小樽：倶知安・長万部方面 -->
+		<path d="M60 290 L60 305"/>
+		<text class="center top" x="55" y="310">［函館線］倶知安・長万部方面</text>
+		<!-- 岩見沢：滝川・旭川方面 -->
+		<path d="M230 260 L230 240"/>
+		<text class="left bottom" x="210" y="237" dy="-0.25em">［函館線］滝川・旭川方面</text>
+		<!-- 岩見沢：追分・苫小牧方面 -->
+		<path d="M230 260 L230 280"/>
+		<text class="left top" x="210" y="285">［室蘭線］追分・苫小牧方面</text>
+		<!-- 南千歳：帯広・釧路方面 -->
+		<path d="M180 320 L205 320"/>
+		<text class="left middle" x="210" y="320">［石勝線・根室線］帯広・釧路方面</text>
+		<!-- 沼ノ端：追分・岩見沢方面 -->
+		<path d="M180 350 L205 335"/>
+		<text class="left middle" x="210" y="335">［室蘭線］追分・岩見沢方面</text>
+		<!-- 苫小牧：東室蘭・函館方面 -->
+		<path d="M180 370 L160 370"/>
+		<text class="right middle" x="155" y="370">［室蘭線］東室蘭・函館方面</text>
+	</g>
+
+	<!-- 区間を表す線 -->
+	<g id="kukan" class="kukan">
+		<!-- 函館線：小樽～手稲 -->
+		<path data-key="7" d="M60 290 L90 290"/>
+		<!-- 函館線：手稲～桑園 -->
+		<path data-key="8" d="M90 290 L120 290"/>
+		<!-- 函館線：桑園～札幌 -->
+		<path data-key="9" d="M120 290 L150 290"/>
+		<!-- 函館線：札幌～白石 -->
+		<path data-key="10" d="M150 290 L180 290"/>
+		<!-- 函館線：白石～江別 -->
+		<path data-key="11" d="M180 290 L205 275"/>
+		<!-- 函館線：江別～岩見沢 -->
+		<path data-key="12" d="M205 275 L230 260"/>
+		<!-- 室蘭線：苫小牧～沼ノ端 -->
+		<path data-key="26" d="M180 370 L180 350"/>
+		<!-- 千歳線：沼ノ端～南千歳 -->
+		<path data-key="30" d="M180 350 L180 320"/>
+		<!-- 千歳線：南千歳～白石 -->
+		<path data-key="31" d="M180 320 L180 290"/>
+		<!-- 千歳線：南千歳～新千歳空港 -->
+		<path data-key="32" d="M150 335 L180 320"/>
+		<!-- 学園都市線：桑園～あいの里公園 -->
+		<path data-key="33" d="M120 290 L120 260"/>
+		<!-- 学園都市線：あいの里公園～北海道医療大学 -->
+		<path data-key="34" d="M120 260 L120 240"/>
+	</g>
+
+	<!-- 駅を表す点オブジェクト -->
+	<g id="station" class="station">
+		<!-- 小樽 -->
+		<g data-key="76">
+			<circle cx="60" cy="290"/>
+			<text class="center bottom" x="60" y="283" dy="-0.25em">小樽</text>
+		</g>
+		<!-- 手稲 -->
+		<g data-key="85">
+			<circle cx="90" cy="290"/>
+			<text class="center bottom" x="90" y="283" dy="-0.25em">手稲</text>
+		</g>
+		<!-- 桑園 -->
+		<g data-key="90">
+			<circle cx="120" cy="290"/>
+			<text class="center top" x="120" y="297">桑園</text>
+		</g>
+		<!-- 札幌 -->
+		<g data-key="91" class="major">
+			<circle cx="150" cy="290"/>
+			<text class="center bottom" x="150" y="283" dy="-0.25em">札幌</text>
+		</g>
+		<!-- 白石 -->
+		<g data-key="93">
+			<circle cx="180" cy="290"/>
+			<text class="left middle" x="186" y="297">白石</text>
+		</g>
+		<!-- 江別 -->
+		<g data-key="99">
+			<circle cx="205" cy="275"/>
+			<text class="right middle" x="197" y="268">江別</text>
+		</g>
+		<!-- 岩見沢 -->
+		<g data-key="103">
+			<circle cx="230" cy="260"/>
+			<text class="right middle" x="223" y="253">岩見沢</text>
+		</g>
+		<!-- 苫小牧 -->
+		<g data-key="215">
+			<circle cx="180" cy="370"/>
+			<text class="left middle" x="187" y="370">苫小牧</text>
+		</g>
+		<!-- 沼ノ端 -->
+		<g data-key="216">
+			<circle cx="180" cy="350"/>
+			<text class="left middle" x="187" y="357">沼ノ端</text>
+		</g>
+		<!-- 南千歳 -->
+		<g data-key="245">
+			<circle cx="180" cy="320"/>
+			<text class="right middle" x="173" y="313">南千歳</text>
+		</g>
+		<!-- 新千歳空港 -->
+		<g data-key="246" class="major">
+			<circle cx="150" cy="335"/>
+			<text class="right middle" x="142" y="335">新千歳空港</text>
+		</g>
+		<!-- あいの里公園 -->
+		<g data-key="259">
+			<circle cx="120" cy="260"/>
+			<text class="right middle" x="113" y="260">あいの里公園</text>
+		</g>
+		<!-- 北海道医療大学 -->
+		<g data-key="262">
+			<circle cx="120" cy="240"/>
+			<text class="center bottom" x="120" y="233" dy="-0.25em">北海道医療大学</text>
+		</g>
+	</g>
+
+	<!-- 北海道の枠線 -->
+	<use xlink:href="#hokkaido" x="-34" y="216" width="75" height="78"/>
+
+</svg>

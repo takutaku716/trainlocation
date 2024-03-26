@@ -1,0 +1,176 @@
+<svg id="areamap" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="100%" height="100%" viewBox="-140 330 400 160">
+	<style>
+		/* テキストオブジェクト */
+		text {
+			fill: #444;
+			font-size: 7px;
+			font-family: "ヒラギノ角ゴ Pro W3", "Hiragino Kaku Gothic Pro", "メイリオ", Meiryo, Osaka, "ＭＳ Ｐゴシック", "MS PGothic", sans-serif;
+		}
+			text.left {
+				text-anchor: start;
+			}
+			text.center {
+				text-anchor: middle;
+			}
+			text.right {
+				text-anchor: end;
+			}
+			text.top {
+				dominant-baseline: text-before-edge;
+			}
+			text.middle {
+				dominant-baseline: central;
+			}
+			text.bottom {
+				/* dominant-baseline: text-after-edge;は
+				iPhoneで位置がずれるため「dy="-0.25em"」で調節しています。 */
+			}
+
+		/* 方面を表す線オブジェクト */
+		g.homen path {
+			fill: none;
+			stroke: #668;
+			stroke-dasharray: 2px;
+			stroke-width: 3px;
+			marker-end: url(#homen-arrow);
+		}
+			g.homen text {
+				fill: #668;
+				font-size: 6.5px;
+				font-style: italic;
+			}
+		marker.homen-arrow polygon {
+			fill: #668;
+		}
+
+		/* 区間を表す線オブジェクト */
+		g.kukan path {
+			stroke: #91ccff;
+			stroke-width: 4px;
+			fill: none;
+			stroke-linejoin: round;
+		}
+			/* サービス未提供を表す線オブジェクト */
+			g.kukan path[data-nonService="1"] {
+				stroke: #ccc;
+			}
+			/* 路線選択区間 */
+			g.kukan path[data-status="2"] {
+				stroke: #04c;
+				stroke-width: 10px;
+			}
+
+		/* 駅を表す点オブジェクト */
+		g.station circle {
+			fill: #fff;
+			stroke: #aaa;
+			stroke-width: 1px;
+			r: 5px;
+		}
+			g.station a:hover circle {
+				fill: #ffc;
+			}
+		g.station g.major text {
+			font-size: 10px;
+			font-weight: bold;
+		}
+
+		/* 北海道の枠線 */
+		g.hokkaido .sea {
+			fill: #bff;
+			stroke: none;
+		}
+		g.hokkaido .land {
+			fill: #fec;
+			stroke: #aaa;
+			stroke-width: 0.5px;
+		}
+		g.hokkaido .area {
+			fill: #5b3;
+			stroke: #4a2;
+			stroke-width: 4px;
+		}
+	</style>
+
+	<!-- 北海道テンプレート -->
+	<symbol id="hokkaido" viewBox="0 0 500 520">
+		<g class="hokkaido">
+			<rect class="sea" x="0" y="0" width="500" height="520"/>
+			<path class="land" d="M170 5 L47 220 L47 290 L3 345 L3 465 L130 465 L130 443 L200 443 L270 480 L340 410 L497 410 L497 360 L470 330 L470 270 L497 240 L497 185 L430 185 L245 5 Z"/>
+			<path class="land" d="M3 520 L3 480 L130 480 L130 520"/>
+			<path class="area" d="M3 345 L3 425 L50 425 L50 465 L130 465 L130 443 L100 390 L60 390 Z"/>
+		</g>
+	</symbol>
+
+	<!-- 方面を表す線オブジェクトの矢印マーカー -->
+	<marker id="homen-arrow" class="homen-arrow" viewBox="0 0 2 2" refX="1" refY="1" markerUnits="strokeWidth" markerWidth="2" orient="auto">
+		<polygon points="0,0 0,2 2,1"/>
+	</marker>
+
+	<!-- 方面を表す線 -->
+	<g class="homen">
+		<!-- 長万部：倶知安・小樽方面 -->
+		<path d="M60 370 L60 350"/>
+		<text class="center bottom" x="60" y="347" dy="-0.25em">［函館線］倶知安・小樽方面</text>
+		<!-- 長万部：東室蘭・札幌方面 -->
+		<path d="M60 370 L90 370"/>
+		<text class="left middle" x="95" y="370">［室蘭線］東室蘭・札幌方面</text>
+		<!-- 新函館北斗：仙台・東京方面 -->
+		<path d="M60 435 L20 435 L20 465"/>
+		<text class="center top" x="20" y="470">［北海道・東北新幹線］仙台・東京方面</text>
+	</g>
+
+	<!-- 区間を表す線 -->
+	<g id="kukan" class="kukan">
+		<!-- 函館線：函館～新函館北斗 -->
+		<path data-key="1" d="M60 455 L60 435"/>
+		<!-- 函館線：新函館北斗～大沼 -->
+		<path data-key="2" d="M60 435 L60 415"/>
+		<!-- 函館線：大沼～森 -->
+		<path data-key="3" d="M60 415 L60 395"/>
+		<!-- 函館線：森～長万部 -->
+		<path data-key="4" d="M60 395 L60 370"/>
+		<!-- 函館線：大沼～渡島砂原 -->
+		<path data-key="16" d="M60 415 L80 415 L80 406"/>
+		<!-- 函館線：渡島砂原～森 -->
+		<path data-key="16" d="M80 406 L80 395 L60 395"/>
+	</g>
+
+	<!-- 駅を表す点オブジェクト -->
+	<g id="station" class="station">
+		<!-- 函館 -->
+		<g data-key="28" class="major">
+			<circle cx="60" cy="455"/>
+			<text class="left middle" x="67" y="455">函館</text>
+		</g>
+		<!-- 新函館北斗 -->
+		<g data-key="34" class="major">
+			<circle cx="60" cy="435"/>
+			<text class="left middle" x="67" y="435">新函館北斗</text>
+		</g>
+		<!-- 大沼 -->
+		<g data-key="36">
+			<circle cx="60" cy="415"/>
+			<text class="right middle" x="53" y="415">大沼</text>
+		</g>
+		<!-- 森 -->
+		<g data-key="43">
+			<circle cx="60" cy="395"/>
+			<text class="right middle" x="53" y="395">森</text>
+		</g>
+		<!-- 長万部 -->
+		<g data-key="58">
+			<circle cx="60" cy="370"/>
+			<text class="right middle" x="53" y="370">長万部</text>
+		</g>
+		<!-- 渡島砂原 -->
+		<g data-key="125">
+			<circle cx="80" cy="406"/>
+			<text class="left middle" x="87" y="406">渡島砂原</text>
+		</g>
+	</g>
+
+	<!-- 北海道の枠線 -->
+	<use xlink:href="#hokkaido" x="-139" y="331" width="75" height="78"/>
+
+</svg>

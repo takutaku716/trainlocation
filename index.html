@@ -15,8 +15,8 @@
 	<!-- 基本（終了） -->
 	<!-- メンテ判定処理（開始） -->
 	<script>
-		fetch("https://corsproxy.org/?https://www3.jrhokkaido.co.jp/trainlocation/mainte/location_maintenance.json?" + (Date.now() >>> 16)).then(response => response.json()).then(json => {
-		  if (json.status) window.location.replace("https://corsproxy.org/?https://www3.jrhokkaido.co.jp/trainlocation/mainte/location_maintenance.html");
+		fetch("./mainte/location_maintenance.json?" + (Date.now() >>> 16)).then(response => response.json()).then(json => {
+		  if (json.status) window.location.replace("./mainte/location_maintenance.html");
 		});
 	</script>
 	<!-- メンテ判定処理（終了） -->
@@ -74,7 +74,7 @@
 		<!-- お知らせセクション ここから -->
 		<section id="commonOshirase" hidden>
 			<h2 class="common-subtitle toggle">お知らせ</h2>
-			<div id="commonOshiraseContents" class="common-contents-frame" data-url="https://corsproxy.org/?https://www3.jrhokkaido.co.jp/trainlocation/CMUNKOU/inc_location_top.html"></div>
+			<div id="commonOshiraseContents" class="common-contents-frame" data-url="https://api.allorigins.win/raw?url=https://www3.jrhokkaido.co.jp/trainlocation/CMUNKOU/inc_location_top.html"></div>
 		</section>
 		<!-- お知らせセクション ここまで -->
 
@@ -186,7 +186,7 @@
 									</div>
 								</div>
 								<div class="area-map spo">
-									<object id="areaMapspo" data="https://corsproxy.org/?https://www3.jrhokkaido.co.jp/trainlocation/map/area_01.svg" type="image/svg+xml"	title="列車運行情報"></object>
+									<object id="areaMapspo" data="./map/area_01.svg" type="image/svg+xml"	title="列車運行情報"></object>
 								</div>
 							</div>
 							<div class="area-contents doo">
@@ -269,7 +269,7 @@
 									</div>
 								</div>
 								<div class="area-map doo">
-									<object id="areaMapdoo" data="https://corsproxy.org/?https://www3.jrhokkaido.co.jp/trainlocation/map/area_02.svg" type="image/svg+xml" title="列車運行情報"></object>
+									<object id="areaMapdoo" data="./map/area_02.svg" type="image/svg+xml" title="列車運行情報"></object>
 								</div>
 							</div>
 							<div class="area-contents donan">
@@ -295,7 +295,7 @@
 									</div>
 								</div>
 								<div class="area-map donan">
-									<object id="areaMapdonan" data="https://corsproxy.org/?https://www3.jrhokkaido.co.jp/trainlocation/map/area_03.svg" type="image/svg+xml" title="列車運行情報"></object>
+									<object id="areaMapdonan" data="./map/area_03.svg" type="image/svg+xml" title="列車運行情報"></object>
 								</div>
 							</div>
 							<div class="area-contents dohoku">
@@ -321,7 +321,7 @@
 									</div>
 								</div>
 								<div class="area-map dohoku">
-									<object id="areaMapdohoku" data="https://corsproxy.org/?https://www3.jrhokkaido.co.jp/trainlocation/map/area_04.svg" type="image/svg+xml" title="列車運行情報"></object>
+									<object id="areaMapdohoku" data="./map/area_04.svg" type="image/svg+xml" title="列車運行情報"></object>
 								</div>
 							</div>
 							<div class="area-contents doto">
@@ -347,7 +347,7 @@
 									</div>
 								</div>
 								<div class="area-map doto">
-									<object id="areaMapdoto" data="https://corsproxy.org/?https://www3.jrhokkaido.co.jp/trainlocation/map/area_05.svg" type="image/svg+xml" title="列車運行情報"></object>
+									<object id="areaMapdoto" data="./map/area_05.svg" type="image/svg+xml" title="列車運行情報"></object>
 								</div>
 							</div>
 							<div class="area-contents shin">
@@ -364,7 +364,7 @@
 									</div>
 								</div>
 								<div class="area-map shin">
-									<object id="areaMapshin" data="https://corsproxy.org/?https://www3.jrhokkaido.co.jp/trainlocation/map/senku_24.svg" type="image/svg+xml" title="列車運行情報"></object>
+									<object id="areaMapshin" data="./map/senku_24.svg" type="image/svg+xml" title="列車運行情報"></object>
 								</div>
 							</div>
 						</div>
@@ -411,7 +411,7 @@
 				<section id="rosenzuContents">
 					<h2 class="top-sel-title">地図から選択</h2>
 					<div class="eikyo-map">
-						<object id="svgTopMap" data="https://corsproxy.org/?https://www3.jrhokkaido.co.jp/trainlocation/map/top.svg" type="image/svg+xml" title="列車運行情報"></object>
+						<object id="svgTopMap" data="./map/top.svg" type="image/svg+xml" title="列車運行情報"></object>
 						<div class="eikyo-map-remarks">
 							<dl>
 								<dt><svg height="12" width="36"><path d="m0 7h32" stroke="#ccc" stroke-width="4"></path></svg></dt>

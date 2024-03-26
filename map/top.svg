@@ -1,0 +1,558 @@
+<svg id="top" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="100%" height="100%" viewBox="0 0 500 520">
+	<style>
+		/* テキストオブジェクト */
+		text {
+			fill: #444;
+			font-size: 7px;
+			font-family: "ヒラギノ角ゴ Pro W3", "Hiragino Kaku Gothic Pro", "メイリオ", Meiryo, Osaka, "ＭＳ Ｐゴシック", "MS PGothic", sans-serif;
+		}
+			text.left {
+				text-anchor: start;
+			}
+			text.center {
+				text-anchor: middle;
+			}
+			text.right {
+				text-anchor: end;
+			}
+			text.top {
+				dominant-baseline: text-before-edge;
+			}
+			text.middle {
+				dominant-baseline: central;
+			}
+			text.bottom {
+				/* dominant-baseline: text-after-edge;は
+				iPhoneで位置がずれるため「dy="-0.25em"」で調節しています。 */
+			}
+			text.non-service {
+				fill: #aaa;
+			}
+
+		/* 区間を表す線オブジェクト */
+		g.kukan path {
+			stroke: #91ccff;
+			stroke-width: 4px;
+			fill: none;
+			stroke-linejoin: round;
+		}
+			/* サービス未提供を表す線オブジェクト */
+			g.kukan path[data-nonService="1"] {
+				stroke: #ccc;
+				stroke-width: 4px;
+				fill: none;
+				stroke-linejoin: round;
+			}
+			/* エリア選択区間 */
+			g.kukan path[data-status="1"] {
+				stroke: #04c;
+				stroke-width: 4px;
+			}
+			/* 路線選択区間 */
+			g.kukan path[data-status="2"] {
+				stroke: #04c;
+				stroke-width: 10px;
+			}
+
+		/* 駅を表す点オブジェクト */
+		g.station circle {
+			fill: #fff;
+			stroke: #aaa;
+			stroke-width: 1px;
+			r: 5px;
+		}
+			g.station a:hover circle {
+				fill: #ffc;
+			}
+			g.station circle.non-service {
+				stroke: #ccc;
+			}
+		g.station text {
+			font-weight: bold;
+		}
+			g.station g.major text {
+				font-size: 10px;
+			}
+
+		/* エリアオブジェクト */
+		g.area path {
+			fill: #fff;
+			fill-opacity: 0;
+		}
+
+		/* 北海道の枠線 */
+		g.hokkaido .land {
+			fill: #fec;
+			stroke: #aaa;
+			stroke-width: 2px;
+		}
+	</style>
+
+	<!-- 北海道の枠線 -->
+	<g class="hokkaido">
+		<path class="land" d="M170 5 L47 220 L47 290 L3 345 L3 465 L130 465 L130 443 L200 443 L270 480 L340 410 L497 410 L497 360 L470 330 L470 270 L497 240 L497 185 L430 185 L245 5 Z"/>
+		<path class="land" d="M3 520 L3 480 L130 480 L130 520"/>
+	</g>
+
+	<!-- 区間を表す線 -->
+	<g id="kukan" class="kukan" pointer-events="none">
+		<!-- 函館線：函館～新函館北斗 -->
+		<path data-key="1" d="M60 455 L60 435"/>
+		<!-- 函館線：新函館北斗～大沼 -->
+		<path data-key="2" d="M60 435 L60 415"/>
+		<!-- 函館線：大沼～森 -->
+		<path data-key="3" d="M60 415 L60 395"/>
+		<!-- 函館線：森～長万部 -->
+		<path data-key="4" d="M60 395 L60 370"/>
+		<!-- 函館線：長万部～倶知安 -->
+		<path data-key="5" d="M60 370 L60 330"/>
+		<!-- 函館線：倶知安～小樽 -->
+		<path data-key="6" d="M60 330 L60 290"/>
+		<!-- 函館線：小樽～手稲 -->
+		<path data-key="7" d="M60 290 L90 290"/>
+		<!-- 函館線：手稲～桑園 -->
+		<path data-key="8" d="M90 290 L120 290"/>
+		<!-- 函館線：桑園～札幌 -->
+		<path data-key="9" d="M120 290 L150 290"/>
+		<!-- 函館線：札幌～白石 -->
+		<path data-key="10" d="M150 290 L180 290"/>
+		<!-- 函館線：白石～江別 -->
+		<path data-key="11" d="M180 290 L205 275"/>
+		<!-- 函館線：江別～岩見沢 -->
+		<path data-key="12" d="M205 275 L230 260"/>
+		<!-- 函館線：岩見沢～滝川 -->
+		<path data-key="13" d="M230 260 L230 230"/>
+		<!-- 函館線：滝川～深川 -->
+		<path data-key="14" d="M230 230 L230 205"/>
+		<!-- 函館線：深川～旭川 -->
+		<path data-key="15" d="M230 205 L230 180"/>
+		<!-- 函館線：大沼～渡島砂原 -->
+		<path data-key="16" d="M60 415 L80 415 L80 406"/>
+		<!-- 函館線：渡島砂原～森 -->
+		<path data-key="16" d="M80 406 L80 395 L60 395"/>
+		<!-- 宗谷線：旭川～新旭川 -->
+		<path data-key="17" d="M230 180 L230 160"/>
+		<!-- 宗谷線：新旭川～永山 -->
+		<path data-key="18" d="M230 160 L230 140"/>
+		<!-- 宗谷線：永山～名寄 -->
+		<path data-key="19" d="M230 140 L230 100"/>
+		<!-- 宗谷線：名寄～音威子府 -->
+		<path data-key="20" d="M230 100 L230 60" data-nonService="1"/>
+		<!-- 宗谷線：音威子府～稚内 -->
+		<path data-key="21" d="M230 60 L230 15" data-nonService="1"/>
+		<!-- 室蘭線：長万部～洞爺 -->
+		<path data-key="22" d="M60 370 L90 370"/>
+		<!-- 室蘭線：洞爺～東室蘭 -->
+		<path data-key="23" d="M90 370 L120 370"/>
+		<!-- 室蘭線：東室蘭～登別 -->
+		<path data-key="24" d="M120 370 L150 370"/>
+		<!-- 室蘭線：登別～苫小牧 -->
+		<path data-key="25" d="M150 370 L180 370"/>
+		<!-- 室蘭線：苫小牧～沼ノ端 -->
+		<path data-key="26" d="M180 370 L180 350"/>
+		<!-- 室蘭線：沼ノ端～追分 -->
+		<path data-key="27" d="M180 350 L230 320"/>
+		<!-- 室蘭線：追分～岩見沢 -->
+		<path data-key="28" d="M230 320 L230 260"/>
+		<!-- 室蘭線：東室蘭～室蘭 -->
+		<path data-key="29" d="M120 370 L120 395"/>
+		<!-- 千歳線：沼ノ端～南千歳 -->
+		<path data-key="30" d="M180 350 L180 320"/>
+		<!-- 千歳線：南千歳～白石 -->
+		<path data-key="31" d="M180 320 L180 290"/>
+		<!-- 千歳線：南千歳～新千歳空港 -->
+		<path data-key="32" d="M150 335 L180 320"/>
+		<!-- 学園都市線：桑園～あいの里公園 -->
+		<path data-key="33" d="M120 290 L120 260"/>
+		<!-- 学園都市線：あいの里公園～北海道医療大学 -->
+		<path data-key="34" d="M120 260 L120 240"/>
+		<!-- 石勝線：南千歳～追分 -->
+		<path data-key="35" d="M180 320 L230 320"/>
+		<!-- 石勝線：追分～新得 -->
+		<path data-key="36" d="M230 320 L280 350"/>
+		<!-- 根室線：滝川～富良野 -->
+		<path data-key="37" d="M230 230 L280 260"/>
+		<!-- 根室線：富良野～東鹿越 -->
+		<path data-key="38" d="M280 260 L280 300"/>
+		<!-- 根室線：東鹿越～新得 -->
+		<path data-key="39" d="M280 300 L280 350" data-nonService="1"/>
+		<!-- 根室線：新得～帯広 -->
+		<path data-key="40" d="M280 350 L315 370"/>
+		<!-- 根室線：帯広～池田 -->
+		<path data-key="41" d="M315 370 L350 370"/>
+		<!-- 根室線：池田～釧路 -->
+		<path data-key="42" d="M350 370 L390 370"/>
+		<!-- 花咲線：釧路～東釧路 -->
+		<path data-key="43" d="M390 370 L420 370" data-nonService="1"/>
+		<!-- 花咲線：東釧路～厚岸 -->
+		<path data-key="44" d="M420 370 L450 370" data-nonService="1"/>
+		<!-- 花咲線：厚岸～根室 -->
+		<path data-key="45" d="M450 370 L480 370" data-nonService="1"/>
+		<!-- 釧網線：東釧路～摩周 -->
+		<path data-key="46" d="M420 370 L420 300" data-nonService="1"/>
+		<!-- 釧網線：摩周～知床斜里 -->
+		<path data-key="47" d="M420 300 L420 195" data-nonService="1"/>
+		<!-- 釧網線：知床斜里～網走 -->
+		<path data-key="48" d="M420 195 L385 160" data-nonService="1"/>
+		<!-- 日高線：苫小牧～鵡川 -->
+		<path data-key="49" d="M180 370 L180 395" data-nonService="1"/>
+		<!-- 留萌線：深川～石狩沼田 -->
+		<path data-key="50" d="M230 205 L205 192.5" data-nonService="1"/>
+		<!-- 石北線：新旭川～上川 -->
+		<path data-key="51" d="M230 160 L265 160"/>
+		<!-- 石北線：上川～遠軽 -->
+		<path data-key="52" d="M265 160 L305 160" data-nonService="1"/>
+		<!-- 石北線：遠軽～北見 -->
+		<path data-key="53" d="M305 160 L345 160" data-nonService="1"/>
+		<!-- 石北線：北見～網走 -->
+		<path data-key="54" d="M345 160 L385 160" data-nonService="1"/>
+		<!-- 富良野線：富良野～美瑛 -->
+		<path data-key="55" d="M280 260 L280 210" data-nonService="1"/>
+		<!-- 富良野線：美瑛～旭川 -->
+		<path data-key="56" d="M280 210 L230 180" data-nonService="1"/>
+		<!-- 北海道新幹線：新青森～新函館北斗 -->
+		<path data-key="57" d="M60 490 L40 490 L40 435 L60 435"/>
+	</g>
+
+	<!-- 駅を表す点オブジェクト -->
+
+	<g id="station" class="station">
+		<!-- 函館 -->
+		<a xlink:href="../location.html#rosen=09&amp;id=028" target="_top">
+			<g data-key="28" class="major">
+				<circle cx="60" cy="455"/>
+				<text class="left middle" x="67" y="455">函館</text>
+			</g>
+		</a>
+		<!-- 新函館北斗 -->
+		<a xlink:href="../location.html#rosen=09&amp;id=034" target="_top">
+			<g data-key="34" class="major">
+				<circle cx="60" cy="435"/>
+				<text class="left middle" x="67" y="435">新函館北斗</text>
+			</g>
+		</a>
+		<!-- 大沼 -->
+		<a xlink:href="../location.html#rosen=09&amp;id=036" target="_top">
+			<g data-key="36">
+				<circle cx="60" cy="415"/>
+				<text class="right middle" x="53" y="415">大沼</text>
+			</g>
+		</a>
+		<!-- 森 -->
+		<a xlink:href="../location.html#rosen=09&amp;id=043" target="_top">
+			<g data-key="43">
+				<circle cx="60" cy="395"/>
+				<text class="right middle" x="53" y="395">森</text>
+			</g>
+		</a>
+		<!-- 長万部 -->
+		<a xlink:href="../location.html#rosen=07&amp;id=058" target="_top">
+			<g data-key="58">
+				<circle cx="60" cy="370"/>
+				<text class="right middle" x="53" y="370">長万部</text>
+			</g>
+		</a>
+		<!-- 倶知安 -->
+		<a xlink:href="../location.html#rosen=04&amp;id=068" target="_top">
+			<g data-key="68">
+				<circle cx="60" cy="330"/>
+				<text class="right middle" x="53" y="330">倶知安</text>
+			</g>
+		</a>
+		<!-- 小樽 -->
+		<a xlink:href="../location.html#rosen=01&amp;id=076" target="_top">
+			<g data-key="76">
+				<circle cx="60" cy="290"/>
+				<text class="center bottom" x="60" y="283" dy="-0.25em">小樽</text>
+			</g>
+		</a>
+		<!-- 手稲 -->
+		<a xlink:href="../location.html#rosen=01&amp;id=085" target="_top">
+			<g data-key="85">
+				<circle cx="90" cy="290"/>
+				<text class="center bottom" x="90" y="283" dy="-0.25em">手稲</text>
+			</g>
+		</a>
+		<!-- 桑園 -->
+		<a xlink:href="../location.html#rosen=01&amp;id=090" target="_top">
+			<g data-key="90">
+				<circle cx="120" cy="290"/>
+				<text class="center top" x="120" y="297">桑園</text>
+			</g>
+		</a>
+		<!-- 札幌 -->
+		<a xlink:href="../location.html#rosen=01&amp;id=091" target="_top">
+			<g data-key="91" class="major">
+				<circle cx="150" cy="290"/>
+				<text class="center bottom" x="150" y="283" dy="-0.25em">札幌</text>
+			</g>
+		</a>
+		<!-- 白石 -->
+		<a xlink:href="../location.html#rosen=01&amp;id=093" target="_top">
+			<g data-key="93">
+				<circle cx="180" cy="290"/>
+				<text class="left middle" x="186" y="297">白石</text>
+			</g>
+		</a>
+		<!-- 江別 -->
+		<a xlink:href="../location.html#rosen=01&amp;id=099" target="_top">
+			<g data-key="99">
+				<circle cx="205" cy="275"/>
+				<text class="right middle" x="197" y="268">江別</text>
+			</g>
+		</a>
+		<!-- 岩見沢 -->
+		<a xlink:href="../location.html#rosen=01&amp;id=103" target="_top">
+			<g data-key="103">
+				<circle cx="230" cy="260"/>
+				<text class="right middle" x="223" y="253">岩見沢</text>
+			</g>
+		</a>
+		<!-- 滝川 -->
+		<a xlink:href="../location.html#rosen=05&amp;id=111" target="_top">
+			<g data-key="111">
+				<circle cx="230" cy="230"/>
+				<text class="right middle" x="223" y="230">滝川</text>
+			</g>
+		</a>
+		<!-- 深川 -->
+		<a xlink:href="../location.html#rosen=05&amp;id=114" target="_top">
+			<g data-key="114">
+				<circle cx="230" cy="205"/>
+				<text class="right middle" x="223" y="212">深川</text>
+			</g>
+		</a>
+		<!-- 旭川 -->
+		<a xlink:href="../location.html#rosen=05&amp;id=118" target="_top">
+			<g data-key="118" class="major">
+				<circle cx="230" cy="180"/>
+				<text class="right middle" x="223" y="175">旭川</text>
+			</g>
+		</a>
+		<!-- 渡島砂原 -->
+		<a xlink:href="../location.html#rosen=10&amp;id=125" target="_top">
+			<g data-key="125">
+				<circle cx="80" cy="406"/>
+				<text class="left middle" x="87" y="406">渡島砂原</text>
+			</g>
+		</a>
+		<!-- 新旭川 -->
+		<a xlink:href="../location.html#rosen=11&amp;id=131" target="_top">
+			<g data-key="131">
+				<circle cx="230" cy="160"/>
+				<text class="right middle" x="223" y="160">新旭川</text>
+			</g>
+		</a>
+		<!-- 永山 -->
+		<a xlink:href="../location.html#rosen=11&amp;id=132" target="_top">
+			<g data-key="132">
+				<circle cx="230" cy="140"/>
+				<text class="right middle" x="223" y="140">永山</text>
+			</g>
+		</a>
+		<!-- 名寄 -->
+		<a xlink:href="../location.html#rosen=11&amp;id=149" target="_top">
+			<g data-key="149">
+				<circle cx="230" cy="100"/>
+				<text class="right middle" x="223" y="100">名寄</text>
+			</g>
+		</a>
+		<!-- 音威子府 -->
+		<g data-key="163">
+			<circle class="non-service" cx="230" cy="60"/>
+			<text class="right middle non-service" x="223" y="60">音威子府</text>
+		</g>
+		<!-- 稚内 -->
+		<g data-key="183" class="major">
+			<circle class="non-service" cx="230" cy="15"/>
+			<text class="right middle non-service" x="223" y="15">稚内</text>
+		</g>
+		<!-- 洞爺 -->
+		<a xlink:href="../location.html#rosen=07&amp;id=190" target="_top">
+			<g data-key="190">
+				<circle cx="90" cy="370"/>
+				<text class="center top" x="90" y="377">洞爺</text>
+			</g>
+		</a>
+		<!-- 東室蘭 -->
+		<a xlink:href="../location.html#rosen=07&amp;id=201" target="_top">
+			<g data-key="201" class="major">
+				<circle cx="120" cy="370"/>
+				<text class="center bottom" x="120" y="363" dy="-0.25em">東室蘭</text>
+			</g>
+		</a>
+		<!-- 登別 -->
+		<a xlink:href="../location.html#rosen=07&amp;id=205" target="_top">
+			<g data-key="205">
+				<circle cx="150" cy="370"/>
+				<text class="center top" x="150" y="377">登別</text>
+			</g>
+		</a>
+		<!-- 苫小牧 -->
+		<a xlink:href="../location.html#rosen=02&amp;id=215" target="_top">
+			<g data-key="215">
+				<circle cx="180" cy="370"/>
+				<text class="left middle" x="187" y="370">苫小牧</text>
+			</g>
+		</a>
+		<!-- 沼ノ端 -->
+		<a xlink:href="../location.html#rosen=02&amp;id=216" target="_top">
+			<g data-key="216">
+				<circle cx="180" cy="350"/>
+				<text class="left middle" x="187" y="357">沼ノ端</text>
+			</g>
+		</a>
+		<!-- 追分 -->
+		<a xlink:href="../location.html#rosen=13&amp;id=220" target="_top">
+			<g data-key="220">
+				<circle cx="230" cy="320"/>
+				<text class="left middle" x="237" y="313">追分</text>
+			</g>
+		</a>
+		<!-- 室蘭 -->
+		<a xlink:href="../location.html#rosen=08&amp;id=231" target="_top">
+			<g data-key="231">
+				<circle cx="120" cy="395"/>
+				<text class="left middle" x="127" y="395">室蘭</text>
+			</g>
+		</a>
+		<!-- 南千歳 -->
+		<a xlink:href="../location.html#rosen=02&amp;id=245" target="_top">
+			<g data-key="245">
+				<circle cx="180" cy="320"/>
+				<text class="right middle" x="173" y="313">南千歳</text>
+			</g>
+		</a>
+		<!-- 新千歳空港 -->
+		<a xlink:href="../location.html#rosen=02&amp;id=246" target="_top">
+			<g data-key="246" class="major">
+				<circle cx="150" cy="335"/>
+				<text class="right middle" x="142" y="335">新千歳空港</text>
+			</g>
+		</a>
+		<!-- あいの里公園 -->
+		<a xlink:href="../location.html#rosen=03&amp;id=259" target="_top">
+			<g data-key="259">
+				<circle cx="120" cy="260"/>
+				<text class="right middle" x="113" y="260">あいの里公園</text>
+			</g>
+		</a>
+		<!-- 北海道医療大学 -->
+		<a xlink:href="../location.html#rosen=03&amp;id=262" target="_top">
+			<g data-key="262">
+				<circle cx="120" cy="240"/>
+				<text class="center bottom" x="120" y="233" dy="-0.25em">北海道医療大学</text>
+			</g>
+		</a>
+		<!-- 東鹿越 -->
+		<a xlink:href="../location.html#rosen=14&amp;id=318" target="_top">
+			<g data-key="318">
+				<circle cx="280" cy="300"/>
+				<text class="left middle" x="287" y="300">東鹿越</text>
+			</g>
+		</a>
+		<!-- 新得 -->
+		<a xlink:href="../location.html#rosen=13&amp;id=325" target="_top">
+			<g data-key="325">
+				<circle cx="280" cy="350"/>
+				<text class="left middle" x="287" y="343">新得</text>
+			</g>
+		</a>
+		<!-- 帯広 -->
+		<a xlink:href="../location.html#rosen=13&amp;id=335" target="_top">
+			<g data-key="335" class="major">
+				<circle cx="315" cy="370"/>
+				<text class="center top" x="315" y="377">帯広</text>
+			</g>
+		</a>
+		<!-- 池田 -->
+		<a xlink:href="../location.html#rosen=13&amp;id=340" target="_top">
+			<g data-key="340">
+				<circle cx="350" cy="370"/>
+				<text class="center top" x="350" y="377">池田</text>
+			</g>
+		</a>
+		<!-- 釧路 -->
+		<a xlink:href="../location.html#rosen=13&amp;id=360" target="_top">
+			<g data-key="360" class="major">
+				<circle cx="390" cy="370"/>
+				<text class="center bottom" x="390" y="363" dy="-0.25em">釧路</text>
+			</g>
+		</a>
+		<!-- 東釧路 -->
+		<g data-key="361">
+			<circle class="non-service" cx="420" cy="370"/>
+			<text class="center top non-service" x="420" y="377">東釧路</text>
+		</g>
+		<!-- 厚岸 -->
+		<g data-key="367">
+			<circle class="non-service" cx="450" cy="370"/>
+			<text class="center bottom non-service" x="450" y="363" dy="-0.25em">厚岸</text>
+		</g>
+		<!-- 根室 -->
+		<g data-key="380">
+			<circle class="non-service" cx="480" cy="370"/>
+			<text class="center top non-service" x="480" y="377">根室</text>
+		</g>
+		<!-- 摩周 -->
+		<g data-key="390">
+			<circle class="non-service" cx="420" cy="300"/>
+			<text class="left middle non-service" x="427" y="300">摩周</text>
+		</g>
+		<!-- 知床斜里 -->
+		<g data-key="398">
+			<circle class="non-service" cx="420" cy="195"/>
+			<text class="left middle non-service" x="427" y="195">知床斜里</text>
+		</g>
+		<!-- 網走 -->
+		<g data-key="406" class="major">
+			<circle class="non-service" cx="385" cy="160"/>
+			<text class="right top non-service" x="385" y="167">網走</text>
+		</g>
+		<!-- 鵡川 -->
+		<g data-key="411">
+			<circle class="non-service" cx="180" cy="395"/>
+			<text class="left middle non-service" x="187" y="395">鵡川</text>
+		</g>
+		<!-- 石狩沼田 -->
+		<g data-key="439">
+			<circle class="non-service" cx="205" cy="192.5"/>
+			<text class="right middle non-service" x="198" y="192.5">石狩沼田</text>
+		</g>
+		<!-- 上川 -->
+		<a xlink:href="../location.html#rosen=12&amp;id=469" target="_top">
+			<g data-key="469">
+				<circle cx="265" cy="160"/>
+				<text class="center bottom" x="265" y="153" dy="-0.25em">上川</text>
+			</g>
+		</a>
+		<!-- 遠軽 -->
+		<g data-key="480">
+			<circle class="non-service" cx="305" cy="160"/>
+			<text class="center bottom non-service" x="305" y="153" dy="-0.25em">遠軽</text>
+		</g>
+		<!-- 北見 -->
+		<g data-key="491">
+			<circle class="non-service" cx="345" cy="160"/>
+			<text class="center bottom non-service" x="345" y="153" dy="-0.25em">北見</text>
+		</g>
+		<!-- 富良野 -->
+		<a xlink:href="../location.html#rosen=14&amp;id=500" target="_top">
+			<g data-key="500">
+				<circle cx="280" cy="260"/>
+				<text class="left middle" x="287" y="260">富良野</text>
+			</g>
+		</a>
+		<!-- 美瑛 -->
+		<g data-key="507">
+			<circle class="non-service" cx="280" cy="210"/>
+			<text class="left middle non-service" x="287" y="210">美瑛</text>
+		</g>
+		<!-- 新青森 -->
+		<g data-key="909">
+			<circle cx="60" cy="490"/>
+			<text class="left middle" x="67" y="490">新青森</text>
+		</g>
+	</g>
+
+</svg>

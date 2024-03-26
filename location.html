@@ -15,8 +15,8 @@
 		<!-- 基本（終了） -->
 		<!-- メンテ判定処理（開始） -->
 		<script>
-			fetch("https://corsproxy.org/?https://www3.jrhokkaido.co.jp/trainlocation/mainte/location_maintenance.json?" + (Date.now() >>> 16)).then(response => response.json()).then(json => {
-			  if (json.status) window.location.replace("https://corsproxy.org/?https://www3.jrhokkaido.co.jp/trainlocation/mainte/location_maintenance.html");
+			fetch("./mainte/location_maintenance.json?" + (Date.now() >>> 16)).then(response => response.json()).then(json => {
+			  if (json.status) window.location.replace("./mainte/location_maintenance.html");
 			});
 		</script>
 		<!-- メンテ判定処理（終了） -->
