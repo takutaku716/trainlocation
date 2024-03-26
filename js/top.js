@@ -150,7 +150,7 @@ $(function ($) {
 		const trnNow = Date.now() >>> 10;
 		// 最新の特車運行情報を取得する。
 		$.when(
-			$.getJSON("https://corsproxy.org/?https://www3.jrhokkaido.co.jp/webunkou/json/daiya/daiya_00" + (lang === "ja" ? "" : "_" + lang) + ".json?" + mstNow),
+			$.getJSON("https://corsproxy.io/?https://www3.jrhokkaido.co.jp/webunkou/json/daiya/daiya_00" + (lang === "ja" ? "" : "_" + lang) + ".json?" + mstNow),
 			$.getJSON("https://api.allorigins.win/raw?url=https://www3.jrhokkaido.co.jp/trainlocation/json/express/now/express_now.json?" + trnNow)
 		)
 		.done((daiyaBase, expressNowBase) => {

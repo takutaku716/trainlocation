@@ -28,7 +28,7 @@ window.onload = function(){
 	// ポップアップhtml判断
 	let now = Date.now() >>> 16;
 	let lang = document.documentElement.dataset.lang;
-	let popup_url = lang == "ja" ? "https://corsproxy.org/?https://www3.jrhokkaido.co.jp/trainlocation/CMUNKOU/inc_location_popup.html?" + now : "https://corsproxy.org/?https://www3.jrhokkaido.co.jp/trainlocation/CMUNKOU/inc_location_popup_" + lang + ".html?" + now;
+	let popup_url = lang == "ja" ? "https://api.allorigins.win/raw?url=https://www3.jrhokkaido.co.jp/trainlocation/CMUNKOU/inc_location_popup.html?" + now : "https://api.allorigins.win/raw?url=https://www3.jrhokkaido.co.jp/trainlocation/CMUNKOU/inc_location_popup_" + lang + ".html?" + now;
 	$.ajax({
 		url: popup_url,
 		detaType: "html",
@@ -450,7 +450,7 @@ function init_disp(_scrollKey, _callback) {
 	// ポップアップhtml判断
 	let now = Date.now() >>> 16;
 	let lang = document.documentElement.dataset.lang;
-	let popup_url = lang == "ja" ? "https://corsproxy.org/?https://www3.jrhokkaido.co.jp/trainlocation/CMUNKOU/inc_location_popup.html?" + now : "https://corsproxy.org/?https://www3.jrhokkaido.co.jp/trainlocation/CMUNKOU/inc_location_popup_" + lang + ".html?" + now;
+	let popup_url = lang == "ja" ? "https://api.allorigins.win/raw?url=https://www3.jrhokkaido.co.jp/trainlocation/CMUNKOU/inc_location_popup.html?" + now : "https://api.allorigins.win/raw?url=https://www3.jrhokkaido.co.jp/trainlocation/CMUNKOU/inc_location_popup_" + lang + ".html?" + now;
 	$.ajax({
 		url: popup_url,
 		detaType: "html",
@@ -498,15 +498,15 @@ function set_station_list(_param_rosen, _scrollKey, _callback) {
 	// 走行位置ページメンテナンスJSONファイルを読み込んで、メンテナンスページに切り替えるか判定を行う。
 	let mstNow = Date.now() >>> 16;
 	let now = Date.now() >>> 10;
-	let rosen_html = lang == "ja" ? `./rosen/rosen_${_param_rosen}.html` : `https://corsproxy.org/?https://www3.jrhokkaido.co.jp/trainlocation/rosen_${_param_rosen}_${lang}.html`;
-	let maintenance_html = lang == "ja" ? "https://corsproxy.org/?https://www3.jrhokkaido.co.jp/trainlocation/mainte/rosen_maintenance.html" : "https://corsproxy.org/?https://www3.jrhokkaido.co.jp/trainlocation/mainte/rosen_maintenance_" + lang + ".html";
+	let rosen_html = lang == "ja" ? `./rosen/rosen_${_param_rosen}.html` : `https://api.allorigins.win/raw?url=https://www3.jrhokkaido.co.jp/trainlocation/rosen_${_param_rosen}_${lang}.html`;
+	let maintenance_html = lang == "ja" ? "./mainte/rosen_maintenance.html" : "https://api.allorigins.win/raw?url=https://www3.jrhokkaido.co.jp/trainlocation/mainte/rosen_maintenance_" + lang + ".html";
 
 	$.when(
 		$.getJSON("https://api.allorigins.win/raw?url=https://www3.jrhokkaido.co.jp/trainlocation/json/location/now/location_" + _param_rosen + "_now.json?" + now),
-		$.getJSON("https://corsproxy.org/?https://www3.jrhokkaido.co.jp/webunkou/json/master/rosen_name_master.json?" + mstNow),
-		$.getJSON("https://corsproxy.org/?https://www3.jrhokkaido.co.jp/trainlocation/mainte/rosen_maintenance.json?" + mstNow),
-		$.getJSON("https://corsproxy.org/?https://www3.jrhokkaido.co.jp/webunkou/json/master/ressha_type_master.json?" + mstNow),
-		$.getJSON("https://corsproxy.org/?https://www3.jrhokkaido.co.jp/webunkou/json/master/eki_master.json?" + mstNow),
+		$.getJSON("./master/rosen_name_master.json?" + mstNow),
+		$.getJSON("./mainte/rosen_maintenance.json?" + mstNow),
+		$.getJSON("https://corsproxy.io/?https://www3.jrhokkaido.co.jp/webunkou/json/master/ressha_type_master.json?" + mstNow),
+		$.getJSON("https://corsproxy.io/?https://www3.jrhokkaido.co.jp/webunkou/json/master/eki_master.json?" + mstNow),
 		$.get(rosen_html),
 		$.get(maintenance_html)
 	)

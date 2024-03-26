@@ -1,0 +1,285 @@
+[
+    {
+        "rosen": "01",
+        "rosenName": {
+            "ja": "函館線",
+            "en": "Hakodate Line",
+            "tc": "函館線",
+            "sc": "函馆线",
+            "kr": "하코다테선"
+        },
+        "kukanName": {
+            "ja": "[岩見沢～小樽間]",
+            "en": "[Iwamizawa～Otaru]",
+            "tc": "[岩見澤～小樽]",
+            "sc": "[岩见泽～小樽]",
+            "kr": "[이와미자와～오타루]"
+        },
+        "kigo": "S",
+        "area": "1"
+    },
+    {
+        "rosen": "02",
+        "rosenName": {
+            "ja": "千歳線",
+            "en": "Chitose Line",
+            "tc": "千歲線",
+            "sc": "千岁线",
+            "kr": "치토세선"
+        },
+        "kukanName": {
+            "ja": "[札幌～新千歳空港・苫小牧間]",
+            "en": "[Sapporo～New Chitose Airport - Tomakomai]",
+            "tc": "[札幌～新千歲機場・苫小牧]",
+            "sc": "[札幌～新千岁机场・苫小牧]",
+            "kr": "[삿포로～신치토세공항・도마코마이]"
+        },
+        "kigo": "H",
+        "area": "1"
+    },
+    {
+        "rosen": "03",
+        "rosenName": {
+            "ja": "学園都市線",
+            "en": "Gakuen-Toshi Line",
+            "tc": "學園都市線",
+            "sc": "学园都市线",
+            "kr": "가쿠엔토시선"
+        },
+        "kukanName": {
+            "ja": "[北海道医療大学～札幌間]",
+            "en": "[Hokkaido-Iryodaigaku～Sapporo]",
+            "tc": "[北海道醫療大學～札幌]",
+            "sc": "[北海道医疗大学～札幌]",
+            "kr": "[홋카이도 이료다이가쿠～삿포로]"
+        },
+        "kigo": "G",
+        "area": "1"
+    },
+    {
+        "rosen": "04",
+        "rosenName": {
+            "ja": "函館線",
+            "en": "Hakodate Line",
+            "tc": "函館線",
+            "sc": "函馆线",
+            "kr": "하코다테선"
+        },
+        "kukanName": {
+            "ja": "[小樽～長万部間]",
+            "en": "[Otaru～Oshamambe]",
+            "tc": "[小樽～長萬部]",
+            "sc": "[小樽～长万部]",
+            "kr": "[오타루～오샤만베]"
+        },
+        "kigo": "S",
+        "area": "2"
+    },
+    {
+        "rosen": "05",
+        "rosenName": {
+            "ja": "函館線",
+            "en": "Hakodate Line",
+            "tc": "函館線",
+            "sc": "函馆线",
+            "kr": "하코다테선"
+        },
+        "kukanName": {
+            "ja": "[旭川～岩見沢間]",
+            "en": "[Asahikawa～Iwamizawa]",
+            "tc": "[旭川～岩見澤]",
+            "sc": "[旭川～岩见泽]",
+            "kr": "[아사히카와～이와미자와]"
+        },
+        "kigo": "A",
+        "area": "2"
+    },
+    {
+        "rosen": "06",
+        "rosenName": {
+            "ja": "室蘭線",
+            "en": "Muroran Line",
+            "tc": "室蘭線",
+            "sc": "室兰线",
+            "kr": "무로란선"
+        },
+        "kukanName": {
+            "ja": "[岩見沢～苫小牧間]",
+            "en": "[Iwamizawa～Tomakomai]",
+            "tc": "[岩見澤～苫小牧]",
+            "sc": "[岩见泽～苫小牧]",
+            "kr": "[이와미자와～도마코마이]"
+        },
+        "area": "2"
+    },
+    {
+        "rosen": "07",
+        "rosenName": {
+            "ja": "室蘭線",
+            "en": "Muroran Line",
+            "tc": "室蘭線",
+            "sc": "室兰线",
+            "kr": "무로란선"
+        },
+        "kukanName": {
+            "ja": "[苫小牧～長万部間]",
+            "en": "[Tomakomai～Oshamambe]",
+            "tc": "[苫小牧～長萬部]",
+            "sc": "[苫小牧～长万部]",
+            "kr": "[도마코마이～오샤만베]"
+        },
+        "kigo": "H",
+        "area": "2"
+    },
+    {
+        "rosen": "08",
+        "rosenName": {
+            "ja": "室蘭線",
+            "en": "Muroran Line",
+            "tc": "室蘭線",
+            "sc": "室兰线",
+            "kr": "무로란선"
+        },
+        "kukanName": {
+            "ja": "[東室蘭～室蘭間]",
+            "en": "[Higashi-Muroran～Muroran]",
+            "tc": "[東室蘭～室蘭]",
+            "sc": "[东室兰～室兰]",
+            "kr": "[히가시무로란～무로란]"
+        },
+        "kigo": "M",
+        "area": "2"
+    },
+    {
+        "rosen": "09",
+        "rosenName": {
+            "ja": "函館線",
+            "en": "Hakodate Line",
+            "tc": "函館線",
+            "sc": "函馆线",
+            "kr": "하코다테선"
+        },
+        "kukanName": {
+            "ja": "[長万部～函館間]",
+            "en": "[Oshamambe～Hakodate]",
+            "tc": "[長萬部～函館]",
+            "sc": "[长万部～函馆]",
+            "kr": "[오샤만베～하코다테]"
+        },
+        "kigo": "H",
+        "area": "3"
+    },
+    {
+        "rosen": "10",
+        "rosenName": {
+            "ja": "函館線(渡島砂原経由)",
+            "en": "Hakodate Line (via Oshima-Sawara)",
+            "tc": "函館線(經由渡島砂原)",
+            "sc": "函馆线(经由渡岛砂原)",
+            "kr": "하코다테선(오시마 사와라 경유)"
+        },
+        "kukanName": {
+            "ja": "[森～大沼間]",
+            "en": "[Mori～Onuma]",
+            "tc": "[森～大沼]",
+            "sc": "[森～大沼]",
+            "kr": "[모리～오누마]"
+        },
+        "kigo": "H",
+        "area": "3"
+    },
+    {
+        "rosen": "11",
+        "rosenName": {
+            "ja": "宗谷線",
+            "en": "Soya Line",
+            "tc": "宗谷線",
+            "sc": "宗谷线",
+            "kr": "소야선"
+        },
+        "kukanName": {
+            "ja": "[名寄～旭川間]",
+            "en": "[Nayoro～Asahikawa]",
+            "tc": "[名寄～旭川]",
+            "sc": "[名寄～旭川]",
+            "kr": "[나요로～아사히카와]"
+        },
+        "kigo": "W",
+        "area": "4"
+    },
+    {
+        "rosen": "12",
+        "rosenName": {
+            "ja": "石北線",
+            "en": "Sekihoku Line",
+            "tc": "石北線",
+            "sc": "石北线",
+            "kr": "세키호쿠선"
+        },
+        "kukanName": {
+            "ja": "[上川～旭川間]",
+            "en": "[Kamikawa～Asahikawa]",
+            "tc": "[上川～旭川]",
+            "sc": "[上川～旭川]",
+            "kr": "[가미카와～아사히카와]"
+        },
+        "kigo": "A",
+        "area": "4"
+    },
+    {
+        "rosen": "13",
+        "rosenName": {
+            "ja": "石勝線・根室線",
+            "en": "Sekisho Line/Nemuro Line",
+            "tc": "石勝線・根室線",
+            "sc": "石胜线・根室线",
+            "kr": "세키쇼선・네무로선"
+        },
+        "kukanName": {
+            "ja": "[南千歳～釧路間]",
+            "en": "[Minami-Chitose～Kushiro]",
+            "tc": "[南千歲～釧路]",
+            "sc": "[南千岁～钏路]",
+            "kr": "[미나미치토세～구시로]"
+        },
+        "kigo": "K",
+        "area": "5"
+    },
+    {
+        "rosen": "14",
+        "rosenName": {
+            "ja": "根室線",
+            "en": "Nemuro Line",
+            "tc": "根室線",
+            "sc": "根室线",
+            "kr": "네무로선"
+        },
+        "kukanName": {
+            "ja": "[滝川～新得間]",
+            "en": "[Takikawa～Shintoku]",
+            "tc": "[瀧川～新得]",
+            "sc": "[泷川～新得]",
+            "kr": "[다키카와～신토쿠]"
+        },
+        "kigo": "T",
+        "area": "5"
+    },
+    {
+        "rosen": "15",
+        "rosenName": {
+            "ja": "北海道新幹線",
+            "en": "Hokkaido Shinkansen",
+            "tc": "北海道新幹線",
+            "sc": "北海道新干线",
+            "kr": "홋카이도 신칸센"
+        },
+        "kukanName": {
+            "ja": "[新函館北斗～奥津軽いまべつ間]",
+            "en": "[Shin-Hakodate-Hokuto～Okutsugaru-Imabetsu]",
+            "tc": "[新函館北斗～奧津輕今別]",
+            "sc": "[新函馆北斗～奥津轻今别]",
+            "kr": "[신하코다테호쿠토～오쿠쓰가루이마베쓰]"
+        },
+        "area": "6"
+    }
+]

@@ -1,0 +1,8 @@
+[
+{"area":"01","name":{"ja":"札幌近郊","en":"Sapporo area","tc":"札幌近郊","sc":"札幌近郊","kr":"삿포로 근교"}},
+{"area":"02","name":{"ja":"道央エリア","en":"Central Hokkaido area","tc":"道央區域","sc":"道央区域","kr":"홋카이도 중부지역"}},
+{"area":"03","name":{"ja":"道南エリア","en":"Southern Hokkaido area","tc":"道南區域","sc":"道南区域","kr":"홋카이도 남부지역"}},
+{"area":"04","name":{"ja":"道北エリア","en":"Northern Hokkaido area","tc":"道北區域","sc":"道北区域","kr":"홋카이도 북부지역"}},
+{"area":"05","name":{"ja":"道東エリア","en":"Eastern Hokkaido area","tc":"道東區域","sc":"道东区域","kr":"홋카이도 동부지역"}},
+{"area":"06","name":{"ja":"北海道新幹線","en":"Hokkaido Shinkansen","tc":"北海道新幹線","sc":"北海道新干线","kr":"홋카이도 신칸센"}}
+]

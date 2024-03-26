@@ -15,7 +15,7 @@ $(function ($) {
 		// キャッシュバスター値を生成する。(UNIX元期からの経過ミリ秒数を右に16ビットシフトした値。2の16乗＝65536ミリ秒≒約1分間隔でキャッシュを無効化する)
 		const now = Date.now() >>> 16;
 		// ヘッダーHTMLのURLを算出する。
-		const url = (lang === "ja" ? "https://corsproxy.org/?https://www3.jrhokkaido.co.jp/trainlocation/call_common_header.html" : "https://corsproxy.org/?https://www3.jrhokkaido.co.jp/trainlocation/call_common_header_" + lang + ".html") + "?" + now;
+		const url = (lang === "ja" ? "./call_common_header.html" : "https://api.allorigins.win/raw?url=https://www3.jrhokkaido.co.jp/trainlocation/call_common_header_" + lang + ".html") + "?" + now;
 		// ヘッダーを埋め込み表示する。
 		$("header").load(url, () => {
 			// ヘッダーに「現在日時」を表示する。
@@ -45,7 +45,7 @@ $(function ($) {
 				// 初回クリック時は、｢使い方｣をロードして埋め込む。
 				if (!$("#guideDetail").children().length) {
 					// ｢使い方｣HTMLのURLを算出する。
-					const url = (lang === "ja" ? "./guide/call_guide.html" : "https://corsproxy.org/?https://www3.jrhokkaido.co.jp/trainlocation/call_guide_" + lang + ".html")
+					const url = (lang === "ja" ? "./guide/call_guide.html" : "https://api.allorigins.win/raw?url=https://www3.jrhokkaido.co.jp/trainlocation/call_guide_" + lang + ".html")
 					// ｢使い方｣を埋め込む。
 					$("#guideDetail").load(url, () => {
 						// 使い方ボックス内の｢閉じる｣ボタンをクリックしたときのイベントを追加する。

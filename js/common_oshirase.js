@@ -12,8 +12,8 @@ function disp_oshirase(_rosen) {
 		let areaName = getAreaName("01");
 		if (!areaName) areaName = "";
 		// お知らせ文章生成
-		if (lang == "ja") load_oshirase_html(areaName, "https://corsproxy.org/?https://www3.jrhokkaido.co.jp/trainlocation/CMUNKOU/inc_location_area_spo.html");
-		else load_oshirase_html(areaName, "https://corsproxy.org/?https://www3.jrhokkaido.co.jp/trainlocation/CMUNKOU/inc_location_area_spo_" + lang + ".html");
+		if (lang == "ja") load_oshirase_html(areaName, "https://api.allorigins.win/raw?url=https://www3.jrhokkaido.co.jp/trainlocation/CMUNKOU/inc_location_area_spo.html");
+		else load_oshirase_html(areaName, "https://api.allorigins.win/raw?url=https://www3.jrhokkaido.co.jp/trainlocation/CMUNKOU/inc_location_area_spo_" + lang + ".html");
 	}
 	if (_rosen == "04" || _rosen == "05" || _rosen == "06" || _rosen == "07" || _rosen == "08") {
 		// 道央エリアの場合
@@ -23,8 +23,8 @@ function disp_oshirase(_rosen) {
 		if (lang == "en") areaName = "central Hokkaido area";
 		else areaName = getAreaName("02");
 		// お知らせ文章生成
-		if (lang == "ja") load_oshirase_html(areaName, "https://corsproxy.org/?https://www3.jrhokkaido.co.jp/trainlocation/CMUNKOU/inc_location_area_doo.html");
-		else load_oshirase_html(areaName, "https://corsproxy.org/?https://www3.jrhokkaido.co.jp/trainlocation/CMUNKOU/inc_location_area_doo_" + lang + ".html");
+		if (lang == "ja") load_oshirase_html(areaName, "https://api.allorigins.win/raw?url=https://www3.jrhokkaido.co.jp/trainlocation/CMUNKOU/inc_location_area_doo.html");
+		else load_oshirase_html(areaName, "https://api.allorigins.win/raw?url=https://www3.jrhokkaido.co.jp/trainlocation/CMUNKOU/inc_location_area_doo_" + lang + ".html");
 	}
 	if (_rosen == "09" || _rosen == "10") {
 		// 道南エリアの場合
@@ -34,8 +34,8 @@ function disp_oshirase(_rosen) {
 		if (lang == "en") areaName = "southern Hokkaido area";
 		else areaName = getAreaName("03");
 		// お知らせ文章生成
-		if (lang == "ja") load_oshirase_html(areaName, "https://corsproxy.org/?https://www3.jrhokkaido.co.jp/trainlocation/CMUNKOU/inc_location_area_donan.html");
-		else load_oshirase_html(areaName, "https://corsproxy.org/?https://www3.jrhokkaido.co.jp/trainlocation/CMUNKOU/inc_location_area_donan_" + lang + ".html");
+		if (lang == "ja") load_oshirase_html(areaName, "https://api.allorigins.win/raw?url=https://www3.jrhokkaido.co.jp/trainlocation/CMUNKOU/inc_location_area_donan.html");
+		else load_oshirase_html(areaName, "https://api.allorigins.win/raw?url=https://www3.jrhokkaido.co.jp/trainlocation/CMUNKOU/inc_location_area_donan_" + lang + ".html");
 	}
 	if (_rosen == "11" || _rosen == "12") {
 		// 道北エリアの場合
@@ -45,8 +45,8 @@ function disp_oshirase(_rosen) {
 		if (lang == "en") areaName = "northern Hokkaido area";
 		else areaName = getAreaName("04");
 		// お知らせ文章生成
-		if (lang == "ja") load_oshirase_html(areaName, "https://corsproxy.org/?https://www3.jrhokkaido.co.jp/trainlocation/CMUNKOU/inc_location_area_dohoku.html");
-		else load_oshirase_html(areaName, "https://corsproxy.org/?https://www3.jrhokkaido.co.jp/trainlocation/CMUNKOU/inc_location_area_dohoku_" + lang + ".html");
+		if (lang == "ja") load_oshirase_html(areaName, "https://api.allorigins.win/raw?url=https://www3.jrhokkaido.co.jp/trainlocation/CMUNKOU/inc_location_area_dohoku.html");
+		else load_oshirase_html(areaName, "https://api.allorigins.win/raw?url=https://www3.jrhokkaido.co.jp/trainlocation/CMUNKOU/inc_location_area_dohoku_" + lang + ".html");
 	}
 	if (_rosen == "13" || _rosen == "14") {
 		// 道東エリアの場合
@@ -56,8 +56,8 @@ function disp_oshirase(_rosen) {
 		if (lang == "en") areaName = "eastern Hokkaido area";
 		else areaName = getAreaName("05");
 		// お知らせ文章生成
-		if (lang == "ja") load_oshirase_html(areaName, "https://corsproxy.org/?https://www3.jrhokkaido.co.jp/trainlocation/CMUNKOU/inc_location_area_doto.html");
-		else load_oshirase_html(areaName, "https://corsproxy.org/?https://www3.jrhokkaido.co.jp/trainlocation/CMUNKOU/inc_location_area_doto_" + lang + ".html");
+		if (lang == "ja") load_oshirase_html(areaName, "https://api.allorigins.win/raw?url=https://www3.jrhokkaido.co.jp/trainlocation/CMUNKOU/inc_location_area_doto.html");
+		else load_oshirase_html(areaName, "https://api.allorigins.win/raw?url=https://www3.jrhokkaido.co.jp/trainlocation/CMUNKOU/inc_location_area_doto_" + lang + ".html");
 	}
 	if (_rosen == "15") {
 		// 北海道新幹線の場合
@@ -65,8 +65,8 @@ function disp_oshirase(_rosen) {
 		let areaName = getAreaName("06");
 		if (!areaName) areaName = "";
 		// お知らせ文章生成
-		if (lang == "ja") load_oshirase_html(areaName, "https://corsproxy.org/?https://www3.jrhokkaido.co.jp/trainlocation/CMUNKOU/inc_location_area_shin.html");
-		else load_oshirase_html(areaName, "https://corsproxy.org/?https://www3.jrhokkaido.co.jp/trainlocation/CMUNKOU/inc_location_area_shin_" + lang + ".html");
+		if (lang == "ja") load_oshirase_html(areaName, "https://api.allorigins.win/raw?url=https://www3.jrhokkaido.co.jp/trainlocation/CMUNKOU/inc_location_area_shin.html");
+		else load_oshirase_html(areaName, "https://api.allorigins.win/raw?url=https://www3.jrhokkaido.co.jp/trainlocation/CMUNKOU/inc_location_area_shin_" + lang + ".html");
 	}
 
 	// 路線のお知らせの表示
@@ -74,7 +74,7 @@ function disp_oshirase(_rosen) {
 		let rosen = ("00" + _rosen).slice(-2);
 		let rosenName = getRosenName(rosen);
 		if (typeof rosenName !== "string") rosenName = "";
-		load_oshirase_html(rosenName, "https://corsproxy.org/?https://www3.jrhokkaido.co.jp/trainlocation/CMUNKOU/inc_location_rosen_" + rosen +".html");
+		load_oshirase_html(rosenName, "https://api.allorigins.win/raw?url=https://www3.jrhokkaido.co.jp/trainlocation/CMUNKOU/inc_location_rosen_" + rosen +".html");
 	}
 }
 

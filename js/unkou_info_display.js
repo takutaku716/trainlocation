@@ -7,7 +7,7 @@ function set_unko_info(_param_rosen) {
 
 	if (_param_rosen == "01" || _param_rosen == "02" || _param_rosen == "03") {
 		// 札幌近郊
-		let fileName = lang === "ja" ? "https://corsproxy.org/?https://www3.jrhokkaido.co.jp/webunkou/json/area/area_01.json?" : "https://corsproxy.org/?https://www3.jrhokkaido.co.jp/webunkou/json/area/area_01_" + lang + ".json?";
+		let fileName = lang === "ja" ? "https://corsproxy.io/?https://www3.jrhokkaido.co.jp/webunkou/json/area/area_01.json?" : "https://corsproxy.io/?https://www3.jrhokkaido.co.jp/webunkou/json/area/area_01_" + lang + ".json?";
 		$.getJSON(fileName + now, function (topData) {
 			if (topData.today.areaStatus.spo == "1") {
 				// 運行情報が存在する場合
@@ -53,7 +53,7 @@ function set_unko_info(_param_rosen) {
 		});
 	} else if (_param_rosen == "04" || _param_rosen == "05" || _param_rosen == "06" || _param_rosen == "07" || _param_rosen == "08") {
 		// 道央エリア
-		let fileName = lang === "ja" ? "https://corsproxy.org/?https://www3.jrhokkaido.co.jp/webunkou/json/area/area_02.json?" : "https://corsproxy.org/?https://www3.jrhokkaido.co.jp/webunkou/json/area/area_02_" + lang + ".json?";
+		let fileName = lang === "ja" ? "https://corsproxy.io/?https://www3.jrhokkaido.co.jp/webunkou/json/area/area_02.json?" : "https://corsproxy.io/?https://www3.jrhokkaido.co.jp/webunkou/json/area/area_02_" + lang + ".json?";
 		$.getJSON(fileName + now, function (topData) {
 			if (topData.today.areaStatus.doo == "1") {
 				// 運行情報が存在する場合
@@ -101,7 +101,7 @@ function set_unko_info(_param_rosen) {
 		});
 	} else if (_param_rosen == "09" || _param_rosen == "10") {
 		// 道南エリア
-		let fileName = lang === "ja" ? "https://corsproxy.org/?https://www3.jrhokkaido.co.jp/webunkou/json/area/area_03.json?" : "https://corsproxy.org/?https://www3.jrhokkaido.co.jp/webunkou/json/area/area_03_" + lang + ".json?";
+		let fileName = lang === "ja" ? "https://corsproxy.io/?https://www3.jrhokkaido.co.jp/webunkou/json/area/area_03.json?" : "https://corsproxy.io/?https://www3.jrhokkaido.co.jp/webunkou/json/area/area_03_" + lang + ".json?";
 		$.getJSON(fileName + now, function (topData) {
 			if (topData.today.areaStatus.donan == "1") {
 				// 運行情報が存在する場合
@@ -146,7 +146,7 @@ function set_unko_info(_param_rosen) {
 		});
 	} else if (_param_rosen == "11" || _param_rosen == "12") {
 		// 道北エリア
-		let fileName = lang === "ja" ? "https://corsproxy.org/?https://www3.jrhokkaido.co.jp/webunkou/json/area/area_04.json?" : "https://corsproxy.org/?https://www3.jrhokkaido.co.jp/webunkou/json/area/area_04_" + lang + ".json?";
+		let fileName = lang === "ja" ? "https://corsproxy.io/?https://www3.jrhokkaido.co.jp/webunkou/json/area/area_04.json?" : "https://corsproxy.io/?https://www3.jrhokkaido.co.jp/webunkou/json/area/area_04_" + lang + ".json?";
 		$.getJSON(fileName + now, function (topData) {
 			if (topData.today.areaStatus.dohoku == "1") {
 				// 運行情報が存在する場合
@@ -193,7 +193,7 @@ function set_unko_info(_param_rosen) {
 		});
 	} else if (_param_rosen == "13" || _param_rosen == "14") {
 		// 道東エリア
-		let fileName = lang === "ja" ? "https://corsproxy.org/?https://www3.jrhokkaido.co.jp/webunkou/json/area/area_05.json?" : "https://corsproxy.org/?https://www3.jrhokkaido.co.jp/webunkou/json/area/area_05_" + lang + ".json?";
+		let fileName = lang === "ja" ? "https://corsproxy.io/?https://www3.jrhokkaido.co.jp/webunkou/json/area/area_05.json?" : "https://corsproxy.io/?https://www3.jrhokkaido.co.jp/webunkou/json/area/area_05_" + lang + ".json?";
 		$.getJSON(fileName + now, function (topData) {
 			if (topData.today.areaStatus.doto == "1") {
 				// 運行情報が存在する場合
@@ -240,7 +240,7 @@ function set_unko_info(_param_rosen) {
 		});
 	} else if (_param_rosen == "15") {
 		// 北海道新幹線
-		let fileName = lang === "ja" ? "https://corsproxy.org/?https://www3.jrhokkaido.co.jp/webunkou/json/senku/senku_24.json?" : "https://corsproxy.org/?https://www3.jrhokkaido.co.jp/webunkou/json/senku/senku_24_" + lang + ".json?";
+		let fileName = lang === "ja" ? "https://corsproxy.io/?https://www3.jrhokkaido.co.jp/webunkou/json/senku/senku_24.json?" : "https://corsproxy.io/?https://www3.jrhokkaido.co.jp/webunkou/json/senku/senku_24_" + lang + ".json?";
 		$.getJSON(fileName + now, function (topData) {
 			if (topData.today.areaStatus.shin == "1") {
 				// 運行情報が存在する場合

@@ -22,7 +22,7 @@ function areaNameLoad() {
 	let now = Date.now() >>> 16;
 	$.ajaxSetup({ async: false });
 	$.getJSON(
-		"https://corsproxy.org/?https://www3.jrhokkaido.co.jp/webunkou/json/master/area_name_master.json?" + now,
+		"./master/area_name_master.json?" + now,
 		function (master) {
 			objAreaNameArray = {};
 			master.forEach(function (item) {
@@ -54,7 +54,7 @@ function senkuNameLoad() {
 	let now = Date.now() >>> 16;
 	$.ajaxSetup({ async: false });
 	$.getJSON(
-		"https://corsproxy.org/?https://www3.jrhokkaido.co.jp/webunkou/json/master/senku_name_master.json?" + now,
+		"https://corsproxy.io/?https://www3.jrhokkaido.co.jp/webunkou/json/master/senku_name_master.json?" + now,
 		function (master) {
 			objSenkuNameArray = {};
 			master.forEach(function (item) {
@@ -80,7 +80,7 @@ function rosenNameLoad() {
 	let now = Date.now() >>> 16;
 	$.ajaxSetup({ async: false });
 	$.getJSON(
-		"https://corsproxy.org/?https://www3.jrhokkaido.co.jp/webunkou/json/master/rosen_name_master.json?" + now,
+		"./master/rosen_name_master.json?" + now,
 		function (master) {
 			objRosenNameArray = {};
 			objKukanNameArray = {};

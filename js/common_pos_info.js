@@ -109,9 +109,9 @@ function getNearestStation(lat, lon, maxDistance, _isTop) {
 
 	// 検索に必要なJSONファイル一式を読み込む。
 	$.when(
-		$.getJSON("https://corsproxy.org/?https://www3.jrhokkaido.co.jp/webunkou/json/master/eki_master.json?" + now),
-		$.getJSON("https://corsproxy.org/?https://www3.jrhokkaido.co.jp/webunkou/json/master/eki_jogai_master.json?" + now),
-		$.getJSON("https://corsproxy.org/?https://www3.jrhokkaido.co.jp/webunkou/json/master/eki_coordinates_master.json?" + now)
+		$.getJSON("https://corsproxy.io/?https://www3.jrhokkaido.co.jp/webunkou/json/master/eki_master.json?" + now),
+		$.getJSON("https://corsproxy.io/?https://www3.jrhokkaido.co.jp/webunkou/json/master/eki_jogai_master.json?" + now),
+		$.getJSON("https://corsproxy.io/?https://www3.jrhokkaido.co.jp/webunkou/json/master/eki_coordinates_master.json?" + now)
 	)
 	.done(function(ekiMasterBase, jogaiMasterBase, coordsMasterBase) {
 		let ekiMstJson = ekiMasterBase[0];
@@ -163,12 +163,12 @@ function getNearestStation(lat, lon, maxDistance, _isTop) {
 function load_rosen_html(_key, _isTop) {
 	// キャッシュバスター値を生成する。(UNIX元期からの経過ミリ秒数を右に16ビットシフトした値。2の16乗＝65536ミリ秒≒約1分間隔でキャッシュを無効化する)
 	const now = Date.now() >>> 16;
-	$.getJSON("https://corsproxy.org/?https://www3.jrhokkaido.co.jp/webunkou/json/master/eki_rosen_master.json?" + now, function (rosenData) {
+	$.getJSON("https://corsproxy.io/?https://www3.jrhokkaido.co.jp/webunkou/json/master/eki_rosen_master.json?" + now, function (rosenData) {
 		let findRosen = rosenData.stations.find((v) => v.key == _key);
 		if (typeof findRosen !== "undefined" && findRosen.rosen.length > 0) {
 			let rosen = findRosen.rosen[0];
 			$.ajax( {
-				url: "https://corsproxy.org/?https://www3.jrhokkaido.co.jp/trainlocation/rosen_" + rosen + ".html",
+				url: "./rosen/rosen_" + rosen + ".html",
 				detaType: "html",
 				success: function(rosenHtml) {
 					// 走行位置ページに遷移
