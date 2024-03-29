@@ -122,6 +122,7 @@ function showTrainDetailDialog(target, train, isError) {
 		 * @param shuEki 終着駅の駅キー。
 		 * @param ryosu 車両数。
 		 * @param ekiMaster 駅マスタ。
+		 * @param cbango 列番。
 		 */
 		function drawResshaInfo(dialog, name, shaEki, shaTime, shuEki, ryosu, ekiMaster) {
 			const lang = document.documentElement.dataset.lang;
@@ -159,6 +160,11 @@ function showTrainDetailDialog(target, train, isError) {
 			if (ryosu) {
 				$(dialog).find(".ryosu").text(ryosu);
 				$(dialog).find(".ryosu-label").removeClass("hide");
+			}
+			// 運行番号がある場合は、画面に表示する。
+			if (ryosu) {
+				$(dialog).find(".cbango").text(cbango);
+				$(dialog).find(".unban-item").removeClass("hide");
 			}
 		}
 		/**
