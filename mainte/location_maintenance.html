@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="ja" data-lang="ja">
+	<head>
+		<!-- 基本（開始） -->
+		<meta http-equiv="Pragma" content="no-cache">
+		<meta http-equiv="Cache-Control" content="no-cache">
+		<meta http-equiv="Expires" content="0">
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<title>列車運行情報｜JR北海道- Hokkaido Railway Company</title>
+		<meta name="description" content="JR北海道の列車運行情報を提供しています。" >
+		<meta name="keywords" content="JR北海道,JR北海道列車運行情報" >
+		<meta name="author" content="北海道旅客鉄道株式会社">
+		<!-- 基本（終了） -->
+		<!-- ヘッダ・フッタ（開始） -->
+		<link rel="stylesheet" href="../css/common_header.css?20240219" type="text/css" media="screen,print" />
+		<link rel="stylesheet" href="../css/common_location.css?20240219" type="text/css" media="screen,print" />
+		<link rel="stylesheet" href="../css/common_guide.css?20240219" type="text/css" media="screen,print" />
+		<!-- ヘッダ・フッタ（終了） -->
+		<!-- 共通（開始） -->
+		<link rel="apple-touch-icon" href="https://www3.jrhokkaido.co.jp/apple-touch-icon.png">
+		<link rel="icon" href="https://www3.jrhokkaido.co.jp/favicon.ico" sizes="any">
+		<link rel="icon" type="image/png" href="https://www3.jrhokkaido.co.jp/favicon.png">
+		<link rel="icon" type="image/svg+xml" href="https://www3.jrhokkaido.co.jp/favicon.svg">
+		<link rel="stylesheet" href="../css/common.css?20240219" type="text/css" media="screen,print" />
+		<script src="../js/jquery-3.6.4.min.js?20240219"></script>
+		<script src="../common/js/ga.js?20240219"></script>
+		<!-- 共通（終了） -->
+	</head>
+	<body>
+
+		<header>
+			<!-- call_common_header.html に記載 -->
+		</header>
+
+		<!-- パンくずリストセクション ここから -->
+		<section>
+			<nav class="common-breadcrumb noprint">
+				<ol class="common-breadcrumb-list">
+					<li><a href="https://www.jrhokkaido.co.jp/">JR北海道トップ</a></li>
+					<li><a href="../index.html">列車走行位置</a></li>
+					<li class="active">メンテナンスページ</li>
+				</ol>
+			</nav>
+		</section>
+		<!-- パンくずリストセクション ここまで -->
+
+		<div id="commonMainDiv">
+			<div style="border: 2px solid #999; margin-top: 30px; padding: 15px;">
+				<div style="margin-bottom: 50px; color: #444;">
+					<div style="border-bottom: solid 3px gray; margin: 40px 0;">
+						<h1 class="maintenance-title">現在システムのメンテナンス中です</h1>
+					</div>
+					<p style="margin: 10px 0;font-weight: bold;">現在、システムのメンテナンス中です。<br>列車走行位置サイトへのアクセスが集中しているため一時的にサービスを停止しています。<br>ご迷惑をおかけしていることをお詫びいたします。</p>
+				</div>
+			</div>
+			<div style="margin-bottom: 30px;"></div>
+			<div class="common-button" style="max-width: 220px; margin: 0 auto;"><a class="common-button-link" href="../index.html"></a>列車走行位置トップ</div>
+		</div>
+
+		<!-- 使い方セクション ここから -->
+		<section id="guideDetail"></section>
+		<!-- 使い方セクション ここまで -->
+
+		<script type="text/javascript">
+			window.onload = function () {
+				if (window.innerWidth <= 575) {
+					let text = $(".maintenance-title").html();
+					if (text.indexOf("<br>") == -1) {
+						$(".maintenance-title").html(text.replace("メンテナンス", "<br>メンテナンス"));
+					}
+				} else {
+					let text = $(".maintenance-title").html();
+					if (text.indexOf("<br>") > 0) {
+						$(".maintenance-title").html(text.replace("<br>", ""));
+					}
+				}
+
+				$(".maintenance-title").show();
+
+				// 使い方ページ内の｢ご利用上の注意｣を埋め込み表示する。
+				$.ajax( {
+					url: "../call_goriyo_location.html",
+					detaType: "html",
+					success: function( data ) {
+						if ($("#guideDetailAttention")) {
+							$("#guideDetailAttention").html(data);
+						}
+					}
+				});
+			};
+
+			window.onresize = function () {
+				if (window.innerWidth <= 575) {
+					let text = $(".maintenance-title").html();
+					if (text.indexOf("<br>") == -1) {
+						$(".maintenance-title").html(text.replace("メンテナンス", "<br>メンテナンス"));
+					}
+				} else {
+					let text = $(".maintenance-title").html();
+					if (text.indexOf("<br>") > 0) {
+						$(".maintenance-title").html(text.replace("<br>", ""));
+					}
+				}
+			};
+			// ヘッダーの｢メニュー(開く)｣アイコンをクリックしたときのイベントを追加する。
+			$(document).on("click", "#headerMenuOpen", function() {
+				// 運行情報ボックスを開く。
+				$("#menuLayer").stop().slideToggle();
+				// ｢メニュー｣アイコンの｢開く｣｢閉じる｣を切り替える。
+				$("#headerMenuOpen").toggleClass("hide");
+				$("#headerMenuClose").toggleClass("hide");
+			});
+			// ヘッダーの｢メニュー(閉じる)｣アイコンをクリックしたときのイベントを追加する。
+			$(document).on("click", "#headerMenuClose, #menuLayer", function() {
+				// 運行情報ボックスを閉じる。
+				$("#menuLayer").stop().slideToggle("fast");
+				// ｢メニュー｣アイコンの｢開く｣｢閉じる｣を切り替える。
+				$("#headerMenuOpen").toggleClass("hide");
+				$("#headerMenuClose").toggleClass("hide");
+			});
+			// ヘッダーの使い方をクリックしたときの動き
+			$(document).on("click", ".question", function () {
+				// 使い方ボックスを開く。
+				$("section#guideDetail").fadeIn("fast");
+				$("#guideDetailMain").scrollTop(0);
+			});
+			// 使い方ボックス内の｢閉じる｣ボタンをクリックしたときの動き
+			$(document).on("click", "section#guideDetail, section#guideDetail .common-subtitle.header", function () {
+				// 運行情報ボックスを閉じる。
+				$("section#guideDetail").fadeOut("fast");
+			});
+			// バブリングを停止
+			$(document).on("click", "#menuLayer .menu, section#guideDetail .dialog", function(event) {
+				event.stopPropagation();
+			});
+			// ヘッダーを埋め込み表示する。
+			$.ajax( {
+				url: "../call_common_header.html",
+				detaType: "html",
+				success: function(data) {
+					$("header").html(data);
+					// パスの修正
+					let path = $("#headerMain .titles .logo img").attr('src').replace("./", "../");
+					$("#headerMain .titles .logo img").attr("src", path);
+
+					$("#menuLayer ul li a").each(function(i, row) {
+						let link = row.getAttribute("href");
+						if (link.indexOf("../") >= 0) {
+							link = link.replace("../", "../../");
+						} else {
+							link = link.replace("./", "../");
+						}
+						row.setAttribute("href", link);
+					});
+				}
+			});
+			// ｢使い方｣を埋め込み表示する。
+			$.ajax( {
+				url: "../call_guide.html",
+				detaType: "html",
+				success: function(data) {
+					if($("#guideDetail").length) {
+						$("#guideDetail").html(data);
+						$("#guideDetail img").each(function(i, row) {
+							// 使い方内の画像のパスを修正
+							let path = row.getAttribute("src").replace("./", "../");
+							row.setAttribute("src", path);
+						});
+					}
+				}
+			});
+		</script>
+	</body>
+</html>
