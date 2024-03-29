@@ -164,7 +164,7 @@ function showTrainDetailDialog(target, train, isError) {
 			// 運行番号がある場合は、画面に表示する。
 			if (cbango) {
 				$(dialog).find(".cbango").text(cbango);
-				$(dialog).find(".unban-item").removeClass("hide");
+				$(dialog).find(".unban-label").removeClass("hide");
 			}
 		}
 		/**
