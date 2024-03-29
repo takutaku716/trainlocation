@@ -41,7 +41,7 @@ function getRosenChienText(_nowStatus) {
 
 	if (!_nowStatus.maxChien || _nowStatus.maxChien <= 4) { // 平常運転の場合は何も表示しない
 		return "";
-	} else if (_nowStatus.maxChien >= 100) { // 100分以上なら「大幅な遅れあり」
+	} else if (_nowStatus.maxChien >= 999) { // 100分以上なら「大幅な遅れあり」
 		return `<span class="unkou-label chien very-late">${CHIEN_LABEL_VERY_LATE[lang]}</span>`;
 	} else {
 		// 遅れ時分表示
@@ -180,10 +180,10 @@ function getTrainChienText(trainNowInfo) {
 		// 全区間運休の場合は表示なし。
 		return ""
 	}
-	if (trainNowInfo.chien < 5) {
+	if (trainNowInfo.chien < 1) {
 		// 遅れが5分未満で走行中の場合は｢走行中｣。
 		return trainNowInfo.runStatus === 1 ? CHIEN_LABEL_RUNNING[lang] : "";
-	} else if (trainNowInfo.chien < 100) {
+	} else if (trainNowInfo.chien < 999) {
 		// 遅れが5分以上100分未満の場合は時分表示。
 		let chienHour = Math.floor(trainNowInfo.chien / 60);
 		let chienMin = trainNowInfo.chien % 60;

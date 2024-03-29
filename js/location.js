@@ -1228,7 +1228,7 @@ function create_html_up_ressha_icon(_nowRow, _typeData, _ekiData) {
 	// 遅延を設定
 	let chienText = "";
 	if (_nowRow.chien > 0) {
-		if (_nowRow.chien >= 100) {
+		if (_nowRow.chien >= 999) {
 			if (lang == "ja") chienText = "+大幅";
 			if (lang == "en") chienText = "+Very";
 			if (lang == "tc") chienText = "+大幅";
@@ -1284,7 +1284,7 @@ function create_html_down_ressha_icon(_nowRow, _typeData, _ekiData) {
 	// 遅延を設定
 	let chienText = "";
 	if (_nowRow.chien > 0) {
-		if (_nowRow.chien >= 100) {
+		if (_nowRow.chien >= 999) {
 			if (lang == "ja") chienText = "+大幅";
 			if (lang == "en") chienText = "+Very";
 			if (lang == "tc") chienText = "+大幅";
