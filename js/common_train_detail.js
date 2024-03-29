@@ -162,7 +162,7 @@ function showTrainDetailDialog(target, train, isError) {
 				$(dialog).find(".ryosu-label").removeClass("hide");
 			}
 			// 運行番号がある場合は、画面に表示する。
-			if (ryosu) {
+			if (cbango) {
 				$(dialog).find(".cbango").text(cbango);
 				$(dialog).find(".unban-item").removeClass("hide");
 			}
