@@ -763,6 +763,10 @@ header {
 						#stationList .eki-panel .ressha-contents .ressha-icon .ressha[data-ressha_type='6'] .icon-img {
 							background-image: url(../images/home/train_icon_white.svg);
 						}
+												/* 列車アイコン（緑） 区間快速*/
+						#stationList .eki-panel .ressha-contents .ressha-icon .ressha[data-ressha_type='7'] .icon-img {
+							background-image: url(../images/home/train_icon_green.svg);
+						}
 
 							/* 列車アイコン内の列車種別 */
 							#stationList .eki-panel .ressha-contents .ressha-icon .icon-img .ressha-sbt {
@@ -790,6 +794,13 @@ header {
 							/* 英語以外の特別快速の場合 */
 							#stationList .eki-panel .ressha-contents .ressha-icon .ressha-sbt[sbt="特快"],
 							[data-lang='kr'] #stationList .eki-panel .ressha-contents .ressha-icon .ressha-sbt[sbt="특쾌"] {
+								font-size: 13px;
+								margin-top: 9px;
+							}
+							/* 英語以外の区間快速の場合 */
+							#stationList .eki-panel .ressha-contents .ressha-icon .ressha-sbt[sbt="区快"],
+							[data-lang='tc'] #stationList .eki-panel .ressha-contents .ressha-icon .ressha-sbt[sbt="區快"],
+							[data-lang='kr'] #stationList .eki-panel .ressha-contents .ressha-icon .ressha-sbt[sbt="구쾌"] {
 								font-size: 13px;
 								margin-top: 9px;
 							}
@@ -1640,6 +1651,10 @@ header {
 								#stationList .hoka-line-area .fujishiro-panel .ressha-icon .ressha[data-ressha_type='6'] .icon-img {
 									background-image: url(../images/home/train_icon_white.svg);
 								}
+								/* 列車アイコン（緑） 区間快速*/
+								#stationList .hoka-line-area .fujishiro-panel .ressha-icon .ressha[data-ressha_type='7'] .icon-img {
+									background-image: url(../images/home/train_icon_green.svg);
+								}
 
 								/* 列車アイコン内の列車種別 */
 								#stationList .hoka-line-area .fujishiro-panel .ressha-icon .icon-img .ressha-sbt {
@@ -2087,6 +2102,10 @@ section#resshaDetail {
 			color: #444;
 			min-width: 88px;
 			width: 88px;
+		}
+		/* 列車詳細ダイアログの列車種別（緑　区間快速） */
+		section#resshaDetail[dataResshaTypeColor='7'] .dialog #resshaTypeName {
+			background-color: #080;
 		}
 
 	/* 列車詳細ダイアログの運行状態（全区間運休） */
