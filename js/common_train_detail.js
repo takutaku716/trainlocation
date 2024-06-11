@@ -124,7 +124,7 @@ function showTrainDetailDialog(target, train, isError) {
 		 * @param ekiMaster 駅マスタ。
 		 * @param cbango 列番。
 		 */
-		function drawResshaInfo(dialog, name, shaEki, shaTime, shuEki, ryosu, ekiMaster) {
+		function drawResshaInfo(dialog, name, shaEki, shaTime, shuEki, ryosu, ekiMaster, cbango) {
 			const lang = document.documentElement.dataset.lang;
 			// 列車名がある場合は、画面に表示する。
 			if (name) {
