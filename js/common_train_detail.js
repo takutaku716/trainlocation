@@ -85,6 +85,8 @@ function showTrainDetailDialog(target, train, isError) {
 			drawChien(dialog, train.runStatus, train.yokuStatus, train.yokuDetail, train.chien, train.status);
 			// ダイアログに｢運行状態｣を描画する。
 			drawUnkouStatus(dialog, train.status, train.statusDetail);
+			// ダイアログに｢運行番号｣を描画する。
+			drawUnbanType(dialog, train.cbango);
 			// ダイアログに｢ダイヤデータ｣を描画する。
 			drawDaiya(dialog, train.cbango, ekiMaster, daiya);
 		})
