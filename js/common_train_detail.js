@@ -78,15 +78,13 @@ function showTrainDetailDialog(target, train, isError) {
 			// ダイアログに｢列車種別｣を描画する。
 			drawResshaType(dialog, train.type, resshaTypeMaster);
 			// ダイアログに｢列車情報｣を描画する。
-			drawResshaInfo(dialog, train.name, train.shaEki, train.shaTime, train.shuEki, train.ryosu, ekiMaster);
+			drawResshaInfo(dialog, train.name, train.shaEki, train.shaTime, train.shuEki, train.ryosu, ekiMaster, cbango);
 			// ダイアログに｢現在地｣を描画する。
 			drawCurrentPos(dialog, train.pos, posNameMaster);
 			// ダイアログに｢遅れ｣を描画する。
 			drawChien(dialog, train.runStatus, train.yokuStatus, train.yokuDetail, train.chien, train.status);
 			// ダイアログに｢運行状態｣を描画する。
 			drawUnkouStatus(dialog, train.status, train.statusDetail);
-			// ダイアログに｢運行番号｣を描画する。
-			drawUnbanType(dialog, train.cbango);
 			// ダイアログに｢ダイヤデータ｣を描画する。
 			drawDaiya(dialog, train.cbango, ekiMaster, daiya);
 		})
