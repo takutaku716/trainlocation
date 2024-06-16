@@ -144,6 +144,10 @@
 		<path data-key="36" d="M260 290 L310 320"/>
 		<!-- 根室線：滝川～富良野 -->
 		<path data-key="37" d="M260 200 L310 230"/>
+		<!-- 根室線：富良野～東鹿越 -->
+		<path data-key="38" d="M310 230 L310 270"/>
+		<!-- 根室線：東鹿越～新得 -->
+		<path data-key="39" d="M310 270 L310 320" data-nonService="1"/>
 		<!-- 根室線：新得～帯広 -->
 		<path data-key="40" d="M310 320 L345 340"/>
 		<!-- 根室線：帯広～池田 -->
@@ -168,6 +172,11 @@
 		<g data-key="245">
 			<circle cx="210" cy="290"/>
 			<text class="left bottom" x="217" y="283" dy="-0.25em">南千歳</text>
+		</g>
+		<!-- 東鹿越 -->
+		<g data-key="318">
+			<circle cx="310" cy="270"/>
+			<text class="left middle" x="317" y="270">東鹿越</text>
 		</g>
 		<!-- 新得 -->
 		<g data-key="325">
