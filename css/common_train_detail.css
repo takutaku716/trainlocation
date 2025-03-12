@@ -179,6 +179,15 @@
 		.trainDetailDialog .train-info dl dd.chien-item .chien-text {
 			color: #f00;
 			font-weight: bold;
+		/* ｢運行番号｣のアイコン */
+		.trainDetailDialog .train-info dl dt.unban-item .unban-label {
+			background-color: #777;
+		}
+		/* 運行番号のラベル */
+		.trainDetailDialog .train-info dl dd.unban-item .unban-text {
+			color: #f00;
+			font-weight: bold;
+		}
 		}
 /* 列車詳細情報ダイアログのダイヤデータ部分 */
 .trainDetailDialog .station-list {

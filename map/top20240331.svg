@@ -172,6 +172,10 @@
 		<path data-key="36" d="M230 320 L280 350"/>
 		<!-- 根室線：滝川～富良野 -->
 		<path data-key="37" d="M230 230 L280 260"/>
+		<!-- 根室線：富良野～東鹿越 -->
+		<path data-key="38" d="M280 260 L280 300"/>
+		<!-- 根室線：東鹿越～新得 -->
+		<path data-key="39" d="M280 300 L280 350" data-nonService="1"/>
 		<!-- 根室線：新得～帯広 -->
 		<path data-key="40" d="M280 350 L315 370"/>
 		<!-- 根室線：帯広～池田 -->
@@ -438,6 +442,13 @@
 			<g data-key="262">
 				<circle cx="120" cy="240"/>
 				<text class="center bottom" x="120" y="233" dy="-0.25em">北海道医療大学</text>
+			</g>
+		</a>
+		<!-- 東鹿越 -->
+		<a xlink:href="../location.html#rosen=14&amp;id=318" target="_top">
+			<g data-key="318">
+				<circle cx="280" cy="300"/>
+				<text class="left middle" x="287" y="300">東鹿越</text>
 			</g>
 		</a>
 		<!-- 新得 -->

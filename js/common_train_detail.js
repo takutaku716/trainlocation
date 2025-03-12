@@ -78,7 +78,7 @@ function showTrainDetailDialog(target, train, isError) {
 			// ダイアログに｢列車種別｣を描画する。
 			drawResshaType(dialog, train.type, resshaTypeMaster);
 			// ダイアログに｢列車情報｣を描画する。
-			drawResshaInfo(dialog, train.name, train.shaEki, train.shaTime, train.shuEki, train.ryosu, ekiMaster);
+			drawResshaInfo(dialog, train.name, train.shaEki, train.shaTime, train.shuEki, train.ryosu, ekiMaster, cbango);
 			// ダイアログに｢現在地｣を描画する。
 			drawCurrentPos(dialog, train.pos, posNameMaster);
 			// ダイアログに｢遅れ｣を描画する。
@@ -124,7 +124,7 @@ function showTrainDetailDialog(target, train, isError) {
 		 * @param ekiMaster 駅マスタ。
 		 * @param cbango 列番。
 		 */
-		function drawResshaInfo(dialog, name, shaEki, shaTime, shuEki, ryosu, ekiMaster) {
+		function drawResshaInfo(dialog, name, shaEki, shaTime, shuEki, ryosu, ekiMaster, cbango) {
 			const lang = document.documentElement.dataset.lang;
 			// 列車名がある場合は、画面に表示する。
 			if (name) {
@@ -167,6 +167,21 @@ function showTrainDetailDialog(target, train, isError) {
 				$(dialog).find(".unban-label").removeClass("hide");
 			}
 		}
+
+		/**
+		 * ダイアログに｢運行番号｣を描画する。
+		 * @param cbango 列番。
+		 */
+		function drawResshaInfo(cbango) {
+			// 運行番号を取得する。
+			const unban-text = cbango[cbango];
+			// 運行番号がある場合は、画面に表示する。
+			if (cbango) {
+				$(dialog).find(".cbango").text(cbango);
+				$(dialog).find(".unban-label").removeClass("hide");
+			}
+		}
+
 		/**
 		 * ダイアログに｢現在地｣を描画する。
 		 * @param dialog ダイアログ要素。
