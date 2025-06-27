@@ -1,6 +1,3 @@
-let autoUpdateTimer = null;
-let isTabVisible = true;
-
 // スクロールの高さ保持用
 let scrollY = 0;
 // 遷移前の路線保持用
@@ -78,6 +75,7 @@ window.onload = function(){
 	beforeWidth = window.innerWidth;
 
 	$(function(){
+	startAutoUpdate();
 		// ページの最後が駅で終わっている路線（08、13）でサブフッターの表示があった場合、下に余白を追加する
 		eki_end_margin();
 	});
@@ -148,48 +146,6 @@ window.onhashchange = function () {
 }
 
 $(function ($) {
-function startAutoUpdate() {
-	if (autoUpdateTimer) clearInterval(autoUpdateTimer);
-
-	autoUpdateTimer = setInterval(() => {
-		if (!isTabVisible) return;
-
-		console.log("⏳ 自動更新を実行中...");
-		location_reload();
-	}, 30000);
-}
-
-function location_reload() {
-	const now = Date.now() >>> 16;
-	$.when(
-		$.getJSON("./original/location_master" + (lang === "ja" ? "" : "_" + lang) + ".json?" + now),
-		$.getJSON("https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/webunkou/json/master/eki_master.json?" + now),
-		$.getJSON("https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/trainlocation/json/location/now/location_" + _param_rosen + "_now.json?" + now)
-	).done(function(posNameMasterBase, ekiMasterBase, nowData) {
-		$(".ressha-icon").remove();
-		create_ressha_icon(_param_rosen, nowData[0], typeData[0], ekiData[0]);
-		ressha_pos_sort();
-
-		const now = new Date();
-		const formatted =
-			now.getFullYear() + "年" +
-			(now.getMonth() + 1).toString().padStart(2, "0") + "月" +
-			now.getDate().toString().padStart(2, "0") + "日" +
-			now.getHours().toString().padStart(2, "0") + "時" +
-			now.getMinutes().toString().padStart(2, "0") + "分" +
-			now.getSeconds().toString().padStart(2, "0") + "秒現在";
-
-		$("#timestamp").text(formatted);
-	});
-}
-
-document.addEventListener("visibilitychange", function() {
-	isTabVisible = !document.hidden;
-	if (isTabVisible) {
-		startAutoUpdate();
-	}
-});
-
 	// 選択（エリアから選択／特急列車から選択）タブの選択を切り替えたときの動き
 	$(document).on('change', 'input[name="sideSelect"]', function () {
 		str = $('input:radio[name="sideSelect"]:checked').val();
@@ -1900,4 +1856,68 @@ function is_reload() {
 }
 
 
-startAutoUpdate();
+
+// -------------------------
+// 自動更新に関する変数・関数定義
+// -------------------------
+
+let autoUpdateTimer = null;
+
+// 自動更新の開始
+function startAutoUpdate() {
+	if (autoUpdateTimer === null) {
+		autoUpdateTimer = setInterval(() => {
+			if (!document.hidden) {
+				console.log("位置情報を再取得します");
+				updateTrainPositions();
+			}
+		}, 30000); // 30秒ごとに更新
+	}
+}
+
+// 自動更新の停止
+function stopAutoUpdate() {
+	if (autoUpdateTimer !== null) {
+		clearInterval(autoUpdateTimer);
+		autoUpdateTimer = null;
+	}
+}
+
+// タブ切り替え検知
+document.addEventListener("visibilitychange", () => {
+	if (document.hidden) {
+		stopAutoUpdate();
+	} else {
+		startAutoUpdate();
+	}
+});
+
+// 現在時刻のフォーマット表示
+function updateTimestampDisplay() {
+	const now = new Date();
+	const formatted =
+		now.getFullYear() + "年" +
+		(now.getMonth() + 1) + "月" +
+		now.getDate() + "日" +
+		now.getHours().toString().padStart(2, "0") + "時" +
+		now.getMinutes().toString().padStart(2, "0") + "分" +
+		now.getSeconds().toString().padStart(2, "0") + "秒現在";
+	$("#timestamp").text(formatted);
+}
+
+// 列車情報の再取得処理
+function updateTrainPositions() {
+	const now = Date.now() >>> 16;
+	$.when(
+		$.getJSON(`https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/trainlocation/json/location/now/location_${_param_rosen}_now.json?${now}`)
+	)
+	.done((nowData) => {
+		$(".ressha-icon").remove();
+		create_ressha_icon(_param_rosen, nowData[0], _typeData, _ekiData);
+		ressha_pos_sort();
+		updateTimestampDisplay();
+	})
+	.fail(() => {
+		console.warn("位置情報の取得に失敗しました");
+	});
+}
