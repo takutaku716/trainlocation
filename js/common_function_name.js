@@ -54,7 +54,7 @@ function senkuNameLoad() {
 	let now = Date.now() >>> 16;
 	$.ajaxSetup({ async: false });
 	$.getJSON(
-		"https://corsproxy.io/?https://www3.jrhokkaido.co.jp/webunkou/json/master/senku_name_master.json?" + now,
+		"https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/webunkou/json/master/senku_name_master.json?" + now,
 		function (master) {
 			objSenkuNameArray = {};
 			master.forEach(function (item) {
