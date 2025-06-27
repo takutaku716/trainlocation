@@ -1909,7 +1909,7 @@ function updateTimestampDisplay() {
 function updateTrainPositions() {
 	const now = Date.now() >>> 16;
 	$.when(
-		$.getJSON(`https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/trainlocation/json/location/now/location_${param_rosen}_now.json?${now}`)
+		$.getJSON(`https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/trainlocation/json/location/now/location_${_param_rosen}_now.json?${now}`)
 	)
 	.done((nowData) => {
 		$(".ressha-icon").remove();
