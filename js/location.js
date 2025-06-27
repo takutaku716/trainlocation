@@ -1,3 +1,6 @@
+let autoUpdateTimer = null;
+let isTabVisible = true;
+
 // スクロールの高さ保持用
 let scrollY = 0;
 // 遷移前の路線保持用
@@ -16,11 +19,6 @@ let isSideMenuDisp = false;
 let beforeWidth = 0;
 // 画面表示処理実行判定用
 let isNotInitDisp = false;
-
-//自動更新用
-let refreshIntervalId = null;
-const REFRESH_INTERVAL_MS = 30000; // 30秒ごとに更新
-
 
 window.onload = function(){
 	// 現在表示中の路線を取得
@@ -150,6 +148,48 @@ window.onhashchange = function () {
 }
 
 $(function ($) {
+function startAutoUpdate() {
+	if (autoUpdateTimer) clearInterval(autoUpdateTimer);
+
+	autoUpdateTimer = setInterval(() => {
+		if (!isTabVisible) return;
+
+		console.log("⏳ 自動更新を実行中...");
+		location_reload();
+	}, 30000);
+}
+
+function location_reload() {
+	const now = Date.now() >>> 16;
+	$.when(
+		$.getJSON("./original/location_master" + (lang === "ja" ? "" : "_" + lang) + ".json?" + now),
+		$.getJSON("https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/webunkou/json/master/eki_master.json?" + now),
+		$.getJSON("https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/trainlocation/json/location/now/location_" + _param_rosen + "_now.json?" + now)
+	).done(function(posNameMasterBase, ekiMasterBase, nowData) {
+		$(".ressha-icon").remove();
+		create_ressha_icon(_param_rosen, nowData[0], typeData[0], ekiData[0]);
+		ressha_pos_sort();
+
+		const now = new Date();
+		const formatted =
+			now.getFullYear() + "年" +
+			(now.getMonth() + 1).toString().padStart(2, "0") + "月" +
+			now.getDate().toString().padStart(2, "0") + "日" +
+			now.getHours().toString().padStart(2, "0") + "時" +
+			now.getMinutes().toString().padStart(2, "0") + "分" +
+			now.getSeconds().toString().padStart(2, "0") + "秒現在";
+
+		$("#timestamp").text(formatted);
+	});
+}
+
+document.addEventListener("visibilitychange", function() {
+	isTabVisible = !document.hidden;
+	if (isTabVisible) {
+		startAutoUpdate();
+	}
+});
+
 	// 選択（エリアから選択／特急列車から選択）タブの選択を切り替えたときの動き
 	$(document).on('change', 'input[name="sideSelect"]', function () {
 		str = $('input:radio[name="sideSelect"]:checked').val();
@@ -517,13 +557,6 @@ function set_station_list(_param_rosen, _scrollKey, _callback) {
 	)
 	.done(function(nowData, rosenNameData, maintenanceData, typeData, ekiData, rosen, maintenance) {
 
-		// ↓↓↓ グローバル変数の定義（この位置でOK） ↓↓↓
-		window._rosenId = _param_rosen;
-		window._typeData = typeData[0];
-		window._ekiData = ekiData[0];
-		window._scrollKey = _scrollKey;
-
-
 		// 現在日付を設定
 		const now = new Date();
 		const formatted =
@@ -567,11 +600,6 @@ function set_station_list(_param_rosen, _scrollKey, _callback) {
 			$("#stationList").html(rosen[0]);
 			// 列車アイコンを描画する
 			create_ressha_icon(_param_rosen, nowData[0], typeData[0], ekiData[0]);
-
-			window._latest_param_rosen = _param_rosen;
-			window._latest_typeData = typeData[0];
-			window._latest_ekiData = ekiData[0];
-
 			// 列車アイコンの表示順を並び替える
 			ressha_pos_sort();
 
@@ -590,13 +618,6 @@ function set_station_list(_param_rosen, _scrollKey, _callback) {
 
 			// 駅・駅間描画後の後処理
 			set_post_station_list(_param_rosen, _scrollKey);
-
-			// すでに更新が開始されていたら止める
-			if (refreshIntervalId) clearInterval(refreshIntervalId);
-
-			// 定期更新スタート
-			refreshIntervalId = setInterval(refreshTrainLocation, REFRESH_INTERVAL_MS);
-
 
 			if (_callback) _callback();
 		}
@@ -1863,7 +1884,6 @@ function eki_end_margin() {
 	}
 }
 
-
 /*
  * 画面更新判定処理
  */
@@ -1880,36 +1900,4 @@ function is_reload() {
 }
 
 
-function refreshTrainLocation() {
-	if (document.visibilityState !== "visible") return;
-
-	const rosen = window._latest_param_rosen;
-	const typeData = window._latest_typeData;
-	const ekiData = window._latest_ekiData;
-	const jsonUrl = `https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/trainlocation/json/location/now/location_${rosen}_now.json?_=${Date.now()}`;
-
-	$.getJSON(jsonUrl, function(newData) {
-		if (!newData || !newData[0]) return;
-
-		// 古い列車アイコンを削除
-		$(".ressha-icon").remove();
-
-		// 再描画
-		create_ressha_icon(rosen, newData[0], typeData, ekiData);
-		ressha_pos_sort();
-
-		// 更新時刻表示
-		setTimestamp(newData);
-	});
-}
-
-
-document.addEventListener("visibilitychange", function() {
-	if (document.visibilityState === "visible" && !refreshIntervalId) {
-		refreshIntervalId = setInterval(refreshTrainLocation, REFRESH_INTERVAL_MS);
-	} else if (document.visibilityState === "hidden" && refreshIntervalId) {
-		clearInterval(refreshIntervalId);
-		refreshIntervalId = null;
-	}
-});
-
+startAutoUpdate();
