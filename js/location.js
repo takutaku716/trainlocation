@@ -512,21 +512,17 @@ function set_station_list(_param_rosen, _scrollKey, _callback) {
 	)
 	.done(function(nowData, rosenNameData, maintenanceData, typeData, ekiData, rosen, maintenance) {
 		// 現在日付を設定
-		const timestamp =
-			lang === "ja" ? nowData[0].time :
-			lang === "en" ? nowData[0].timeEn :
-			lang === "tc" ? nowData[0].timeTc :
-			lang === "sc" ? nowData[0].timeSc :
-			lang === "kr" ? nowData[0].timeKr : undefined;
-		if (timestamp) {
-			if ($("#timestamp").length) {
-				// ヘッダーが読み込み済みであれば、ヘッダーに「現在日時」を埋め込みする。
-				$("#timestamp").text(timestamp);
-			} else {
-				// ヘッダーを読み込み中の場合は、data 属性に値を設定する。（ヘッダーの読み込み後に、data 属性から値を取得してヘッダーに埋め込む）
-				$("header").data("timestamp", timestamp);
-			}
-		}
+		const now = new Date();
+		const formatted = 
+			now.getFullYear() + "/" +
+			(now.getMonth() + 1).toString().padStart(2, "0") + "/" +
+			now.getDate().toString().padStart(2, "0") + " " +
+			now.getHours().toString().padStart(2, "0") + ":" +
+			now.getMinutes().toString().padStart(2, "0") + ":" +
+			now.getSeconds().toString().padStart(2, "0");
+
+		$("#timestamp").text(formatted);
+
 
 		// 路線名を設定
 		let findRosenName = rosenNameData[0].find((v) => v.rosen == _param_rosen);
