@@ -493,13 +493,7 @@ function set_station_list(_param_rosen, _scrollKey, _callback) {
 	disp_oshirase(_param_rosen);
 
 	// 各区間のhtmlを読み込み
-	
-function get_param(key) {
-	const url = new URL(window.location.href);
-	return url.searchParams.get(key);
-}
-
-const lang = document.documentElement.dataset.lang;
+	const lang = document.documentElement.dataset.lang;
 
 	// 走行位置ページメンテナンスJSONファイルを読み込んで、メンテナンスページに切り替えるか判定を行う。
 	let mstNow = Date.now() >>> 16;
@@ -1858,4 +1852,78 @@ function is_reload() {
 		}
 	}
 	return false;
+}
+
+// 自動更新用グローバル変数
+let _param_rosen = "";
+let _typeData = null;
+let _ekiData = null;
+let updateIntervalId = null;
+
+// 列車情報の再取得処理
+function updateTrainPositions() {
+    const now = Date.now() >>> 16;
+    const url = "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/trainlocation/json/location/now/location_" + _param_rosen + "_now.json?" + now;
+
+    $.getJSON(url)
+    .done(function(nowData) {
+        $(".ressha-icon").remove();
+        create_ressha_icon(_param_rosen, nowData[0], _typeData, _ekiData);
+        ressha_pos_sort();
+        updateTimestampDisplay();
+    })
+    .fail(function() {
+        console.warn("位置情報の取得に失敗しました");
+    });
+}
+
+// タイムスタンプ表示処理（秒単位）
+function updateTimestampDisplay() {
+    const now = new Date();
+    const formatted =
+        now.getFullYear() + "年" +
+        (now.getMonth() + 1).toString().padStart(2, "0") + "月" +
+        now.getDate().toString().padStart(2, "0") + "日" +
+        now.getHours().toString().padStart(2, "0") + "時" +
+        now.getMinutes().toString().padStart(2, "0") + "分" +
+        now.getSeconds().toString().padStart(2, "0") + "秒現在";
+
+    $("#timestamp").text(formatted);
+}
+
+// 自動更新の開始と停止
+function startAutoUpdate() {
+    if (updateIntervalId !== null) return;
+    updateIntervalId = setInterval(function () {
+        if (document.visibilityState === "visible") {
+            updateTrainPositions();
+        }
+    }, 30000);
+}
+
+function stopAutoUpdate() {
+    if (updateIntervalId !== null) {
+        clearInterval(updateIntervalId);
+        updateIntervalId = null;
+    }
+}
+
+document.addEventListener("visibilitychange", function () {
+    if (document.visibilityState === "visible") {
+        startAutoUpdate();
+    } else {
+        stopAutoUpdate();
+    }
+});
+
+// 初期化時に呼び出される描画関数をラップして自動更新と連動
+function initializeTrainDisplay(param_rosen, nowData, typeData, ekiData) {
+    _param_rosen = param_rosen;
+    _typeData = typeData;
+    _ekiData = ekiData;
+
+    create_ressha_icon(param_rosen, nowData, typeData, ekiData);
+    ressha_pos_sort();
+    updateTimestampDisplay();
+    startAutoUpdate();
 }
