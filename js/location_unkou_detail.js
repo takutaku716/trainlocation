@@ -72,7 +72,7 @@ $(function ($) {
 			let senku = dataset.senku;
 			let now = Date.now() >>> 16;
 			//運行番号
-			$(".cbango").text(train.cbango);
+			$(".cbango").text(dataset.cbango);
 			$(".unban-item").removeClass("hide");
 
 			$.when(
