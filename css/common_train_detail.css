@@ -184,7 +184,7 @@
 			background-color: #777;
 		}
 		/* 運行番号のラベル */
-		.trainDetailDialog .train-info dl dd.unban-item .unban-text {
+		.trainDetailDialog .train-info dl dd.unban-item .cbango {
 			color: #f00;
 			font-weight: bold;
 		}
