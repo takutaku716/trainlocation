@@ -17,6 +17,11 @@ let beforeWidth = 0;
 // 画面表示処理実行判定用
 let isNotInitDisp = false;
 
+//自動更新用
+let refreshIntervalId = null;
+const REFRESH_INTERVAL_MS = 30000; // 30秒ごとに更新
+
+
 window.onload = function(){
 	// 現在表示中の路線を取得
 	let param_rosen = get_param_rosen();
@@ -562,6 +567,11 @@ function set_station_list(_param_rosen, _scrollKey, _callback) {
 			$("#stationList").html(rosen[0]);
 			// 列車アイコンを描画する
 			create_ressha_icon(_param_rosen, nowData[0], typeData[0], ekiData[0]);
+
+			window._latest_param_rosen = _param_rosen;
+			window._latest_typeData = typeData[0];
+			window._latest_ekiData = ekiData[0];
+
 			// 列車アイコンの表示順を並び替える
 			ressha_pos_sort();
 
@@ -580,6 +590,13 @@ function set_station_list(_param_rosen, _scrollKey, _callback) {
 
 			// 駅・駅間描画後の後処理
 			set_post_station_list(_param_rosen, _scrollKey);
+
+			// すでに更新が開始されていたら止める
+			if (refreshIntervalId) clearInterval(refreshIntervalId);
+
+			// 定期更新スタート
+			refreshIntervalId = setInterval(refreshTrainLocation, REFRESH_INTERVAL_MS);
+
 
 			if (_callback) _callback();
 		}
@@ -1846,6 +1863,7 @@ function eki_end_margin() {
 	}
 }
 
+
 /*
  * 画面更新判定処理
  */
@@ -1862,70 +1880,36 @@ function is_reload() {
 }
 
 
-let updateTimer = null;
+function refreshTrainLocation() {
+	if (document.visibilityState !== "visible") return;
 
-/**
- * 定期更新処理：実行内容
- */
-function updateTrainLocation() {
-	const now = Date.now() >>> 16;
-	const lang = document.documentElement.dataset.lang;
-	const rosenId = window._rosenId;
-	const typeData = window._typeData;
-	const ekiData = window._ekiData;
+	const rosen = window._latest_param_rosen;
+	const typeData = window._latest_typeData;
+	const ekiData = window._latest_ekiData;
+	const jsonUrl = `https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/trainlocation/json/location/now/location_${rosen}_now.json?_=${Date.now()}`;
 
-	const url = `https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/trainlocation/json/location/now/location_${rosenId}_now.json?${now}`;
+	$.getJSON(jsonUrl, function(newData) {
+		if (!newData || !newData[0]) return;
 
-	$.getJSON(url)
-		.done(function (nowData) {
-			// 古い列車アイコンを削除
-			$(".ressha-icon").remove();
+		// 古い列車アイコンを削除
+		$(".ressha-icon").remove();
 
-			// 新しい列車アイコンを描画
-			create_ressha_icon(rosenId, nowData[0], typeData, ekiData);
-			ressha_pos_sort();
+		// 再描画
+		create_ressha_icon(rosen, newData[0], typeData, ekiData);
+		ressha_pos_sort();
 
-			// 現在時刻を更新
-			const nowDate = new Date();
-			const formatted =
-				nowDate.getFullYear() + "年" +
-				(nowDate.getMonth() + 1) + "月" +
-				nowDate.getDate() + "日" +
-				nowDate.getHours().toString().padStart(2, "0") + "時" +
-				nowDate.getMinutes().toString().padStart(2, "0") + "分" +
-				nowDate.getSeconds().toString().padStart(2, "0") + "秒現在";
-
-			$("#timestamp").text(formatted);
-		});
+		// 更新時刻表示
+		setTimestamp(newData);
+	});
 }
 
-/**
- * 定期更新を開始する
- */
-function startAutoUpdate() {
-	if (!updateTimer) {
-		updateTimer = setInterval(updateTrainLocation, 5000);
-	}
-}
 
-/**
- * 定期更新を停止する
- */
-function stopAutoUpdate() {
-	if (updateTimer) {
-		clearInterval(updateTimer);
-		updateTimer = null;
-	}
-}
-
-// ページの可視状態に応じて自動更新を制御
-document.addEventListener("visibilitychange", function () {
-	if (document.hidden) {
-		stopAutoUpdate(); // 非表示時は停止
-	} else {
-		startAutoUpdate(); // 表示時は再開
+document.addEventListener("visibilitychange", function() {
+	if (document.visibilityState === "visible" && !refreshIntervalId) {
+		refreshIntervalId = setInterval(refreshTrainLocation, REFRESH_INTERVAL_MS);
+	} else if (document.visibilityState === "hidden" && refreshIntervalId) {
+		clearInterval(refreshIntervalId);
+		refreshIntervalId = null;
 	}
 });
 
-// 初期起動
-startAutoUpdate();
