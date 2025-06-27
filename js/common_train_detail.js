@@ -163,22 +163,8 @@ function showTrainDetailDialog(target, train, isError) {
 			}
 			// 運行番号がある場合は、画面に表示する。
 			if (cbango) {
-				$(dialog).find(".cbango").text(cbango);
-				$(dialog).find(".unban-label").removeClass("hide");
-			}
-		}
-
-		/**
-		 * ダイアログに｢運行番号｣を描画する。
-		 * @param cbango 列番。
-		 */
-		function drawResshaInfo(cbango) {
-			// 運行番号を取得する。
-			const unban-text = cbango[cbango];
-			// 運行番号がある場合は、画面に表示する。
-			if (cbango) {
-				$(dialog).find(".cbango").text(cbango);
-				$(dialog).find(".unban-label").removeClass("hide");
+			        $(dialog).find(".cbango").text(cbango);
+       				$(dialog).find(".unban-item").removeClass("hide");
 			}
 		}
 

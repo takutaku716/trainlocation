@@ -9,7 +9,19 @@ function set_side_area_chien() {
 	)
 	.done(function(nowdata) {
 		// 現在日付表示
-		setTimestamp(nowdata);
+		function setTimestamp(nowdata) {
+			const now = new Date();
+			const formatted =
+				now.getFullYear() + "年" +
+				(now.getMonth() + 1).toString().padStart(2, "0") + "月" +
+				now.getDate().toString().padStart(2, "0") + "日" +
+				now.getHours().toString().padStart(2, "0") + "時" +
+				now.getMinutes().toString().padStart(2, "0") + "分" +
+				now.getSeconds().toString().padStart(2, "0") + "秒現在";
+
+			$("#timestamp").text(formatted);
+		}
+
 		$("#localTab .rosen-name-contents").each(function(i, row) {
 			let nowStatus = nowdata.lines.find((v) => v.rosen == $(row).attr("value"));
 			if (typeof nowStatus !== "undefined") {
