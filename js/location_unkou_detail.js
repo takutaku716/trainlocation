@@ -30,9 +30,6 @@ $(function ($) {
 			$("#ryosu").html(dataset.ryosu);
 			// 運行状態名
 			$("#resshaDetailUnkouName").html(dataset.unkou_name);
-			//運行番号
-			$(".unban-text").text(dataset.cbango);
-			$(".unban-item").removeClass("hide");
 			// 運行状態詳細
 			$("#resshaDetailUnkouText").text(dataset.unkou_detail);
 			if (dataset.unkou_detail === "─") { //運行状態詳細が「─」なら非表示にする
@@ -74,6 +71,10 @@ $(function ($) {
 			let pos = dataset.pos;
 			let senku = dataset.senku;
 			let now = Date.now() >>> 16;
+			//運行番号
+			$(".cbango").text(train.cbango);
+			$(".unban-item").removeClass("hide");
+
 			$.when(
 				$.getJSON("./original/location_master" + (lang === "ja" ? "" : "_" + lang) + ".json?" + now),
 				$.getJSON("https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/webunkou/json/master/eki_master.json?" + now),
