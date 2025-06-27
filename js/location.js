@@ -1,3 +1,69 @@
+
+
+
+// 自動更新機能に必要な変数と関数
+let updateIntervalId = null;
+let _param_rosen = get_param("rosen"); // グローバルに定義
+
+function updateTrainPositions() {
+    if (!_param_rosen) {
+        console.warn("必要な情報が不足しています。");
+        return;
+    }
+    const now = Date.now() >>> 16;
+    const url = "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/trainlocation/json/location/now/location_" + _param_rosen + "_now.json?" + now;
+
+    $.getJSON(url)
+        .done((nowData) => {
+            $(".ressha-icon").remove();
+            create_ressha_icon(_param_rosen, nowData[0], _typeData, _ekiData);
+            ressha_pos_sort();
+            updateTimestampDisplay();
+        })
+        .fail(() => {
+            console.warn("位置情報の取得に失敗しました");
+        });
+}
+
+function updateTimestampDisplay() {
+    const now = new Date();
+    const formatted = 
+        now.getFullYear() + "年" +
+        (now.getMonth() + 1).toString().padStart(2, "0") + "月" +
+        now.getDate().toString().padStart(2, "0") + "日" +
+        now.getHours().toString().padStart(2, "0") + "時" +
+        now.getMinutes().toString().padStart(2, "0") + "分" +
+        now.getSeconds().toString().padStart(2, "0") + "秒現在";
+    $("#timestamp").text(formatted);
+}
+
+function startAutoUpdate() {
+    if (!updateIntervalId) {
+        updateIntervalId = setInterval(updateTrainPositions, 10000);
+    }
+}
+
+function stopAutoUpdate() {
+    if (updateIntervalId) {
+        clearInterval(updateIntervalId);
+        updateIntervalId = null;
+    }
+}
+
+document.addEventListener("visibilitychange", function () {
+    if (document.visibilityState === "visible") {
+        startAutoUpdate();
+    } else {
+        stopAutoUpdate();
+    }
+});
+
+// 初期起動時に開始
+$(function () {
+    startAutoUpdate();
+});
+
+
 // スクロールの高さ保持用
 let scrollY = 0;
 // 遷移前の路線保持用
@@ -1853,83 +1919,3 @@ function is_reload() {
 	}
 	return false;
 }
-
-// ======== 自動更新用グローバル変数 ========
-let _param_rosen = null;
-let _typeData = null;
-let _ekiData = null;
-let autoUpdateIntervalId = null;
-
-// ======== 初期化関数 ========
-function initializeTrainDisplay(param_rosen, nowData, typeData, ekiData) {
-	_param_rosen = param_rosen;
-	_typeData = typeData;
-	_ekiData = ekiData;
-
-	create_ressha_icon(param_rosen, nowData, typeData, ekiData);
-	ressha_pos_sort();
-	updateTimestampDisplay();
-}
-
-// ======== タイムスタンプ表示更新 ========
-function updateTimestampDisplay() {
-	const now = new Date();
-	const formatted =
-		now.getFullYear() + "年" +
-		(now.getMonth() + 1).toString().padStart(2, "0") + "月" +
-		now.getDate().toString().padStart(2, "0") + "日" +
-		now.getHours().toString().padStart(2, "0") + "時" +
-		now.getMinutes().toString().padStart(2, "0") + "分" +
-		now.getSeconds().toString().padStart(2, "0") + "秒現在";
-	$("#timestamp").text(formatted);
-}
-
-// ======== 再取得処理 ========
-function updateTrainPositions() {
-	if (!_param_rosen || !_typeData || !_ekiData) {
-		console.warn("必要な情報が不足しています。");
-		return;
-	}
-
-	const now = Date.now() >>> 16;
-	const url = "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=" +
-		encodeURIComponent("https://www3.jrhokkaido.co.jp/trainlocation/json/location/now/location_" + _param_rosen + "_now.json?" + now);
-
-	$.getJSON(url)
-		.done(function (nowData) {
-			$(".ressha-icon").remove();
-			create_ressha_icon(_param_rosen, nowData[0], _typeData, _ekiData);
-			ressha_pos_sort();
-			updateTimestampDisplay();
-		})
-		.fail(function () {
-			console.warn("位置情報の取得に失敗しました");
-		});
-}
-
-// ======== 自動更新制御 ========
-function startAutoUpdate() {
-	if (autoUpdateIntervalId) return;
-	autoUpdateIntervalId = setInterval(() => {
-		if (document.visibilityState === "visible") {
-			updateTrainPositions();
-		}
-	}, 30000);
-}
-
-function stopAutoUpdate() {
-	clearInterval(autoUpdateIntervalId);
-	autoUpdateIntervalId = null;
-}
-
-document.addEventListener("visibilitychange", () => {
-	if (document.visibilityState === "visible") {
-		startAutoUpdate();
-	} else {
-		stopAutoUpdate();
-	}
-});
-
-document.addEventListener("DOMContentLoaded", () => {
-	startAutoUpdate();
-});
