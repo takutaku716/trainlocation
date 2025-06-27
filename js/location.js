@@ -511,18 +511,18 @@ function set_station_list(_param_rosen, _scrollKey, _callback) {
 		$.get(maintenance_html)
 	)
 	.done(function(nowData, rosenNameData, maintenanceData, typeData, ekiData, rosen, maintenance) {
+
 		// 現在日付を設定
 		const now = new Date();
-		const formatted = 
-			now.getFullYear() + "/" +
-			(now.getMonth() + 1).toString().padStart(2, "0") + "/" +
-			now.getDate().toString().padStart(2, "0") + " " +
-			now.getHours().toString().padStart(2, "0") + ":" +
-			now.getMinutes().toString().padStart(2, "0") + ":" +
-			now.getSeconds().toString().padStart(2, "0");
+		const formatted =
+			now.getFullYear() + "年" +
+			(now.getMonth() + 1) + "月" +
+			now.getDate() + "日" +
+			now.getHours() + "時" +
+			now.getMinutes() + "分" +
+			now.getSeconds() + "秒現在";
 
 		$("#timestamp").text(formatted);
-
 
 		// 路線名を設定
 		let findRosenName = rosenNameData[0].find((v) => v.rosen == _param_rosen);
