@@ -72,8 +72,9 @@ $(function ($) {
 			let senku = dataset.senku;
 			let now = Date.now() >>> 16;
 			//運行番号
-			$(".cbango").text(dataset.cbango);
-			$(".unban-item").removeClass("hide");
+			// 「列車詳細」ダイアログ内の .cbango 要素のみに反映
+			$("#resshaDetail .cbango").text(dataset.cbango);
+			$("#resshaDetail .unban-item").removeClass("hide");
 
 			$.when(
 				$.getJSON("./original/location_master" + (lang === "ja" ? "" : "_" + lang) + ".json?" + now),
