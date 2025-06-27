@@ -1,3 +1,12 @@
+// クエリパラメータ取得関数
+function get_param(name) {
+	const url = new URL(window.location.href);
+	return url.searchParams.get(name);
+}
+
+// グローバル変数
+const _param_rosen = get_param("rosen");
+
 
 
 
