@@ -30,6 +30,9 @@ $(function ($) {
 			$("#ryosu").html(dataset.ryosu);
 			// 運行状態名
 			$("#resshaDetailUnkouName").html(dataset.unkou_name);
+			//運行番号
+			$(".unban-text").text(dataset.cbango);
+			$(".unban-item").removeClass("hide");
 			// 運行状態詳細
 			$("#resshaDetailUnkouText").text(dataset.unkou_detail);
 			if (dataset.unkou_detail === "─") { //運行状態詳細が「─」なら非表示にする
