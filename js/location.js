@@ -512,6 +512,13 @@ function set_station_list(_param_rosen, _scrollKey, _callback) {
 	)
 	.done(function(nowData, rosenNameData, maintenanceData, typeData, ekiData, rosen, maintenance) {
 
+		// ↓↓↓ グローバル変数の定義（この位置でOK） ↓↓↓
+		window._rosenId = _param_rosen;
+		window._typeData = typeData[0];
+		window._ekiData = ekiData[0];
+		window._scrollKey = _scrollKey;
+
+
 		// 現在日付を設定
 		const now = new Date();
 		const formatted =
@@ -1853,3 +1860,72 @@ function is_reload() {
 	}
 	return false;
 }
+
+
+let updateTimer = null;
+
+/**
+ * 定期更新処理：実行内容
+ */
+function updateTrainLocation() {
+	const now = Date.now() >>> 16;
+	const lang = document.documentElement.dataset.lang;
+	const rosenId = window._rosenId;
+	const typeData = window._typeData;
+	const ekiData = window._ekiData;
+
+	const url = `https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/trainlocation/json/location/now/location_${rosenId}_now.json?${now}`;
+
+	$.getJSON(url)
+		.done(function (nowData) {
+			// 古い列車アイコンを削除
+			$(".ressha-icon").remove();
+
+			// 新しい列車アイコンを描画
+			create_ressha_icon(rosenId, nowData[0], typeData, ekiData);
+			ressha_pos_sort();
+
+			// 現在時刻を更新
+			const nowDate = new Date();
+			const formatted =
+				nowDate.getFullYear() + "年" +
+				(nowDate.getMonth() + 1) + "月" +
+				nowDate.getDate() + "日" +
+				nowDate.getHours().toString().padStart(2, "0") + "時" +
+				nowDate.getMinutes().toString().padStart(2, "0") + "分" +
+				nowDate.getSeconds().toString().padStart(2, "0") + "秒現在";
+
+			$("#timestamp").text(formatted);
+		});
+}
+
+/**
+ * 定期更新を開始する
+ */
+function startAutoUpdate() {
+	if (!updateTimer) {
+		updateTimer = setInterval(updateTrainLocation, 5000);
+	}
+}
+
+/**
+ * 定期更新を停止する
+ */
+function stopAutoUpdate() {
+	if (updateTimer) {
+		clearInterval(updateTimer);
+		updateTimer = null;
+	}
+}
+
+// ページの可視状態に応じて自動更新を制御
+document.addEventListener("visibilitychange", function () {
+	if (document.hidden) {
+		stopAutoUpdate(); // 非表示時は停止
+	} else {
+		startAutoUpdate(); // 表示時は再開
+	}
+});
+
+// 初期起動
+startAutoUpdate();
