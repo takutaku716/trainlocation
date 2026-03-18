@@ -264,11 +264,14 @@ function showTrainDetailDialog(target, train, isError) {
 		function drawDaiya(dialog, trainInfo, ekiMaster, daiya) {
 			// ダイヤデータから、対象列番の列車データを取得する。
 			const train = daiya.today.find(train => train.cbango === trainInfo.cbango);
+			const hasDelay = Number(trainInfo.chien) > 0;
 			if (!train || !train.stations || !train.stations.length) {
 				return;
 			}
 			// 停車駅が1件以上ある場合は、｢ダイヤデータ｣部分を表示状態にする。
 			$(dialog).find(".station-list").removeClass("hide");
+			$(dialog).find(".station-list").toggleClass("hide-adjusted-column", !hasDelay);
+			$(dialog).find(".adjusted-notice").toggleClass("hide", !hasDelay);
 			// 停車駅の一覧を作成する。
 			train.stations.forEach((station, index, stations) => {
 				// ｢列車｣のテンプレートを取得して、画面に追加する。
@@ -286,7 +289,7 @@ function showTrainDetailDialog(target, train, isError) {
 				}
 				// 時刻を設定する。
 				$(trainElement).find(".time").text(station.time);
-				$(trainElement).find(".adjusted-time").text(calcAdjustedTime(station.time, trainInfo.chien));
+				$(trainElement).find(".adjusted-time").text(hasDelay ? calcAdjustedTime(station.time, trainInfo.chien) : "");
 			});
 		}
 		/**
