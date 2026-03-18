@@ -182,10 +182,19 @@
 		}
 		/* ｢運行番号｣のアイコン */
 		.trainDetailDialog .train-info dl dt.unban-item .unban-label {
+			align-items: center;
 			background-color: #777;
 			color: #fff;
+			display: flex;
+			justify-content: center;
+			min-height: 32px;
+			min-width: 86px;
+			text-align: center;
 		}
 		/* 運行番号のラベル */
+		.trainDetailDialog .train-info dl dd.unban-item {
+			border-top: 1px solid #ccc;
+		}
 		.trainDetailDialog .train-info dl dd.unban-item .cbango {
 			color: #f00;
 			font-weight: bold;
