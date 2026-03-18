@@ -161,6 +161,7 @@ function create_daiya(_dataset, _ekiMaster, _daiyaData) {
 	}
 
 	let lang = document.documentElement.dataset.lang;
+	const chien = Number(_dataset.chien || 0);
 	let findDaiya = _daiyaData[0].today.find((v) => v.cbango == _dataset.cbango);
 	if (typeof findDaiya !== "undefined") {
 		// 愛称名
@@ -170,37 +171,68 @@ function create_daiya(_dataset, _ekiMaster, _daiyaData) {
 		if (findDaiya.stations.length > 0) {
 			let html = "<table id='teisyaTable' border='1' width='80%'>";
 
-			if (lang == "ja") html += "<tr><th width='65%'>停車駅</th><th width='35%'>定刻</th></tr>";
-			if (lang == "en") html += "<tr><th width='65%'>Stops</th><th width='35%'>Scheduled time</th></tr>";
-			if (lang == "tc") html += "<tr><th width='65%'>停靠站</th><th width='35%'>準點</th></tr>";
-			if (lang == "sc") html += "<tr><th width='65%'>停靠站</th><th width='35%'>准点</th></tr>";
-			if (lang == "kr") html += "<tr><th width='65%'>정차역</th><th width='35%'>통상 운행시각</th></tr>";
+			if (lang == "ja") html += "<tr><th width='50%'>停車駅</th><th width='25%'>定刻</th><th width='25%'>遅延考慮</th></tr>";
+			if (lang == "en") html += "<tr><th width='50%'>Stops</th><th width='25%'>Scheduled time</th><th width='25%'>Adjusted</th></tr>";
+			if (lang == "tc") html += "<tr><th width='50%'>停靠站</th><th width='25%'>準點</th><th width='25%'>延遲後</th></tr>";
+			if (lang == "sc") html += "<tr><th width='50%'>停靠站</th><th width='25%'>准点</th><th width='25%'>晚点后</th></tr>";
+			if (lang == "kr") html += "<tr><th width='50%'>정차역</th><th width='25%'>통상 운행시각</th><th width='25%'>지연 반영</th></tr>";
 
 			for (let i of Object.keys(findDaiya.stations)) {
 				let findRowEki = _ekiMaster[0].find((v) => v.key == findDaiya.stations[i].key);
 				if (typeof findRowEki !== "undefined") {
 					let time = findDaiya.stations[i].time ? findDaiya.stations[i].time : "";
+					let adjustedTime = calc_adjusted_time(time, chien);
 					html += "<tr>";
 					if (lang == "ja") {
 						html += "<td>" + findRowEki.ja + "</td>";
-						if (i == findDaiya.stations.length - 1) html += "<td align='center'>" + time + " 着</td>";
-						else html += "<td align='center'>" + time + " 発</td>";
+						if (i == findDaiya.stations.length - 1) {
+							html += "<td align='center'>" + time + " 着</td>";
+							html += "<td align='center'>" + adjustedTime + " 着</td>";
+						}
+						else {
+							html += "<td align='center'>" + time + " 発</td>";
+							html += "<td align='center'>" + adjustedTime + " 発</td>";
+						}
 					} else if (lang == "en") {
 						html += "<td>" + findRowEki.en + "</td>";
-						if (i == findDaiya.stations.length - 1) html += "<td align='center'>" + time + " arr.</td>";
-						else html += "<td align='center'>" + time + " dep.</td>";
+						if (i == findDaiya.stations.length - 1) {
+							html += "<td align='center'>" + time + " arr.</td>";
+							html += "<td align='center'>" + adjustedTime + " arr.</td>";
+						}
+						else {
+							html += "<td align='center'>" + time + " dep.</td>";
+							html += "<td align='center'>" + adjustedTime + " dep.</td>";
+						}
 					} else if (lang == "tc") {
 						html += "<td>" + findRowEki.tc + "</td>";
-						if (i == findDaiya.stations.length - 1) html += "<td align='center'>" + time + " 到</td>";
-						else html += "<td align='center'>" + time + " 開</td>";
+						if (i == findDaiya.stations.length - 1) {
+							html += "<td align='center'>" + time + " 到</td>";
+							html += "<td align='center'>" + adjustedTime + " 到</td>";
+						}
+						else {
+							html += "<td align='center'>" + time + " 開</td>";
+							html += "<td align='center'>" + adjustedTime + " 開</td>";
+						}
 					} else if (lang == "sc") {
 						html += "<td>" + findRowEki.sc + "</td>";
-						if (i == findDaiya.stations.length - 1) html += "<td align='center'>" + time + " 到</td>";
-						else html += "<td align='center'>" + time + " 开</td>";
+						if (i == findDaiya.stations.length - 1) {
+							html += "<td align='center'>" + time + " 到</td>";
+							html += "<td align='center'>" + adjustedTime + " 到</td>";
+						}
+						else {
+							html += "<td align='center'>" + time + " 开</td>";
+							html += "<td align='center'>" + adjustedTime + " 开</td>";
+						}
 					} else if (lang == "kr") {
 						html += "<td>" + findRowEki.kr + "</td>";
-						if (i == findDaiya.stations.length - 1) html += "<td align='center'>" + time + " 도착</td>";
-						else html += "<td align='center'>" + time + " 출발</td>";
+						if (i == findDaiya.stations.length - 1) {
+							html += "<td align='center'>" + time + " 도착</td>";
+							html += "<td align='center'>" + adjustedTime + " 도착</td>";
+						}
+						else {
+							html += "<td align='center'>" + time + " 출발</td>";
+							html += "<td align='center'>" + adjustedTime + " 출발</td>";
+						}
 					}
 					html += "</tr>";
 				}
@@ -217,4 +249,14 @@ function create_daiya(_dataset, _ekiMaster, _daiyaData) {
 		// ダイヤデータ非表示
 		$("#teisyaTableArea div").empty();
 	}
+}
+
+function calc_adjusted_time(_time, _chien) {
+	if (!/^\d{1,2}:\d{2}$/.test(_time)) return "";
+	const [hour, minute] = _time.split(":").map(Number);
+	const totalMinutes = hour * 60 + minute + _chien;
+	const normalizedMinutes = ((totalMinutes % 1440) + 1440) % 1440;
+	const adjustedHour = String(Math.floor(normalizedMinutes / 60)).padStart(2, "0");
+	const adjustedMinute = String(normalizedMinutes % 60).padStart(2, "0");
+	return adjustedHour + ":" + adjustedMinute;
 }

@@ -1448,6 +1448,7 @@ function create_ressha_detail(_objItem, _nowRow, _typeData, _ekiData) {
 		}
 
 		// 遅れ
+		_objItem.dataset.chien = _nowRow.chien ? _nowRow.chien : "0";
 		if (_nowRow.yokuStatus == 1 || _nowRow.yokuStatus == 2) {
 			_objItem.dataset.chien_text = _nowRow.yokuDetail[lang];
 		} else if (_nowRow.chien >= 1) {
