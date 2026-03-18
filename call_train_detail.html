@@ -31,7 +31,7 @@
 						</p>
 					</dd>
 					<dt class="unban-item hide"><span class="unban-label icon">列車番号</span></dt>
-					<dd class="unban-item hide"><span class="unban-text"></span></dd>
+					<dd class="unban-item hide"><span class="cbango"></span></dd>
 					<dt class="pos-item hide"><span class="pos-label icon">現在地</span></dt>
 					<dd class="pos-item hide"><span class="pos-name"></span></dd>
 					<dt class="chien-item hide"><span class="chien-label icon">遅れ</span></dt>
@@ -47,17 +47,19 @@
 							<tr>
 								<th>停車駅</th>
 								<th>定刻</th>
+								<th>遅延考慮</th>
 							</tr>
 						</thead>
 						<tbody>
-							<tr class="dep template"><td><span class="name"></span></td><td><span class="time"></span> 発</td></tr>
-							<tr class="arr template"><td><span class="name"></span></td><td><span class="time"></span> 着</td></tr>
+							<tr class="dep template"><td><span class="name"></span></td><td><span class="time"></span> 発</td><td><span class="adjusted-time"></span> 発</td></tr>
+							<tr class="arr template"><td><span class="name"></span></td><td><span class="time"></span> 着</td><td><span class="adjusted-time"></span> 着</td></tr>
 						</tbody>
 					</table>
 				</div>
 				<div class="notice">
 					<ul>
 						<li>※定刻の時間を表示しています。</li>
+						<li>※遅延考慮は現在の遅れ時分を加算した参考時刻です。</li>
 						<li>※終着駅と行先が違う場合[　]で表示しています。</li>
 						<li>※実際の列車情報と異なる場合があります。</li>
 					</ul>

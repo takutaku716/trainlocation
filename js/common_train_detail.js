@@ -65,7 +65,7 @@ function showTrainDetailDialog(target, train, isError) {
 		$.when(
 			$.getJSON("https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/webunkou/json/master/eki_master.json?" + mstNow),
 			$.getJSON("https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/webunkou/json/master/ressha_type_master.json?" + mstNow),
-			$.getJSON("./ORIGINAL/location_master" + (lang === "ja" ? "" : "_" + lang) + ".json?" + mstnow),
+			$.getJSON("./ORIGINAL/location_master" + (lang === "ja" ? "" : "_" + lang) + ".json?" + mstNow),
 			$.getJSON("https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/webunkou/json/daiya/daiya_" + train.senku + (lang === "ja" ? "" : "_" + lang) + ".json?" + mstNow)
 		)
 		.done(function(ekiMasterBase, resshaTypeMasterBase, posNameMasterBase, daiyaBase) {
@@ -78,7 +78,7 @@ function showTrainDetailDialog(target, train, isError) {
 			// ダイアログに｢列車種別｣を描画する。
 			drawResshaType(dialog, train.type, resshaTypeMaster);
 			// ダイアログに｢列車情報｣を描画する。
-			drawResshaInfo(dialog, train.name, train.shaEki, train.shaTime, train.shuEki, train.ryosu, ekiMaster, cbango);
+			drawResshaInfo(dialog, train.name, train.shaEki, train.shaTime, train.shuEki, train.ryosu, ekiMaster, train.cbango);
 			// ダイアログに｢現在地｣を描画する。
 			drawCurrentPos(dialog, train.pos, posNameMaster);
 			// ダイアログに｢遅れ｣を描画する。
@@ -86,7 +86,7 @@ function showTrainDetailDialog(target, train, isError) {
 			// ダイアログに｢運行状態｣を描画する。
 			drawUnkouStatus(dialog, train.status, train.statusDetail);
 			// ダイアログに｢ダイヤデータ｣を描画する。
-			drawDaiya(dialog, train.cbango, ekiMaster, daiya);
+			drawDaiya(dialog, train, ekiMaster, daiya);
 		})
 		.fail(function() {
 			// データの取得に失敗した場合は、エラーメッセージを表示する。
@@ -163,22 +163,8 @@ function showTrainDetailDialog(target, train, isError) {
 			}
 			// 運行番号がある場合は、画面に表示する。
 			if (cbango) {
-				$(dialog).find(".cbango").text(cbango);
-				$(dialog).find(".unban-label").removeClass("hide");
-			}
-		}
-
-		/**
-		 * ダイアログに｢運行番号｣を描画する。
-		 * @param cbango 列番。
-		 */
-		function drawResshaInfo(cbango) {
-			// 運行番号を取得する。
-			const unban-text = cbango[cbango];
-			// 運行番号がある場合は、画面に表示する。
-			if (cbango) {
-				$(dialog).find(".cbango").text(cbango);
-				$(dialog).find(".unban-label").removeClass("hide");
+			        $(dialog).find(".cbango").text(cbango);
+       				$(dialog).find(".unban-item").removeClass("hide");
 			}
 		}
 
@@ -275,13 +261,14 @@ function showTrainDetailDialog(target, train, isError) {
 		 * @param ekiMaster 駅マスタ。
 		 * @param daiya ダイヤデータ。
 		 */
-		function drawDaiya(dialog, cbango, ekiMaster, daiya) {
+		function drawDaiya(dialog, trainInfo, ekiMaster, daiya) {
 			// ダイヤデータから、対象列番の列車データを取得する。
-			const train = daiya.today.find(train => train.cbango === cbango);
-			// 停車駅が1件以上ある場合は、｢ダイヤデータ｣部分を表示状態にする。
-			if (train && train.stations && train.stations.length) {
-				$(dialog).find(".station-list").removeClass("hide");
+			const train = daiya.today.find(train => train.cbango === trainInfo.cbango);
+			if (!train || !train.stations || !train.stations.length) {
+				return;
 			}
+			// 停車駅が1件以上ある場合は、｢ダイヤデータ｣部分を表示状態にする。
+			$(dialog).find(".station-list").removeClass("hide");
 			// 停車駅の一覧を作成する。
 			train.stations.forEach((station, index, stations) => {
 				// ｢列車｣のテンプレートを取得して、画面に追加する。
@@ -299,7 +286,26 @@ function showTrainDetailDialog(target, train, isError) {
 				}
 				// 時刻を設定する。
 				$(trainElement).find(".time").text(station.time);
+				$(trainElement).find(".adjusted-time").text(calcAdjustedTime(station.time, trainInfo.chien));
 			});
+		}
+		/**
+		 * 所定時刻に遅れ分を加算した参考時刻を算出する。
+		 * @param baseTime 所定時刻。
+		 * @param delayMinutes 遅れ分数。
+		 * @return 参考時刻。
+		 */
+		function calcAdjustedTime(baseTime, delayMinutes) {
+			if (!/^\d{1,2}:\d{2}$/.test(baseTime)) {
+				return "";
+			}
+			const safeDelay = Number.isFinite(delayMinutes) ? delayMinutes : 0;
+			const [hour, minute] = baseTime.split(":").map(Number);
+			const totalMinutes = hour * 60 + minute + safeDelay;
+			const normalizedMinutes = ((totalMinutes % 1440) + 1440) % 1440;
+			const adjustedHour = String(Math.floor(normalizedMinutes / 60)).padStart(2, "0");
+			const adjustedMinute = String(normalizedMinutes % 60).padStart(2, "0");
+			return adjustedHour + ":" + adjustedMinute;
 		}
 	}
 	/**

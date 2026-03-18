@@ -182,9 +182,10 @@
 		/* ｢運行番号｣のアイコン */
 		.trainDetailDialog .train-info dl dt.unban-item .unban-label {
 			background-color: #777;
+			color: #fff;
 		}
 		/* 運行番号のラベル */
-		.trainDetailDialog .train-info dl dd.unban-item .unban-text {
+		.trainDetailDialog .train-info dl dd.unban-item .cbango {
 			color: #f00;
 			font-weight: bold;
 		}
@@ -236,12 +237,17 @@
 					}
 						/* 時刻表のデータ行セル(1列目) */
 						.trainDetailDialog .station-list .timetable table tbody tr td:nth-child(1) {
-							width: 65%;
+							width: 50%;
 						}
 						/* 時刻表のデータ行セル(2列目) */
 						.trainDetailDialog .station-list .timetable table tbody tr td:nth-child(2) {
 							text-align: center;
-							width: 35%;
+							width: 25%;
+						}
+						/* 時刻表のデータ行セル(3列目) */
+						.trainDetailDialog .station-list .timetable table tbody tr td:nth-child(3) {
+							text-align: center;
+							width: 25%;
 						}
 	/* ダイヤデータの注意書きリストの全体要素 */
 	.trainDetailDialog .station-list .notice ul {

@@ -71,6 +71,12 @@ $(function ($) {
 			let pos = dataset.pos;
 			let senku = dataset.senku;
 			let now = Date.now() >>> 16;
+			//運行番号
+			// 運行番号（列車番号のラベルと数値を分けて制御）
+			$("#cbangoDetail").text(dataset.cbango);
+			$("#cbangoIcon").removeClass("hide");
+			$("#cbangoDetail").removeClass("hide");
+
 			$.when(
 				$.getJSON("./original/location_master" + (lang === "ja" ? "" : "_" + lang) + ".json?" + now),
 				$.getJSON("https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/webunkou/json/master/eki_master.json?" + now),
