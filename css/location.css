@@ -2290,6 +2290,20 @@ section#unkouDetail {
 	font-size: 15px;
 	width: 100%;
 }
+	#resshaDetail #cbangoIcon {
+		align-items: center;
+		background-color: #777;
+		color: #fff;
+		display: flex;
+		justify-content: center;
+		min-height: 34px;
+		text-align: center;
+	}
+	#resshaDetail #cbangoDetail {
+		border-bottom: 1px solid #ccc;
+		padding: 10px 0;
+		margin-bottom: -1px;
+	}
 	#resshaDetail .text.type {
 		border-bottom: 1px solid #ccc;
 	}
