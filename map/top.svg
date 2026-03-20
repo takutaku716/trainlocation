@@ -214,35 +214,35 @@
 
 	<g id="station" class="station">
 		<!-- 函館 -->
-		<a xlink:href="../location.html#rosen=09&amp;id=028" target="_top">
+		<a xlink:href="../location.html#rosen=52&amp;id=028" target="_top">
 			<g data-key="28" class="major">
 				<circle cx="60" cy="455"/>
 				<text class="left middle" x="67" y="455">函館</text>
 			</g>
 		</a>
 		<!-- 新函館北斗 -->
-		<a xlink:href="../location.html#rosen=09&amp;id=034" target="_top">
+		<a xlink:href="../location.html#rosen=52&amp;id=034" target="_top">
 			<g data-key="34" class="major">
 				<circle cx="60" cy="435"/>
 				<text class="left middle" x="67" y="435">新函館北斗</text>
 			</g>
 		</a>
 		<!-- 大沼 -->
-		<a xlink:href="../location.html#rosen=09&amp;id=036" target="_top">
+		<a xlink:href="../location.html#rosen=52&amp;id=036" target="_top">
 			<g data-key="36">
 				<circle cx="60" cy="415"/>
 				<text class="right middle" x="53" y="415">大沼</text>
 			</g>
 		</a>
 		<!-- 森 -->
-		<a xlink:href="../location.html#rosen=09&amp;id=043" target="_top">
+		<a xlink:href="../location.html#rosen=52&amp;id=043" target="_top">
 			<g data-key="43">
 				<circle cx="60" cy="395"/>
 				<text class="right middle" x="53" y="395">森</text>
 			</g>
 		</a>
 		<!-- 長万部 -->
-		<a xlink:href="../location.html#rosen=07&amp;id=058" target="_top">
+		<a xlink:href="../location.html#rosen=52&amp;id=058" target="_top">
 			<g data-key="58">
 				<circle cx="60" cy="370"/>
 				<text class="right middle" x="53" y="370">長万部</text>
@@ -256,70 +256,70 @@
 			</g>
 		</a>
 		<!-- 小樽 -->
-		<a xlink:href="../location.html#rosen=01&amp;id=076" target="_top">
+		<a xlink:href="../location.html#rosen=51&amp;id=076" target="_top">
 			<g data-key="76">
 				<circle cx="60" cy="290"/>
 				<text class="center bottom" x="60" y="283" dy="-0.25em">小樽</text>
 			</g>
 		</a>
 		<!-- 手稲 -->
-		<a xlink:href="../location.html#rosen=01&amp;id=085" target="_top">
+		<a xlink:href="../location.html#rosen=51&amp;id=085" target="_top">
 			<g data-key="85">
 				<circle cx="90" cy="290"/>
 				<text class="center bottom" x="90" y="283" dy="-0.25em">手稲</text>
 			</g>
 		</a>
 		<!-- 桑園 -->
-		<a xlink:href="../location.html#rosen=01&amp;id=090" target="_top">
+		<a xlink:href="../location.html#rosen=51&amp;id=090" target="_top">
 			<g data-key="90">
 				<circle cx="120" cy="290"/>
 				<text class="center top" x="120" y="297">桑園</text>
 			</g>
 		</a>
 		<!-- 札幌 -->
-		<a xlink:href="../location.html#rosen=01&amp;id=091" target="_top">
+		<a xlink:href="../location.html#rosen=51&amp;id=091" target="_top">
 			<g data-key="91" class="major">
 				<circle cx="150" cy="290"/>
 				<text class="center bottom" x="150" y="283" dy="-0.25em">札幌</text>
 			</g>
 		</a>
 		<!-- 白石 -->
-		<a xlink:href="../location.html#rosen=01&amp;id=093" target="_top">
+		<a xlink:href="../location.html#rosen=51&amp;id=093" target="_top">
 			<g data-key="93">
 				<circle cx="180" cy="290"/>
 				<text class="left middle" x="186" y="297">白石</text>
 			</g>
 		</a>
 		<!-- 江別 -->
-		<a xlink:href="../location.html#rosen=01&amp;id=099" target="_top">
+		<a xlink:href="../location.html#rosen=51&amp;id=099" target="_top">
 			<g data-key="99">
 				<circle cx="205" cy="275"/>
 				<text class="right middle" x="197" y="268">江別</text>
 			</g>
 		</a>
 		<!-- 岩見沢 -->
-		<a xlink:href="../location.html#rosen=01&amp;id=103" target="_top">
+		<a xlink:href="../location.html#rosen=51&amp;id=103" target="_top">
 			<g data-key="103">
 				<circle cx="230" cy="260"/>
 				<text class="right middle" x="223" y="253">岩見沢</text>
 			</g>
 		</a>
 		<!-- 滝川 -->
-		<a xlink:href="../location.html#rosen=05&amp;id=111" target="_top">
+		<a xlink:href="../location.html#rosen=51&amp;id=111" target="_top">
 			<g data-key="111">
 				<circle cx="230" cy="230"/>
 				<text class="right middle" x="223" y="230">滝川</text>
 			</g>
 		</a>
 		<!-- 深川 -->
-		<a xlink:href="../location.html#rosen=05&amp;id=114" target="_top">
+		<a xlink:href="../location.html#rosen=51&amp;id=114" target="_top">
 			<g data-key="114">
 				<circle cx="230" cy="205"/>
 				<text class="right middle" x="223" y="212">深川</text>
 			</g>
 		</a>
 		<!-- 旭川 -->
-		<a xlink:href="../location.html#rosen=05&amp;id=118" target="_top">
+		<a xlink:href="../location.html#rosen=51&amp;id=118" target="_top">
 			<g data-key="118" class="major">
 				<circle cx="230" cy="180"/>
 				<text class="right middle" x="223" y="175">旭川</text>
@@ -364,35 +364,35 @@
 			<text class="right middle non-service" x="223" y="15">稚内</text>
 		</g>
 		<!-- 洞爺 -->
-		<a xlink:href="../location.html#rosen=07&amp;id=190" target="_top">
+		<a xlink:href="../location.html#rosen=52&amp;id=190" target="_top">
 			<g data-key="190">
 				<circle cx="90" cy="370"/>
 				<text class="center top" x="90" y="377">洞爺</text>
 			</g>
 		</a>
 		<!-- 東室蘭 -->
-		<a xlink:href="../location.html#rosen=07&amp;id=201" target="_top">
+		<a xlink:href="../location.html#rosen=52&amp;id=201" target="_top">
 			<g data-key="201" class="major">
 				<circle cx="120" cy="370"/>
 				<text class="center bottom" x="120" y="363" dy="-0.25em">東室蘭</text>
 			</g>
 		</a>
 		<!-- 登別 -->
-		<a xlink:href="../location.html#rosen=07&amp;id=205" target="_top">
+		<a xlink:href="../location.html#rosen=52&amp;id=205" target="_top">
 			<g data-key="205">
 				<circle cx="150" cy="370"/>
 				<text class="center top" x="150" y="377">登別</text>
 			</g>
 		</a>
 		<!-- 苫小牧 -->
-		<a xlink:href="../location.html#rosen=02&amp;id=215" target="_top">
+		<a xlink:href="../location.html#rosen=52&amp;id=215" target="_top">
 			<g data-key="215">
 				<circle cx="180" cy="370"/>
 				<text class="left middle" x="187" y="370">苫小牧</text>
 			</g>
 		</a>
 		<!-- 沼ノ端 -->
-		<a xlink:href="../location.html#rosen=02&amp;id=216" target="_top">
+		<a xlink:href="../location.html#rosen=52&amp;id=216" target="_top">
 			<g data-key="216">
 				<circle cx="180" cy="350"/>
 				<text class="left middle" x="187" y="357">沼ノ端</text>
@@ -413,14 +413,14 @@
 			</g>
 		</a>
 		<!-- 南千歳 -->
-		<a xlink:href="../location.html#rosen=02&amp;id=245" target="_top">
+		<a xlink:href="../location.html#rosen=52&amp;id=245" target="_top">
 			<g data-key="245">
 				<circle cx="180" cy="320"/>
 				<text class="right middle" x="173" y="313">南千歳</text>
 			</g>
 		</a>
 		<!-- 新千歳空港 -->
-		<a xlink:href="../location.html#rosen=02&amp;id=246" target="_top">
+		<a xlink:href="../location.html#rosen=52&amp;id=246" target="_top">
 			<g data-key="246" class="major">
 				<circle cx="150" cy="335"/>
 				<text class="right middle" x="142" y="335">新千歳空港</text>
