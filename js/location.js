@@ -622,24 +622,25 @@ function set_station_list(_param_rosen, _scrollKey, _callback) {
 	disp_oshirase(_param_rosen);
 
 	const lang = document.documentElement.dataset.lang;
-	const displayRosens = get_display_rosen_list(_param_rosen);
 	let mstNow = Date.now() >>> 16;
 	let now = Date.now() >>> 10;
-	let maintenance_html = get_maintenance_html_url(lang);
+	let rosen_html = lang == "ja" ? `./rosen/rosen_${_param_rosen}.html` : `https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/trainlocation/rosen_${_param_rosen}_${lang}.html`;
+	let maintenance_html = lang == "ja" ? "./mainte/rosen_maintenance.html" : "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/trainlocation/mainte/rosen_maintenance_" + lang + ".html";
 
-	Promise.all([
-		jqxhr_to_promise($.getJSON("./master/rosen_name_master.json?" + mstNow)),
-		jqxhr_to_promise($.getJSON("./mainte/rosen_maintenance.json?" + mstNow)),
-		jqxhr_to_promise($.getJSON("https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/webunkou/json/master/ressha_type_master.json?" + mstNow)),
-		jqxhr_to_promise($.getJSON("https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/webunkou/json/master/eki_master.json?" + mstNow)),
-		Promise.all(displayRosens.map((rosen) => jqxhr_to_promise($.get(get_rosen_html_url(rosen, lang))))),
-		jqxhr_to_promise($.get(maintenance_html))
-	])
-	.then(([rosenNameData, maintenanceData, typeData, ekiData, rosenHtmlList, maintenanceHtml]) => {
+	$.when(
+		$.getJSON("https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/trainlocation/json/location/now/location_" + _param_rosen + "_now.json?" + now),
+		$.getJSON("./master/rosen_name_master.json?" + mstNow),
+		$.getJSON("./mainte/rosen_maintenance.json?" + mstNow),
+		$.getJSON("https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/webunkou/json/master/ressha_type_master.json?" + mstNow),
+		$.getJSON("https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/webunkou/json/master/eki_master.json?" + mstNow),
+		$.get(rosen_html),
+		$.get(maintenance_html)
+	)
+	.done(function(nowData, rosenNameData, maintenanceData, typeData, ekiData, rosen, maintenance) {
 		const nowDate = new Date();
 		$("#timestamp").text(get_location_timestamp_text(nowDate));
 
-		let findRosenName = rosenNameData.find((v) => v.rosen == _param_rosen);
+		let findRosenName = rosenNameData[0].find((v) => v.rosen == _param_rosen);
 		if (typeof findRosenName !== "undefined") {
 			if (lang == "ja") $("#title").html(findRosenName.rosenName.ja + findRosenName.kukanName.ja);
 			if (lang == "en") $("#title").html(`<span>${findRosenName.rosenName.en}</span><span>${findRosenName.kukanName.en}</span>`);
@@ -648,40 +649,25 @@ function set_station_list(_param_rosen, _scrollKey, _callback) {
 			if (lang == "kr") $("#title").html(`<span>${findRosenName.rosenName.kr}</span><span>${findRosenName.kukanName.kr}</span>`);
 		}
 
-		const maintenanceRosens = new Set(
-			maintenanceData.lines
-				.filter((v) => v.status == "1" && displayRosens.includes(v.rosen))
-				.map((v) => v.rosen)
-		);
-		const activeRosens = displayRosens.filter((rosen) => !maintenanceRosens.has(rosen));
-		activeLocationRosens = [...activeRosens];
-
-		if (activeRosens.length < 1) {
+		let result = maintenanceData[0].lines.filter((v) => v.status == "1" && v.rosen == _param_rosen);
+		if (result.length > 0) {
+			activeLocationRosens = [];
 			cachedResshaTypeData = null;
 			cachedEkiData = null;
-			$("#stationList").html(maintenanceHtml);
+			$("#stationList").html(maintenance[0]);
 			$(".homen-header-contents").hide();
 			$(".homen-footer-contents").hide();
 			$(".btn-header-contents .header-btn.eki").hide();
 			$("#subFooterContents").hide();
 			$(".maintenance-title").show();
 			set_post_station_list(_param_rosen, _scrollKey);
-			return;
-		}
-
-		const activeRosenHtmlList = activeRosens.map((rosen) => rosenHtmlList[displayRosens.indexOf(rosen)]);
-		const combinedRosenHtml = build_combined_rosen_html(activeRosens, activeRosenHtmlList);
-
-		autoRefreshRosen = _param_rosen;
-		cachedResshaTypeData = typeData;
-		cachedEkiData = ekiData;
-		$("#stationList").html(combinedRosenHtml.html);
-		if (combinedRosenHtml.homenUpText) $("#stationList").prepend($("<div id='homenNameUpText' hidden></div>").text(combinedRosenHtml.homenUpText));
-		if (combinedRosenHtml.homenDownText) $("#stationList").prepend($("<div id='homenNameDownText' hidden></div>").text(combinedRosenHtml.homenDownText));
-
-		return Promise.all(activeRosens.map((rosen) => jqxhr_to_promise($.getJSON(get_location_json_url(rosen, now))))).then((nowDataList) => {
-			const mergedNowData = merge_location_now_data(nowDataList);
-			create_ressha_icon(_param_rosen, mergedNowData, typeData, ekiData);
+		} else {
+			activeLocationRosens = [_param_rosen];
+			autoRefreshRosen = _param_rosen;
+			cachedResshaTypeData = typeData[0];
+			cachedEkiData = ekiData[0];
+			$("#stationList").html(rosen[0]);
+			create_ressha_icon(_param_rosen, nowData[0], typeData[0], ekiData[0]);
 			ressha_pos_sort();
 
 			let homenUp = $("#homenNameUpText");
@@ -692,14 +678,13 @@ function set_station_list(_param_rosen, _scrollKey, _callback) {
 			$(".homen-footer-contents").show();
 			$(".btn-header-contents .header-btn.eki").show();
 			$("#subFooterContents").show();
-
 			set_post_station_list(_param_rosen, _scrollKey);
 			start_location_auto_refresh(_param_rosen);
 
 			if (_callback) _callback();
-		});
+		}
 	})
-	.catch(function() {
+	.fail(function() {
 		var errormessage = `<h2 class='msg-bg'>${get_error_message()}</h2>`;
 		$('#message').html(errormessage);
 		$('#message').show();
@@ -744,12 +729,11 @@ function refresh_location_positions(_param_rosen) {
 	if (!$("#stationList .ressha-icon").length) return;
 
 	const now = Date.now() >>> 10;
-	const targetRosens = activeLocationRosens.length > 0 ? activeLocationRosens : get_display_rosen_list(_param_rosen);
-	Promise.all(targetRosens.map((rosen) => jqxhr_to_promise($.getJSON(get_location_json_url(rosen, now)))))
-	.then(function(nowDataList) {
-		redraw_location_positions(_param_rosen, merge_location_now_data(nowDataList));
+	$.getJSON("https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/trainlocation/json/location/now/location_" + _param_rosen + "_now.json?" + now)
+	.done(function(nowData) {
+		redraw_location_positions(_param_rosen, nowData);
 	})
-	.catch(function() {
+	.fail(function() {
 		// 鬯ｯ・ｮ繝ｻ・｢郢晢ｽｻ繝ｻ・ｾ驛｢譎｢・ｽ・ｻ郢晢ｽｻ繝ｻ・ｪ鬯ｮ・ｯ繝ｻ・ｷ髫ｶ荳ｻ・･繝ｻ・ｽ・ｽ繝ｻ・｢髴難ｽ｣陋帙・・ｽ・ｽ繝ｻ・ｳ郢晢ｽｻ繝ｻ・ｩ鬯ｮ・ｫ繝ｻ・ｴ驛｢譎｢・ｽ・ｻ郢晢ｽｻ繝ｻ・ｽ郢晢ｽｻ繝ｻ・ｰ鬯ｮ・ｯ隶灘･・ｽｽ・ｻ郢ｧ謇假ｽｽ・ｽ繝ｻ・ｽ郢晢ｽｻ繝ｻ・ｱ鬯ｮ・ｫ繝ｻ・ｰ郢晢ｽｻ繝ｻ・ｨ鬯ｩ髦ｪ繝ｻ繝ｻ・ｽ繝ｻ・ｲ鬮ｯ・ｷ郢晢ｽｻ繝ｻ・ｽ繝ｻ・ｾ鬯ｩ謳ｾ・ｽ・ｵ郢晢ｽｻ繝ｻ・ｺ驛｢譎｢・ｽ・ｻ郢晢ｽｻ繝ｻ・ｯ鬯ｮ・ｫ繝ｻ・ｹ郢晢ｽｻ繝ｻ・ｺ驛｢譎｢・ｽ・ｻ郢晢ｽｻ繝ｻ・｡鬯ｮ・ｯ隲帙・・ｻ・ｸ郢晢ｽｻ繝ｻ・ｨ鬯ｮ・ｮ郢晢ｽｻ繝ｻ・ｽ繝ｻ・ｳ郢晢ｽｻ繝ｻ・ｩ鬯ｮ・ｫ繝ｻ・ｴ驛｢譎｢・ｽ・ｻ郢晢ｽｻ繝ｻ・ｽ郢晢ｽｻ繝ｻ・ｰ鬯ｩ蟷｢・ｽ・｢郢晢ｽｻ繝ｻ・ｧ鬯ｮ・ｮ陋ｹ・ｺ繝ｻ・ｩ繝ｻ・ｸ郢晢ｽｻ繝ｻ・ｽ郢晢ｽｻ繝ｻ・ｾ鬩幢ｽ｢隴趣ｽ｢繝ｻ・ｽ繝ｻ・ｻ鬮ｫ・ｨ郢晢ｽｻ繝ｻ・ｽ繝ｻ・ｽ
 	});
 }
@@ -777,7 +761,7 @@ function clear_location_positions(_param_rosen) {
 	$("#stationList .ressha-icon").removeClass("up");
 	$("#stationList .ressha-icon .ressha, #stationList .ressha-icon .dummy").remove();
 
-	if (has_hakodate_layout_segment()) {
+	if (_param_rosen == "09") {
 		$("#fujishiro1").show();
 		$("#fujishiro2").show();
 		$("#fujishiro1Long").hide();
@@ -924,7 +908,7 @@ function handle_page_visibility_change() {
 /*
  * 鬯ｯ・ｯ繝ｻ・ｯ郢晢ｽｻ繝ｻ・ｯ驛｢譎｢・ｽ・ｻ郢晢ｽｻ繝ｻ・ｯ鬩幢ｽ｢隴趣ｽ｢繝ｻ・ｽ繝ｻ・ｻ驛｢譎｢・ｽ・ｻ郢晢ｽｻ繝ｻ・ｧ鬯ｯ・ｩ陝ｷ・｢繝ｻ・ｽ繝ｻ・｢鬮ｫ・ｴ髮懶ｽ｣繝ｻ・ｽ繝ｻ・｢驛｢譎｢・ｽ・ｻ郢晢ｽｻ繝ｻ・ｽ驛｢譎｢・ｽ・ｻ郢晢ｽｻ繝ｻ・ｻ鬯ｯ・ｩ陝ｷ・｢繝ｻ・ｽ繝ｻ・｢鬮ｫ・ｴ髮懶ｽ｣繝ｻ・ｽ繝ｻ・｢驛｢譎｢・ｽ・ｻ郢晢ｽｻ繝ｻ・ｽ驛｢譎｢・ｽ・ｻ郢晢ｽｻ繝ｻ・ｻ鬯ｯ・ｯ繝ｻ・ｯ郢晢ｽｻ繝ｻ・ｯ驛｢譎｢・ｽ・ｻ郢晢ｽｻ繝ｻ・ｯ鬩幢ｽ｢隴趣ｽ｢繝ｻ・ｽ繝ｻ・ｻ驛｢譎｢・ｽ・ｻ郢晢ｽｻ繝ｻ・ｧ鬯ｯ・ｩ陝ｷ・｢繝ｻ・ｽ繝ｻ・｢鬮ｫ・ｴ髮懶ｽ｣繝ｻ・ｽ繝ｻ・｢驛｢譎｢・ｽ・ｻ郢晢ｽｻ繝ｻ・ｽ驛｢譎｢・ｽ・ｻ郢晢ｽｻ繝ｻ・ｻ鬯ｯ・ｮ繝ｻ・｣髯ｷ・ｴ郢晢ｽｻ繝ｻ・ｽ繝ｻ・ｽ郢晢ｽｻ繝ｻ・ｫ鬩幢ｽ｢隴趣ｽ｢繝ｻ・ｽ繝ｻ・ｻ驛｢譎｢・ｽ・ｻ郢晢ｽｻ繝ｻ・｣鬯ｯ・ｯ繝ｻ・ｮ郢晢ｽｻ繝ｻ・ｫ驛｢譎｢・ｽ・ｻ郢晢ｽｻ繝ｻ・ｰ鬩幢ｽ｢隴趣ｽ｢繝ｻ・ｽ繝ｻ・ｻ驛｢譎｢・ｽ・ｻ郢晢ｽｻ繝ｻ・ｰ鬯ｯ・ｮ繝ｻ・ｯ郢晢ｽｻ繝ｻ・ｷ郢晢ｽｻ邵ｺ・､・つ鬯ｮ・ｫ繝ｻ・ｲ郢晢ｽｻ繝ｻ・､鬮ｫ・ｲ陝ｶ蟶ｷ讓滄Δ譎｢・ｽ・ｻ鬯ｯ・ｯ繝ｻ・ｮ郢晢ｽｻ繝ｻ・ｯ鬮ｮ荵昴・繝ｻ・ｽ繝ｻ・ｷ鬮｣諛δｧ繝ｻ・ｸ陷ｷ・ｶ郢晢ｽｻ驛｢譎｢・ｽ・ｻ郢晢ｽｻ繝ｻ・ｾ鬯ｮ・ｯ雋・ｽｷ關灘ｸ吶・繝ｻ・ｾ髯溷供・ｾ蠕後・鬯ｯ・ｯ繝ｻ・ｮ郢晢ｽｻ繝ｻ・ｯ鬮ｮ荵昴・繝ｻ・ｽ繝ｻ・ｷ驛｢譎｢・ｽ・ｻ郢晢ｽｻ繝ｻ・｢鬯ｮ・ｦ繝ｻ・ｮ髯ｷ・ｻ繝ｻ・ｻ郢晢ｽｻ繝ｻ・ｼ髫ｴ蜿厄ｽｦ・ｻ驕呈汚・ｽ・ｭ髮懶ｽ｣繝ｻ・ｽ繝ｻ・｢驛｢譎｢・ｽ・ｻ郢晢ｽｻ繝ｻ・ｽ驛｢譎｢・ｽ・ｻ郢晢ｽｻ繝ｻ・ｻ鬯ｯ・ｯ繝ｻ・ｯ郢晢ｽｻ繝ｻ・ｨ驛｢譎｢・ｽ・ｻ郢晢ｽｻ繝ｻ・ｾ鬯ｩ蟷｢・ｽ・｢髫ｴ雜｣・ｽ・｢郢晢ｽｻ繝ｻ・ｽ郢晢ｽｻ繝ｻ・ｻ鬯ｩ蟷｢・ｽ・｢髫ｴ雜｣・ｽ・｢郢晢ｽｻ繝ｻ・ｽ郢晢ｽｻ繝ｻ・ｻ */
 function set_post_station_list(_param_rosen, _scrollKey) {
-	if (has_hakodate_layout_segment()) {
+	if (_param_rosen == "09") {
 		// 鬯ｯ・ｯ繝ｻ・ｮ郢晢ｽｻ繝ｻ・ｯ驛｢譎｢・ｽ・ｻ郢晢ｽｻ繝ｻ・ｷ鬯ｩ蟷｢・ｽ・｢髫ｴ雜｣・ｽ・｢郢晢ｽｻ繝ｻ・ｽ郢晢ｽｻ繝ｻ・ｻ鬩幢ｽ｢隴趣ｽ｢繝ｻ・ｽ繝ｻ・ｻ驛｢譎｢・ｽ・ｻ郢晢ｽｻ繝ｻ・ｽ鬩幢ｽ｢隴趣ｽ｢繝ｻ・ｽ繝ｻ・ｻ驛｢譎｢・ｽ・ｻ郢晢ｽｻ繝ｻ・ｽ鬯ｯ・ｯ繝ｻ・ｯ郢晢ｽｻ繝ｻ・ｯ驛｢譎｢・ｽ・ｻ郢晢ｽｻ繝ｻ・ｯ鬩幢ｽ｢隴趣ｽ｢繝ｻ・ｽ繝ｻ・ｻ驛｢譎｢・ｽ・ｻ郢晢ｽｻ繝ｻ・｢鬯ｩ蟷｢・ｽ・｢髫ｴ雜｣・ｽ・｢郢晢ｽｻ繝ｻ・ｽ郢晢ｽｻ繝ｻ・ｻ鬩幢ｽ｢隴趣ｽ｢繝ｻ・ｽ繝ｻ・ｻ驛｢譎｢・ｽ・ｻ郢晢ｽｻ繝ｻ・ｨ鬯ｯ・ｯ繝ｻ・ｯ郢晢ｽｻ繝ｻ・ｩ鬮ｫ・ｰ繝ｻ・ｳ郢晢ｽｻ繝ｻ・ｾ驛｢譎｢・ｽ・ｻ郢晢ｽｻ繝ｻ・ｽ驛｢譎｢・ｽ・ｻ郢晢ｽｻ繝ｻ・ｱ鬯ｯ・ｮ繝ｻ・ｯ髫ｲ蟷・か繝ｻ・ｽ繝ｻ・ｺ郢晢ｽｻ繝ｻ・ｷ鬯ｮ・ｯ鬲・ｼ夲ｽｽ・ｽ繝ｻ・ｫ鬩幢ｽ｢隴趣ｽ｢繝ｻ・ｽ繝ｻ・ｻ驛｢譎｢・ｽ・ｻ郢晢ｽｻ繝ｻ・ｫ鬯ｮ・ｮ霑｢證ｦ・ｽ・ｿ繝ｻ・ｫ郢晢ｽｻ闔会ｽ｣郢晢ｽｻ郢晢ｽｻ繝ｻ・ｽ驛｢譎｢・ｽ・ｻ郢晢ｽｻ繝ｻ・ｽ鬩幢ｽ｢隴趣ｽ｢繝ｻ・ｽ繝ｻ・ｻ驛｢譎｢・ｽ・ｻ郢晢ｽｻ繝ｻ・ｷ鬯ｯ・ｯ繝ｻ・ｮ郢晢ｽｻ繝ｻ・｣鬮ｯ蜈ｷ・ｽ・ｹ驛｢譎｢・ｽ・ｻ郢晢ｽｻ繝ｻ・ｽ郢晢ｽｻ繝ｻ・ｽ驛｢譎｢・ｽ・ｻ郢晢ｽｻ繝ｻ・ｳ鬯ｯ・ｩ陝ｷ・｢繝ｻ・ｽ繝ｻ・｢鬮ｫ・ｴ髮懶ｽ｣繝ｻ・ｽ繝ｻ・｢驛｢譎｢・ｽ・ｻ郢晢ｽｻ繝ｻ・ｽ驛｢譎｢・ｽ・ｻ郢晢ｽｻ繝ｻ・ｻ鬩幢ｽ｢隴趣ｽ｢繝ｻ・ｽ繝ｻ・ｻ鬮｣蛹・ｽｽ・ｳ郢晢ｽｻ繝ｻ・ｻ驛｢譎｢・ｽ・ｻ郢晢ｽｻ繝ｻ・｣驛｢譎｢・ｽ・ｻ郢晢ｽｻ繝ｻ・ｹ鬯ｩ蟷｢・ｽ・｢髫ｴ雜｣・ｽ・｢郢晢ｽｻ繝ｻ・ｽ郢晢ｽｻ繝ｻ・ｻ鬯ｯ・ｮ繝ｻ・ｫ郢晢ｽｻ繝ｻ・ｶ鬮ｫ・ｰ陞滂ｽｲ繝ｻ・ｽ繝ｻ・ｵ驛｢譎｢・ｽ・ｻ郢晢ｽｻ繝ｻ・ｽ驛｢譎｢・ｽ・ｻ郢晢ｽｻ繝ｻ・ｫ鬯ｯ・ｩ陝ｷ・｢繝ｻ・ｽ繝ｻ・｢鬮ｫ・ｴ髮懶ｽ｣繝ｻ・ｽ繝ｻ・｢驛｢譎｢・ｽ・ｻ郢晢ｽｻ繝ｻ・ｽ驛｢譎｢・ｽ・ｻ郢晢ｽｻ繝ｻ・ｻ鬯ｯ・ｯ繝ｻ・ｯ郢晢ｽｻ繝ｻ・ｯ驛｢譎｢・ｽ・ｻ郢晢ｽｻ繝ｻ・ｯ鬩幢ｽ｢隴趣ｽ｢繝ｻ・ｽ繝ｻ・ｻ驛｢譎｢・ｽ・ｻ郢晢ｽｻ繝ｻ・｢鬯ｩ蟷｢・ｽ・｢髫ｴ雜｣・ｽ・｢郢晢ｽｻ繝ｻ・ｽ郢晢ｽｻ繝ｻ・ｻ鬩幢ｽ｢隴趣ｽ｢繝ｻ・ｽ繝ｻ・ｻ驛｢譎｢・ｽ・ｻ郢晢ｽｻ繝ｻ・ｨ鬯ｯ・ｯ繝ｻ・ｯ郢晢ｽｻ繝ｻ・ｯ驛｢譎｢・ｽ・ｻ郢晢ｽｻ繝ｻ・ｮ鬩幢ｽ｢隴趣ｽ｢繝ｻ・ｽ繝ｻ・ｻ驛｢譎｢・ｽ・ｻ郢晢ｽｻ繝ｻ・｢鬯ｯ・ｯ繝ｻ・ｮ郢晢ｽｻ繝ｻ・ｴ鬩幢ｽ｢隴趣ｽ｢繝ｻ・ｽ繝ｻ・ｻ驛｢譎｢・ｽ・ｻ郢晢ｽｻ繝ｻ・ｽ驛｢譎｢・ｽ・ｻ郢晢ｽｻ繝ｻ・｢鬯ｯ・ｯ繝ｻ・ｩ髫ｰ・ｳ繝ｻ・ｾ郢晢ｽｻ繝ｻ・ｽ郢晢ｽｻ繝ｻ・ｵ鬩幢ｽ｢隴趣ｽ｢繝ｻ・ｽ繝ｻ・ｻ驛｢譎｢・ｽ・ｻ郢晢ｽｻ繝ｻ・ｺ鬯ｩ蟷｢・ｽ・｢髫ｴ雜｣・ｽ・｢郢晢ｽｻ繝ｻ・ｽ郢晢ｽｻ繝ｻ・ｻ鬩幢ｽ｢隴趣ｽ｢繝ｻ・ｽ繝ｻ・ｻ驛｢譎｢・ｽ・ｻ郢晢ｽｻ繝ｻ・ｮ鬯ｯ・ｯ繝ｻ・ｮ郢晢ｽｻ繝ｻ・ｯ鬮ｫ・ｲ陝ｷ・｢繝ｻ・ｽ繝ｻ・ｶ驛｢譎｢・ｽ・ｻ郢晢ｽｻ繝ｻ・ｽ驛｢譎｢・ｽ・ｻ郢晢ｽｻ繝ｻ・｣鬯ｩ蟷｢・ｽ・｢髫ｴ雜｣・ｽ・｢郢晢ｽｻ繝ｻ・ｽ郢晢ｽｻ繝ｻ・ｻ鬩幢ｽ｢隴趣ｽ｢繝ｻ・ｽ繝ｻ・ｻ驛｢譎｢・ｽ・ｻ郢晢ｽｻ繝ｻ・ｴ鬯ｯ・ｯ繝ｻ・ｮ郢晢ｽｻ繝ｻ・ｯ驛｢譎｢・ｽ・ｻ郢晢ｽｻ繝ｻ・ｷ鬩幢ｽ｢隴趣ｽ｢繝ｻ・ｽ繝ｻ・ｻ驛｢譎｢・ｽ・ｻ郢晢ｽｻ繝ｻ・ｷ鬯ｯ・ｩ陝ｷ・｢繝ｻ・ｽ繝ｻ・｢鬮ｫ・ｴ髮懶ｽ｣繝ｻ・ｽ繝ｻ・｢驛｢譎｢・ｽ・ｻ郢晢ｽｻ繝ｻ・ｽ驛｢譎｢・ｽ・ｻ郢晢ｽｻ繝ｻ・ｻ
 		if ($(".fujishiro-panel").height() > 800){
 			$("#fujishiro1").hide();
@@ -1233,7 +1217,7 @@ function create_ressha_icon(_param_rosen, _nowData, _typeData, _ekiData) {
 	set_hirendo_height();
 
 	// 鬯ｯ・ｯ繝ｻ・ｮ郢晢ｽｻ繝ｻ・ｯ驛｢譎｢・ｽ・ｻ郢晢ｽｻ繝ｻ・ｷ鬯ｩ蟷｢・ｽ・｢髫ｴ雜｣・ｽ・｢郢晢ｽｻ繝ｻ・ｽ郢晢ｽｻ繝ｻ・ｻ鬩幢ｽ｢隴趣ｽ｢繝ｻ・ｽ繝ｻ・ｻ驛｢譎｢・ｽ・ｻ郢晢ｽｻ繝ｻ・ｽ鬩幢ｽ｢隴趣ｽ｢繝ｻ・ｽ繝ｻ・ｻ驛｢譎｢・ｽ・ｻ郢晢ｽｻ繝ｻ・ｽ鬯ｯ・ｯ繝ｻ・ｯ郢晢ｽｻ繝ｻ・ｯ驛｢譎｢・ｽ・ｻ郢晢ｽｻ繝ｻ・ｯ鬩幢ｽ｢隴趣ｽ｢繝ｻ・ｽ繝ｻ・ｻ驛｢譎｢・ｽ・ｻ郢晢ｽｻ繝ｻ・｢鬯ｩ蟷｢・ｽ・｢髫ｴ雜｣・ｽ・｢郢晢ｽｻ繝ｻ・ｽ郢晢ｽｻ繝ｻ・ｻ鬩幢ｽ｢隴趣ｽ｢繝ｻ・ｽ繝ｻ・ｻ驛｢譎｢・ｽ・ｻ郢晢ｽｻ繝ｻ・ｨ鬯ｯ・ｯ繝ｻ・ｯ郢晢ｽｻ繝ｻ・ｯ驛｢譎｢・ｽ・ｻ郢晢ｽｻ繝ｻ・ｯ鬩幢ｽ｢隴趣ｽ｢繝ｻ・ｽ繝ｻ・ｻ驛｢譎｢・ｽ・ｻ郢晢ｽｻ繝ｻ・ｧ鬯ｯ・ｩ陝ｷ・｢繝ｻ・ｽ繝ｻ・｢鬮ｫ・ｴ髮懶ｽ｣繝ｻ・ｽ繝ｻ・｢驛｢譎｢・ｽ・ｻ郢晢ｽｻ繝ｻ・ｽ驛｢譎｢・ｽ・ｻ郢晢ｽｻ繝ｻ・ｻ鬯ｯ・ｮ繝ｻ・ｫ郢晢ｽｻ繝ｻ・ｰ鬮ｯ・ｷ陞ゅ・・ｽ・｣繝ｻ・ｰ鬮ｯ譎｢・｣・ｰ髮九・・ｽ・ｯ郢晢ｽｻ繝ｻ・ｫ郢晢ｽｻ繝ｻ・ｱ驛｢譎｢・ｽ・ｻ郢晢ｽｻ繝ｻ・ｷ鬯ｩ蟷｢・ｽ・｢髫ｴ雜｣・ｽ・｢郢晢ｽｻ繝ｻ・ｽ郢晢ｽｻ繝ｻ・ｻ鬩幢ｽ｢隴趣ｽ｢繝ｻ・ｽ繝ｻ・ｻ驛｢譎｢・ｽ・ｻ郢晢ｽｻ繝ｻ・ｺ鬯ｯ・ｯ繝ｻ・ｩ髫ｰ・ｳ繝ｻ・ｾ郢晢ｽｻ繝ｻ・ｽ郢晢ｽｻ繝ｻ・ｵ鬩幢ｽ｢隴趣ｽ｢繝ｻ・ｽ繝ｻ・ｻ驛｢譎｢・ｽ・ｻ郢晢ｽｻ繝ｻ・ｺ鬯ｩ蟷｢・ｽ・｢髫ｴ雜｣・ｽ・｢郢晢ｽｻ繝ｻ・ｽ郢晢ｽｻ繝ｻ・ｻ鬩幢ｽ｢隴趣ｽ｢繝ｻ・ｽ繝ｻ・ｻ驛｢譎｢・ｽ・ｻ郢晢ｽｻ繝ｻ・ｮ鬯ｯ・ｯ繝ｻ・ｯ郢晢ｽｻ繝ｻ・ｯ驛｢譎｢・ｽ・ｻ郢晢ｽｻ繝ｻ・ｯ鬩幢ｽ｢隴趣ｽ｢繝ｻ・ｽ繝ｻ・ｻ驛｢譎｢・ｽ・ｻ郢晢ｽｻ繝ｻ・ｮ鬯ｯ・ｮ繝ｻ・ｯ髯具ｽｹ繝ｻ・ｺ郢晢ｽｻ繝ｻ・ｻ驛｢・ｧ隰・∞・ｽ・ｽ繝ｻ・ｽ郢晢ｽｻ繝ｻ・ｽ驛｢譎｢・ｽ・ｻ郢晢ｽｻ繝ｻ・･鬯ｩ蟷｢・ｽ・｢髫ｴ雜｣・ｽ・｢郢晢ｽｻ繝ｻ・ｽ郢晢ｽｻ繝ｻ・ｻ鬯ｩ蟷｢・ｽ・｢髫ｴ雜｣・ｽ・｢郢晢ｽｻ繝ｻ・ｽ郢晢ｽｻ繝ｻ・ｻ鬩幢ｽ｢隴趣ｽ｢繝ｻ・ｽ繝ｻ・ｻ驛｢譎｢・ｽ・ｻ郢晢ｽｻ繝ｻ・ｹ鬩幢ｽ｢隴趣ｽ｢繝ｻ・ｽ繝ｻ・ｻ驛｢譎｢・ｽ・ｻ郢晢ｽｻ繝ｻ・ｧ鬯ｯ・ｮ繝ｻ・ｯ髫ｶ蜴・ｽｽ・ｸ郢晢ｽｻ繝ｻ・ｽ郢晢ｽｻ繝ｻ・ｳ鬯ｮ・ｯ隶灘･・ｽｽ・ｻ郢ｧ謇假ｽｽ・ｽ繝ｻ・ｽ郢晢ｽｻ繝ｻ・ｲ鬩幢ｽ｢隴趣ｽ｢繝ｻ・ｽ繝ｻ・ｻ驛｢譎｢・ｽ・ｻ郢晢ｽｻ繝ｻ・ｽ鬩幢ｽ｢隴趣ｽ｢繝ｻ・ｽ繝ｻ・ｻ驛｢譎｢・ｽ・ｻ郢晢ｽｻ繝ｻ・ｨ鬯ｩ蟷｢・ｽ・｢髫ｴ雜｣・ｽ・｢郢晢ｽｻ繝ｻ・ｽ郢晢ｽｻ繝ｻ・ｻ鬩幢ｽ｢隴趣ｽ｢繝ｻ・ｽ繝ｻ・ｻ驛｢譎｢・ｽ・ｻ郢晢ｽｻ繝ｻ・ｭ鬯ｯ・ｯ繝ｻ・ｮ郢晢ｽｻ繝ｻ・ｯ鬮ｫ・ｶ陷ｴ繝ｻ・ｽ・ｽ繝ｻ・ｸ驛｢譎｢・ｽ・ｻ郢晢ｽｻ繝ｻ・ｽ驛｢譎｢・ｽ・ｻ郢晢ｽｻ繝ｻ・ｳ鬯ｯ・ｩ陝ｷ・｢繝ｻ・ｽ繝ｻ・｢鬮ｫ・ｴ髮懶ｽ｣繝ｻ・ｽ繝ｻ・｢驛｢譎｢・ｽ・ｻ郢晢ｽｻ繝ｻ・ｽ驛｢譎｢・ｽ・ｻ郢晢ｽｻ繝ｻ・ｻ
-	if (has_hakodate_layout_segment()) set_hakodate_height();
+	if (_param_rosen == "09") set_hakodate_height();
 }
 
 /*
