@@ -813,6 +813,7 @@ function format_refresh_time(_date) {
  * 自動更新設定を適用する
  */
 function apply_location_auto_refresh_settings(_enabled, _interval, _persist = true) {
+	const wasEnabled = locationAutoRefreshEnabled;
 	locationAutoRefreshEnabled = _enabled;
 	locationAutoRefreshInterval = [15000, 30000, 60000].includes(_interval) ? _interval : LOCATION_AUTO_REFRESH_DEFAULT_INTERVAL;
 	if (_persist) {
@@ -821,8 +822,15 @@ function apply_location_auto_refresh_settings(_enabled, _interval, _persist = tr
 	}
 	sync_refresh_setting_controls();
 	update_refresh_status_label();
-	if (locationAutoRefreshEnabled) start_location_auto_refresh(get_param_rosen());
-	else stop_location_auto_refresh();
+	if (locationAutoRefreshEnabled) {
+		const currentRosen = get_param_rosen();
+		start_location_auto_refresh(currentRosen);
+		if (currentRosen && (!wasEnabled || _persist)) {
+			refresh_location_positions(currentRosen);
+		}
+	} else {
+		stop_location_auto_refresh();
+	}
 }
 
 /*
