@@ -208,10 +208,10 @@ $(function ($) {
 	//rosen-name-listでマウスが離れたとき路線選択を解除
 	$(document).on("mouseleave", ".rosen-name-list div", function () {
 
-		let val = $(this).attr("value");
 		let selectAreaName =  $(this)[0].parentElement.classList[1];
 		// 路線図の路線選択削除
-		selectArea(rosenToArea(val, selectAreaName));
+		allSelectClear();
+		selectArea(selectAreaName);
 	});
 
 	// パソコン用エリア選択
@@ -364,7 +364,7 @@ function selectRosen(rosen, selectAreaName) {
 	}
 
 	var rosenNumList = ROSEN_NUM_KEYS[rosen] || [];
-	if (selectAreaName && AREA_ROSEN_KEYS[selectAreaName]) {
+	if (window.innerWidth <= 1000 && selectAreaName && AREA_ROSEN_KEYS[selectAreaName]) {
 		rosenNumList = rosenNumList.filter(key => AREA_ROSEN_KEYS[selectAreaName].includes(String(key)));
 	}
 	for (var i = 0; i < rosenNumList.length; i++) {
