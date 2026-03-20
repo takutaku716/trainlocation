@@ -16,8 +16,11 @@ let isSideMenuDisp = false;
 let beforeWidth = 0;
 // 画面表示処理実行判定用
 let isNotInitDisp = false;
-// 走行位置自動更新間隔(ms)
-const LOCATION_AUTO_REFRESH_INTERVAL = 15000;
+// 走行位置自動更新の既定間隔(ms)
+const LOCATION_AUTO_REFRESH_DEFAULT_INTERVAL = 15000;
+// 自動更新設定の保存キー
+const LOCATION_AUTO_REFRESH_ENABLED_KEY = "location_auto_refresh_enabled";
+const LOCATION_AUTO_REFRESH_INTERVAL_KEY = "location_auto_refresh_interval";
 // 走行位置自動更新タイマー
 let locationAutoRefreshTimer = null;
 // 列車選択アニメーションタイマー
@@ -27,8 +30,12 @@ let autoRefreshRosen = "";
 // 列車再描画用マスタのキャッシュ
 let cachedResshaTypeData = null;
 let cachedEkiData = null;
+// 自動更新設定
+let locationAutoRefreshEnabled = true;
+let locationAutoRefreshInterval = LOCATION_AUTO_REFRESH_DEFAULT_INTERVAL;
 
 window.onload = function(){
+	load_location_auto_refresh_settings();
 	// 現在表示中の路線を取得
 	let param_rosen = get_param_rosen();
 	// 走行位置を表示
@@ -156,6 +163,7 @@ window.onhashchange = function () {
 }
 
 $(function ($) {
+	sync_refresh_setting_controls();
 	// 選択（エリアから選択／特急列車から選択）タブの選択を切り替えたときの動き
 	$(document).on('change', 'input[name="sideSelect"]', function () {
 		str = $('input:radio[name="sideSelect"]:checked').val();
@@ -218,6 +226,13 @@ $(function ($) {
 		get_pos_info(false);
 	});
 
+	// 自動更新設定ボタンをクリックしたときの動き
+	$("#refreshSettingBtn, #refreshSettingBtnSub").on("click", function() {
+		sync_refresh_setting_controls();
+		$("#refreshSettingDetail").fadeIn("fast");
+		set_scroll_hide($("#refreshSettingDetail .dialog"));
+	});
+
 	// 駅選択をクリックしたときの動き
 	$(document).on("click", ".header-btn.eki", function() {
 		// テンプレートのhtmlから駅を取得
@@ -248,6 +263,21 @@ $(function ($) {
 		$("#searchDetail").fadeOut("fast");
 		// ダイアログを閉じたときのbodyのスクロールの制御
 		set_scroll_show($("#searchDetail .dialog"));
+	});
+
+	// 自動更新設定ダイアログを閉じる
+	$(document).on("click", "#refreshSettingDetail, #refreshSettingDetail .close", function() {
+		$("#refreshSettingDetail").fadeOut("fast");
+		set_scroll_show($("#refreshSettingDetail .dialog"));
+	});
+
+	// 自動更新設定を適用する
+	$(document).on("click", "#refreshSettingApplyBtn", function() {
+		const enabled = $("#refreshEnabledSelect").val() === "on";
+		const intervalSeconds = Number($("#refreshIntervalSelect").val());
+		apply_location_auto_refresh_settings(enabled, intervalSeconds * 1000);
+		$("#refreshSettingDetail").fadeOut("fast");
+		set_scroll_show($("#refreshSettingDetail .dialog"));
 	});
 
 	// 駅選択ダイアログ内の各駅のボタンをクリックしたときの動き
@@ -284,7 +314,7 @@ $(function ($) {
 	});
 
 	// バブリングを停止
-	$(document).on("click", "#guideDetail .dialog, #searchDetail .dialog, #popupDetail .dialog", function(event) {
+	$(document).on("click", "#guideDetail .dialog, #searchDetail .dialog, #popupDetail .dialog, #refreshSettingDetail .dialog", function(event) {
 		event.stopPropagation();
 	});
 
@@ -611,10 +641,10 @@ function set_station_list(_param_rosen, _scrollKey, _callback) {
  */
 function start_location_auto_refresh(_param_rosen) {
 	stop_location_auto_refresh();
-	if (!_param_rosen) return;
+	if (!_param_rosen || !locationAutoRefreshEnabled) return;
 	locationAutoRefreshTimer = setInterval(() => {
 		refresh_location_positions(_param_rosen);
-	}, LOCATION_AUTO_REFRESH_INTERVAL);
+	}, locationAutoRefreshInterval);
 }
 
 /*
@@ -705,6 +735,39 @@ function restore_selected_train_marker() {
 	if (!ressha.length) return;
 	ressha.append("<img class='ressha-animation' src='./images/home/ressha_mark.svg' alt>");
 	set_ressha_icon_animation();
+}
+
+/*
+ * 自動更新設定を読み込む
+ */
+function load_location_auto_refresh_settings() {
+	const storedEnabled = localStorage.getItem(LOCATION_AUTO_REFRESH_ENABLED_KEY);
+	const storedInterval = Number(localStorage.getItem(LOCATION_AUTO_REFRESH_INTERVAL_KEY));
+	locationAutoRefreshEnabled = storedEnabled === null ? true : storedEnabled === "true";
+	locationAutoRefreshInterval = [15000, 30000, 60000].includes(storedInterval) ? storedInterval : LOCATION_AUTO_REFRESH_DEFAULT_INTERVAL;
+}
+
+/*
+ * 自動更新設定入力欄に現在値を反映する
+ */
+function sync_refresh_setting_controls() {
+	$("#refreshEnabledSelect").val(locationAutoRefreshEnabled ? "on" : "off");
+	$("#refreshIntervalSelect").val(String(locationAutoRefreshInterval / 1000));
+}
+
+/*
+ * 自動更新設定を適用する
+ */
+function apply_location_auto_refresh_settings(_enabled, _interval, _persist = true) {
+	locationAutoRefreshEnabled = _enabled;
+	locationAutoRefreshInterval = [15000, 30000, 60000].includes(_interval) ? _interval : LOCATION_AUTO_REFRESH_DEFAULT_INTERVAL;
+	if (_persist) {
+		localStorage.setItem(LOCATION_AUTO_REFRESH_ENABLED_KEY, String(locationAutoRefreshEnabled));
+		localStorage.setItem(LOCATION_AUTO_REFRESH_INTERVAL_KEY, String(locationAutoRefreshInterval));
+	}
+	sync_refresh_setting_controls();
+	if (locationAutoRefreshEnabled) start_location_auto_refresh(get_param_rosen());
+	else stop_location_auto_refresh();
 }
 
 /*
@@ -836,7 +899,7 @@ function set_responsive() {
 	let margin = 0;
 	let lang = document.documentElement.dataset.lang;
 	if (!(userAgent.indexOf('iPhone') > 0 || userAgent.indexOf('iPad') > 0 || userAgent.indexOf('Android') > 0 || userAgent.indexOf('Mobile') > 0 )) {
-		if ($("#guideDetail").is(":visible") || $("#searchDetail").is(":visible") || $("#popupDetail").is(":visible") || $("#resshaDetail").is(":visible") || $("#oshiraseDetail").is(":visible")) {
+		if ($("#guideDetail").is(":visible") || $("#searchDetail").is(":visible") || $("#popupDetail").is(":visible") || $("#refreshSettingDetail").is(":visible") || $("#resshaDetail").is(":visible") || $("#oshiraseDetail").is(":visible")) {
 			// いずれかのダイアログが表示されていた場合
 			margin = scrollbarWidth;
 		}
@@ -846,6 +909,7 @@ function set_responsive() {
 			$("#guideDetail .dialog").css("margin", "0px " + scrollbarWidth + "px 0px 0px");
 			$("#searchDetail .dialog").css("margin", "0px " + scrollbarWidth + "px 0px 0px");
 			$("#popupDetail .dialog").css("margin", "0px " + scrollbarWidth + "px 0px 0px");
+			$("#refreshSettingDetail .dialog").css("margin", "0px " + scrollbarWidth + "px 0px 0px");
 			$("#resshaDetail .dialog").css("margin", "0px " + scrollbarWidth + "px 0px 0px");
 			$("#oshiraseDetail .dialog").css("margin", "0px " + scrollbarWidth + "px 0px 0px");
 		} else {
@@ -856,6 +920,7 @@ function set_responsive() {
 			}
 			$("#searchDetail .dialog").css("marginLeft", scrollbarWidth + "px");
 			$("#popupDetail .dialog").css("marginLeft", scrollbarWidth + "px");
+			$("#refreshSettingDetail .dialog").css("marginLeft", scrollbarWidth + "px");
 			$("#resshaDetail .dialog").css("marginLeft", scrollbarWidth + "px");
 			$("#oshiraseDetail .dialog").css("marginLeft", scrollbarWidth + "px");
 		}
@@ -873,6 +938,7 @@ function set_responsive() {
 		$("#guideDetail .dialog").css("margin", "0px");
 		$("#searchDetail .dialog").css("margin", "0px");
 		$("#popupDetail .dialog").css("margin", "0px");
+		$("#refreshSettingDetail .dialog").css("margin", "0px");
 		$("#resshaDetail .dialog").css("margin", "0px");
 		$("#oshiraseDetail .dialog").css("margin", "0px");
 
@@ -897,7 +963,7 @@ function set_responsive() {
 		if (lang == "ja") $(".sub-footer .sub-footer-contents.popup .sub-footer-unkou-msg").html("重要な<br>お知らせ");
 		// サイドメニュー内の折り畳みを閉じる。
 		toggle_close();
-		if (!($("#guideDetail").is(":visible") || $("#searchDetail").is(":visible") || $("#popupDetail").is(":visible") || $("#resshaDetail").is(":visible") || $(".trainDetailDialog").is(":visible") || $("#oshiraseDetail").is(":visible"))) {
+		if (!($("#guideDetail").is(":visible") || $("#searchDetail").is(":visible") || $("#popupDetail").is(":visible") || $("#refreshSettingDetail").is(":visible") || $("#resshaDetail").is(":visible") || $(".trainDetailDialog").is(":visible") || $("#oshiraseDetail").is(":visible"))) {
 			// ダイアログが表示されていない場合
 			// bodyのスクロールを有効にする。
 			set_scroll_show_side_menu();
@@ -924,7 +990,7 @@ function set_responsive() {
 		$(".sub-header").css("width", "calc(100% - " + margin + "px)");
 		$(".sub-footer .homen-footer-contents").css("width", "calc(100% - " + margin + "px)");
 		if (lang == "ja") $(".sub-footer .sub-footer-contents.popup .sub-footer-unkou-msg").html("重要なお知らせ");
-		if (!($("#guideDetail").is(":visible") || $("#searchDetail").is(":visible") || $("#popupDetail").is(":visible") || $("#resshaDetail").is(":visible") || $(".trainDetailDialog").is(":visible") || $("#oshiraseDetail").is(":visible"))) {
+		if (!($("#guideDetail").is(":visible") || $("#searchDetail").is(":visible") || $("#popupDetail").is(":visible") || $("#refreshSettingDetail").is(":visible") || $("#resshaDetail").is(":visible") || $(".trainDetailDialog").is(":visible") || $("#oshiraseDetail").is(":visible"))) {
 			// ダイアログが表示されていない場合
 			// bodyのスクロールを有効にする。
 			set_scroll_show_side_menu();
