@@ -562,13 +562,13 @@ function jqxhr_to_promise(_jqxhr) {
 
 function merge_location_now_data(_nowDataList) {
 	const cbangoCountMap = new Map();
-	const mergedRows = [];
+	const mergedTrains = [];
 
 	_nowDataList.forEach((nowData) => {
-		if (!Array.isArray(nowData)) return;
+		if (!nowData || !Array.isArray(nowData.trains)) return;
 
-		nowData.forEach((row) => {
-			mergedRows.push(row);
+		nowData.trains.forEach((row) => {
+			mergedTrains.push(row);
 			if (!row || !row.cbango) return;
 
 			const cbango = String(row.cbango);
@@ -576,10 +576,12 @@ function merge_location_now_data(_nowDataList) {
 		});
 	});
 
-	return mergedRows.filter((row) => {
+	return {
+		trains: mergedTrains.filter((row) => {
 		if (!row || !row.cbango) return true;
 		return cbangoCountMap.get(String(row.cbango)) === 1;
-	});
+		})
+	};
 }
 
 function load_location_now_data(_param_rosen, _now) {
@@ -587,7 +589,7 @@ function load_location_now_data(_param_rosen, _now) {
 	return Promise.all(
 		sourceRosens.map((rosen) => jqxhr_to_promise($.getJSON(get_location_json_url(rosen, _now))).catch(() => null))
 	).then((nowDataList) => {
-		const successDataList = nowDataList.filter((nowData) => Array.isArray(nowData));
+		const successDataList = nowDataList.filter((nowData) => nowData && Array.isArray(nowData.trains));
 		if (successDataList.length < 1) throw new Error("location now json load failed");
 		return merge_location_now_data(successDataList);
 	});
