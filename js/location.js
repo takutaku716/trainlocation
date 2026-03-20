@@ -644,25 +644,29 @@ function set_station_list(_param_rosen, _scrollKey, _callback) {
 /*
  * 走行位置の自動更新を開始する
  */
-function start_location_auto_refresh(_param_rosen) {
-	stop_location_auto_refresh();
+function start_location_auto_refresh(_param_rosen, _delay = locationAutoRefreshInterval) {
+	stop_location_auto_refresh(true);
 	if (!_param_rosen || !locationAutoRefreshEnabled) return;
-	set_next_location_auto_refresh_time();
-	locationAutoRefreshTimer = setInterval(() => {
-		set_next_location_auto_refresh_time();
-		refresh_location_positions(_param_rosen);
-	}, locationAutoRefreshInterval);
+	set_next_location_auto_refresh_time(_delay);
+	locationAutoRefreshTimer = setTimeout(() => {
+		if (document.visibilityState === "visible") {
+			refresh_location_positions(_param_rosen);
+		}
+		start_location_auto_refresh(_param_rosen, locationAutoRefreshInterval);
+	}, _delay);
 }
 
 /*
  * 走行位置の自動更新を停止する
  */
-function stop_location_auto_refresh() {
+function stop_location_auto_refresh(_preserveNextRefresh = false) {
 	if (locationAutoRefreshTimer) {
-		clearInterval(locationAutoRefreshTimer);
+		clearTimeout(locationAutoRefreshTimer);
 		locationAutoRefreshTimer = null;
 	}
-	nextLocationAutoRefreshAt = null;
+	if (!_preserveNextRefresh) {
+		nextLocationAutoRefreshAt = null;
+	}
 	update_refresh_status_label();
 }
 
@@ -796,8 +800,8 @@ function update_refresh_status_label() {
 /*
  * 次回自動更新予定時刻を設定する
  */
-function set_next_location_auto_refresh_time() {
-	nextLocationAutoRefreshAt = new Date(Date.now() + locationAutoRefreshInterval);
+function set_next_location_auto_refresh_time(_delay = locationAutoRefreshInterval) {
+	nextLocationAutoRefreshAt = new Date(Date.now() + _delay);
 	update_refresh_status_label();
 }
 
@@ -828,7 +832,7 @@ function apply_location_auto_refresh_settings(_enabled, _interval, _persist = tr
 	if (locationAutoRefreshEnabled) {
 		const currentRosen = get_param_rosen();
 		start_location_auto_refresh(currentRosen);
-		if (currentRosen && (!wasEnabled || _persist)) {
+		if (currentRosen && document.visibilityState === "visible" && (!wasEnabled || _persist)) {
 			refresh_location_positions(currentRosen);
 		}
 	} else {
@@ -842,12 +846,21 @@ function apply_location_auto_refresh_settings(_enabled, _interval, _persist = tr
 function handle_page_visibility_change() {
 	const currentRosen = get_param_rosen();
 	if (document.visibilityState === "hidden") {
-		stop_location_auto_refresh();
+		stop_location_auto_refresh(true);
 		return;
 	}
 	if (document.visibilityState === "visible" && locationAutoRefreshEnabled && currentRosen) {
-		refresh_location_positions(currentRosen);
-		start_location_auto_refresh(currentRosen);
+		if (!nextLocationAutoRefreshAt) {
+			start_location_auto_refresh(currentRosen);
+			return;
+		}
+		const remaining = nextLocationAutoRefreshAt.getTime() - Date.now();
+		if (remaining <= 0) {
+			refresh_location_positions(currentRosen);
+			start_location_auto_refresh(currentRosen);
+		} else {
+			start_location_auto_refresh(currentRosen, remaining);
+		}
 	}
 }
 
