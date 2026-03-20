@@ -783,10 +783,10 @@ function update_refresh_status_label() {
 		kr: "다음 갱신: " + format_refresh_time(nextLocationAutoRefreshAt)
 	};
 	if (locationAutoRefreshEnabled) {
-		const message = (messages[lang] || messages.ja) + (nextLocationAutoRefreshAt ? "\n" + (nextMessages[lang] || nextMessages.ja) : "");
-		$("#refreshStatusLabel").text(message).prop("hidden", false);
+		const message = (messages[lang] || messages.ja) + (nextLocationAutoRefreshAt ? "  " + (nextMessages[lang] || nextMessages.ja) : "");
+		$("#refreshStatusLabel").text(message).removeAttr("hidden");
 	} else {
-		$("#refreshStatusLabel").text("").prop("hidden", true);
+		$("#refreshStatusLabel").text("").attr("hidden", "hidden");
 	}
 }
 
