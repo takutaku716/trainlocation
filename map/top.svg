@@ -399,7 +399,7 @@
 			</g>
 		</a>
 		<!-- 追分 -->
-		<a xlink:href="../location.html#rosen=13&amp;id=220" target="_top">
+		<a xlink:href="../location.html#rosen=53&amp;id=220" target="_top">
 			<g data-key="220">
 				<circle cx="230" cy="320"/>
 				<text class="left middle" x="237" y="313">追分</text>
@@ -441,28 +441,28 @@
 			</g>
 		</a>
 		<!-- 新得 -->
-		<a xlink:href="../location.html#rosen=13&amp;id=325" target="_top">
+		<a xlink:href="../location.html#rosen=53&amp;id=325" target="_top">
 			<g data-key="325">
 				<circle cx="280" cy="350"/>
 				<text class="left middle" x="287" y="343">新得</text>
 			</g>
 		</a>
 		<!-- 帯広 -->
-		<a xlink:href="../location.html#rosen=13&amp;id=335" target="_top">
+		<a xlink:href="../location.html#rosen=53&amp;id=335" target="_top">
 			<g data-key="335" class="major">
 				<circle cx="315" cy="370"/>
 				<text class="center top" x="315" y="377">帯広</text>
 			</g>
 		</a>
 		<!-- 池田 -->
-		<a xlink:href="../location.html#rosen=13&amp;id=340" target="_top">
+		<a xlink:href="../location.html#rosen=53&amp;id=340" target="_top">
 			<g data-key="340">
 				<circle cx="350" cy="370"/>
 				<text class="center top" x="350" y="377">池田</text>
 			</g>
 		</a>
 		<!-- 釧路 -->
-		<a xlink:href="../location.html#rosen=13&amp;id=360" target="_top">
+		<a xlink:href="../location.html#rosen=53&amp;id=360" target="_top">
 			<g data-key="360" class="major">
 				<circle cx="390" cy="370"/>
 				<text class="center bottom" x="390" y="363" dy="-0.25em">釧路</text>
