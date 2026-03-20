@@ -304,11 +304,11 @@
     {
         "rosen": "52",
         "rosenName": {
-            "ja": "函館線",
-            "en": "Hakodate Line",
-            "tc": "函館線",
-            "sc": "函馆线",
-            "kr": "하코다테선"
+            "ja": "千歳・室蘭・函館線",
+            "en": "ChitoseLine/Muroran Line/Hakodate Line",
+            "tc": "千歲線・室蘭線・函館線",
+            "sc": "千岁线・室兰线・函馆线",
+            "kr": "치토세선・무로란선・하코다테선"
         },
         "kukanName": {
             "ja": "[札幌～函館間]",
