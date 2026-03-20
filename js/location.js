@@ -22,8 +22,8 @@ const LOCATION_AUTO_REFRESH_DEFAULT_INTERVAL = 15000;
 const LOCATION_AUTO_REFRESH_ENABLED_KEY = "location_auto_refresh_enabled";
 const LOCATION_AUTO_REFRESH_INTERVAL_KEY = "location_auto_refresh_interval";
 const LOCATION_JSON_SOURCE_MAP = {
-	// "90": ["06", "07"],
-	// "91": ["13", "14"]
+	"51": ["01", "05"],
+	"52": ["02", "07", "09"]
 };
 // 走行位置自動更新タイマー
 let locationAutoRefreshTimer = null;
