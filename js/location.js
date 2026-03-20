@@ -687,7 +687,6 @@ function set_station_list(_param_rosen, _scrollKey, _callback) {
 
 			// 駅・駅間描画後の後処理
 			set_post_station_list(_param_rosen, _scrollKey);
-			set_post_station_list(_param_rosen, _scrollKey);
 			start_location_auto_refresh(_param_rosen);
 
 			if (_callback) _callback();
