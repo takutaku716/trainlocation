@@ -363,7 +363,10 @@ function selectRosen(rosen, selectAreaName) {
 		selectMap = $(document.getElementById(mapName).contentDocument);
 	}
 
-	var rosenNumList = ROSEN_NUM_KEYS[rosen];
+	var rosenNumList = ROSEN_NUM_KEYS[rosen] || [];
+	if (selectAreaName && AREA_ROSEN_KEYS[selectAreaName]) {
+		rosenNumList = rosenNumList.filter(key => AREA_ROSEN_KEYS[selectAreaName].includes(String(key)));
+	}
 	for (var i = 0; i < rosenNumList.length; i++) {
 		var pathname = "#kukan path[data-key='" + rosenNumList[i] + "']";
 		selectMap.find(pathname).attr({ "data-status": "2" });
