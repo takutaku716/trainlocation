@@ -31,6 +31,7 @@ const ROSEN_NUM_KEYS = {
 	"15": ["57"],							// [新函館北斗～奥津軽いまべつ間]
 	"51": ["7", "8", "9", "10", "11", "12", "13", "14", "15"],	// [旭川～小樽間]
 	"52": ["1", "2", "3", "4", "10", "22", "23", "24", "25", "26", "30", "31", "32"],	// [札幌～函館間]
+	"53": ["10", "26", "30", "31", "32", "35", "36", "40", "41", "42"],	// [札幌～釧路間]
 };
 
 /*
@@ -488,6 +489,9 @@ function rosenToArea(rosen, selectAreaName) {
 	} else if (["52"].includes(rosen)) {						// 複数エリアにまたがる路線
 		if (["spo", "doo", "donan"].includes(selectAreaName)) area = selectAreaName;
 		else area = "donan";
+	} else if (["53"].includes(rosen)) {						// 複数エリアにまたがる路線
+		if (["spo", "doo", "doto"].includes(selectAreaName)) area = selectAreaName;
+		else area = "doto";
 	} else if (["04", "05", "06", "07", "08"].includes(rosen)) {// 道央エリア
 		area = "doo";
 	} else if (["09", "10"].includes(rosen)) {					// 道南エリア
