@@ -141,6 +141,9 @@ header {
 
 	/* サブヘッダー内の路線名表示領域 */
 	.sub-header .sub-header-contents {
+		align-items: center;
+		display: flex;
+		flex-direction: column;
 		padding: 4px;
 		margin: auto;
 		position: relative;
@@ -157,6 +160,17 @@ header {
 			.sub-header .sub-header-contents .maintitle span {
 				display: inline-block;
 			}
+
+		.sub-header .sub-header-contents .refresh-status-label {
+			color: #355;
+			display: block;
+			font-size: 11px;
+			line-height: 1.2;
+			margin-top: 2px;
+			max-width: 100%;
+			text-align: center;
+			white-space: normal;
+		}
 
 	/* サブヘッダー内の方面表示領域 */
 	.sub-header .homen-header-contents {
@@ -2444,6 +2458,84 @@ section#searchDetail {
 					display: block;
 					width: auto;
 				}
+/* 自動更新設定ダイアログ（開始） */
+section#refreshSettingDetail {
+	background-color: rgba(0, 0, 0, 0.5);
+	display: none;
+	height: 100%;
+	left: 0;
+	position: fixed;
+	top: 0;
+	width: 100%;
+	z-index: 20000;
+}
+	section#refreshSettingDetail .dialog-outer {
+		align-items: center;
+		display: flex;
+		justify-content: center;
+		height: 100%;
+		width: 100%;
+	}
+	section#refreshSettingDetail .dialog {
+		background-color: #fff;
+		width: 502px;
+	}
+		section#refreshSettingDetail .dialog .header {
+			background-color: #5b3;
+			border-width: 0px;
+			color: #fff;
+			cursor: pointer;
+		}
+			section#refreshSettingDetail .dialog .header .close {
+				line-height: 10px;
+				position: absolute;
+				right: 0;
+				width: 32px;
+				top: 0px;
+				padding: 7px 6px;
+			}
+				section#refreshSettingDetail .dialog .header .close:hover {
+					background-color: #6c4;
+					cursor: pointer;
+				}
+		section#refreshSettingDetail .dialog #refreshSettingMain {
+			padding: 15px;
+		}
+			section#refreshSettingDetail .dialog #refreshSettingMain .refresh-setting-message {
+				font-size: 15px;
+				margin: 5px 10px 20px 10px;
+			}
+			section#refreshSettingDetail .dialog #refreshSettingMain .refresh-setting-row {
+				align-items: center;
+				display: flex;
+				justify-content: space-between;
+				margin: 0 10px 15px 10px;
+			}
+			section#refreshSettingDetail .dialog #refreshSettingMain .refresh-setting-row label {
+				font-size: 16px;
+				font-weight: bold;
+			}
+			section#refreshSettingDetail .dialog #refreshSettingMain .refresh-setting-row select {
+				border: 1px solid #8c5;
+				font-size: 16px;
+				min-width: 140px;
+				padding: 6px 10px;
+			}
+			section#refreshSettingDetail .dialog #refreshSettingMain .dialog-btn-contents {
+				margin-top: 20px;
+			}
+			section#refreshSettingDetail .dialog #refreshSettingMain .common-button {
+				background-color: #5b3;
+				color: #fff;
+				cursor: pointer;
+				margin: 0 auto;
+				min-height: 34px;
+				width: 160px;
+			}
+				section#refreshSettingDetail .dialog #refreshSettingMain .common-button:hover {
+					background-color: #6c4;
+				}
+/* 自動更新設定ダイアログ（終了） */
 /* 列車検索ダイアログ（終了） */
 
 /* ウィンドウサイズを縮小したとき */
@@ -2507,6 +2599,10 @@ section#searchDetail {
 	.sub-header {
 		width: 100%;
 	}
+		.sub-header .sub-header-contents .refresh-status-label {
+			font-size: 10px;
+			padding: 0 6px;
+		}
 		/* サブヘッダー内のボタン表示領域 */
 		.sub-header .btn-header-contents {
 			background-color: #fff;

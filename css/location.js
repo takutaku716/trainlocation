@@ -31,7 +31,7 @@ let autoRefreshRosen = "";
 let cachedResshaTypeData = null;
 let cachedEkiData = null;
 // 自動更新設定
-let locationAutoRefreshEnabled = false;
+let locationAutoRefreshEnabled = true;
 let locationAutoRefreshInterval = LOCATION_AUTO_REFRESH_DEFAULT_INTERVAL;
 // 次回自動更新予定時刻
 let nextLocationAutoRefreshAt = null;
@@ -319,9 +319,6 @@ $(function ($) {
 	$(document).on("click", "#guideDetail .dialog, #searchDetail .dialog, #popupDetail .dialog, #refreshSettingDetail .dialog", function(event) {
 		event.stopPropagation();
 	});
-
-	// ページの表示状態に応じて自動更新を制御する
-	document.addEventListener("visibilitychange", handle_page_visibility_change);
 
 	// サイドメニューの閉じるボタンをクリックしたときの動き
 	$("#sideMenu .side-menu .area-contents-header, #sideMenu .side-menu-outer").on("click", function() {
@@ -644,29 +641,25 @@ function set_station_list(_param_rosen, _scrollKey, _callback) {
 /*
  * 走行位置の自動更新を開始する
  */
-function start_location_auto_refresh(_param_rosen, _delay = locationAutoRefreshInterval) {
-	stop_location_auto_refresh(true);
+function start_location_auto_refresh(_param_rosen) {
+	stop_location_auto_refresh();
 	if (!_param_rosen || !locationAutoRefreshEnabled) return;
-	set_next_location_auto_refresh_time(_delay);
-	locationAutoRefreshTimer = setTimeout(() => {
-		if (document.visibilityState === "visible") {
-			refresh_location_positions(_param_rosen);
-		}
-		start_location_auto_refresh(_param_rosen, locationAutoRefreshInterval);
-	}, _delay);
+	set_next_location_auto_refresh_time();
+	locationAutoRefreshTimer = setInterval(() => {
+		set_next_location_auto_refresh_time();
+		refresh_location_positions(_param_rosen);
+	}, locationAutoRefreshInterval);
 }
 
 /*
  * 走行位置の自動更新を停止する
  */
-function stop_location_auto_refresh(_preserveNextRefresh = false) {
+function stop_location_auto_refresh() {
 	if (locationAutoRefreshTimer) {
-		clearTimeout(locationAutoRefreshTimer);
+		clearInterval(locationAutoRefreshTimer);
 		locationAutoRefreshTimer = null;
 	}
-	if (!_preserveNextRefresh) {
-		nextLocationAutoRefreshAt = null;
-	}
+	nextLocationAutoRefreshAt = null;
 	update_refresh_status_label();
 }
 
@@ -756,7 +749,7 @@ function restore_selected_train_marker() {
 function load_location_auto_refresh_settings() {
 	const storedEnabled = localStorage.getItem(LOCATION_AUTO_REFRESH_ENABLED_KEY);
 	const storedInterval = Number(localStorage.getItem(LOCATION_AUTO_REFRESH_INTERVAL_KEY));
-	locationAutoRefreshEnabled = storedEnabled === null ? false : storedEnabled === "true";
+	locationAutoRefreshEnabled = storedEnabled === null ? true : storedEnabled === "true";
 	locationAutoRefreshInterval = [15000, 30000, 60000].includes(storedInterval) ? storedInterval : LOCATION_AUTO_REFRESH_DEFAULT_INTERVAL;
 	update_refresh_status_label();
 }
@@ -790,7 +783,7 @@ function update_refresh_status_label() {
 		kr: "다음 갱신: " + format_refresh_time(nextLocationAutoRefreshAt)
 	};
 	if (locationAutoRefreshEnabled) {
-		const message = (messages[lang] || messages.ja) + (nextLocationAutoRefreshAt ? "  " + (nextMessages[lang] || nextMessages.ja) : "");
+		const message = (messages[lang] || messages.ja) + (nextLocationAutoRefreshAt ? "\n" + (nextMessages[lang] || nextMessages.ja) : "");
 		$("#refreshStatusLabel").text(message).removeAttr("hidden");
 	} else {
 		$("#refreshStatusLabel").text("").attr("hidden", "hidden");
@@ -800,8 +793,8 @@ function update_refresh_status_label() {
 /*
  * 次回自動更新予定時刻を設定する
  */
-function set_next_location_auto_refresh_time(_delay = locationAutoRefreshInterval) {
-	nextLocationAutoRefreshAt = new Date(Date.now() + _delay);
+function set_next_location_auto_refresh_time() {
+	nextLocationAutoRefreshAt = new Date(Date.now() + locationAutoRefreshInterval);
 	update_refresh_status_label();
 }
 
@@ -820,7 +813,6 @@ function format_refresh_time(_date) {
  * 自動更新設定を適用する
  */
 function apply_location_auto_refresh_settings(_enabled, _interval, _persist = true) {
-	const wasEnabled = locationAutoRefreshEnabled;
 	locationAutoRefreshEnabled = _enabled;
 	locationAutoRefreshInterval = [15000, 30000, 60000].includes(_interval) ? _interval : LOCATION_AUTO_REFRESH_DEFAULT_INTERVAL;
 	if (_persist) {
@@ -829,39 +821,8 @@ function apply_location_auto_refresh_settings(_enabled, _interval, _persist = tr
 	}
 	sync_refresh_setting_controls();
 	update_refresh_status_label();
-	if (locationAutoRefreshEnabled) {
-		const currentRosen = get_param_rosen();
-		start_location_auto_refresh(currentRosen);
-		if (currentRosen && document.visibilityState === "visible" && (!wasEnabled || _persist)) {
-			refresh_location_positions(currentRosen);
-		}
-	} else {
-		stop_location_auto_refresh();
-	}
-}
-
-/*
- * ページの表示状態に応じて自動更新を停止・再開する
- */
-function handle_page_visibility_change() {
-	const currentRosen = get_param_rosen();
-	if (document.visibilityState === "hidden") {
-		stop_location_auto_refresh(true);
-		return;
-	}
-	if (document.visibilityState === "visible" && locationAutoRefreshEnabled && currentRosen) {
-		if (!nextLocationAutoRefreshAt) {
-			start_location_auto_refresh(currentRosen);
-			return;
-		}
-		const remaining = nextLocationAutoRefreshAt.getTime() - Date.now();
-		if (remaining <= 0) {
-			refresh_location_positions(currentRosen);
-			start_location_auto_refresh(currentRosen);
-		} else {
-			start_location_auto_refresh(currentRosen, remaining);
-		}
-	}
+	if (locationAutoRefreshEnabled) start_location_auto_refresh(get_param_rosen());
+	else stop_location_auto_refresh();
 }
 
 /*
