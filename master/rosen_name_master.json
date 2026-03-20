@@ -281,5 +281,43 @@
             "kr": "[신하코다테호쿠토～오쿠쓰가루이마베쓰]"
         },
         "area": "6"
+    },
+    {
+        "rosen": "51",
+        "rosenName": {
+            "ja": "函館線",
+            "en": "Hakodate Line",
+            "tc": "函館線",
+            "sc": "函馆线",
+            "kr": "하코다테선"
+        },
+        "kukanName": {
+            "ja": "[旭川～小樽間]",
+            "en": "[Asahikawa～Otaru]",
+            "tc": "[旭川～小樽間]",
+            "sc": "[旭川～小樽间]",
+            "kr": "[아사히카와～오타루]"
+        },
+        "kigo": "A",
+        "area": "2"
+    },
+    {
+        "rosen": "52",
+        "rosenName": {
+            "ja": "函館線",
+            "en": "Hakodate Line",
+            "tc": "函館線",
+            "sc": "函馆线",
+            "kr": "하코다테선"
+        },
+        "kukanName": {
+            "ja": "[札幌～函館間]",
+            "en": "[Sapporo～Hakodate]",
+            "tc": "[札幌～函館間]",
+            "sc": "[札幌～函馆间]",
+            "kr": "[삿포로～하코다테]"
+        },
+        "kigo": "H",
+        "area": "3"
     }
 ]
