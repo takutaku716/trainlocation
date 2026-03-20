@@ -317,6 +317,7 @@
 							<li id="expSelBtn" class="header-btn"><div><span>特急列車</span><span>選択</span></div></li>
 							<li class="header-btn eki"><div><span>駅選択</span></div></li>
 							<li class="header-btn pos"><div><span>現在地に</span><span>移動</span></div></li>
+							<li id="refreshSettingBtn" class="header-btn"><div><span>自動更新</span><span>設定</span></div></li>
 						</ul>
 					</div>
 					<!-- ボタン配置エリア ここまで -->
@@ -331,6 +332,7 @@
 						<span id="homenNameUp"></span>
 						<div class="header-btn eki">駅選択</div>
 						<div class="header-btn pos">現在地に移動</div>
+						<div id="refreshSettingBtnSub" class="header-btn">自動更新設定</div>
 					</div>
 					<!-- 方面ヘッダー ここまで -->
 				</div>
@@ -472,6 +474,37 @@
 			</div>
 		</section>
 		<!-- 駅選択セクション ここまで -->
+
+		<!-- 自動更新設定セクション ここから -->
+		<section id="refreshSettingDetail">
+			<div class="dialog-outer">
+				<div class="dialog">
+					<h2 class="common-subtitle header"><span id="refreshSettingTitle">自動更新設定</span><span class="close"><img src="./images/home/close.svg" alt="閉じる"></span></h2>
+					<div id="refreshSettingMain">
+						<div class="refresh-setting-message">走行位置の自動更新設定を変更できます。</div>
+						<div class="refresh-setting-row">
+							<label for="refreshEnabledSelect">自動更新</label>
+							<select id="refreshEnabledSelect">
+								<option value="on">ON</option>
+								<option value="off">OFF</option>
+							</select>
+						</div>
+						<div class="refresh-setting-row">
+							<label for="refreshIntervalSelect">更新間隔</label>
+							<select id="refreshIntervalSelect">
+								<option value="15">15秒</option>
+								<option value="30">30秒</option>
+								<option value="60">60秒</option>
+							</select>
+						</div>
+						<div class="dialog-btn-contents">
+							<div id="refreshSettingApplyBtn" class="common-button">適用</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</section>
+		<!-- 自動更新設定セクション ここまで -->
 
 		<!-- 列車詳細情報ダイアログ ここから -->
 		<section id="trainDetail" data-url="./call_train_detail.html"></section>
