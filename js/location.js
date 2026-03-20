@@ -776,7 +776,7 @@ function clear_location_positions(_param_rosen) {
 	$("#stationList .ressha-icon").removeClass("up");
 	$("#stationList .ressha-icon .ressha, #stationList .ressha-icon .dummy").remove();
 
-	if (_param_rosen == "09") {
+	if (["09", "52"].includes(_param_rosen)) {
 		$("#fujishiro1").show();
 		$("#fujishiro2").show();
 		$("#fujishiro1Long").hide();
@@ -933,7 +933,7 @@ function handle_page_visibility_change() {
  * 駅・駅間描画後の後処理
  */
 function set_post_station_list(_param_rosen, _scrollKey) {
-	if (_param_rosen == "09") {
+	if (["09", "52"].includes(_param_rosen)) {
 		// 函館線[長万部～函館間]の場合
 		if ($(".fujishiro-panel").height() > 800){
 			$("#fujishiro1").hide();
@@ -1242,7 +1242,7 @@ function create_ressha_icon(_param_rosen, _nowData, _typeData, _ekiData) {
 	set_hirendo_height();
 
 	// 函館駅周辺の高さを設定
-	if (_param_rosen == "09") set_hakodate_height();
+	if (["09", "52"].includes(_param_rosen)) set_hakodate_height();
 }
 
 /*
