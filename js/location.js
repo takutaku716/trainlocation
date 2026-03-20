@@ -33,6 +33,8 @@ let cachedEkiData = null;
 // 自動更新設定
 let locationAutoRefreshEnabled = true;
 let locationAutoRefreshInterval = LOCATION_AUTO_REFRESH_DEFAULT_INTERVAL;
+// 次回自動更新予定時刻
+let nextLocationAutoRefreshAt = null;
 
 window.onload = function(){
 	load_location_auto_refresh_settings();
@@ -642,7 +644,9 @@ function set_station_list(_param_rosen, _scrollKey, _callback) {
 function start_location_auto_refresh(_param_rosen) {
 	stop_location_auto_refresh();
 	if (!_param_rosen || !locationAutoRefreshEnabled) return;
+	set_next_location_auto_refresh_time();
 	locationAutoRefreshTimer = setInterval(() => {
+		set_next_location_auto_refresh_time();
 		refresh_location_positions(_param_rosen);
 	}, locationAutoRefreshInterval);
 }
@@ -655,6 +659,8 @@ function stop_location_auto_refresh() {
 		clearInterval(locationAutoRefreshTimer);
 		locationAutoRefreshTimer = null;
 	}
+	nextLocationAutoRefreshAt = null;
+	update_refresh_status_label();
 }
 
 /*
@@ -745,6 +751,7 @@ function load_location_auto_refresh_settings() {
 	const storedInterval = Number(localStorage.getItem(LOCATION_AUTO_REFRESH_INTERVAL_KEY));
 	locationAutoRefreshEnabled = storedEnabled === null ? true : storedEnabled === "true";
 	locationAutoRefreshInterval = [15000, 30000, 60000].includes(storedInterval) ? storedInterval : LOCATION_AUTO_REFRESH_DEFAULT_INTERVAL;
+	update_refresh_status_label();
 }
 
 /*
@@ -753,6 +760,53 @@ function load_location_auto_refresh_settings() {
 function sync_refresh_setting_controls() {
 	$("#refreshEnabledSelect").val(locationAutoRefreshEnabled ? "on" : "off");
 	$("#refreshIntervalSelect").val(String(locationAutoRefreshInterval / 1000));
+}
+
+/*
+ * 自動更新状態の表示を更新する
+ */
+function update_refresh_status_label() {
+	const lang = document.documentElement.dataset.lang;
+	const intervalSeconds = locationAutoRefreshInterval / 1000;
+	const messages = {
+		ja: "自動更新ON (" + intervalSeconds + "秒間隔)",
+		en: "Auto refresh ON (" + intervalSeconds + " sec)",
+		tc: "自動更新ON（每" + intervalSeconds + "秒）",
+		sc: "自动更新ON（每" + intervalSeconds + "秒）",
+		kr: "자동 갱신 ON (" + intervalSeconds + "초)"
+	};
+	const nextMessages = {
+		ja: "次回更新：" + format_refresh_time(nextLocationAutoRefreshAt),
+		en: "Next: " + format_refresh_time(nextLocationAutoRefreshAt),
+		tc: "下次更新：" + format_refresh_time(nextLocationAutoRefreshAt),
+		sc: "下次更新：" + format_refresh_time(nextLocationAutoRefreshAt),
+		kr: "다음 갱신: " + format_refresh_time(nextLocationAutoRefreshAt)
+	};
+	if (locationAutoRefreshEnabled) {
+		const message = (messages[lang] || messages.ja) + (nextLocationAutoRefreshAt ? "\n" + (nextMessages[lang] || nextMessages.ja) : "");
+		$("#refreshStatusLabel").text(message).prop("hidden", false);
+	} else {
+		$("#refreshStatusLabel").text("").prop("hidden", true);
+	}
+}
+
+/*
+ * 次回自動更新予定時刻を設定する
+ */
+function set_next_location_auto_refresh_time() {
+	nextLocationAutoRefreshAt = new Date(Date.now() + locationAutoRefreshInterval);
+	update_refresh_status_label();
+}
+
+/*
+ * ヘッダー表示用に時刻を整形する
+ */
+function format_refresh_time(_date) {
+	if (!_date) return "";
+	const hours = String(_date.getHours()).padStart(2, "0");
+	const minutes = String(_date.getMinutes()).padStart(2, "0");
+	const seconds = String(_date.getSeconds()).padStart(2, "0");
+	return hours + "時" + minutes + "分" + seconds + "秒";
 }
 
 /*
@@ -766,6 +820,7 @@ function apply_location_auto_refresh_settings(_enabled, _interval, _persist = tr
 		localStorage.setItem(LOCATION_AUTO_REFRESH_INTERVAL_KEY, String(locationAutoRefreshInterval));
 	}
 	sync_refresh_setting_controls();
+	update_refresh_status_label();
 	if (locationAutoRefreshEnabled) start_location_auto_refresh(get_param_rosen());
 	else stop_location_auto_refresh();
 }
