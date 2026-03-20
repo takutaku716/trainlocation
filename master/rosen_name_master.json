@@ -319,5 +319,24 @@
         },
         "kigo": "H",
         "area": "3"
+    },
+    {
+        "rosen": "53",
+        "rosenName": {
+            "ja": "千歳・石勝・根室線",
+            "en": "Chitose Line/Sekisho Line/Nemuro Line",
+            "tc": "千歲線・石勝線・根室線",
+            "sc": "千岁线・石胜线・根室线",
+            "kr": "치토세선・세키쇼선・네무로선"
+        },
+        "kukanName": {
+            "ja": "[札幌～釧路間]",
+            "en": "[Sapporo～Kushiro]",
+            "tc": "[札幌～釧路間]",
+            "sc": "[札幌～钏路间]",
+            "kr": "[삿포로～구시로]"
+        },
+        "kigo": "K",
+        "area": "5"
     }
 ]
