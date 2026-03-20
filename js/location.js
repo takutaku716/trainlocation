@@ -31,7 +31,7 @@ let autoRefreshRosen = "";
 let cachedResshaTypeData = null;
 let cachedEkiData = null;
 // 自動更新設定
-let locationAutoRefreshEnabled = true;
+let locationAutoRefreshEnabled = false;
 let locationAutoRefreshInterval = LOCATION_AUTO_REFRESH_DEFAULT_INTERVAL;
 // 次回自動更新予定時刻
 let nextLocationAutoRefreshAt = null;
@@ -319,6 +319,9 @@ $(function ($) {
 	$(document).on("click", "#guideDetail .dialog, #searchDetail .dialog, #popupDetail .dialog, #refreshSettingDetail .dialog", function(event) {
 		event.stopPropagation();
 	});
+
+	// ページの表示状態に応じて自動更新を制御する
+	document.addEventListener("visibilitychange", handle_page_visibility_change);
 
 	// サイドメニューの閉じるボタンをクリックしたときの動き
 	$("#sideMenu .side-menu .area-contents-header, #sideMenu .side-menu-outer").on("click", function() {
@@ -749,7 +752,7 @@ function restore_selected_train_marker() {
 function load_location_auto_refresh_settings() {
 	const storedEnabled = localStorage.getItem(LOCATION_AUTO_REFRESH_ENABLED_KEY);
 	const storedInterval = Number(localStorage.getItem(LOCATION_AUTO_REFRESH_INTERVAL_KEY));
-	locationAutoRefreshEnabled = storedEnabled === null ? true : storedEnabled === "true";
+	locationAutoRefreshEnabled = storedEnabled === null ? false : storedEnabled === "true";
 	locationAutoRefreshInterval = [15000, 30000, 60000].includes(storedInterval) ? storedInterval : LOCATION_AUTO_REFRESH_DEFAULT_INTERVAL;
 	update_refresh_status_label();
 }
@@ -830,6 +833,21 @@ function apply_location_auto_refresh_settings(_enabled, _interval, _persist = tr
 		}
 	} else {
 		stop_location_auto_refresh();
+	}
+}
+
+/*
+ * ページの表示状態に応じて自動更新を停止・再開する
+ */
+function handle_page_visibility_change() {
+	const currentRosen = get_param_rosen();
+	if (document.visibilityState === "hidden") {
+		stop_location_auto_refresh();
+		return;
+	}
+	if (document.visibilityState === "visible" && locationAutoRefreshEnabled && currentRosen) {
+		refresh_location_positions(currentRosen);
+		start_location_auto_refresh(currentRosen);
 	}
 }
 
