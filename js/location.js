@@ -16,6 +16,17 @@ let isSideMenuDisp = false;
 let beforeWidth = 0;
 // 画面表示処理実行判定用
 let isNotInitDisp = false;
+// 走行位置自動更新間隔(ms)
+const LOCATION_AUTO_REFRESH_INTERVAL = 15000;
+// 走行位置自動更新タイマー
+let locationAutoRefreshTimer = null;
+// 列車選択アニメーションタイマー
+let resshaAnimationTimer = null;
+// 自動更新用の路線保持
+let autoRefreshRosen = "";
+// 列車再描画用マスタのキャッシュ
+let cachedResshaTypeData = null;
+let cachedEkiData = null;
 
 window.onload = function(){
 	// 現在表示中の路線を取得
@@ -477,11 +488,15 @@ function set_ressha_icon_animation() {
 	let doc = document.querySelector('.ressha-animation');
 
 	if (doc) {
+		if (resshaAnimationTimer) {
+			clearInterval(resshaAnimationTimer);
+			resshaAnimationTimer = null;
+		}
 		function blink() {
 			doc.classList.toggle('hidden');
 		}
 
-		setInterval(blink, 1000);
+		resshaAnimationTimer = setInterval(blink, 1000);
 	}
 }
 
@@ -489,6 +504,7 @@ function set_ressha_icon_animation() {
  * JSONデータを読み込み、駅・駅間を描画する
  */
 function set_station_list(_param_rosen, _scrollKey, _callback) {
+	stop_location_auto_refresh();
 	// お知らせ欄作成
 	disp_oshirase(_param_rosen);
 
@@ -536,6 +552,8 @@ function set_station_list(_param_rosen, _scrollKey, _callback) {
 
 		let result = maintenanceData[0].lines.filter((v) => v.status == "1" && v.rosen == _param_rosen);
 		if (result.length > 0) {
+			cachedResshaTypeData = null;
+			cachedEkiData = null;
 			// 表示対象の路線のステータスが1の場合、メンテナンスページを表示
 			$("#stationList").html(maintenance[0]);
 			// 方面の設定
@@ -552,6 +570,9 @@ function set_station_list(_param_rosen, _scrollKey, _callback) {
 			// 駅・駅間描画後の後処理
 			set_post_station_list(_param_rosen, _scrollKey);
 		} else {
+			autoRefreshRosen = _param_rosen;
+			cachedResshaTypeData = typeData[0];
+			cachedEkiData = ekiData[0];
 			$("#stationList").html(rosen[0]);
 			// 列車アイコンを描画する
 			create_ressha_icon(_param_rosen, nowData[0], typeData[0], ekiData[0]);
@@ -573,6 +594,7 @@ function set_station_list(_param_rosen, _scrollKey, _callback) {
 
 			// 駅・駅間描画後の後処理
 			set_post_station_list(_param_rosen, _scrollKey);
+			start_location_auto_refresh(_param_rosen);
 
 			if (_callback) _callback();
 		}
@@ -582,6 +604,107 @@ function set_station_list(_param_rosen, _scrollKey, _callback) {
 		$('#message').html(errormessage);
 		$('#message').show();
 	});
+}
+
+/*
+ * 走行位置の自動更新を開始する
+ */
+function start_location_auto_refresh(_param_rosen) {
+	stop_location_auto_refresh();
+	if (!_param_rosen) return;
+	locationAutoRefreshTimer = setInterval(() => {
+		refresh_location_positions(_param_rosen);
+	}, LOCATION_AUTO_REFRESH_INTERVAL);
+}
+
+/*
+ * 走行位置の自動更新を停止する
+ */
+function stop_location_auto_refresh() {
+	if (locationAutoRefreshTimer) {
+		clearInterval(locationAutoRefreshTimer);
+		locationAutoRefreshTimer = null;
+	}
+}
+
+/*
+ * 走行位置JSONのみを再取得して、列車アイコンだけ再描画する
+ */
+function refresh_location_positions(_param_rosen) {
+	if (!_param_rosen || _param_rosen !== get_param_rosen()) return;
+	if (!cachedResshaTypeData || !cachedEkiData) return;
+	if (!$("#stationList .ressha-icon").length) return;
+
+	const now = Date.now() >>> 10;
+	$.getJSON("https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/trainlocation/json/location/now/location_" + _param_rosen + "_now.json?" + now)
+	.done(function(nowData) {
+		redraw_location_positions(_param_rosen, nowData);
+	})
+	.fail(function() {
+		// 自動更新失敗時は次回更新を待つ
+	});
+}
+
+/*
+ * 走行位置アイコンを差し替えて再描画する
+ */
+function redraw_location_positions(_param_rosen, _nowData) {
+	clear_location_positions(_param_rosen);
+	create_ressha_icon(_param_rosen, _nowData, cachedResshaTypeData, cachedEkiData);
+	ressha_pos_sort();
+	update_location_timestamp();
+	restore_selected_train_marker();
+}
+
+/*
+ * 既存の走行位置アイコンをクリアする
+ */
+function clear_location_positions(_param_rosen) {
+	$("#stationList .ressha-animation").remove();
+	if (resshaAnimationTimer) {
+		clearInterval(resshaAnimationTimer);
+		resshaAnimationTimer = null;
+	}
+	$("#stationList .ressha-icon").removeClass("up");
+	$("#stationList .ressha-icon .ressha, #stationList .ressha-icon .dummy").remove();
+
+	if (_param_rosen == "09") {
+		$("#fujishiro1").show();
+		$("#fujishiro2").show();
+		$("#fujishiro1Long").hide();
+		$("#fujishiro2Long").hide();
+		$("#stationList .item.hakodate").css("height", "");
+		$("#stationList .item.goryokaku").css("height", "");
+		$("#goryokaku").show();
+		$("#goryokakuLong").hide();
+	}
+}
+
+/*
+ * 現在時刻表示を更新する
+ */
+function update_location_timestamp() {
+	const now = new Date();
+	const formatted =
+		now.getFullYear() + "年" +
+		(now.getMonth() + 1) + "月" +
+		now.getDate() + "日" +
+		now.getHours() + "時" +
+		now.getMinutes() + "分" +
+		now.getSeconds() + "秒現在";
+	$("#timestamp").text(formatted);
+}
+
+/*
+ * 選択中の列車がある場合、再描画後に赤枠を付け直す
+ */
+function restore_selected_train_marker() {
+	const param_cbango = get_param_cbango();
+	if (!param_cbango) return;
+	const ressha = $("div[data-cbango='" + param_cbango + "']");
+	if (!ressha.length) return;
+	ressha.append("<img class='ressha-animation' src='./images/home/ressha_mark.svg' alt>");
+	set_ressha_icon_animation();
 }
 
 /*
