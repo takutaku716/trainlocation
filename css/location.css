@@ -161,16 +161,16 @@ header {
 				display: inline-block;
 			}
 
-	.sub-header .sub-header-contents .refresh-status-label {
-		color: #355;
-		display: block;
-		font-size: 11px;
-		line-height: 1.2;
-		margin-top: 2px;
-		max-width: 100%;
-		text-align: center;
-		white-space: pre-line;
-	}
+		.sub-header .sub-header-contents .refresh-status-label {
+			color: #355;
+			display: block;
+			font-size: 11px;
+			line-height: 1.2;
+			margin-top: 2px;
+			max-width: 100%;
+			text-align: center;
+			white-space: normal;
+		}
 
 	/* サブヘッダー内の方面表示領域 */
 	.sub-header .homen-header-contents {
