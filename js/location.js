@@ -2281,6 +2281,7 @@ function load_train_search_data() {
 		cachedEkiData = ekiData;
 		const daiyaMap = new Map();
 		const expressNowMap = new Map();
+		const expressCoreTrainMap = new Map();
 		if (daiyaData && Array.isArray(daiyaData.today)) {
 			daiyaData.today.forEach((row) => {
 				if (!row || !row.cbango) return;
@@ -2291,6 +2292,15 @@ function load_train_search_data() {
 			expressNowData.trains.forEach((train) => {
 				if (!train || !train.cbango) return;
 				expressNowMap.set(String(train.cbango).toUpperCase(), train);
+			});
+		}
+		if (expressCore && Array.isArray(expressCore.expresses)) {
+			expressCore.expresses.forEach((express) => {
+				if (!express || !Array.isArray(express.trains)) return;
+				express.trains.forEach((train) => {
+					if (!train || !train.cbango) return;
+					expressCoreTrainMap.set(String(train.cbango).toUpperCase(), train);
+				});
 			});
 		}
 
@@ -2326,6 +2336,7 @@ function load_train_search_data() {
 			if (trainMap.has(cbango)) return;
 			const nameInfo = parse_train_name(daiya && daiya.name ? daiya.name : "");
 			const expressNow = expressNowMap.get(cbango);
+			const expressCoreTrain = expressCoreTrainMap.get(cbango);
 			const statusDetail = expressNow ? (
 				lang === "ja" ? expressNow.statusDetail :
 				lang === "en" ? expressNow.statusDetailEn :
@@ -2335,7 +2346,7 @@ function load_train_search_data() {
 			) : "";
 			trainMap.set(cbango, {
 				"cbango": cbango,
-				"type": daiya && typeof daiya.type !== "undefined" ? String(daiya.type) : "",
+				"type": expressCoreTrain && typeof expressCoreTrain.type !== "undefined" ? String(expressCoreTrain.type) : (daiya && typeof daiya.type !== "undefined" ? String(daiya.type) : ""),
 				"value": "",
 				"name": (daiya && daiya.name ? daiya.name : cbango),
 				"status": "この列車は現在走行していません。",
@@ -2346,7 +2357,7 @@ function load_train_search_data() {
 				"detailTrain": expressNow ? {
 					"cbango": cbango,
 					"name": daiya && daiya.name ? daiya.name : cbango,
-					"type": daiya && typeof daiya.type !== "undefined" ? String(daiya.type) : "",
+					"type": expressCoreTrain && typeof expressCoreTrain.type !== "undefined" ? String(expressCoreTrain.type) : (daiya && typeof daiya.type !== "undefined" ? String(daiya.type) : ""),
 					"shuEki": daiya ? daiya.shuEkiKey : "",
 					"ryosu": daiya ? daiya.ryosu : "",
 					"senku": "00",
