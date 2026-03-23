@@ -2360,6 +2360,22 @@ function load_train_search_data() {
 				"shuEkiKey": daiya ? daiya.shuEkiKey : "",
 				"cbango": cbango
 			}, daiya, typeData, ekiData);
+			const detailTrain = daiya ? {
+				"cbango": cbango,
+				"name": daiya.name || "",
+				"type": expressCoreTrain && typeof expressCoreTrain.type !== "undefined" ? String(expressCoreTrain.type) : (daiya && typeof daiya.type !== "undefined" ? String(daiya.type) : ""),
+				"shuEki": daiya.shuEkiKey || "",
+				"ryosu": daiya.ryosu || "",
+				"senku": daiya.senku || "00"
+			} : null;
+			if (detailTrain && expressNow) {
+				detailTrain.runStatus = expressNow.runStatus;
+				detailTrain.yokuStatus = expressNow.yokuStatus;
+				detailTrain.yokuDetail = expressNow.yokuDetail;
+				detailTrain.status = expressNow.status;
+				detailTrain.statusDetail = statusDetail;
+				detailTrain.chien = expressNow.chien;
+			}
 			trainMap.set(cbango, {
 				"cbango": cbango,
 				"type": expressCoreTrain && typeof expressCoreTrain.type !== "undefined" ? String(expressCoreTrain.type) : (daiya && typeof daiya.type !== "undefined" ? String(daiya.type) : ""),
@@ -2370,20 +2386,7 @@ function load_train_search_data() {
 				"goNumber": nameInfo.goNumber,
 				"hasCustomName": !!nameInfo.baseName,
 				"isRunning": false,
-				"detailTrain": expressNow ? {
-					"cbango": cbango,
-					"name": daiya && daiya.name ? daiya.name : cbango,
-					"type": expressCoreTrain && typeof expressCoreTrain.type !== "undefined" ? String(expressCoreTrain.type) : (daiya && typeof daiya.type !== "undefined" ? String(daiya.type) : ""),
-					"shuEki": daiya ? daiya.shuEkiKey : "",
-					"ryosu": daiya ? daiya.ryosu : "",
-					"senku": "00",
-					"runStatus": expressNow.runStatus,
-					"yokuStatus": expressNow.yokuStatus,
-					"yokuDetail": expressNow.yokuDetail,
-					"status": expressNow.status,
-					"statusDetail": statusDetail,
-					"chien": expressNow.chien
-				} : null
+				"detailTrain": detailTrain
 			});
 		});
 		const trains = Array.from(trainMap.values()).sort((a, b) => a.cbango.localeCompare(b.cbango, "ja"));
