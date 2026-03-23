@@ -2446,19 +2446,20 @@ function parse_train_name(name) {
  */
 function build_train_search_display_name(train, daiya, typeData, ekiData) {
 	const lang = document.documentElement.dataset.lang;
+	const destKey = train.shuEkiKey || (daiya ? daiya.shuEkiKey : "");
+	const dest = ekiData.find((row) => row.key == destKey);
+	const destName = dest ? (dest[lang] || dest.ja || "") : "";
+	const destText = destName ? " " + destName + "行" : "";
 	const nameInfo = parse_train_name(daiya && daiya.name ? daiya.name : "");
-	if (nameInfo.baseName) return daiya.name;
+	if (nameInfo.baseName) return (daiya.name + destText).trim();
 	const type = typeData.find((row) => String(row.type) == String(train.type));
 	let typeName = "";
 	if (type) {
 		typeName = type.type === 8 ? "快速" : (type.typeText[lang] || type.typeText.ja || "");
 	}
-	const destKey = train.shuEkiKey || (daiya ? daiya.shuEkiKey : "");
-	const dest = ekiData.find((row) => row.key == destKey);
-	const destName = dest ? (dest[lang] || dest.ja || "") : "";
-	const displayName = (typeName + (destName ? " " + destName + "行" : "")).trim();
+	const displayName = (typeName + destText).trim();
 	if (displayName) return displayName;
-	if (daiya && daiya.name) return daiya.name;
+	if (daiya && daiya.name) return (daiya.name + destText).trim();
 	return String(train.cbango || "");
 }
 
