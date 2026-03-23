@@ -1,10 +1,10 @@
 // スクロールの高さ保持用
 let scrollY = 0;
-// 遷移前�E路線保持用
+// 遷移前の路線保持用
 let befRosen = "";
-// スクロール用の駁E��ー保持用
+// スクロール用の駅キー保持用
 let scrollKey = "";
-// サイドメニュークリチE��晁E
+// サイドメニュークリック時
 let isSideMenuClick = false;
 // 画面初期表示時判定用
 let isLoad = true;
@@ -12,13 +12,13 @@ let isLoad = true;
 let isDialogDisp = false;
 // サイドメニュー表示時判定用
 let isSideMenuDisp = false;
-// 横幁E��サイズ判定用
+// 横幅リサイズ判定用
 let beforeWidth = 0;
-// 画面表示処琁E��行判定用
+// 画面表示処理実行判定用
 let isNotInitDisp = false;
-// 走行位置自動更新の既定間隁Ems)
+// 走行位置自動更新の既定間隔(ms)
 const LOCATION_AUTO_REFRESH_DEFAULT_INTERVAL = 15000;
-// 自動更新設定�E保存キー
+// 自動更新設定の保存キー
 const LOCATION_AUTO_REFRESH_ENABLED_KEY = "location_auto_refresh_enabled";
 const LOCATION_AUTO_REFRESH_INTERVAL_KEY = "location_auto_refresh_interval";
 const LOCATION_JSON_SOURCE_MAP = {
@@ -26,21 +26,21 @@ const LOCATION_JSON_SOURCE_MAP = {
 	"52": ["02", "07", "09"],
 	"53": ["02", "13"]
 };
-// 走行位置自動更新タイマ�E
+// 走行位置自動更新タイマー
 let locationAutoRefreshTimer = null;
-// 列車選択アニメーションタイマ�E
+// 列車選択アニメーションタイマー
 let resshaAnimationTimer = null;
 // 自動更新用の路線保持
 let autoRefreshRosen = "";
-// 列車�E描画用マスタのキャチE��ュ
+// 列車再描画用マスタのキャッシュ
 let cachedResshaTypeData = null;
 let cachedEkiData = null;
-// 自動更新設宁E
+// 自動更新設定
 let locationAutoRefreshEnabled = false;
 let locationAutoRefreshInterval = LOCATION_AUTO_REFRESH_DEFAULT_INTERVAL;
-// 次回�E動更新予定時刻
+// 次回自動更新予定時刻
 let nextLocationAutoRefreshAt = null;
-// 列車検索用キャチE��ュ
+// 列車検索用キャッシュ
 let cachedTrainSearchData = null;
 let trainSearchDataPromise = null;
 let cachedTrainSearchLoadedAt = 0;
@@ -48,14 +48,14 @@ const TRAIN_SEARCH_CACHE_TTL = 30000;
 
 window.onload = function(){
 	load_location_auto_refresh_settings();
-	// 現在表示中の路線を取征E
+	// 現在表示中の路線を取得
 	let param_rosen = get_param_rosen();
 	// 走行位置を表示
 	if (param_rosen != "") set_station_list(param_rosen, null);
-	// エリア別状況JSONを読み込んで、E��行情報を設定する、E
+	// エリア別状況JSONを読み込んで、運行情報を設定する。
 	set_unko_info(param_rosen);
 
-	// ポップアチE�Ehtml判断
+	// ポップアップhtml判断
 	let now = Date.now() >>> 16;
 	let lang = document.documentElement.dataset.lang;
 	let popup_url = lang == "ja" ? "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/trainlocation/CMUNKOU/inc_location_popup.html?" + now : "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/trainlocation/CMUNKOU/inc_location_popup_" + lang + ".html?" + now;
@@ -74,16 +74,16 @@ window.onload = function(){
 		}
 	})
 
-	// サイドメニュー　吁E��線�E遁E��惁E��の設宁E
+	// サイドメニュー　各路線の遅延情報の設定
 	set_side_area_chien();
-	// サイドメニュー　吁E��急列車�Eタンの作�E
+	// サイドメニュー　各特急列車ボタンの作成
 	createSideExpressList();
 
 	hsize = $(window).height();
 	$(".side-menu").css("height", hsize - 60 + "px");
 
 	if (!is_reload()) {
-		// 札幌近郊の路線�E場合、�E期表示を札幌駁E��辺にする。（更新時以外！E
+		// 札幌近郊の路線の場合、初期表示を札幌駅周辺にする。（更新時以外）
 		if (!get_param_id() && !get_param_cbango()) {
 			let rosen = get_param_rosen();
 			if ((rosen == "01" || rosen == "02" || rosen == "03") && $("div[key='091']").length > 0) {
@@ -92,82 +92,82 @@ window.onload = function(){
 		}
 	}
 
-	// 選択されてぁE��タブに表示を合わせめE
+	// 選択されているタブに表示を合わせる
 	str = $('input:radio[name="sideSelect"]:checked').val();
 	tab_select(str);
-	// ヘッダーの高さ刁E�E余白を設定する、E
+	// ヘッダーの高さ分の余白を設定する。
 	set_header_height();
 
-	// サイドメニュー設宁E
+	// サイドメニュー設定
 	set_side_menu(false);
 
-	// 初期表示時�E横幁E��持
+	// 初期表示時の横幅保持
 	beforeWidth = window.innerWidth;
 
 	$(function(){
-		// ペ�Eジの最後が駁E��終わってぁE��路線！E8、E3�E�でサブフチE��ーの表示があった場合、下に余白を追加する
+		// ページの最後が駅で終わっている路線（08、13）でサブフッターの表示があった場合、下に余白を追加する
 		eki_end_margin();
 	});
 };
 
 window.onresize = function () {
-	// サイドメニューの高さを画面サイズに合わせて設宁E
+	// サイドメニューの高さを画面サイズに合わせて設定
 	hsize = $(window).height();
 	$(".side-menu").css("height", hsize - 60 + "px");
 	if (beforeWidth != window.innerWidth && !isDialogDisp) {
-		// 横幁E��サイズ晁E
+		// 横幅リサイズ時
 		scrollY = window.scrollY;
 	}
 
-	// 画面幁E�Eサイズに合わせて画面頁E��を制御する、Eアドレスバ�Eによる高さのリサイズでは実行しなぁE
+	// 画面幅のサイズに合わせて画面項目を制御する。(アドレスバーによる高さのリサイズでは実行しない)
 	if (beforeWidth != window.innerWidth) {
 		set_responsive();
 	}
 
-	// お知らせのサイズによって子要素の横幁E��設定する、E
+	// お知らせのサイズによって子要素の横幅を設定する。
 	set_oshirase_width();
 
-	// ヘッダーの高さ刁E�E余白を設定する、E
+	// ヘッダーの高さ分の余白を設定する。
 	set_header_height();
 
-	// PC用表示の場合、タブ選択と表示冁E��を一致させめE
+	// PC用表示の場合、タブ選択と表示内容を一致させる
 	if (window.innerWidth > 1000) {
 		str = $('input:radio[name="sideSelect"]:checked').val();
 		tab_select_resize(str);
 	}
 
-	// リサイズ後�E横幁E��持
+	// リサイズ後の横幅保持
 	beforeWidth = window.innerWidth;
 
-	// ペ�Eジの最後が駁E��終わってぁE��路線！E8、E3�E�でサブフチE��ーの表示があった場合、下に余白を追加する
+	// ページの最後が駅で終わっている路線（08、13）でサブフッターの表示があった場合、下に余白を追加する
 	eki_end_margin();
 };
 
 window.onscroll = function () {
 	if (!(isLoad || isDialogDisp || isSideMenuDisp)) {
-		// スクロール位置を保孁E
+		// スクロール位置を保存
 		window.sessionStorage.setItem("scrollY", window.scrollY - 50);
 		scrollY = window.scrollY;
 	}
 };
 
 window.onhashchange = function () {
-	// ハッシュからid�E�駁E��ー�E�を取征E
+	// ハッシュからid（駅キー）を取得
 	let param_id = get_param_id();
 
-	// 路線を刁E��替えた際、�E車�E赤枠を非表示
+	// 路線を切り替えた際、列車の赤枠を非表示
 	$(".ressha-animation").hide();
 
-	// 画面表示処琁E
+	// 画面表示処理
 	if (!isNotInitDisp) init_disp(scrollKey, () => {
 
 		if (param_id) {
-			// ハッシュに駁EDが存在した場合、対象の駁E��でスクロール
+			// ハッシュに駅IDが存在した場合、対象の駅までスクロール
 			let pos = $("div[key='" + param_id + "']").offset().top - 380;
 			$("body,html").scrollTop(pos);
 		}
 
-		// ヘッダーの高さ刁E�E余白を設定する、E
+		// ヘッダーの高さ分の余白を設定する。
 		set_header_height();
 	})
 
@@ -176,15 +176,15 @@ window.onhashchange = function () {
 
 $(function ($) {
 	sync_refresh_setting_controls();
-	// 選択（エリアから選択／特急列車から選択）タブ�E選択を刁E��替えたとき�E動き
+	// 選択（エリアから選択／特急列車から選択）タブの選択を切り替えたときの動き
 	$(document).on('change', 'input[name="sideSelect"]', function () {
 		str = $('input:radio[name="sideSelect"]:checked').val();
 		tab_select(str);
 	});
 
-	// サイドメニューの吁E��リアをクリチE��したとき�E動き
+	// サイドメニューの各エリアをクリックしたときの動き
 	$(document).on("click", ".side-menu .area-contents .area-name-label", function () {
-		// 自刁E��これから開く場合、他�E展開をすべて閉じめE
+		// 自分をこれから開く場合、他の展開をすべて閉じる
 		if ($(this).next().css("display") === "none") {
 			$(".rosen-name-list").css("display", "none");
 			$(".area-name-label").removeClass("open");
@@ -194,7 +194,7 @@ $(function ($) {
 		$(this).toggleClass("open");
 	});
 
-	// 路線選択�EタンをクリチE��したとき�E動き
+	// 路線選択ボタンをクリックしたときの動き
 	$("#localSelBtn").on("click", function() {
 		let lang = document.documentElement.dataset.lang;
 		$(".side-menu").css("transform", "translateX(0px)");
@@ -203,16 +203,16 @@ $(function ($) {
 		$("#expTab").hide();
 		$("#sideMenu .side-menu .area-contents-header").show();
 		$("#sideMenu .side-menu-outer").show();
-		if (lang == "ja") $("#sideHeader").text("\u8def\u7dda\u3092\u9078\u629e");
+		if (lang == "ja") $("#sideHeader").text("路線選択");
 		if (lang == "en") $("#sideHeader").text("Select a line");
-		if (lang == "tc") $("#sideHeader").text("\u9078\u64c7\u8def\u7dda");
+		if (lang == "tc") $("#sideHeader").text("選擇路線");
 		if (lang == "sc") $("#sideHeader").text("选择路线");
-		if (lang == "kr") $("#sideHeader").text("\uB178\uC120 \uC120\uD0DD");
-		// bodyのスクロールを無効にする、E
+		if (lang == "kr") $("#sideHeader").text("노선 선택");
+		// bodyのスクロールを無効にする。
 		set_scroll_hide_side_menu();
 	});
 
-	// 特急列車選択�EタンをクリチE��したとき�E動き
+	// 特急列車選択ボタンをクリックしたときの動き
 	$("#expSelBtn").on("click", function() {
 		let lang = document.documentElement.dataset.lang;
 		$(".side-menu").css("transform", "translateX(0px)");
@@ -221,36 +221,36 @@ $(function ($) {
 		$("#expTab").show();
 		$("#sideMenu .side-menu .area-contents-header").show();
 		$("#sideMenu .side-menu-outer").show();
-		if (lang == "ja") $("#sideHeader").text("\u7279\u6025\u5217\u8eca\u3092\u9078\u629e");
+		if (lang == "ja") $("#sideHeader").text("特急列車選択");
 		if (lang == "en") $("#sideHeader").text("Select a limited express");
-		if (lang == "tc") $("#sideHeader").text("\u9078\u64c7\u7279\u6025\u5217\u8eca");
+		if (lang == "tc") $("#sideHeader").text("選擇特急列車");
 		if (lang == "sc") $("#sideHeader").text("选择特急列车");
-		if (lang == "kr") $("#sideHeader").text("\uD2B9\uAE09 \uC5F4\uCC28 \uC120\uD0DD");
-		// bodyのスクロールを無効にする、E
+		if (lang == "kr") $("#sideHeader").text("특급열차 선택");
+		// bodyのスクロールを無効にする。
 		set_scroll_hide_side_menu();
 	});
 
-	// 現在地選択�EタンをクリチE��したとき�E動き
+	// 現在地選択ボタンをクリックしたときの動き
 	$(".header-btn.pos").on("click", function() {
-		// ローチE��ングアニメーションを表示
+		// ローディングアニメーションを表示
 		loading_animation_display();
-		// 現在地から一番近い駁E��表示
+		// 現在地から一番近い駅を表示
 		get_pos_info(false);
 	});
 
-	// 自動更新設定�EタンをクリチE��したとき�E動き
+	// 自動更新設定ボタンをクリックしたときの動き
 	$("#refreshSettingBtn, #refreshSettingBtnSub").on("click", function() {
 		sync_refresh_setting_controls();
 		$("#refreshSettingDetail").fadeIn("fast");
 		set_scroll_hide($("#refreshSettingDetail .dialog"));
 	});
 
-	// 列車検索ボタンをクリチE��したとき�E動き
+	// 列車検索ボタンをクリックしたときの動き
 	$("#trainSearchBtn, #trainSearchBtnSub").on("click", function() {
 		reset_train_search_dialog();
 		$("#trainSearchDetail").fadeIn("fast");
 		set_scroll_hide($("#trainSearchDetail .dialog"));
-		$("#trainSearchResultInfo").text("\u8aad\u307f\u8fbc\u307f\u4e2d...");
+		$("#trainSearchResultInfo").text("読み込み中...");
 		load_train_search_data()
 			.then((searchData) => {
 				populate_train_search_name_select(searchData);
@@ -258,15 +258,15 @@ $(function ($) {
 				$("#trainSearchNumberInput").trigger("focus");
 			})
 			.catch(() => {
-				$("#trainSearchResultInfo").text("\u691c\u7d22\u30c7\u30fc\u30bf\u3092\u53d6\u5f97\u3067\u304d\u307e\u305b\u3093\u3067\u3057\u305f\u3002");
+				$("#trainSearchResultInfo").text("検索データを取得できませんでした。");
 			});
 	});
 
-	// 駁E��択をクリチE��したとき�E動き
+	// 駅選択をクリックしたときの動き
 	$(document).on("click", ".header-btn.eki", function() {
-		// チE��プレート�Ehtmlから駁E��取征E
+		// テンプレートのhtmlから駅を取得
 		let list = $("#stationList .eki-panel .eki-contents a");
-		// 取得した駁E��ら�Eタンをダイアログに表示する冁E��を作�E
+		// 取得した駅からボタンをダイアログに表示する内容を作成
 		let html = "<ul>";
 		for(let row of list){
 			html += "<li>";
@@ -276,20 +276,21 @@ $(function ($) {
 		}
 		html += "</ul>";
 
-		// 駁E��択ダイアログ冁E��駁E�Eリストを表示
+		// 駅選択ダイアログ内に駅のリストを表示
 		$("#searchDetail .train-link").html(html);
 
-		// 駁E��択ダイアログを開く、E
+		// 駅選択ダイアログを開く。
 		$("#searchDetail").fadeIn("fast");
 		$("#searchDetailMain").scrollTop(0);
-		// ダイアログを開くとき�Ebodyのスクロールの制御
+		// ダイアログを開くときのbodyのスクロールの制御
 		set_scroll_hide($("#searchDetail .dialog"));
 	});
 
-	// 駁E��択ダイアログ冁E�E�E�閉じる｣ボタンをクリチE��したとき�E動き
+	// 駅選択ダイアログ内の｢閉じる｣ボタンをクリックしたときの動き
 	$(document).on("click", "#searchDetail, #searchDetail .common-subtitle.header", function() {
-		// 駁E��択ダイアログを閉じる、E		$("#searchDetail").fadeOut("fast");
-		// ダイアログを閉じたとき�Ebodyのスクロールの制御
+		// 駅選択ダイアログを閉じる。
+		$("#searchDetail").fadeOut("fast");
+		// ダイアログを閉じたときのbodyのスクロールの制御
 		set_scroll_show($("#searchDetail .dialog"));
 	});
 
@@ -313,21 +314,22 @@ $(function ($) {
 		set_scroll_show($("#refreshSettingDetail .dialog"));
 	});
 
-	// 駁E��択ダイアログ冁E�E吁E��E�EボタンをクリチE��したとき�E動き
+	// 駅選択ダイアログ内の各駅のボタンをクリックしたときの動き
 	$(document).on("click", "#searchDetail .train-link li" , function() {
-		// 駁E��択ダイアログを閉じる、E
+		// 駅選択ダイアログを閉じる。
 		$("#searchDetail").fadeOut("fast");
-		// ダイアログを閉じたとき�Ebodyのスクロールの制御
+		// ダイアログを閉じたときのbodyのスクロールの制御
 		set_scroll_show($("#searchDetail .dialog"));
 
-		// 駁E��ードを取征E
+		// 駅コードを取得
 		let id = this.children[1].getAttribute("value");
-		// 対象の駁E��でスクロール
+		// 対象の駅までスクロール
 		let pos = $("div[key='" + id + "']").offset().top - 380;
 		$("body,html").animate({scrollTop: pos});
 	});
 
-	// 列車検索の実衁E	$(document).on("click", "#trainSearchNumberBtn", function() {
+	// 列車検索の実行
+	$(document).on("click", "#trainSearchNumberBtn", function() {
 		run_train_number_search();
 	});
 	$(document).on("click", "#trainSearchNameBtn", function() {
@@ -365,22 +367,22 @@ $(function ($) {
 		}
 	});
 
-	// 重要なお知らせをクリチE��したとき�E動き
+	// 重要なお知らせをクリックしたときの動き
 	$(document).on("click", "#popupDetailBtn", function() {
-		// ポップアチE�Eダイアログ冁E�E重要なお知らせを開く、E
+		// ポップアップダイアログ内の重要なお知らせを開く。
 		$("#popupDetail").fadeIn("fast");
 		$("#popupDetailMain .popup-detail-main").scrollTop(0);
 		$("#dialogOshirase").hide();
 		$("#popupOshirase").show();
-		// ダイアログを開くとき�Ebodyのスクロールの制御
+		// ダイアログを開くときのbodyのスクロールの制御
 		set_scroll_hide($("#popupDetail .dialog"));
 	});
 
-	// ポップアチE�Eダイアログ冁E�E�E�閉じる｣ボタンをクリチE��したとき�E動き
+	// ポップアップダイアログ内の｢閉じる｣ボタンをクリックしたときの動き
 	$(document).on("click", "#popupDetail, #popupDetail .close", function() {
-		// ポップアチE�Eダイアログを閉じる、E
+		// ポップアップダイアログを閉じる。
 		$("#popupDetail").fadeOut("fast");
-		// ダイアログを閉じたとき�Ebodyのスクロールの制御
+		// ダイアログを閉じたときのbodyのスクロールの制御
 		set_scroll_show($("#popupDetail .dialog"));
 	});
 
@@ -389,33 +391,33 @@ $(function ($) {
 		event.stopPropagation();
 	});
 
-	// ペ�Eジの表示状態に応じて自動更新を制御する
+	// ページの表示状態に応じて自動更新を制御する
 	document.addEventListener("visibilitychange", handle_page_visibility_change);
 
-	// サイドメニューの閉じる�EタンをクリチE��したとき�E動き
+	// サイドメニューの閉じるボタンをクリックしたときの動き
 	$("#sideMenu .side-menu .area-contents-header, #sideMenu .side-menu-outer").on("click", function() {
 		$("#sideMenu .side-menu").css("transform", "translateX(-327px)");
 		$("#sideMenu .side-menu").css("box-shadow", "none");
 		$("#sideMenu .side-menu-outer").hide();
-		// サイドメニュー冁E�E折り畳みを閉じる、E
+		// サイドメニュー内の折り畳みを閉じる。
 		toggle_close();
-		// bodyのスクロールを有効にする、E
+		// bodyのスクロールを有効にする。
 		set_scroll_show_side_menu();
 	});
 
-	// 区間をクリチE��したとき�E動き
+	// 区間をクリックしたときの動き
 	$(document).on("click"
 	, ".rosen-name-list div, .hoka-rosen-link a, .up-rosen-link a, .down-rosen-link a, .shin-link a"
 	,  function() {
 		$("#sideMenu .side-menu-outer").hide();
 
-		// ローチE��ングアニメーションを表示
+		// ローディングアニメーションを表示
 		loading_animation_display();
 
-		// 現在表示中の路線を取征E
+		// 現在表示中の路線を取得
 		befRosen = get_param_rosen();
 		if ($(this).attr("class") == "rosen-name-contents") {
-			// サイドメニュークリチE��判定用のフラグをtrue
+			// サイドメニュークリック判定用のフラグをtrue
 			isSideMenuClick = true;
 		}
 
@@ -424,12 +426,12 @@ $(function ($) {
 		scrollKey = $(this).attr("key");
 
 		if (befRosen == rosen) {
-			// 表示中の路線と遷移先�E路線が同じ場吁E
-			// ハッシュからid�E�駁E��ー�E�、�E車番号を取征E
+			// 表示中の路線と遷移先の路線が同じ場合
+			// ハッシュからid（駅キー）、列車番号を取得
 			let param_id = get_param_id();
 			let param_cbango = get_param_cbango();
 			location.hash = "rosen=" + rosen;
-			// 駁E��ー、�E車番号が設定されてぁE��場合、画面表示処琁E��行う
+			// 駅キー、列車番号が設定されていた場合、画面表示処理を行う
 			if (!param_id && !param_cbango) init_disp(scrollKey);
 		} else {
 			// ハッシュを選択した路線に変更
@@ -438,79 +440,85 @@ $(function ($) {
 
 		$(function(){
 			if (window.innerWidth <= 1000) {
-				// サイドメニュー冁E�E折り畳みを閉じる、E
+				// サイドメニュー内の折り畳みを閉じる。
 				toggle_close();
-				// bodyのスクロールを有効にする、E
+				// bodyのスクロールを有効にする。
 				if (isSideMenuClick) set_scroll_show_side_menu();
 			}
 		});
 	});
 
-	// 特急名をクリチE��した場合�E動き
+	// 特急名をクリックした場合の動き
 	$(document).on("click", ".express-name-label", function () {
 
-		// 自刁E��これから開く場合、他�E展開をすべて閉じめE
+		// 自分をこれから開く場合、他の展開をすべて閉じる
 		if ($(this).next().css("display") === "none") {
 			$(".express-train-list").css("display", "none");
 			$(".express-name-label").removeClass("open");
 		}
 		// 明細を開く／閉じる
 		$(this).next().stop().slideToggle(100, () => {
-			// 自刁E��これから開く場合、展開したリストが見える位置までスクロールする、E
+			// 自分をこれから開く場合、展開したリストが見える位置までスクロールする。
 			if ($(this).next().css("display") !== "none") {
-				// スクロール位置を計算する、E
+				// スクロール位置を計算する。
 				const pos = $(this).offset().top - $(this).parent().parent().first().offset().top;
-				// スクロールする、E
+				// スクロールする。
 				$(this).closest(".side-menu-scroll").animate({scrollTop: pos}, 100);
 			}
 		});
 		$(this).toggleClass("open");
 	});
 
-	// 特急列車名をクリチE��したとき�E動き
+	// 特急列車名をクリックしたときの動き
 	$(document).on("click", ".express-train-contents", function() {
 		let lang = document.documentElement.dataset.lang;
-		// ローチE��ングアニメーションを表示する、E
+		// ローディングアニメーションを表示する。
 		loading_animation_display();
-		// サイドメニュークリチE��判定用のフラグをtrue
+		// サイドメニュークリック判定用のフラグをtrue
 		isSideMenuClick = true;
-		// 列番を取得する、E
+		// 列番を取得する。
 		const cbango = $(this).attr("cbango");
-		// 列車種別を取得する、E
+		// 列車種別を取得する。
 		const type = $(this).attr("type");
-		// マスタファイル用のキャチE��ュバスター値を生成する、EUNIX允E��からの経過ミリ秒数を右に16ビットシフトした値、Eの16乗！E5536ミリ秒≒紁E刁E��隔でキャチE��ュを無効化すめE
+		// マスタファイル用のキャッシュバスター値を生成する。(UNIX元期からの経過ミリ秒数を右に16ビットシフトした値。2の16乗＝65536ミリ秒≒約1分間隔でキャッシュを無効化する)
 		const mstNow = Date.now() >>> 16;
-		// トランファイル用のキャチE��ュバスター値を生成する、EUNIX允E��からの経過ミリ秒数を右に10ビットシフトした値、Eの10乗！E024ミリ秒間隔でキャチE��ュを無効化すめE
+		// トランファイル用のキャッシュバスター値を生成する。(UNIX元期からの経過ミリ秒数を右に10ビットシフトした値。2の10乗＝1024ミリ秒間隔でキャッシュを無効化する)
 		const trnNow = Date.now() >>> 10;
-		// 最新の列車運行情報を取得する、E
+		// 最新の列車運行情報を取得する。
 		$.when(
 			$.getJSON("https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/webunkou/json/daiya/daiya_00" + (lang === "ja" ? "" : "_" + lang) + ".json?" + mstNow),
 			$.getJSON("https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/trainlocation/json/express/now/express_now.json?" + trnNow)
 		)
 		.done((daiyaBase, expressNowBase) => {
-			// 対象の列車�E運行情報を取得する、E			const expressNow = expressNowBase[0].trains.find(train => train.cbango === cbango);
+			// 対象の列車の運行情報を取得する。
+			const expressNow = expressNowBase[0].trains.find(train => train.cbango === cbango);
 			const targetRosen = $(this).attr("value") || normalizeMergedRosen(expressNow.runRosen, $(this).find(".train-name").text());
-			// 対象の列車に有効な路線キーが設定されてぁE��場合�E、当該路線�Eージの該当�E車位置に遷移する、E			if (targetRosen) {
-				// 現在表示してぁE��路線を取得する、E				const currentRosen = get_param_rosen();
-				// 現在hashに設定してぁE��列車番号を取得する、E				const currentCbango = get_param_cbango();
+			// 対象の列車に有効な路線キーが設定されている場合は、当該路線ページの該当列車位置に遷移する。
+			if (targetRosen) {
+				// 現在表示している路線を取得する。
+				const currentRosen = get_param_rosen();
+				// 現在hashに設定している列車番号を取得する。
+				const currentCbango = get_param_cbango();
 				if (currentRosen === targetRosen && currentCbango === cbango) {
-					// 表示中の路線／�E車番号と遷移先�E路線／�E車番号が同じ場合であれば、画面表示処琁E��呼び出す、E					init_disp();
+					// 表示中の路線／列車番号と遷移先の路線／列車番号が同じ場合であれば、画面表示処理を呼び出す。
+					init_disp();
 
 				} else {
-					// 別の路線／�E車番号であれば、ハチE��ュを選択した路線／�E車番号に変更する、E					location.hash = "rosen=" + targetRosen + "&cbango=" + cbango;
+					// 別の路線／列車番号であれば、ハッシュを選択した路線／列車番号に変更する。
+					location.hash = "rosen=" + targetRosen + "&cbango=" + cbango;
 				}
 				return;
 			}
-			// 対象の列車�EダイヤチE�Eタを取得する、E
+			// 対象の列車のダイヤデータを取得する。
 			const daiya = daiyaBase[0].today.find(train => train.cbango === cbango);
-			// 運行状態�E詳細を表す文言を取得する、E
+			// 運行状態の詳細を表す文言を取得する。
 			const statuDetail =
 				lang === "ja" ? expressNow.statusDetail :
 				lang === "en" ? expressNow.statusDetailEn :
 				lang === "tc" ? expressNow.statusDetailTc :
 				lang === "sc" ? expressNow.statusDetailSc :
 				lang === "kr" ? expressNow.statusDetailKr : "";
-			// 列車詳細惁E��ダイアログを表示する、E
+			// 列車詳細情報ダイアログを表示する。
 			showTrainDetailDialog($("#trainDetail"), {
 				"cbango": cbango,
 				"name": daiya.name,
@@ -527,22 +535,22 @@ $(function ($) {
 			});
 		})
 		.fail(() => {
-			// チE�Eタの取得に失敗した場合�E、エラーメチE��ージを表示する、E
+			// データの取得に失敗した場合は、エラーメッセージを表示する。
 			showTrainDetailDialog($("#trainDetail"), undefined, true);
 		});
 	});
 });
 
 /*
- * 画面表示処琁E
+ * 画面表示処理
  */
 function init_disp(_scrollKey, _callback) {
-	// 現在表示中の路線を取征E
+	// 現在表示中の路線を取得
 	let param_rosen = get_param_rosen();
 	// 要素をすべて削除
 	$("#stationList").empty();
 
-	// メチE��ージを削除
+	// メッセージを削除
 	$("#message").empty();
 	$("#message").hide();
 
@@ -551,13 +559,13 @@ function init_disp(_scrollKey, _callback) {
 	$(".sub-footer #subFooterContents").css("transition", "transform .0s ease-out 0s,-webkit-transform .0s ease-out 0s");
 	$(".sub-footer #subFooterContents").css("transform", "translateX(0px)");
 
-	// 選択された区間を基に走行位置を�E表示
+	// 選択された区間を基に走行位置を再表示
 	set_station_list(param_rosen, _scrollKey, _callback);
 
-	// エリア別状況JSONを読み込んで、E��行情報を設定する、E
+	// エリア別状況JSONを読み込んで、運行情報を設定する。
 	set_unko_info(param_rosen);
 
-	// ポップアチE�Ehtml判断
+	// ポップアップhtml判断
 	let now = Date.now() >>> 16;
 	let lang = document.documentElement.dataset.lang;
 	let popup_url = lang == "ja" ? "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/trainlocation/CMUNKOU/inc_location_popup.html?" + now : "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/trainlocation/CMUNKOU/inc_location_popup_" + lang + ".html?" + now;
@@ -576,12 +584,12 @@ function init_disp(_scrollKey, _callback) {
 		}
 	})
 
-	// ペ�Eジの最後が駁E��終わってぁE��路線！E8、E3�E�でサブフチE��ーの表示があった場合、下に余白を追加する
+	// ページの最後が駅で終わっている路線（08、13）でサブフッターの表示があった場合、下に余白を追加する
 	eki_end_margin();
 }
 
 /*
- * 列車アイコンの赤枠を点滁E��せる
+ * 列車アイコンの赤枠を点滅させる
  */
 function set_ressha_icon_animation() {
 	let doc = document.querySelector('.ressha-animation');
@@ -600,7 +608,7 @@ function set_ressha_icon_animation() {
 }
 
 /*
- * JSONチE�Eタを読み込み、E��E�E駁E��を描画する
+ * JSONデータを読み込み、駅・駅間を描画する
  */
 function get_location_json_source_list(_param_rosen) {
 	const sourceList = LOCATION_JSON_SOURCE_MAP[_param_rosen];
@@ -657,13 +665,13 @@ function load_location_now_data(_param_rosen, _now) {
 
 function set_station_list(_param_rosen, _scrollKey, _callback) {
 	stop_location_auto_refresh();
-	// お知らせ欁E���E
+	// お知らせ欄作成
 	disp_oshirase(_param_rosen);
 
-	// 吁E��間�Ehtmlを読み込み
+	// 各区間のhtmlを読み込み
 	const lang = document.documentElement.dataset.lang;
 
-	// 走行位置ペ�EジメンチE��ンスJSONファイルを読み込んで、メンチE��ンスペ�Eジに刁E��替えるか判定を行う、E
+	// 走行位置ページメンテナンスJSONファイルを読み込んで、メンテナンスページに切り替えるか判定を行う。
 	let mstNow = Date.now() >>> 16;
 	let nowQuery = Date.now() >>> 10;
 	let rosen_html = lang == "ja" ? `./rosen/rosen_${_param_rosen}.html` : `https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/trainlocation/rosen_${_param_rosen}_${lang}.html`;
@@ -679,19 +687,19 @@ function set_station_list(_param_rosen, _scrollKey, _callback) {
 	)
 	.done(function(rosenNameData, maintenanceData, typeData, ekiData, rosen, maintenance) {
 
-		// 現在日付を設宁E
+		// 現在日付を設定
 		const now = new Date();
 		const formatted =
 			now.getFullYear() + "年" +
-			(now.getMonth() + 1) + "朁E +
+			(now.getMonth() + 1) + "月" +
 			now.getDate() + "日" +
-			now.getHours() + "晁E +
-			now.getMinutes() + "刁E +
+			now.getHours() + "時" +
+			now.getMinutes() + "分" +
 			now.getSeconds() + "秒現在";
 
 		$("#timestamp").text(formatted);
 
-		// 路線名を設宁E
+		// 路線名を設定
 		let findRosenName = rosenNameData[0].find((v) => v.rosen == _param_rosen);
 		if (typeof findRosenName !== "undefined") {
 			if (lang == "ja") $("#title").html(findRosenName.rosenName.ja + findRosenName.kukanName.ja);
@@ -705,20 +713,20 @@ function set_station_list(_param_rosen, _scrollKey, _callback) {
 		if (result.length > 0) {
 			cachedResshaTypeData = null;
 			cachedEkiData = null;
-			// 表示対象の路線�EスチE�EタスぁEの場合、メンチE��ンスペ�Eジを表示
+			// 表示対象の路線のステータスが1の場合、メンテナンスページを表示
 			$("#stationList").html(maintenance[0]);
-			// 方面の設宁E
+			// 方面の設定
 			$(".homen-header-contents").hide();
 			$(".homen-footer-contents").hide();
 
-			// 駁E��択�Eタンを非表示
+			// 駅選択ボタンを非表示
 			$(".btn-header-contents .header-btn.eki").hide();
 			// フッターのお知らせ・運行情報を表示
 			$("#subFooterContents").hide();
 
 			$(".maintenance-title").show();
 
-			// 駁E�E駁E��描画後�E後�E琁E
+			// 駅・駅間描画後の後処理
 			set_post_station_list(_param_rosen, _scrollKey);
 		} else {
 			load_location_now_data(_param_rosen, nowQuery)
@@ -729,10 +737,10 @@ function set_station_list(_param_rosen, _scrollKey, _callback) {
 			$("#stationList").html(rosen[0]);
 			// 列車アイコンを描画する
 			create_ressha_icon(_param_rosen, nowData, typeData[0], ekiData[0]);
-			// 列車アイコンの表示頁E��並び替える
+			// 列車アイコンの表示順を並び替える
 			ressha_pos_sort();
 
-			// 方面の設宁E
+			// 方面の設定
 			let homenUp = $("#homenNameUpText");
 			let homenDown = $("#homenNameDownText");
 			if (homenUp) $("#homenNameUp").html(homenUp.text());
@@ -740,12 +748,12 @@ function set_station_list(_param_rosen, _scrollKey, _callback) {
 			$(".homen-header-contents").show();
 			$(".homen-footer-contents").show();
 
-			// 駁E��択�Eタンを表示
+			// 駅選択ボタンを表示
 			$(".btn-header-contents .header-btn.eki").show();
 			// フッターのお知らせ・運行情報を表示
 			$("#subFooterContents").show();
 
-			// 駁E�E駁E��描画後�E後�E琁E
+			// 駅・駅間描画後の後処理
 			set_post_station_list(_param_rosen, _scrollKey);
 			start_location_auto_refresh(_param_rosen);
 
@@ -766,7 +774,7 @@ function set_station_list(_param_rosen, _scrollKey, _callback) {
 }
 
 /*
- * 走行位置の自動更新を開始すめE
+ * 走行位置の自動更新を開始する
  */
 function start_location_auto_refresh(_param_rosen, _delay = locationAutoRefreshInterval) {
 	stop_location_auto_refresh(true);
@@ -795,7 +803,7 @@ function stop_location_auto_refresh(_preserveNextRefresh = false) {
 }
 
 /*
- * 走行位置JSONのみを�E取得して、�E車アイコンだけ�E描画する
+ * 走行位置JSONのみを再取得して、列車アイコンだけ再描画する
  */
 function refresh_location_positions(_param_rosen) {
 	if (!_param_rosen || _param_rosen !== get_param_rosen()) return;
@@ -808,7 +816,7 @@ function refresh_location_positions(_param_rosen) {
 		redraw_location_positions(_param_rosen, nowData);
 	})
 	.catch(function() {
-		// 自動更新失敗時は次回更新を征E��
+		// 自動更新失敗時は次回更新を待つ
 	});
 }
 
@@ -824,7 +832,7 @@ function redraw_location_positions(_param_rosen, _nowData) {
 }
 
 /*
- * 既存�E走行位置アイコンをクリアする
+ * 既存の走行位置アイコンをクリアする
  */
 function clear_location_positions(_param_rosen) {
 	$("#stationList .ressha-animation").remove();
@@ -854,16 +862,16 @@ function update_location_timestamp() {
 	const now = new Date();
 	const formatted =
 		now.getFullYear() + "年" +
-		(now.getMonth() + 1) + "朁E +
+		(now.getMonth() + 1) + "月" +
 		now.getDate() + "日" +
-		now.getHours() + "晁E +
-		now.getMinutes() + "刁E +
+		now.getHours() + "時" +
+		now.getMinutes() + "分" +
 		now.getSeconds() + "秒現在";
 	$("#timestamp").text(formatted);
 }
 
 /*
- * 選択中の列車がある場合、�E描画後に赤枠を付け直ぁE
+ * 選択中の列車がある場合、再描画後に赤枠を付け直す
  */
 function restore_selected_train_marker() {
 	const param_cbango = get_param_cbango();
@@ -886,7 +894,7 @@ function load_location_auto_refresh_settings() {
 }
 
 /*
- * 自動更新設定�E力欁E��現在値を反映する
+ * 自動更新設定入力欄に現在値を反映する
  */
 function sync_refresh_setting_controls() {
 	$("#refreshEnabledSelect").val(locationAutoRefreshEnabled ? "on" : "off");
@@ -894,24 +902,24 @@ function sync_refresh_setting_controls() {
 }
 
 /*
- * 自動更新状態�E表示を更新する
+ * 自動更新状態の表示を更新する
  */
 function update_refresh_status_label() {
 	const lang = document.documentElement.dataset.lang;
 	const intervalSeconds = locationAutoRefreshInterval / 1000;
 	const messages = {
-		ja: "自動更新ON (" + intervalSeconds + "秒間隁E",
+		ja: "自動更新ON (" + intervalSeconds + "秒間隔)",
 		en: "Auto refresh ON (" + intervalSeconds + " sec)",
-		tc: "自動更新ON�E�毁E + intervalSeconds + "秒！E,
-		sc: "自动更新ON�E�毁E + intervalSeconds + "秒！E,
-		kr: "�E�동 �E��E� ON (" + intervalSeconds + "�E�E"
+		tc: "自動更新ON（每" + intervalSeconds + "秒）",
+		sc: "自动更新ON（每" + intervalSeconds + "秒）",
+		kr: "자동 갱신 ON (" + intervalSeconds + "초)"
 	};
 	const nextMessages = {
-		ja: "次回更新�E�E + format_refresh_time(nextLocationAutoRefreshAt),
+		ja: "次回更新：" + format_refresh_time(nextLocationAutoRefreshAt),
 		en: "Next: " + format_refresh_time(nextLocationAutoRefreshAt),
-		tc: "下次更新�E�E + format_refresh_time(nextLocationAutoRefreshAt),
-		sc: "下次更新�E�E + format_refresh_time(nextLocationAutoRefreshAt),
-		kr: "�E��E�E�E��E�: " + format_refresh_time(nextLocationAutoRefreshAt)
+		tc: "下次更新：" + format_refresh_time(nextLocationAutoRefreshAt),
+		sc: "下次更新：" + format_refresh_time(nextLocationAutoRefreshAt),
+		kr: "다음 갱신: " + format_refresh_time(nextLocationAutoRefreshAt)
 	};
 	if (locationAutoRefreshEnabled) {
 		const message = (messages[lang] || messages.ja) + (nextLocationAutoRefreshAt ? "  " + (nextMessages[lang] || nextMessages.ja) : "");
@@ -922,7 +930,7 @@ function update_refresh_status_label() {
 }
 
 /*
- * 次回�E動更新予定時刻を設定すめE
+ * 次回自動更新予定時刻を設定する
  */
 function set_next_location_auto_refresh_time(_delay = locationAutoRefreshInterval) {
 	nextLocationAutoRefreshAt = new Date(Date.now() + _delay);
@@ -937,7 +945,7 @@ function format_refresh_time(_date) {
 	const hours = String(_date.getHours()).padStart(2, "0");
 	const minutes = String(_date.getMinutes()).padStart(2, "0");
 	const seconds = String(_date.getSeconds()).padStart(2, "0");
-	return hours + "晁E + minutes + "刁E + seconds + "私E;
+	return hours + "時" + minutes + "分" + seconds + "秒";
 }
 
 /*
@@ -965,7 +973,7 @@ function apply_location_auto_refresh_settings(_enabled, _interval, _persist = tr
 }
 
 /*
- * ペ�Eジの表示状態に応じて自動更新を停止・再開する
+ * ページの表示状態に応じて自動更新を停止・再開する
  */
 function handle_page_visibility_change() {
 	const currentRosen = get_param_rosen();
@@ -989,11 +997,11 @@ function handle_page_visibility_change() {
 }
 
 /*
- * 駁E�E駁E��描画後�E後�E琁E
+ * 駅・駅間描画後の後処理
  */
 function set_post_station_list(_param_rosen, _scrollKey) {
 	if (["09", "52"].includes(_param_rosen)) {
-		// 函館線[長丁E���E��E館間]の場吁E
+		// 函館線[長万部～函館間]の場合
 		if ($(".fujishiro-panel").height() > 800){
 			$("#fujishiro1").hide();
 			$("#fujishiro2").hide();
@@ -1004,32 +1012,32 @@ function set_post_station_list(_param_rosen, _scrollKey) {
 
 	set_responsive();
 
-	// スクロール位置が�E頭にある場合、路線描画タイミングでヘッダーの余白の高さを設宁E
+	// スクロール位置が先頭にある場合、路線描画タイミングでヘッダーの余白の高さを設定
 	if ($("body,html").scrollTop() == 0) set_header_height();
 
-	// 初期表示時�Eみ
+	// 初期表示時のみ
 	if (isLoad) {
 		let param_cbango = get_param_cbango();
 		if (param_cbango) {
-			// ハッシュにcbangoが存在した場合�E琁E��実衁E
+			// ハッシュにcbangoが存在した場合処理を実行
 			ressha_run_check();
 			window.sessionStorage.setItem("scrollY", window.scrollY - 50);
 		} else if (is_reload()) {
-			// セチE��ョンに保存したスクロール位置を取征E
+			// セッションに保存したスクロール位置を取得
 			let scroll = Number(window.sessionStorage.getItem("scrollY"));
 			if (!isNaN(scroll)) {
-				// 更新時、スクロール位置を設宁E
+				// 更新時、スクロール位置を設定
 				$("body,html").scrollTop(scroll + 50);
 			}
 		} else {
 			let param_id = get_param_id();
 			if (param_id) {
-				// ハッシュに駁EDが存在した場合、対象の駁E��でスクロール
+				// ハッシュに駅IDが存在した場合、対象の駅までスクロール
 				let pos = $("div[key='" + param_id + "']").offset().top - 380;
 				$("body,html").animate({scrollTop: pos});
 				window.sessionStorage.setItem("scrollY", pos - 50);
 			} else {
-				// 札幌近郊の路線�E場合、�E期表示を札幌駁E��辺にする、E
+				// 札幌近郊の路線の場合、初期表示を札幌駅周辺にする。
 				set_disp_scroll_spo();
 			}
 		}
@@ -1039,10 +1047,10 @@ function set_post_station_list(_param_rosen, _scrollKey) {
 	} else {
 		let param_cbango = get_param_cbango();
 		if (param_cbango) {
-			// ハッシュにcbangoが存在した場合�E琁E��実衁E
+			// ハッシュにcbangoが存在した場合処理を実行
 			ressha_run_check();
 		} else {
-			// 画面スクロール位置設宁E
+			// 画面スクロール位置設定
 			set_disp_scroll(_param_rosen, _scrollKey);
 		}
 	}
@@ -1050,43 +1058,43 @@ function set_post_station_list(_param_rosen, _scrollKey) {
 	scrollKey = "";
 	isSideMenuClick = false;
 
-	// ローチE��ングアニメーションを非表示にする
+	// ローディングアニメーションを非表示にする
 	loading_animation_hidden();
 }
 
 /*
- * 画面スクロール位置設宁E
+ * 画面スクロール位置設定
  */
 function set_disp_scroll(_param_rosen, _scrollKey) {
-	// 他路線から�E移してきた場合、E�E移允E�E線路のリンクの箁E��までスクロール
+	// 他路線から遷移してきた場合、遷移元の線路のリンクの箇所までスクロール
 	let doc = $("a[value='" + befRosen + "']");
 	if (_scrollKey && _scrollKey != "") {
-		// 駁E�E箁E��までスクロール
+		// 駅の箇所までスクロール
 		doc = $("div[key='" + _scrollKey + "']");
 	}
 
 	if (isSideMenuClick) {
-		// 札幌近郊の路線�E場合、�E期表示を札幌駁E��辺にする、E
+		// 札幌近郊の路線の場合、初期表示を札幌駅周辺にする。
 		set_disp_scroll_spo();
 	} else if (doc.length > 0) {
 		let scroll = doc.offset().top - 310;
-		if (_param_rosen == "01" && _scrollKey == "090") scroll -= 120; // SP1 桑園駁E��の遷移
-		if (_param_rosen == "03" && _scrollKey == "090") scroll -= 120; // SP3 桑園駁E��の遷移
-		if (_param_rosen == "06" && _scrollKey == "227") scroll += 80;  // DO3 志文駁E��の遷移
-		if (_param_rosen == "13" && _scrollKey == "220") scroll -= 110; // DT1 追刁E��E��の遷移
+		if (_param_rosen == "01" && _scrollKey == "090") scroll -= 120; // SP1 桑園駅への遷移
+		if (_param_rosen == "03" && _scrollKey == "090") scroll -= 120; // SP3 桑園駅への遷移
+		if (_param_rosen == "06" && _scrollKey == "227") scroll += 80;  // DO3 志文駅への遷移
+		if (_param_rosen == "13" && _scrollKey == "220") scroll -= 110; // DT1 追分駅への遷移
 		if (_param_rosen == "01" && befRosen == "02") scroll -= 120;	// SP2からSP1への遷移
 		if (_param_rosen == "13" && befRosen == "14") scroll -= 120;	// DT2からDT1への遷移
 		if (_param_rosen == "02" && befRosen == "01") scroll -= 120;	// SP1からSP2への遷移
 		$("body,html").scrollTop(scroll);
 		scrollY = scroll;
 	} else {
-		// ペ�Eジトップへスクロール
+		// ページトップへスクロール
 		$("body,html").scrollTop(0);
 	}
 }
 
 /*
- * 札幌近郊の路線�E場合、�E期表示を札幌駁E��辺にする、E
+ * 札幌近郊の路線の場合、初期表示を札幌駅周辺にする。
  */
 function set_disp_scroll_spo() {
 	if (!get_param_id() && !get_param_cbango()) {
@@ -1096,7 +1104,7 @@ function set_disp_scroll_spo() {
 			$("body,html").scrollTop(scroll);
 			scrollY = scroll;
 		} else {
-			// ペ�Eジトップへスクロール
+			// ページトップへスクロール
 			$("body,html").scrollTop(0);
 			scrollY = 0;
 		}
@@ -1104,7 +1112,7 @@ function set_disp_scroll_spo() {
 }
 
 /*
- * 画面幁E�Eサイズに合わせて画面頁E��を制御する、E
+ * 画面幅のサイズに合わせて画面項目を制御する。
  */
 function set_responsive() {
 	let userAgent = navigator.userAgent;
@@ -1112,17 +1120,17 @@ function set_responsive() {
 	let scrollbarWidth; // グローバルスコープで宣言
 	document.addEventListener('DOMContentLoaded', (event) => {
    	scrollbarWidth = window.innerWidth - document.body.clientWidth;
-    	// こ�Eスコープ�EでscrollbarWidthの値を設宁E
+    	// このスコープ内でscrollbarWidthの値を設定
 	});
 	let margin = 0;
 	let lang = document.documentElement.dataset.lang;
 	if (!(userAgent.indexOf('iPhone') > 0 || userAgent.indexOf('iPad') > 0 || userAgent.indexOf('Android') > 0 || userAgent.indexOf('Mobile') > 0 )) {
 		if ($("#guideDetail").is(":visible") || $("#searchDetail").is(":visible") || $("#trainSearchDetail").is(":visible") || $("#popupDetail").is(":visible") || $("#refreshSettingDetail").is(":visible") || $("#resshaDetail").is(":visible") || $("#oshiraseDetail").is(":visible")) {
-			// ぁE��れかのダイアログが表示されてぁE��場吁E
+			// いずれかのダイアログが表示されていた場合
 			margin = scrollbarWidth;
 		}
 
-		// PCの場吁E
+		// PCの場合
 		if (windowWidth <= 550) {
 			$("#guideDetail .dialog").css("margin", "0px " + scrollbarWidth + "px 0px 0px");
 			$("#searchDetail .dialog").css("margin", "0px " + scrollbarWidth + "px 0px 0px");
@@ -1145,7 +1153,7 @@ function set_responsive() {
 			$("#oshiraseDetail .dialog").css("marginLeft", scrollbarWidth + "px");
 		}
 
-		// 画面サイズが一般皁E��スマ�Eサイズ以下となった場合、画面を縮小させる
+		// 画面サイズが一般的なスマホサイズ以下となった場合、画面を縮小させる
 		if (windowWidth <= 385) {
 			let tr = (385 - windowWidth + 5) * 0.00275;
 			$(".main-contents").css("transform", `scale(${1 - tr})`);
@@ -1163,7 +1171,7 @@ function set_responsive() {
 		$("#resshaDetail .dialog").css("margin", "0px");
 		$("#oshiraseDetail .dialog").css("margin", "0px");
 
-		// 画面サイズが一般皁E��スマ�Eサイズ以下となった場合、画面を縮小させる
+		// 画面サイズが一般的なスマホサイズ以下となった場合、画面を縮小させる
 		if (windowWidth <= 375) {
 			let tr = (375 - windowWidth) * 0.00265;
 			$(".main-contents").css("transform", `scale(${1 - tr})`);
@@ -1175,26 +1183,26 @@ function set_responsive() {
 	}
 
 	if (windowWidth <= 1000) {
-		// サイドメニューを隠ぁE
+		// サイドメニューを隠す
 		$("#sideMenu .side-menu").css("transform", "translateX(-327px)");
 		$("#sideMenu .side-menu").css("box-shadow", "none");
 		$("#sideMenu .side-menu-outer").hide();
 		$(".sub-header").css("width", "calc(100% - " + margin + "px)");
 		$(".sub-footer .homen-footer-contents").css("width", "calc(100% - " + margin + "px)");
 		if (lang == "ja") $(".sub-footer .sub-footer-contents.popup .sub-footer-unkou-msg").html("重要な<br>お知らせ");
-		// サイドメニュー冁E�E折り畳みを閉じる、E
+		// サイドメニュー内の折り畳みを閉じる。
 		toggle_close();
 		if (!($("#guideDetail").is(":visible") || $("#searchDetail").is(":visible") || $("#trainSearchDetail").is(":visible") || $("#popupDetail").is(":visible") || $("#refreshSettingDetail").is(":visible") || $("#resshaDetail").is(":visible") || $(".trainDetailDialog").is(":visible") || $("#oshiraseDetail").is(":visible"))) {
-			// ダイアログが表示されてぁE��ぁE��吁E
-			// bodyのスクロールを有効にする、E
+			// ダイアログが表示されていない場合
+			// bodyのスクロールを有効にする。
 			set_scroll_show_side_menu();
 		}
 
-		// メンチE��ンスペ�Eジのタイトルの制御
+		// メンテナンスページのタイトルの制御
 		if (windowWidth <= 575) {
 			let text = $(".maintenance-title").html();
 			if (text && text.indexOf("<br>") == -1) {
-				$(".maintenance-title").html(text.replace("メンチE��ンス", "<br>メンチE��ンス"));
+				$(".maintenance-title").html(text.replace("メンテナンス", "<br>メンテナンス"));
 			}
 		} else {
 			let text = $(".maintenance-title").html();
@@ -1212,15 +1220,15 @@ function set_responsive() {
 		$(".sub-footer .homen-footer-contents").css("width", "calc(100% - " + margin + "px)");
 		if (lang == "ja") $(".sub-footer .sub-footer-contents.popup .sub-footer-unkou-msg").html("重要なお知らせ");
 		if (!($("#guideDetail").is(":visible") || $("#searchDetail").is(":visible") || $("#trainSearchDetail").is(":visible") || $("#popupDetail").is(":visible") || $("#refreshSettingDetail").is(":visible") || $("#resshaDetail").is(":visible") || $(".trainDetailDialog").is(":visible") || $("#oshiraseDetail").is(":visible"))) {
-			// ダイアログが表示されてぁE��ぁE��吁E
-			// bodyのスクロールを有効にする、E
+			// ダイアログが表示されていない場合
+			// bodyのスクロールを有効にする。
 			set_scroll_show_side_menu();
 		}
 	}
 }
 
 /*
- * 列車アイコンを描画する、E
+ * 列車アイコンを描画する。
  */
 function create_ressha_icon(_param_rosen, _nowData, _typeData, _ekiData) {
 	_nowData.trains.forEach(nowRow => {
@@ -1232,24 +1240,24 @@ function create_ressha_icon(_param_rosen, _nowData, _typeData, _ekiData) {
 
 		if (pos != "" && $("." + pos).length > 0) {
 			if (pos == "R9P11U" || pos == "R9P10U" || pos == "R9P9U" || pos == "R1P160U") {
-				// 新函館北斗駁E��側�E�E9P11U�E�E
-				// 新函館北斗�E�仁山間左側�E�E9P10U�E�E
-				// 仁山駁E��側�E�E9P9U�E�E
-				// 新十E��空港�E�南十E��間左側�E�E1P160U�E��E場吁E
+				// 新函館北斗駅左側（R9P11U）
+				// 新函館北斗～仁山間左側（R9P10U）
+				// 仁山駅左側（R9P9U）
+				// 新千歳空港～南千歳間左側（R1P160U）の場合
 				$("." + nowRow.pos).append(create_html_up_ressha_icon(nowRow, _typeData, _ekiData));
 				$("." + nowRow.pos).addClass("up");
 			} else if (pos == "R9P11D" || pos == "R9P10D" || pos == "R9P9D" || pos == "R1P160D") {
-				// 新函館北斗駁E��側�E�E9P11D�E�E
-				// 新函館北斗�E�仁山間右側�E�E9P10D�E�E
-				// 仁山駁E��側�E�E9P9D�E�E
-				// 新十E��空港�E�南十E��間右側�E�E1P160D�E�E
+				// 新函館北斗駅右側（R9P11D）
+				// 新函館北斗～仁山間右側（R9P10D）
+				// 仁山駅右側（R9P9D）
+				// 新千歳空港～南千歳間右側（R1P160D）
 				if ($("." + nowRow.pos).children(".ressha").length < 4) {
 					$(create_html_down_ressha_icon(nowRow, _typeData, _ekiData)).prependTo("." + nowRow.pos);
 				} else {
 					$("." + nowRow.pos).append(create_html_down_ressha_icon(nowRow, _typeData, _ekiData));
 				}
 			} else if (pos == "R9P26U") {
-				// 藤城線！E9P26U�E�E
+				// 藤城線（R9P26U）
 				if ($("." + nowRow.pos).children(".ressha").length < 4) {
 					$(create_html_up_ressha_icon(nowRow, _typeData, _ekiData)).prependTo("." + nowRow.pos);
 					$("." + nowRow.pos).addClass("up");
@@ -1258,11 +1266,11 @@ function create_ressha_icon(_param_rosen, _nowData, _typeData, _ekiData) {
 					$("." + nowRow.pos).addClass("up");
 				}
 			} else if (pos == "R1P119U") {
-				// 新十E��空港駁E��側�E�E1P119U�E��E場吁E
+				// 新千歳空港駅左側（R1P119U）の場合
 				$("." + nowRow.pos).append(create_html_up_ressha_icon(nowRow, _typeData, _ekiData));
 				$("." + nowRow.pos).addClass("up");
 			} else if (pos == "R1P119D") {
-				// 新十E��空港駁E��側�E�E1P119D�E��E場吁E
+				// 新千歳空港駅右側（R1P119D）の場合
 				if ($("." + nowRow.pos).children().length < 2) {
 					if ($("." + nowRow.pos).children(".ressha").length < 1) {
 						$("." + nowRow.pos).append(create_html_down_ressha_icon(nowRow, _typeData, _ekiData));
@@ -1273,14 +1281,14 @@ function create_ressha_icon(_param_rosen, _nowData, _typeData, _ekiData) {
 					$("." + nowRow.pos).append(create_html_down_ressha_icon(nowRow, _typeData, _ekiData));
 				}
 			} else if ($("." + pos).offset().left < width / 2 + add) {
-				// アイコン表示位置が画面半�Eより左の場吁E
+				// アイコン表示位置が画面半分より左の場合
 				$("." + nowRow.pos).append(create_html_up_ressha_icon(nowRow, _typeData, _ekiData));
 				$("." + nowRow.pos).addClass("up");
 			} else {
-				// アイコン表示位置が画面半�Eより右の場吁E
+				// アイコン表示位置が画面半分より右の場合
 				if ($("." + nowRow.pos).children(".ressha").length < 6) {
 					if ($("." + nowRow.pos).parent().parent().parent(".eki").length > 0) {
-						// 駁E�E場吁E
+						// 駅の場合
 						if ($("." + nowRow.pos).children(".ressha").length < 3) {
 							$("." + nowRow.pos).append(create_html_down_ressha_icon(nowRow, _typeData, _ekiData));
 						} else {
@@ -1290,7 +1298,7 @@ function create_ressha_icon(_param_rosen, _nowData, _typeData, _ekiData) {
 							test.outerHTML = create_html_down_ressha_icon(nowRow, _typeData, _ekiData);
 						}
 					} else {
-						// 駁E��の場吁E
+						// 駅間の場合
 						$(create_html_down_ressha_icon(nowRow, _typeData, _ekiData)).prependTo("." + nowRow.pos);
 					}
 				} else {
@@ -1300,23 +1308,23 @@ function create_ressha_icon(_param_rosen, _nowData, _typeData, _ekiData) {
 		}
 	});
 
-	// TID区間外�E高さを設宁E
+	// TID区間外の高さを設定
 	set_hirendo_height();
 
-	// 函館駁E��辺の高さを設宁E
+	// 函館駅周辺の高さを設定
 	if (["09", "52"].includes(_param_rosen)) set_hakodate_height();
 }
 
 /*
- * TID区間外�E高さを設宁E
+ * TID区間外の高さを設定
  */
 function set_hirendo_height() {
-	// TID区間外�E点線�Eに列車アイコンを表示する領域が２つ or �E�つ or �E�つ存在するパターンを老E�Eし高さを設定、E
-	// 列車アイコン表示領域�E�つ
+	// TID区間外の点線内に列車アイコンを表示する領域が２つ or ３つ or ４つ存在するパターンを考慮し高さを設定。
+	// 列車アイコン表示領域２つ
 	$(".hirendo-contents.two-ressha-contents").each(function(i, row) {
 		let ressha = row.getElementsByClassName("hirendo-ressha-panel");
 		if (ressha[0].children[0].childElementCount >= 2 || ressha[1].children[0].childElementCount >= 2) {
-			// �E�つの領域中の上�E要素冁E��列車が�E�つ以上存在する場吁E
+			// ２つの領域中の上の要素内に列車が２つ以上存在する場合
 			let resshaCount = 0;
 			if (ressha[0].children[0].childElementCount > ressha[1].children[0].childElementCount) {
 				resshaCount = ressha[0].children[0].childElementCount;
@@ -1328,7 +1336,7 @@ function set_hirendo_height() {
 
 			let eki = row.getElementsByClassName("hirendo-eki-contents")[0];
 			if (eki.classList[1] == "one-eki") {
-				// 駁E���E�つの場吁E
+				// 駅が１つの場合
 				let margin = 50 * resshaCount + 12 * (resshaCount - 2);
 				let height = 70 * resshaCount;
 				eki.children[0].style.marginTop = margin + "px";
@@ -1339,7 +1347,7 @@ function set_hirendo_height() {
 				ressha[0].children[0].style.padding = "8px 0";
 				ressha[1].children[0].style.padding = "8px 0";
 			} else if (eki.classList[1] == "three-eki") {
-				// 駁E���E�つの場吁E
+				// 駅が３つの場合
 				let margin = 23 * resshaCount + 5 * (resshaCount - 2);
 				let height = 65 * resshaCount;
 				eki.children[0].style.marginTop = margin + "px";
@@ -1352,7 +1360,7 @@ function set_hirendo_height() {
 		}
 
 		if (ressha[0].children[1].childElementCount >= 2 || ressha[1].children[1].childElementCount >= 2) {
-			// �E�つの領域中の下�E要素冁E��列車が�E�つ以上存在する場吁E
+			// ２つの領域中の下の要素内に列車が２つ以上存在する場合
 			let resshaCount = 0;
 			if (ressha[0].children[1].childElementCount > ressha[1].children[1].childElementCount) {
 				resshaCount = ressha[0].children[1].childElementCount;
@@ -1364,7 +1372,7 @@ function set_hirendo_height() {
 
 			let eki = row.getElementsByClassName("hirendo-eki-contents")[0];
 			if (eki.classList[1] == "one-eki") {
-				// 駁E���E�つの場吁E
+				// 駅が１つの場合
 				let margin = 50 * resshaCount + 12 * (resshaCount - 2);
 				let height = 70 * resshaCount;
 				eki.children[0].style.marginBottom = margin + "px";
@@ -1375,7 +1383,7 @@ function set_hirendo_height() {
 				ressha[0].children[1].style.padding = "8px 0";
 				ressha[1].children[1].style.padding = "8px 0";
 			} else if (eki.classList[1] == "three-eki") {
-				// 駁E���E�つの場吁E
+				// 駅が３つの場合
 				let margin = 23 * resshaCount + 5 * (resshaCount - 2);
 				let height = 65 * resshaCount;
 				eki.children[2].style.marginTop = margin + "px";
@@ -1388,11 +1396,11 @@ function set_hirendo_height() {
 		}
 	});
 
-	// 列車アイコン表示領域�E�つ
+	// 列車アイコン表示領域３つ
 	$(".hirendo-contents.three-ressha-contents").each(function(i, row) {
 		let ressha = row.getElementsByClassName("hirendo-ressha-panel");
 		if (ressha[0].children[0].childElementCount >= 2 || ressha[1].children[0].childElementCount >= 2) {
-			// �E�つの領域中の上�E要素冁E��列車が�E�つ以上存在する場吁E
+			// ３つの領域中の上の要素内に列車が２つ以上存在する場合
 			let resshaCount = 0;
 			if (ressha[0].children[0].childElementCount > ressha[1].children[0].childElementCount) {
 				resshaCount = ressha[0].children[0].childElementCount;
@@ -1404,7 +1412,7 @@ function set_hirendo_height() {
 
 			let eki = row.getElementsByClassName("hirendo-eki-contents")[0];
 			if (eki.classList[1] == "two-eki") {
-				// 駁E���E�つの場吁E
+				// 駅が２つの場合
 				let margin = 50 * resshaCount + 12 * (resshaCount - 2);
 				let height = 70 * resshaCount;
 				eki.children[0].style.marginTop = margin + "px";
@@ -1418,7 +1426,7 @@ function set_hirendo_height() {
 		}
 
 		if (ressha[0].children[1].childElementCount >= 2 || ressha[1].children[1].childElementCount >= 2) {
-			// �E�つの領域中の真ん中の要素冁E��列車が�E�つ以上存在する場吁E
+			// ３つの領域中の真ん中の要素内に列車が２つ以上存在する場合
 			let resshaCount = 0;
 			if (ressha[0].children[1].childElementCount > ressha[1].children[1].childElementCount) {
 				resshaCount = ressha[0].children[1].childElementCount;
@@ -1430,7 +1438,7 @@ function set_hirendo_height() {
 
 			let eki = row.getElementsByClassName("hirendo-eki-contents")[0];
 			if (eki.classList[1] == "two-eki") {
-				// 駁E���E�つの場吁E
+				// 駅が２つの場合
 				let margin = 33 * resshaCount;
 				let height = 70 * resshaCount;
 				eki.children[0].style.marginBottom = margin + "px";
@@ -1445,7 +1453,7 @@ function set_hirendo_height() {
 		}
 
 		if (ressha[0].children[2].childElementCount >= 2 || ressha[1].children[2].childElementCount >= 2) {
-			// �E�つの領域中の下�E要素冁E��列車が�E�つ以上存在する場吁E
+			// ３つの領域中の下の要素内に列車が２つ以上存在する場合
 			let resshaCount = 0;
 			if (ressha[0].children[2].childElementCount > ressha[1].children[2].childElementCount) {
 				resshaCount = ressha[0].children[2].childElementCount;
@@ -1457,7 +1465,7 @@ function set_hirendo_height() {
 
 			let eki = row.getElementsByClassName("hirendo-eki-contents")[0];
 			if (eki.classList[1] == "two-eki") {
-				// 駁E���E�つの場吁E
+				// 駅が２つの場合
 				let margin = 50 * resshaCount + 12 * (resshaCount - 2);
 				let height = 70 * resshaCount;
 				ressha[0].style.gap = "35px";
@@ -1471,11 +1479,11 @@ function set_hirendo_height() {
 		}
 	});
 
-	// 列車アイコン表示領域�E�つ
+	// 列車アイコン表示領域４つ
 	$(".hirendo-contents.four-ressha-contents").each(function(i, row) {
 		let ressha = row.getElementsByClassName("hirendo-ressha-panel");
 		if (ressha[0].children[0].childElementCount >= 2 || ressha[1].children[0].childElementCount >= 2) {
-			// �E�つの領域中の一番上�E要素冁E��列車が�E�つ以上存在する場吁E
+			// ４つの領域中の一番上の要素内に列車が２つ以上存在する場合
 			let resshaCount = 0;
 			if (ressha[0].children[0].childElementCount > ressha[1].children[0].childElementCount) {
 				resshaCount = ressha[0].children[0].childElementCount;
@@ -1487,7 +1495,7 @@ function set_hirendo_height() {
 
 			let eki = row.getElementsByClassName("hirendo-eki-contents")[0];
 			if (eki.classList[1] == "three-eki") {
-				// 駁E���E�つの場吁E
+				// 駅が３つの場合
 				let margin = 50 * resshaCount+ 12 * (resshaCount - 2);
 				let height = 70 * resshaCount;
 				ressha[0].style.gap = "35px";
@@ -1501,7 +1509,7 @@ function set_hirendo_height() {
 		}
 
 		if (ressha[0].children[1].childElementCount >= 2 || ressha[1].children[1].childElementCount >= 2) {
-			// �E�つの領域中の上から２番目の要素冁E��列車が�E�つ以上存在する場吁E
+			// ４つの領域中の上から２番目の要素内に列車が２つ以上存在する場合
 			let resshaCount = 0;
 			if (ressha[0].children[1].childElementCount > ressha[1].children[1].childElementCount) {
 				resshaCount = ressha[0].children[1].childElementCount;
@@ -1513,7 +1521,7 @@ function set_hirendo_height() {
 
 			let eki = row.getElementsByClassName("hirendo-eki-contents")[0];
 			if (eki.classList[1] == "three-eki") {
-				// 駁E���E�つの場吁E
+				// 駅が３つの場合
 				let margin = 35 * resshaCount;
 				let height = 70 * resshaCount;
 				ressha[0].style.gap = "35px";
@@ -1528,7 +1536,7 @@ function set_hirendo_height() {
 		}
 
 		if (ressha[0].children[2].childElementCount >= 2 || ressha[1].children[2].childElementCount >= 2) {
-			// �E�つの領域中の上から３番目の要素冁E��列車が�E�つ以上存在する場吁E
+			// ４つの領域中の上から３番目の要素内に列車が２つ以上存在する場合
 			let resshaCount = 0;
 			if (ressha[0].children[2].childElementCount > ressha[1].children[2].childElementCount) {
 				resshaCount = ressha[0].children[2].childElementCount;
@@ -1540,7 +1548,7 @@ function set_hirendo_height() {
 
 			let eki = row.getElementsByClassName("hirendo-eki-contents")[0];
 			if (eki.classList[1] == "three-eki") {
-				// 駁E���E�つの場吁E
+				// 駅が３つの場合
 				let margin = 35 * resshaCount;
 				let height = 70 * resshaCount;
 				ressha[0].style.gap = "35px";
@@ -1555,7 +1563,7 @@ function set_hirendo_height() {
 		}
 
 		if (ressha[0].children[3].childElementCount >= 2 || ressha[1].children[3].childElementCount >= 2) {
-			// �E�つの領域中の一番下�E要素冁E��列車が�E�つ以上存在する場吁E
+			// ４つの領域中の一番下の要素内に列車が２つ以上存在する場合
 			let resshaCount = 0;
 			if (ressha[0].children[3].childElementCount > ressha[1].children[3].childElementCount) {
 				resshaCount = ressha[0].children[3].childElementCount;
@@ -1567,7 +1575,7 @@ function set_hirendo_height() {
 
 			let eki = row.getElementsByClassName("hirendo-eki-contents")[0];
 			if (eki.classList[1] == "three-eki") {
-				// 駁E���E�つの場吁E
+				// 駅が３つの場合
 				let margin = 50 * resshaCount+ 12 * (resshaCount - 2);
 				let height = 70 * resshaCount;
 				ressha[0].style.gap = "35px";
@@ -1583,13 +1591,13 @@ function set_hirendo_height() {
 }
 
 /*
- * 函館駁E��辺の高さを設宁E
+ * 函館駅周辺の高さを設定
  */
 function set_hakodate_height() {
 	let countUH = document.querySelector(".R10P41U").childElementCount;
 	let countDH = document.querySelector(".R10P41D").childElementCount;
 	if ((countUH >= 3 || countDH >= 3)) {
-			// 函館駁E��列車が�E�つ以上存在する場吁E
+			// 函館駅に列車が３つ以上存在する場合
 			let resshaCount = countDH > countUH ? countDH : countUH;
 			if (resshaCount > 6) resshaCount = 6;
 			let height = 210 + (resshaCount - 2) * 65;
@@ -1599,7 +1607,7 @@ function set_hakodate_height() {
 	let countUG = document.querySelector(".R10P1U").childElementCount;
 	let countDG = document.querySelector(".R10P1D").childElementCount;
 	if ((countUG >= 4 || countDG >= 4)) {
-			// 五稜郭駁E��列車が�E�つ以上存在する場吁E
+			// 五稜郭駅に列車が４つ以上存在する場合
 			$("#stationList .item.goryokaku").css("height", "136px");
 			$("#goryokaku").hide();
 			$("#goryokakuLong").show();
@@ -1607,19 +1615,19 @@ function set_hakodate_height() {
 }
 
 /*
- *　上り列車�Eアイコンのhtmlを生成する、E
+ *　上り列車のアイコンのhtmlを生成する。
  */
 function create_html_up_ressha_icon(_nowRow, _typeData, _ekiData) {
 	let lang = document.documentElement.dataset.lang;
 	let objItem = document.createElement("div");
 	objItem.classList.add("ressha");
 
-	// 列車種別マスタから列車種別を取征E
+	// 列車種別マスタから列車種別を取得
 	let type = _typeData.find((v) => v.type == _nowRow.type);
-	// アイコン冁E�E列車種別を設宁E
+	// アイコン内の列車種別を設定
 	let iconArea = document.createElement("div");
 	iconArea.classList.add("icon-img");
-	// 新幹線以外には列車種別の斁E��をアイコンに入れる
+	// 新幹線以外には列車種別の文字をアイコンに入れる
 	if(_nowRow.type != "4") {
 		let objSbt = document.createElement("span");
 		objSbt.classList.add("ressha-sbt");
@@ -1631,15 +1639,15 @@ function create_html_up_ressha_icon(_nowRow, _typeData, _ekiData) {
 	}
 	objItem.appendChild(iconArea);
 
-	// 遁E��を設宁E
+	// 遅延を設定
 	let chienText = "";
 	if (_nowRow.chien > 0) {
 		if (_nowRow.chien >= 999) {
-			if (lang == "ja") chienText = "+大幁E;
+			if (lang == "ja") chienText = "+大幅";
 			if (lang == "en") chienText = "+Very";
-			if (lang == "tc") chienText = "+大幁E;
-			if (lang == "sc") chienText = "+大幁E;
-			if (lang == "kr") chienText = "+�E����";
+			if (lang == "tc") chienText = "+大幅";
+			if (lang == "sc") chienText = "+大幅";
+			if (lang == "kr") chienText = "+대폭";
 		} else {
 			chienText = "+" + _nowRow.chien;
 		}
@@ -1649,14 +1657,14 @@ function create_html_up_ressha_icon(_nowRow, _typeData, _ekiData) {
 	objOkure.textContent = chienText;
 	objItem.appendChild(objOkure);
 
-	// 列車アイコンの矢印を設宁E
+	// 列車アイコンの矢印を設定
 	let objArrow = document.createElement("img");
 	objArrow.classList.add("arrow");
 	objArrow.setAttribute("src", "./images/home/train_icon_arrow_up.svg");
 	objArrow.setAttribute("alt", "");
 	objItem.appendChild(objArrow);
 
-	// 行�Eを設宁E
+	// 行先を設定
 	if (lang == "ja") {
 		let objYukisaki = document.createElement("span");
 		objYukisaki.classList.add("yukisaki-label");
@@ -1664,7 +1672,7 @@ function create_html_up_ressha_icon(_nowRow, _typeData, _ekiData) {
 		objItem.appendChild(objYukisaki);
 	}
 
-	// 部刁E��休�E�E�を設宁E
+	// 部分運休の！を設定
 	if (_nowRow.status == "2") {
 		let objExclamation = document.createElement("img");
 		objExclamation.classList.add("exclamation");
@@ -1673,29 +1681,29 @@ function create_html_up_ressha_icon(_nowRow, _typeData, _ekiData) {
 		objItem.appendChild(objExclamation);
 	}
 
-	// 列車詳細に表示する冁E��の設宁E
+	// 列車詳細に表示する内容の設定
 	create_ressha_detail(objItem, _nowRow, _typeData, _ekiData);
 
 	return objItem.outerHTML;
 }
 
 /*
- * 下り列車�Eアイコンのhtmlを生成する、E
+ * 下り列車のアイコンのhtmlを生成する。
  */
 function create_html_down_ressha_icon(_nowRow, _typeData, _ekiData) {
 	let lang = document.documentElement.dataset.lang;
 	let objItem = document.createElement("div");
 	objItem.classList.add("ressha");
 
-	// 遁E��を設宁E
+	// 遅延を設定
 	let chienText = "";
 	if (_nowRow.chien > 0) {
 		if (_nowRow.chien >= 999) {
-			if (lang == "ja") chienText = "+大幁E;
+			if (lang == "ja") chienText = "+大幅";
 			if (lang == "en") chienText = "+Very";
-			if (lang == "tc") chienText = "+大幁E;
-			if (lang == "sc") chienText = "+大幁E;
-			if (lang == "kr") chienText = "+�E����";
+			if (lang == "tc") chienText = "+大幅";
+			if (lang == "sc") chienText = "+大幅";
+			if (lang == "kr") chienText = "+대폭";
 		} else {
 			chienText = "+" + _nowRow.chien;
 		}
@@ -1705,12 +1713,12 @@ function create_html_down_ressha_icon(_nowRow, _typeData, _ekiData) {
 	objOkure.textContent = chienText;
 	objItem.appendChild(objOkure);
 
-	// 列車種別マスタから列車種別を取征E
+	// 列車種別マスタから列車種別を取得
 	let type = _typeData.find((v) => v.type == _nowRow.type);
-	// アイコン冁E�E列車種別を設宁E
+	// アイコン内の列車種別を設定
 	let iconArea = document.createElement("div");
 	iconArea.classList.add("icon-img");
-	// 新幹線以外には列車種別の斁E��をアイコンに入れる
+	// 新幹線以外には列車種別の文字をアイコンに入れる
 	if(_nowRow.type != "4") {
 		let objSbt = document.createElement("span");
 		objSbt.classList.add("ressha-sbt");
@@ -1722,14 +1730,14 @@ function create_html_down_ressha_icon(_nowRow, _typeData, _ekiData) {
 	}
 	objItem.appendChild(iconArea);
 
-	// 列車アイコンの矢印を設宁E
+	// 列車アイコンの矢印を設定
 	let objArrow = document.createElement("img");
 	objArrow.classList.add("arrow");
 	objArrow.setAttribute("src", "./images/home/train_icon_arrow_down.svg");
 	objArrow.setAttribute("alt", "");
 	objItem.appendChild(objArrow);
 
-	// 行�Eを設宁E
+	// 行先を設定
 	if (lang == "ja") {
 		let objYukisaki = document.createElement("span");
 		objYukisaki.classList.add("yukisaki-label");
@@ -1737,7 +1745,7 @@ function create_html_down_ressha_icon(_nowRow, _typeData, _ekiData) {
 		objItem.appendChild(objYukisaki);
 	}
 
-	// 部刁E��休�E�E�を設宁E
+	// 部分運休の！を設定
 	if (_nowRow.status == "2") {
 		let objExclamation = document.createElement("img");
 		objExclamation.classList.add("exclamation");
@@ -1746,28 +1754,28 @@ function create_html_down_ressha_icon(_nowRow, _typeData, _ekiData) {
 		objItem.appendChild(objExclamation);
 	}
 
-	// 列車詳細に表示する冁E��の設宁E
+	// 列車詳細に表示する内容の設定
 	create_ressha_detail(objItem, _nowRow, _typeData, _ekiData);
 
 	return objItem.outerHTML;
 }
 
 /*
- * 列車詳細用の隠し要素を設定する、E
+ * 列車詳細用の隠し要素を設定する。
  */
 function create_ressha_detail(_objItem, _nowRow, _typeData, _ekiData) {
 	let lang = document.documentElement.dataset.lang;
-	// 列車種別マスタから列車種別を取征E
+	// 列車種別マスタから列車種別を取得
 	let type = _typeData.find((v) => v.type == _nowRow.type);
 
-	// 隠し属性を設定する。（運行情報詳細を表示する際に使用する�E�E
+	// 隠し属性を設定する。（運行情報詳細を表示する際に使用する）
 	{
 		// 列車番号
 		{
 			_objItem.dataset.cbango = _nowRow.cbango;
 		}
 
-		// 列車種別を表す色を設定、E
+		// 列車種別を表す色を設定。
 		{
 			if (type && type.labelColor) {
 				_objItem.dataset.ressha_type = type.labelColor;
@@ -1776,11 +1784,11 @@ function create_ressha_detail(_objItem, _nowRow, _typeData, _ekiData) {
 			}
 		}
 
-		// 列車種別吁E
+		// 列車種別名
 		{
 			if (type) {
 				if (type.type === 8) {
-					_objItem.dataset.ressha_type_name = "快送E;
+					_objItem.dataset.ressha_type_name = "快速";
 				} else {
 					_objItem.dataset.ressha_type_name = type.typeText[lang];
 				}
@@ -1788,15 +1796,15 @@ function create_ressha_detail(_objItem, _nowRow, _typeData, _ekiData) {
 
 		}
 
-		// 運行状態コーチE※0=全区間運休、E=運転、E=部刁E��企E
+		// 運行状態コード ※0=全区間運休、1=運転、2=部分運休
 		_objItem.dataset.unkou = _nowRow.status;
 
 		if (lang == "ja") {
 			// 運行状態名
 			{
-				if (_nowRow.status == "0") _objItem.dataset.unkou_name = "全区間運企E;
+				if (_nowRow.status == "0") _objItem.dataset.unkou_name = "全区間運休";
 				if (_nowRow.status == "1") _objItem.dataset.unkou_name = "";
-				if (_nowRow.status == "2") _objItem.dataset.unkou_name = "部刁E��企E;
+				if (_nowRow.status == "2") _objItem.dataset.unkou_name = "部分運休";
 			}
 			// 運行状態詳細
 			{
@@ -1820,9 +1828,9 @@ function create_ressha_detail(_objItem, _nowRow, _typeData, _ekiData) {
 		else if (lang == "tc") {
 			// 運行状態名
 			{
-				if (_nowRow.status == "0") _objItem.dataset.unkou_name = "全區間停駁E;
+				if (_nowRow.status == "0") _objItem.dataset.unkou_name = "全區間停駛";
 				if (_nowRow.status == "1") _objItem.dataset.unkou_name = "";
-				if (_nowRow.status == "2") _objItem.dataset.unkou_name = "部刁E��駁E;
+				if (_nowRow.status == "2") _objItem.dataset.unkou_name = "部分停駛";
 			}
 			// 運行状態詳細
 			{
@@ -1835,7 +1843,7 @@ function create_ressha_detail(_objItem, _nowRow, _typeData, _ekiData) {
 			{
 				if (_nowRow.status == "0") _objItem.dataset.unkou_name = "全区间停驶";
 				if (_nowRow.status == "1") _objItem.dataset.unkou_name = "";
-				if (_nowRow.status == "2") _objItem.dataset.unkou_name = "部刁E��驶";
+				if (_nowRow.status == "2") _objItem.dataset.unkou_name = "部分停驶";
 			}
 			// 運行状態詳細
 			{
@@ -1846,9 +1854,9 @@ function create_ressha_detail(_objItem, _nowRow, _typeData, _ekiData) {
 		else if (lang == "kr") {
 			// 運行状態名
 			{
-				if (_nowRow.status == "0") _objItem.dataset.unkou_name = "�E�E�E��E�Ebr>�E����E�E�지";
+				if (_nowRow.status == "0") _objItem.dataset.unkou_name = "전 구간<br>운행 중지";
 				if (_nowRow.status == "1") _objItem.dataset.unkou_name = "";
-				if (_nowRow.status == "2") _objItem.dataset.unkou_name = "�E��E�E�E����Ebr>�E�지";
+				if (_nowRow.status == "2") _objItem.dataset.unkou_name = "부분 운행<br>중지";
 			}
 			// 運行状態詳細
 			{
@@ -1857,23 +1865,23 @@ function create_ressha_detail(_objItem, _nowRow, _typeData, _ekiData) {
 			}
 		}
 
-		// 遁E��
+		// 遅れ
 		_objItem.dataset.chien = _nowRow.chien ? _nowRow.chien : "0";
 		if (_nowRow.yokuStatus == 1 || _nowRow.yokuStatus == 2) {
 			_objItem.dataset.chien_text = _nowRow.yokuDetail[lang];
 		} else if (_nowRow.chien >= 1) {
-			const CHIEN_LABEL_DELAYED_HOUR = { "ja": "{0}時間遁E��", "en": "{0} hour(s) late", "tc": "延遲{0}小時", "sc": "延迟{0}小时", "kr": "{0}�E�각E�E��E�" };
-			const CHIEN_LABEL_DELAYED_HR_MIN = { "ja": "{0}時間{1}刁E��めE, "en": "{0} hr {1} min late", "tc": "延遲{0}小時{1}刁E, "sc": "延迟{0}小时{1}刁E, "kr": "{0}�E�각E{1}�E�E�E��E�" };
-			const CHIEN_LABEL_DELAYED_MINUTES = { "ja": "{0}刁E��めE, "en": "{0} minutes late", "tc": "延遲{0}刁E, "sc": "延迟{0}刁E, "kr": "{0}�E�E�E��E�" };
+			const CHIEN_LABEL_DELAYED_HOUR = { "ja": "{0}時間遅れ", "en": "{0} hour(s) late", "tc": "延遲{0}小時", "sc": "延迟{0}小时", "kr": "{0}시간 지연" };
+			const CHIEN_LABEL_DELAYED_HR_MIN = { "ja": "{0}時間{1}分遅れ", "en": "{0} hr {1} min late", "tc": "延遲{0}小時{1}分", "sc": "延迟{0}小时{1}分", "kr": "{0}시간 {1}분 지연" };
+			const CHIEN_LABEL_DELAYED_MINUTES = { "ja": "{0}分遅れ", "en": "{0} minutes late", "tc": "延遲{0}分", "sc": "延迟{0}分", "kr": "{0}분 지연" };
 			let chienHour = Math.floor(_nowRow.chien / 60);
 			let chienMin = _nowRow.chien % 60;
 			if (chienHour > 0){
-				if (chienMin > 0) _objItem.dataset.chien_text = CHIEN_LABEL_DELAYED_HR_MIN[lang].replace("{0}", chienHour).replace("{1}", chienMin); // 「、E��間、E�E遁E��、E
-				else _objItem.dataset.chien_text = CHIEN_LABEL_DELAYED_HOUR[lang].replace("{0}",chienHour); // 「、E��間遅れ、E
+				if (chienMin > 0) _objItem.dataset.chien_text = CHIEN_LABEL_DELAYED_HR_MIN[lang].replace("{0}", chienHour).replace("{1}", chienMin); // 「〇時間〇分遅れ」
+				else _objItem.dataset.chien_text = CHIEN_LABEL_DELAYED_HOUR[lang].replace("{0}",chienHour); // 「〇時間遅れ」
 			} else {
-				// 英語で1刁E��れ�E場合、E minute late」になめE
+				// 英語で1分遅れの場合「1 minute late」になる
 				if (lang == "en" && chienMin == 1)_objItem.dataset.chien_text = chienMin + " minute late";
-				else _objItem.dataset.chien_text = CHIEN_LABEL_DELAYED_MINUTES[lang].replace("{0}", chienMin); // 「、E�E遁E��、E
+				else _objItem.dataset.chien_text = CHIEN_LABEL_DELAYED_MINUTES[lang].replace("{0}", chienMin); // 「〇分遅れ」
 			}
 		} else {
 			_objItem.dataset.chien_status = "0"
@@ -1885,30 +1893,30 @@ function create_ressha_detail(_objItem, _nowRow, _typeData, _ekiData) {
 		// 地点キー
 		_objItem.dataset.pos = _nowRow.pos;
 
-		// 駁E�EスタからダイヤチE�Eタの終着駁E��取得すめE
+		// 駅マスタからダイヤデータの終着駅を取得する
 		let findEki = _ekiData.find((v) => v.key == _nowRow.shuEkiKey);
 
-		// 行�E
+		// 行先
 		if (lang == "ja") _objItem.dataset.shu_eki = typeof findEki !== "undefined" ? findEki.ja + " 行き" : "行き";
 		if (lang == "en") _objItem.dataset.shu_eki = typeof findEki !== "undefined" ? "For " + findEki.en : "For ";
 		if (lang == "tc") _objItem.dataset.shu_eki = typeof findEki !== "undefined" ? "開往" + findEki.tc : "開往";
 		if (lang == "sc") _objItem.dataset.shu_eki = typeof findEki !== "undefined" ? "开往" + findEki.sc : "开往";
-		if (lang == "kr") _objItem.dataset.shu_eki = typeof findEki !== "undefined" ? findEki.kr + "���E : "���E;
+		if (lang == "kr") _objItem.dataset.shu_eki = typeof findEki !== "undefined" ? findEki.kr + "행" : "행";
 
 		// 車両数
 		_objItem.dataset.ryosu = _nowRow.ryosu && _nowRow.ryosu != 0 ? _nowRow.ryosu : "";
 		if (_objItem.dataset.ryosu != "") {
 			if (lang == "ja") _objItem.dataset.ryosu += "両";
 			if (lang == "en") _objItem.dataset.ryosu += " car(s)";
-			if (lang == "tc") _objItem.dataset.ryosu += "節車廁E;
+			if (lang == "tc") _objItem.dataset.ryosu += "節車廂";
 			if (lang == "sc") _objItem.dataset.ryosu += "节车厢";
-			if (lang == "kr") _objItem.dataset.ryosu += "�E�E����E�";
+			if (lang == "kr") _objItem.dataset.ryosu += "량 편성";
 		}
 	}
 }
 
 /*
- * ヘッダーの高さ刁E�E余白を設定する、E
+ * ヘッダーの高さ分の余白を設定する。
  */
 function set_header_height() {
 	let height = $(".train-guide-contents .sub-header").height();
@@ -1916,7 +1924,7 @@ function set_header_height() {
 }
 
 /*
- * ダイアログを開くとき�Ebodyのスクロールを無効にする、E
+ * ダイアログを開くときのbodyのスクロールを無効にする。
  */
 function set_scroll_hide(dialog) {
 	let userAgent = navigator.userAgent;
@@ -1925,14 +1933,14 @@ function set_scroll_hide(dialog) {
 	let width = 0;
 	if (windowWidth > 1000) width = 325;
 
-	if (!$("#sideMenu .side-menu-outer").is(":visible")) scrollY = window.scrollY; // サイドメニュー非表示晁E
+	if (!$("#sideMenu .side-menu-outer").is(":visible")) scrollY = window.scrollY; // サイドメニュー非表示時
 	$("body").css("overflow-y", "hidden");
 	$("body").css("position", "fixed");
 	$(".station-list-contents").css("position", "relative");
-	if (!$("#sideMenu .side-menu-outer").is(":visible")) $(".station-list-contents").css("top",  scrollY * -1 + "px"); // サイドメニュー非表示晁E
+	if (!$("#sideMenu .side-menu-outer").is(":visible")) $(".station-list-contents").css("top",  scrollY * -1 + "px"); // サイドメニュー非表示時
 
 	if (!(userAgent.indexOf('iPhone') > 0 || userAgent.indexOf('iPad') > 0 || userAgent.indexOf('Android') > 0 || userAgent.indexOf('Mobile') > 0 )) {
-		// PCの場吁E
+		// PCの場合
 		width += scrollbarWidth;
 		$("body").css("width", "calc(100% - " + scrollbarWidth + "px)");
 		$("header").css("width", "calc(100% - " + scrollbarWidth + "px)");
@@ -1961,7 +1969,7 @@ function set_scroll_hide(dialog) {
 }
 
 /*
- * ダイアログを閉じるとき�Ebodyのスクロールを有効にする、E
+ * ダイアログを閉じるときのbodyのスクロールを有効にする。
  */
 function set_scroll_show(dialog) {
 	let userAgent = navigator.userAgent;
@@ -1976,7 +1984,7 @@ function set_scroll_show(dialog) {
 	window.scrollTo(0, scrollY);
 
 	if (!(userAgent.indexOf('iPhone') > 0 || userAgent.indexOf('iPad') > 0 || userAgent.indexOf('Android') > 0 || userAgent.indexOf('Mobile') > 0 )) {
-		// PCの場吁E
+		// PCの場合
 		$("body").css("width", "100%");
 		$("header").css("width", "100%");
 		$(".sub-header").css("width", "calc(100% - " + width + "px)");
@@ -2006,7 +2014,7 @@ function set_scroll_show(dialog) {
 }
 
 /*
- * サイドメニューを開くとき�Ebodyのスクロールを無効にする、E
+ * サイドメニューを開くときのbodyのスクロールを無効にする。
  */
 function set_scroll_hide_side_menu() {
 	let userAgent = navigator.userAgent;
@@ -2018,7 +2026,7 @@ function set_scroll_hide_side_menu() {
 	$(".station-list-contents").css("top",  scrollY * -1 + "px");
 
 	if (!(userAgent.indexOf('iPhone') > 0 || userAgent.indexOf('iPad') > 0 || userAgent.indexOf('Android') > 0 || userAgent.indexOf('Mobile') > 0 )) {
-		// PCの場吁E
+		// PCの場合
 		$("body").css("width", "calc(100% - " + scrollbarWidth + "px)");
 		$("header").css("width", "calc(100% - " + scrollbarWidth + "px)");
 		$(".sub-header").css("width", "calc(100% - " + scrollbarWidth + "px)");
@@ -2033,7 +2041,7 @@ function set_scroll_hide_side_menu() {
 }
 
 /*
- * サイドメニューを閉じるとき�Ebodyのスクロールを有効にする、E
+ * サイドメニューを閉じるときのbodyのスクロールを有効にする。
  */
 function set_scroll_show_side_menu() {
 	let userAgent = navigator.userAgent;
@@ -2044,11 +2052,11 @@ function set_scroll_show_side_menu() {
 	$("body").css("overflow-y", "scroll");
 	$("body").css("position", "static");
 	$(".station-list-contents").css("position", "static");
-	// サイドメニューの表示がある場合�Eみ(他路線への移動�E場合�Eスクロールの移動を行わなぁE
+	// サイドメニューの表示がある場合のみ(他路線への移動の場合はスクロールの移動を行わない)
 	if (isSideMenuDisp) window.scrollTo(0, scrollY);
 
 	if (!(userAgent.indexOf('iPhone') > 0 || userAgent.indexOf('iPad') > 0 || userAgent.indexOf('Android') > 0 || userAgent.indexOf('Mobile') > 0 )) {
-		// PCの場吁E
+		// PCの場合
 		$("body").css("width", "100%");
 		$("header").css("width", "100%");
 		$(".sub-header").css("width", "calc(100% - " + width + "px)");
@@ -2063,11 +2071,11 @@ function set_scroll_show_side_menu() {
 }
 
 /*
- * タブ選択時の制御処琁E
+ * タブ選択時の制御処理
  */
 function tab_select(_str) {
 
-	// タブ�Eの折り畳みを閉じる、E
+	// タブ内の折り畳みを閉じる。
 	toggle_close();
 
 	if (_str == "Exp") {
@@ -2080,7 +2088,7 @@ function tab_select(_str) {
 }
 
 /*
- * タブ選択時の制御処琁E��リサイズ時！E
+ * タブ選択時の制御処理（リサイズ時）
  */
 function tab_select_resize(_str) {
 
@@ -2094,16 +2102,16 @@ function tab_select_resize(_str) {
 }
 
 /*
- * タブ�Eの折り畳みを閉じる、E
+ * タブ内の折り畳みを閉じる。
  */
 function toggle_close() {
 	// 特急リストをたたむ
 	$(".express-train-list").css("display", "none");
-	// 特急リスト�E見�Eし（三角）を初期匁E
+	// 特急リストの見出し（三角）を初期化
 	$(".express-name-label").removeClass("open");
-	// サイドメニューをたた�E
+	// サイドメニューをたたむ
 	$(".rosen-name-list").css("display", "none");
-	// サイドメニューの見�Eし（三角）を初期匁E
+	// サイドメニューの見出し（三角）を初期化
 	$(".area-name-label").removeClass("open");
 }
 
@@ -2111,7 +2119,7 @@ function toggle_close() {
  * ハッシュに保持した列車番号の列車が走行中か確認を行う
  */
 function ressha_run_check() {
-	// ローチE��ングアニメーションを表示
+	// ローディングアニメーションを表示
 	loading_animation_display();
 	$("body,html").scrollTop(0);
 
@@ -2119,7 +2127,7 @@ function ressha_run_check() {
 	let ressha = $("div[data-cbango='" + param_cbango + "']");
 	if (ressha.length > 0) {
 		let pos = ressha.offset().top - 260;
-		// リロードされた場合アニメーションを行わなぁE
+		// リロードされた場合アニメーションを行わない
 		if (!is_reload()) {
 			$("body,html").animate({scrollTop: pos});
 		} else {
@@ -2130,25 +2138,25 @@ function ressha_run_check() {
 		let html = "<img class='ressha-animation' src='./images/home/ressha_mark.svg' alt>"
 		ressha.append(html);
 
-		// 選択した�E車に赤枠をつけて強調する
+		// 選択した列車に赤枠をつけて強調する
 		set_ressha_icon_animation();
 
-		// ローチE��ングアニメーションを非表示にする
+		// ローディングアニメーションを非表示にする
 		loading_animation_hidden();
 
 	} else {
-		// 現在表示中の路線を取征E
+		// 現在表示中の路線を取得
 		isNotInitDisp = true;
 		let rosen = get_param_rosen();
 		location.hash = "rosen=" + rosen;
-		// ペ�Eジの読み込みが終わってからダイアログ表示
+		// ページの読み込みが終わってからダイアログ表示
 		$("#oshiraseDetail").fadeIn("fast");
 		let lang = document.documentElement.dataset.lang;
-		if (lang == "ja") $("#oshiraseDetailMain .text").text("\u73fe\u5728\u306f\u3053\u306e\u5217\u8eca\u306e\u6642\u523b\u8868\u306e\u307f\u3067\u3059\u3002");
+		if (lang == "ja") $("#oshiraseDetailMain .text").text("現在はこの列車の営業時間外です。");
 		if (lang == "en") $("#oshiraseDetailMain .text").text("This train is not in operation now.");
-		if (lang == "tc") $("#oshiraseDetailMain .text").text("\u76ee\u524d\u50c5\u986f\u793a\u672c\u5217\u8eca\u7684\u6642\u523b\u8868\u3002");
-		if (lang == "sc") $("#oshiraseDetailMain .text").text("\u76ee\u524d\u4EC5\u663E\u793A\u672C\u5217\u8F66\u7684\u65F6\u523B\u8868\u3002");
-		if (lang == "kr") $("#oshiraseDetailMain .text").text("���E�� �E� �E��E��E�E�E����하�E� �E�지 �E�습�E�다.");
+		if (lang == "tc") $("#oshiraseDetailMain .text").text("現在非本列車營運時間。");
+		if (lang == "sc") $("#oshiraseDetailMain .text").text("现在非本列车营运时间。");
+		if (lang == "kr") $("#oshiraseDetailMain .text").text("현재 이 열차는 주행하고 있지 않습니다.");
 		set_scroll_hide($("#oshiraseDetail .dialog"));
 	}
 
@@ -2159,13 +2167,13 @@ function ressha_run_check() {
 		$("#localTab").show();
 		$("#expTab").show();
 		$("#sideMenu .side-menu-outer").hide();
-		// サイドメニュー冁E�E折り畳みを閉じる、E
+		// サイドメニュー内の折り畳みを閉じる。
 		toggle_close();
 	}
 }
 
 /*
- * ハッシュから路線を取征E
+ * ハッシュから路線を取得
  */
 function get_param_rosen() {
 	let params = location.hash.slice(1).split('&');
@@ -2176,7 +2184,7 @@ function get_param_rosen() {
 }
 
 /*
- * ハッシュからid�E�駁E��ー�E�を取征E
+ * ハッシュからid（駅キー）を取得
  */
 function get_param_id() {
 	let params = location.hash.slice(1).split('&');
@@ -2187,7 +2195,7 @@ function get_param_id() {
 }
 
 /*
- * ハッシュからcbangoを取征E
+ * ハッシュからcbangoを取得
  */
 function get_param_cbango() {
 	let params = location.hash.slice(1).split('&');
@@ -2198,7 +2206,8 @@ function get_param_cbango() {
 }
 
 /*
- * 列車検索ダイアログを�E期状態に戻ぁE */
+ * 列車検索ダイアログを初期状態に戻す
+ */
 function reset_train_search_dialog() {
 	$("#trainSearchNumberInput").val("");
 	$("#trainSearchNameNumberInput").val("");
@@ -2215,21 +2224,21 @@ function close_train_search_dialog() {
 }
 
 /*
- * 現在走行してぁE��ぁE�E車を選択した際のメチE��ージを表示する
+ * 現在走行していない列車を選択した際のメッセージを表示する
  */
 function show_train_not_running_message() {
 	$("#oshiraseDetail").fadeIn("fast");
 	let lang = document.documentElement.dataset.lang;
-	if (lang == "ja") $("#oshiraseDetailMain .text").text("\u3053\u306e\u5217\u8eca\u306f\u73fe\u5728\u8d70\u884c\u3057\u3066\u3044\u307e\u305b\u3093\u3002");
+	if (lang == "ja") $("#oshiraseDetailMain .text").text("この列車は現在走行していません。");
 	if (lang == "en") $("#oshiraseDetailMain .text").text("This train is not currently running.");
-	if (lang == "tc") $("#oshiraseDetailMain .text").text("\u672c\u5217\u8eca\u76ee\u524d\u672a\u884c\u99db\u3002");
-	if (lang == "sc") $("#oshiraseDetailMain .text").text("\u672c\u5217\u8f66\u76ee\u524d\u672a\u8fd0\u884c\u3002");
-	if (lang == "kr") $("#oshiraseDetailMain .text").text("�E� �E��E��E�E���E�� �E����하�E� �E�지 �E�습�E�다.");
+	if (lang == "tc") $("#oshiraseDetailMain .text").text("本列車目前未行駛。");
+	if (lang == "sc") $("#oshiraseDetailMain .text").text("本列车目前未运行。");
+	if (lang == "kr") $("#oshiraseDetailMain .text").text("이 열차는 현재 주행하고 있지 않습니다.");
 	set_scroll_hide($("#oshiraseDetail .dialog"));
 }
 
 /*
- * 列車検索チE�Eタを読み込む
+ * 列車検索データを読み込む
  */
 function find_train_search_result(cbango) {
 	if (!cachedTrainSearchData || !Array.isArray(cachedTrainSearchData.trains)) return undefined;
@@ -2314,7 +2323,7 @@ function load_train_search_data() {
 				const cbango = String(train.cbango).toUpperCase();
 				const daiya = daiyaMap.get(String(train.cbango));
 				const nameInfo = parse_train_name(daiya && daiya.name ? daiya.name : "");
-				const displayName = build_train_search_display_name(train, daiya, typeData, ekiData, !!expressCoreTrainMap.get(cbango));
+				const displayName = build_train_search_display_name(train, daiya, typeData, ekiData);
 				const targetRosen = normalizeMergedRosen(entry.rosen, nameInfo.baseName || displayName);
 				const candidate = {
 					"cbango": cbango,
@@ -2346,17 +2355,12 @@ function load_train_search_data() {
 				lang === "sc" ? expressNow.statusDetailSc :
 				lang === "kr" ? expressNow.statusDetailKr : ""
 			) : "";
-			const displayName = build_train_search_display_name({
-				"type": expressCoreTrain && typeof expressCoreTrain.type !== "undefined" ? String(expressCoreTrain.type) : (daiya && typeof daiya.type !== "undefined" ? String(daiya.type) : ""),
-				"shuEkiKey": daiya ? daiya.shuEkiKey : "",
-				"cbango": cbango
-			}, daiya, typeData, ekiData, !!expressCoreTrain);
 			trainMap.set(cbango, {
 				"cbango": cbango,
 				"type": expressCoreTrain && typeof expressCoreTrain.type !== "undefined" ? String(expressCoreTrain.type) : (daiya && typeof daiya.type !== "undefined" ? String(daiya.type) : ""),
 				"value": "",
-				"name": displayName,
-				"status": "\\u3053\\u306e\\u5217\\u8eca\\u306f\\u73fe\\u5728\\u8d70\\u884c\\u3057\\u3066\\u3044\\u307e\\u305b\\u3093\\u3002",
+				"name": (daiya && daiya.name ? daiya.name : cbango),
+				"status": "この列車は現在走行していません。",
 				"baseName": nameInfo.baseName,
 				"goNumber": nameInfo.goNumber,
 				"hasCustomName": !!nameInfo.baseName,
@@ -2402,11 +2406,12 @@ function load_train_search_data() {
 }
 
 /*
- * 列車名プルダウンを構築すめE */
+ * 列車名プルダウンを構築する
+ */
 function populate_train_search_name_select(searchData) {
 	const select = $("#trainSearchNameSelect");
 	select.empty();
-	select.append($("<option>").val("").text("\u5217\u8eca\u540d\u3092\u9078\u629e"));
+	select.append($("<option>").val("").text("列車名を選択"));
 	if (searchData && Array.isArray(searchData.names)) {
 		searchData.names.forEach((name) => {
 			select.append($("<option>").val(name).text(name));
@@ -2415,11 +2420,11 @@ function populate_train_search_name_select(searchData) {
 }
 
 /*
- * 列車名と号数を�E解する
+ * 列車名と号数を分解する
  */
 function parse_train_name(name) {
 	const text = String(name || "")
-		.replace(/[�E�E�E�]/g, (char) => String.fromCharCode(char.charCodeAt(0) - 0xFEE0))
+		.replace(/[０-９]/g, (char) => String.fromCharCode(char.charCodeAt(0) - 0xFEE0))
 		.replace(/\u3000/g, " ")
 		.trim();
 	if (!text) return { "baseName": "", "goNumber": "" };
@@ -2432,25 +2437,24 @@ function parse_train_name(name) {
 }
 
 /*
- * 列車検索用の表示名を作�Eする
+ * 列車検索用の表示名を作成する
  */
-function build_train_search_display_name(train, daiya, typeData, ekiData, preferDaiyaName) {
-	if (preferDaiyaName && daiya && daiya.name) return daiya.name;
-	const lang = document.documentElement.dataset.lang;
-	const typeValue = daiya && typeof daiya.type !== "undefined" ? daiya.type : train.type;
-	const type = typeData.find((row) => String(row.type) == String(typeValue));
-	const typeName = type ? (type.typeText[lang] || type.typeText.ja || "") : "";
-	const destKey = (daiya && daiya.shuEkiKey) || train.shuEkiKey;
-	const dest = ekiData.find((row) => row.key == destKey);
-	const destName = dest ? (dest[lang] || dest.ja || "") : "";
-	const displayName = (typeName + (destName ? " " + destName + "\u884C" : "")).trim();
-	if (displayName) return displayName;
+function build_train_search_display_name(train, daiya, typeData, ekiData) {
 	if (daiya && daiya.name) return daiya.name;
-	return String(train.cbango || "");
+	const lang = document.documentElement.dataset.lang;
+	const type = typeData.find((row) => String(row.type) == String(train.type));
+	let typeName = "";
+	if (type) {
+		typeName = type.type === 8 ? "快速" : (type.typeText[lang] || type.typeText.ja || "");
+	}
+	const dest = ekiData.find((row) => row.key == train.shuEkiKey);
+	const destName = dest ? (dest[lang] || dest.ja || "") : "";
+	return (typeName + (destName ? " " + destName + "行" : "")).trim() || String(train.cbango || "");
 }
 
 /*
- * HTMLエスケーチE */
+ * HTMLエスケープ
+ */
 function escape_train_search_html(text) {
 	return String(text || "")
 		.replace(/&/g, "&amp;")
@@ -2467,17 +2471,17 @@ function run_train_number_search() {
 	const digits = $("#trainSearchNumberInput").val().replace(/[^\d]/g, "");
 	const suffix = ($("#trainSearchSuffixSelect").val() || "D").toUpperCase();
 	if (!digits) {
-		render_train_search_results([], "\u5217\u756a\u3092\u5165\u529b\u3057\u3066\u304f\u3060\u3055\u3044\u3002", "\u5217\u756a\u3092\u5165\u529b\u3057\u3066\u304f\u3060\u3055\u3044\u3002");
+		render_train_search_results([], "列番を入力してください。", "列番を入力してください。");
 		return;
 	}
 	const keyword = digits + suffix;
 	load_train_search_data()
 		.then((searchData) => {
 			const results = searchData.trains.filter(train => train.cbango.toUpperCase() === keyword);
-			render_train_search_results(results, "\u691c\u7d22\u7d50\u679c");
+			render_train_search_results(results, "検索結果");
 		})
 		.catch(() => {
-			render_train_search_results([], "\u691c\u7d22\u30c7\u30fc\u30bf\u3092\u53d6\u5f97\u3067\u304d\u307e\u305b\u3093\u3067\u3057\u305f\u3002", "\u691c\u7d22\u30c7\u30fc\u30bf\u3092\u53d6\u5f97\u3067\u304d\u307e\u305b\u3093\u3067\u3057\u305f\u3002");
+			render_train_search_results([], "検索データを取得できませんでした。", "検索データを取得できませんでした。");
 		});
 }
 
@@ -2488,7 +2492,7 @@ function run_train_name_search() {
 	const selectedName = $("#trainSearchNameSelect").val();
 	const goNumber = $("#trainSearchNameNumberInput").val().replace(/[^\d]/g, "");
 	if (!selectedName) {
-		render_train_search_results([], "\u5217\u8eca\u540d\u3092\u9078\u629e\u3057\u3066\u304f\u3060\u3055\u3044\u3002", "\u5217\u8eca\u540d\u3092\u9078\u629e\u3057\u3066\u304f\u3060\u3055\u3044\u3002");
+		render_train_search_results([], "列車名を選択してください。", "列車名を選択してください。");
 		return;
 	}
 	load_train_search_data()
@@ -2498,15 +2502,15 @@ function run_train_name_search() {
 				if (!goNumber) return true;
 				return train.goNumber === goNumber;
 			});
-			render_train_search_results(results, "\u691c\u7d22\u7d50\u679c");
+			render_train_search_results(results, "検索結果");
 		})
 		.catch(() => {
-			render_train_search_results([], "\u691c\u7d22\u30c7\u30fc\u30bf\u3092\u53d6\u5f97\u3067\u304d\u307e\u305b\u3093\u3067\u3057\u305f\u3002", "\u691c\u7d22\u30c7\u30fc\u30bf\u3092\u53d6\u5f97\u3067\u304d\u307e\u305b\u3093\u3067\u3057\u305f\u3002");
+			render_train_search_results([], "検索データを取得できませんでした。", "検索データを取得できませんでした。");
 		});
 }
 
 /*
- * 検索用斁E���Eを正規化
+ * 検索用文字列を正規化
  */
 function normalize_train_search_text(text) {
 	return String(text || "").toLowerCase().replace(/[\s\u3000]+/g, "");
@@ -2518,7 +2522,7 @@ function normalize_train_search_text(text) {
 function render_train_search_results(results, headerText, emptyMessage) {
 	$("#trainSearchResultInfo").text(headerText || "");
 	if (!results.length) {
-		$("#trainSearchResult").html("<div class='train-search-empty'>" + (emptyMessage || "\u8a72\u5f53\u3059\u308b\u5217\u8eca\u306f\u3042\u308a\u307e\u305b\u3093\u3002") + "</div>");
+		$("#trainSearchResult").html("<div class='train-search-empty'>" + (emptyMessage || "該当する列車はありません。") + "</div>");
 		return;
 	}
 	let html = "";
@@ -2528,31 +2532,31 @@ function render_train_search_results(results, headerText, emptyMessage) {
 		html += "<span class='search-result-cbango'>" + escape_train_search_html(train.cbango) + "</span>";
 		html += "<span class='train-name'>" + escape_train_search_html(train.name) + "</span>";
 		html += "</div>";
-		html += "<span class='unkou-label" + (train.status && train.status.indexOf("遁E��") >= 0 ? " chien" : "") + "'>" + escape_train_search_html(train.status || "") + "</span>";
+		html += "<span class='unkou-label" + (train.status && train.status.indexOf("遅れ") >= 0 ? " chien" : "") + "'>" + escape_train_search_html(train.status || "") + "</span>";
 		html += "</div>";
 	});
 	$("#trainSearchResult").html(html);
 }
 
 /*
- * rosen_xx.htmlに表記された地点コード�E頁E��列車アイコンの表示を並び替える
+ * rosen_xx.htmlに表記された地点コードの順に列車アイコンの表示を並び替える
  */
 function ressha_pos_sort() {
 	let resshaIconArray =  Array.from($("#stationList .ressha-icon"));
-	// 列車が2つ以上ある地点を取征E
+	// 列車が2つ以上ある地点を取得
 	let result = resshaIconArray.filter((v) => v.childElementCount > 1);
 	result.forEach(posArea => {
-		// 並び替える基準となる地点コードをclassから取征E
+		// 並び替える基準となる地点コードをclassから取得
 		let sortArray = Array.from(posArea.classList);
-		// 並び替える対象の列車を取征E
+		// 並び替える対象の列車を取得
 		let resshaArray =Array.from(posArea.childNodes);
 		resshaArray.sort((a, b) => sortArray.indexOf(a.dataset.pos) - sortArray.indexOf(b.dataset.pos));
-		// 下向き�E車アイコンの並び替ぁE
+		// 下向き列車アイコンの並び替え
 		resshaArray.filter((v) => v.className == "dummy").forEach(row => {
 			resshaArray = resshaArray.splice(1);
 			resshaArray.splice(2, 0, row);
 		});
-		// 列車を並び替え後�Eも�Eに置き換える
+		// 列車を並び替え後のものに置き換える
 		while(posArea.firstChild) {
 			posArea.removeChild(posArea.firstChild);
 		}
@@ -2563,7 +2567,7 @@ function ressha_pos_sort() {
 }
 
 /*
- * ペ�Eジの最後が駁E��終わってぁE��路線！E8、E3�E�でサブフチE��ーの表示があった場合、下に余白を追加する
+ * ページの最後が駅で終わっている路線（08、13）でサブフッターの表示があった場合、下に余白を追加する
  */
 function eki_end_margin() {
 	if ($(".sub-footer").height() <= 0) return;
@@ -2582,24 +2586,22 @@ function eki_end_margin() {
 		}
 	}
 	if (paramRosen == "13") {
-		// 表示対象外エリアにサブフチE��ー刁E�E余白を追加する
+		// 表示対象外エリアにサブフッター分の余白を追加する
 		$(".eki-panel.non-service-area .hirendo-contents").css("padding", "8px 0 " + marginHeight + "px 0");
 	}
 }
 
 /*
- * 画面更新判定�E琁E
+ * 画面更新判定処理
  */
 function is_reload() {
 	if (window.performance) {
 		if (window.performance.getEntriesByType('navigation').length) {
 			if (window.performance.getEntriesByType('navigation')[0].type === 'reload') {
-				// 更新晁E
+				// 更新時
 				return true;
 			}
 		}
 	}
 	return false;
 }
-
-
