@@ -2255,7 +2255,7 @@ function load_train_search_data() {
 	const mstNow = Date.now() >>> 16;
 	const trnNow = Date.now() >>> 10;
 	const searchSourceRosens = ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15"];
-	const daiyaUrl = "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/webunkou/json/daiya/daiya_00" + (lang === "ja" ? "" : "_" + lang) + ".json?" + mstNow;
+	const daiyaSourceSenkus = ["00"].concat(searchSourceRosens);
 	const expressMasterPromise = jqxhr_to_promise($.getJSON("https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/webunkou/json/master/express_master.json?" + mstNow));
 	const expressCorePromise = jqxhr_to_promise($.getJSON("https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/trainlocation/json/express/core/express_core.json?" + mstNow));
 	const expressNowPromise = jqxhr_to_promise($.getJSON("https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/trainlocation/json/express/now/express_now.json?" + trnNow))
@@ -2267,27 +2267,38 @@ function load_train_search_data() {
 			.then((data) => ({ "rosen": rosen, "data": data }))
 			.catch(() => null)
 	);
+	const daiyaPromises = daiyaSourceSenkus.map((senku) =>
+		jqxhr_to_promise($.getJSON("https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/webunkou/json/daiya/daiya_" + senku + (lang === "ja" ? "" : "_" + lang) + ".json?" + mstNow))
+			.then((data) => ({ "senku": senku, "data": data }))
+			.catch(() => null)
+	);
 
 	trainSearchDataPromise = Promise.all([
-		jqxhr_to_promise($.getJSON(daiyaUrl)),
 		expressMasterPromise,
 		expressCorePromise,
 		expressNowPromise,
 		typePromise,
 		ekiPromise,
+		Promise.all(daiyaPromises),
 		Promise.all(locationPromises)
-	]).then(([daiyaData, expressMaster, expressCore, expressNowData, typeData, ekiData, locationDataList]) => {
+	]).then(([expressMaster, expressCore, expressNowData, typeData, ekiData, daiyaDataList, locationDataList]) => {
 		cachedResshaTypeData = typeData;
 		cachedEkiData = ekiData;
 		const daiyaMap = new Map();
 		const expressNowMap = new Map();
 		const expressCoreTrainMap = new Map();
-		if (daiyaData && Array.isArray(daiyaData.today)) {
-			daiyaData.today.forEach((row) => {
+		daiyaDataList.filter(Boolean).forEach((entry) => {
+			if (!entry.data || !Array.isArray(entry.data.today)) return;
+			entry.data.today.forEach((row) => {
 				if (!row || !row.cbango) return;
-				daiyaMap.set(String(row.cbango), row);
+				const cbango = String(row.cbango);
+				const current = daiyaMap.get(cbango);
+				const candidate = Object.assign({ "senku": entry.senku }, row);
+				if (!current || (!current.name && candidate.name) || (current.senku !== "00" && candidate.senku === "00")) {
+					daiyaMap.set(cbango, candidate);
+				}
 			});
-		}
+		});
 		if (expressNowData && Array.isArray(expressNowData.trains)) {
 			expressNowData.trains.forEach((train) => {
 				if (!train || !train.cbango) return;
