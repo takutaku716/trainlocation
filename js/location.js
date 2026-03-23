@@ -426,19 +426,20 @@ $(function ($) {
 		.done((daiyaBase, expressNowBase) => {
 			// 対象の列車の運行情報を取得する。
 			const expressNow = expressNowBase[0].trains.find(train => train.cbango === cbango);
+			const targetRosen = normalizeMergedRosen(expressNow.runRosen, $(this).find(".train-name").text());
 			// 対象の列車に有効な路線キーが設定されている場合は、当該路線ページの該当列車位置に遷移する。
-			if (expressNow.runRosen) {
+			if (targetRosen) {
 				// 現在表示している路線を取得する。
 				const currentRosen = get_param_rosen();
 				// 現在hashに設定している列車番号を取得する。
 				const currentCbango = get_param_cbango();
-				if (currentRosen === expressNow.runRosen && currentCbango === cbango) {
+				if (currentRosen === targetRosen && currentCbango === cbango) {
 					// 表示中の路線／列車番号と遷移先の路線／列車番号が同じ場合であれば、画面表示処理を呼び出す。
 					init_disp();
 
 				} else {
 					// 別の路線／列車番号であれば、ハッシュを選択した路線／列車番号に変更する。
-					location.hash = "rosen=" + expressNow.runRosen + "&cbango=" + cbango;
+					location.hash = "rosen=" + targetRosen + "&cbango=" + cbango;
 				}
 				return;
 			}

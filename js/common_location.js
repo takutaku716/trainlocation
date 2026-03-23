@@ -146,7 +146,7 @@ function createSideExpressList(onLabelClickEvent) {
 				const nowTrainInfo = nowData.trains.find(train => train.cbango === coreTrainInfo.cbango);
 				if (nowTrainInfo) {
 					// 走行路線を設定する。
-					$(trainElement).attr("value", nowTrainInfo.runRosen);
+					$(trainElement).attr("value", normalizeMergedRosen(nowTrainInfo.runRosen, coreTrainInfo.name[lang]));
 					// 運行状況を設定する。
 					$(trainElement).find(".unkou-label").text(getTrainChienText(nowTrainInfo));
 					// 5分以上の遅れがある場合は、遅延時のスタイルを適用する。
@@ -166,6 +166,25 @@ function createSideExpressList(onLabelClickEvent) {
 		$('#message').html(errormessage);
 		$('#message').show();
 	});
+}
+
+/**
+ * 結合表示用の路線コードへ正規化する。
+ * @param runRosen 列車運行情報の路線コード。
+ * @param trainName 列車名。
+ * @return 遷移先として使用する路線コード。
+ */
+function normalizeMergedRosen(runRosen, trainName) {
+	if (!runRosen) return runRosen;
+	if (["51", "01", "05"].includes(runRosen)) return "51";
+	if (["52", "07", "09"].includes(runRosen)) return "52";
+	if (["53", "13"].includes(runRosen)) return "53";
+	if (runRosen !== "02") return runRosen;
+
+	const expressName = String(trainName || "").toLowerCase();
+	if (/(おおぞら|とかち|oozora|tokachi)/.test(expressName)) return "53";
+	if (/(北斗|すずらん|hokuto|suzuran)/.test(expressName)) return "52";
+	return "52";
 }
 
 /**
