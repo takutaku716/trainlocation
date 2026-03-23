@@ -346,7 +346,12 @@ $(function ($) {
 		event.stopImmediatePropagation();
 		const targetRosen = $(this).attr("value");
 		const cbango = $(this).attr("cbango");
+		const isRunning = $(this).attr("data-running") !== "0";
 		close_train_search_dialog();
+		if (!isRunning) {
+			show_train_not_running_message();
+			return;
+		}
 		if (!targetRosen || !cbango) return;
 		const currentRosen = get_param_rosen();
 		const currentCbango = get_param_cbango();
@@ -2214,6 +2219,20 @@ function close_train_search_dialog() {
 }
 
 /*
+ * 現在走行していない列車を選択した際のメッセージを表示する
+ */
+function show_train_not_running_message() {
+	$("#oshiraseDetail").fadeIn("fast");
+	let lang = document.documentElement.dataset.lang;
+	if (lang == "ja") $("#oshiraseDetailMain .text").text("この列車は現在走行していません。");
+	if (lang == "en") $("#oshiraseDetailMain .text").text("This train is not currently running.");
+	if (lang == "tc") $("#oshiraseDetailMain .text").text("本列車目前未行駛。");
+	if (lang == "sc") $("#oshiraseDetailMain .text").text("本列车目前未运行。");
+	if (lang == "kr") $("#oshiraseDetailMain .text").text("이 열차는 현재 주행하고 있지 않습니다.");
+	set_scroll_hide($("#oshiraseDetail .dialog"));
+}
+
+/*
  * 列車検索データを読み込む
  */
 function load_train_search_data() {
@@ -2273,12 +2292,29 @@ function load_train_search_data() {
 					"status": getTrainChienText(train),
 					"baseName": nameInfo.baseName,
 					"goNumber": nameInfo.goNumber,
-					"hasCustomName": !!nameInfo.baseName
+					"hasCustomName": !!nameInfo.baseName,
+					"isRunning": true
 				};
 				const current = trainMap.get(cbango);
 				if (!current || (!current.hasCustomName && candidate.hasCustomName)) {
 					trainMap.set(cbango, candidate);
 				}
+			});
+		});
+		daiyaMap.forEach((daiya, cbangoKey) => {
+			const cbango = String(cbangoKey).toUpperCase();
+			if (trainMap.has(cbango)) return;
+			const nameInfo = parse_train_name(daiya && daiya.name ? daiya.name : "");
+			trainMap.set(cbango, {
+				"cbango": cbango,
+				"type": daiya && typeof daiya.type !== "undefined" ? String(daiya.type) : "",
+				"value": "",
+				"name": (daiya && daiya.name ? daiya.name : cbango),
+				"status": "この列車は現在走行していません。",
+				"baseName": nameInfo.baseName,
+				"goNumber": nameInfo.goNumber,
+				"hasCustomName": !!nameInfo.baseName,
+				"isRunning": false
 			});
 		});
 		const trains = Array.from(trainMap.values()).sort((a, b) => a.cbango.localeCompare(b.cbango, "ja"));
@@ -2427,7 +2463,7 @@ function render_train_search_results(results, headerText, emptyMessage) {
 	}
 	let html = "";
 	results.forEach(train => {
-		html += "<div class='express-train-contents train-search-result-item' cbango='" + escape_train_search_html(train.cbango) + "' type='" + escape_train_search_html(train.type) + "' value='" + escape_train_search_html(train.value) + "'>";
+		html += "<div class='express-train-contents train-search-result-item' cbango='" + escape_train_search_html(train.cbango) + "' type='" + escape_train_search_html(train.type) + "' value='" + escape_train_search_html(train.value) + "' data-running='" + (train.isRunning === false ? "0" : "1") + "'>";
 		html += "<div class='search-result-main'>";
 		html += "<span class='search-result-cbango'>" + escape_train_search_html(train.cbango) + "</span>";
 		html += "<span class='train-name'>" + escape_train_search_html(train.name) + "</span>";
