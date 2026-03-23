@@ -2323,7 +2323,7 @@ function load_train_search_data() {
 				const cbango = String(train.cbango).toUpperCase();
 				const daiya = daiyaMap.get(String(train.cbango));
 				const nameInfo = parse_train_name(daiya && daiya.name ? daiya.name : "");
-				const displayName = build_train_search_display_name(train, daiya, typeData, ekiData);
+				const displayName = build_train_search_display_name(train, daiya, typeData, ekiData, !!expressCoreTrainMap.get(cbango));
 				const targetRosen = normalizeMergedRosen(entry.rosen, nameInfo.baseName || displayName);
 				const candidate = {
 					"cbango": cbango,
@@ -2355,11 +2355,16 @@ function load_train_search_data() {
 				lang === "sc" ? expressNow.statusDetailSc :
 				lang === "kr" ? expressNow.statusDetailKr : ""
 			) : "";
+			const displayName = build_train_search_display_name({
+				"type": expressCoreTrain && typeof expressCoreTrain.type !== "undefined" ? String(expressCoreTrain.type) : (daiya && typeof daiya.type !== "undefined" ? String(daiya.type) : ""),
+				"shuEkiKey": daiya ? daiya.shuEkiKey : "",
+				"cbango": cbango
+			}, daiya, typeData, ekiData, !!expressCoreTrain);
 			trainMap.set(cbango, {
 				"cbango": cbango,
 				"type": expressCoreTrain && typeof expressCoreTrain.type !== "undefined" ? String(expressCoreTrain.type) : (daiya && typeof daiya.type !== "undefined" ? String(daiya.type) : ""),
 				"value": "",
-				"name": (daiya && daiya.name ? daiya.name : cbango),
+				"name": displayName,
 				"status": "この列車は現在走行していません。",
 				"baseName": nameInfo.baseName,
 				"goNumber": nameInfo.goNumber,
@@ -2439,16 +2444,23 @@ function parse_train_name(name) {
 /*
  * 列車検索用の表示名を作成する
  */
-function build_train_search_display_name(train, daiya, typeData, ekiData) {
-	if (daiya && daiya.name) return daiya.name;
+function build_train_search_display_name(train, daiya, typeData, ekiData, preferDaiyaName) {
+	if (preferDaiyaName && daiya && daiya.name) return daiya.name;
 	const lang = document.documentElement.dataset.lang;
-	const type = typeData.find((row) => String(row.type) == String(train.type));
+	const typeValue = daiya && typeof daiya.type !== "undefined" ? daiya.type : train.type;
+	const type = typeData.find((row) => String(row.type) == String(typeValue));
 	let typeName = "";
 	if (type) {
 		typeName = type.type === 8 ? "快速" : (type.typeText[lang] || type.typeText.ja || "");
 	}
-	const dest = ekiData.find((row) => row.key == train.shuEkiKey);
+	const destKey = (daiya && daiya.shuEkiKey) || train.shuEkiKey;
+	const dest = ekiData.find((row) => row.key == destKey);
 	const destName = dest ? (dest[lang] || dest.ja || "") : "";
+	const fixedDisplayName = (typeName + (destName ? " " + destName + "\u884C" : "")).trim();
+	if (fixedDisplayName) return fixedDisplayName;
+	const displayName = (typeName + (destName ? " " + destName + "陦・ : "")).trim();
+	if (displayName) return displayName;
+	if (daiya && daiya.name) return daiya.name;
 	return (typeName + (destName ? " " + destName + "行" : "")).trim() || String(train.cbango || "");
 }
 
