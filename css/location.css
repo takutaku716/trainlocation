@@ -2535,11 +2535,17 @@ section#trainSearchDetail {
 				min-width: 0;
 			}
 			section#trainSearchDetail .dialog .train-search-controls select {
-				width: 80px;
+				width: 130px;
 			}
 			section#trainSearchDetail .dialog .train-search-controls .common-button {
 				min-width: 82px;
 				padding: 8px 14px;
+			}
+			section#trainSearchDetail .dialog #trainSearchNameSelect {
+				flex: 1;
+			}
+			section#trainSearchDetail .dialog #trainSearchNameNumberInput {
+				width: 90px;
 			}
 			section#trainSearchDetail .dialog .train-search-result-info {
 				font-size: 14px;
