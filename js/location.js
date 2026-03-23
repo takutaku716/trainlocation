@@ -426,7 +426,7 @@ $(function ($) {
 		.done((daiyaBase, expressNowBase) => {
 			// 対象の列車の運行情報を取得する。
 			const expressNow = expressNowBase[0].trains.find(train => train.cbango === cbango);
-			const targetRosen = normalizeMergedRosen(expressNow.runRosen, $(this).find(".train-name").text());
+			const targetRosen = $(this).attr("value") || normalizeMergedRosen(expressNow.runRosen, $(this).find(".train-name").text());
 			// 対象の列車に有効な路線キーが設定されている場合は、当該路線ページの該当列車位置に遷移する。
 			if (targetRosen) {
 				// 現在表示している路線を取得する。
