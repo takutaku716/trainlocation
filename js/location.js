@@ -203,11 +203,11 @@ $(function ($) {
 		$("#expTab").hide();
 		$("#sideMenu .side-menu .area-contents-header").show();
 		$("#sideMenu .side-menu-outer").show();
-		if (lang == "ja") $("#sideHeader").text("路線選抁E);
+		if (lang == "ja") $("#sideHeader").text("\u8def\u7dda\u3092\u9078\u629e");
 		if (lang == "en") $("#sideHeader").text("Select a line");
-		if (lang == "tc") $("#sideHeader").text("選擁E��緁E);
+		if (lang == "tc") $("#sideHeader").text("\u9078\u64c7\u8def\u7dda");
 		if (lang == "sc") $("#sideHeader").text("选择路线");
-		if (lang == "kr") $("#sideHeader").text("�E��E� �E����E);
+		if (lang == "kr") $("#sideHeader").text("\uB178\uC120 \uC120\uD0DD");
 		// bodyのスクロールを無効にする、E
 		set_scroll_hide_side_menu();
 	});
@@ -221,11 +221,11 @@ $(function ($) {
 		$("#expTab").show();
 		$("#sideMenu .side-menu .area-contents-header").show();
 		$("#sideMenu .side-menu-outer").show();
-		if (lang == "ja") $("#sideHeader").text("特急列車選抁E);
+		if (lang == "ja") $("#sideHeader").text("\u7279\u6025\u5217\u8eca\u3092\u9078\u629e");
 		if (lang == "en") $("#sideHeader").text("Select a limited express");
-		if (lang == "tc") $("#sideHeader").text("選擁E��急列軁E);
+		if (lang == "tc") $("#sideHeader").text("\u9078\u64c7\u7279\u6025\u5217\u8eca");
 		if (lang == "sc") $("#sideHeader").text("选择特急列车");
-		if (lang == "kr") $("#sideHeader").text("����E�열�E� �E����E);
+		if (lang == "kr") $("#sideHeader").text("\uD2B9\uAE09 \uC5F4\uCC28 \uC120\uD0DD");
 		// bodyのスクロールを無効にする、E
 		set_scroll_hide_side_menu();
 	});
@@ -250,7 +250,7 @@ $(function ($) {
 		reset_train_search_dialog();
 		$("#trainSearchDetail").fadeIn("fast");
 		set_scroll_hide($("#trainSearchDetail .dialog"));
-		$("#trainSearchResultInfo").text("読み込み中...");
+		$("#trainSearchResultInfo").text("\u8aad\u307f\u8fbc\u307f\u4e2d...");
 		load_train_search_data()
 			.then((searchData) => {
 				populate_train_search_name_select(searchData);
@@ -258,7 +258,7 @@ $(function ($) {
 				$("#trainSearchNumberInput").trigger("focus");
 			})
 			.catch(() => {
-				$("#trainSearchResultInfo").text("検索チE�Eタを取得できませんでした、E);
+				$("#trainSearchResultInfo").text("\u691c\u7d22\u30c7\u30fc\u30bf\u3092\u53d6\u5f97\u3067\u304d\u307e\u305b\u3093\u3067\u3057\u305f\u3002");
 			});
 	});
 
@@ -2144,10 +2144,10 @@ function ressha_run_check() {
 		// ペ�Eジの読み込みが終わってからダイアログ表示
 		$("#oshiraseDetail").fadeIn("fast");
 		let lang = document.documentElement.dataset.lang;
-		if (lang == "ja") $("#oshiraseDetailMain .text").text("現在はこ�E列車�E営業時間外です、E);
+		if (lang == "ja") $("#oshiraseDetailMain .text").text("\u73fe\u5728\u306f\u3053\u306e\u5217\u8eca\u306e\u6642\u523b\u8868\u306e\u307f\u3067\u3059\u3002");
 		if (lang == "en") $("#oshiraseDetailMain .text").text("This train is not in operation now.");
-		if (lang == "tc") $("#oshiraseDetailMain .text").text("現在非本列車�E運時間、E);
-		if (lang == "sc") $("#oshiraseDetailMain .text").text("现在非本列车营运时间、E);
+		if (lang == "tc") $("#oshiraseDetailMain .text").text("\u76ee\u524d\u50c5\u986f\u793a\u672c\u5217\u8eca\u7684\u6642\u523b\u8868\u3002");
+		if (lang == "sc") $("#oshiraseDetailMain .text").text("\u76ee\u524d\u4EC5\u663E\u793A\u672C\u5217\u8F66\u7684\u65F6\u523B\u8868\u3002");
 		if (lang == "kr") $("#oshiraseDetailMain .text").text("���E�� �E� �E��E��E�E�E����하�E� �E�지 �E�습�E�다.");
 		set_scroll_hide($("#oshiraseDetail .dialog"));
 	}
@@ -2220,10 +2220,10 @@ function close_train_search_dialog() {
 function show_train_not_running_message() {
 	$("#oshiraseDetail").fadeIn("fast");
 	let lang = document.documentElement.dataset.lang;
-	if (lang == "ja") $("#oshiraseDetailMain .text").text("こ�E列車�E現在走行してぁE��せん、E);
+	if (lang == "ja") $("#oshiraseDetailMain .text").text("\u3053\u306e\u5217\u8eca\u306f\u73fe\u5728\u8d70\u884c\u3057\u3066\u3044\u307e\u305b\u3093\u3002");
 	if (lang == "en") $("#oshiraseDetailMain .text").text("This train is not currently running.");
-	if (lang == "tc") $("#oshiraseDetailMain .text").text("本列車目前未行駛、E);
-	if (lang == "sc") $("#oshiraseDetailMain .text").text("本列车目前未运行、E);
+	if (lang == "tc") $("#oshiraseDetailMain .text").text("\u672c\u5217\u8eca\u76ee\u524d\u672a\u884c\u99db\u3002");
+	if (lang == "sc") $("#oshiraseDetailMain .text").text("\u672c\u5217\u8f66\u76ee\u524d\u672a\u8fd0\u884c\u3002");
 	if (lang == "kr") $("#oshiraseDetailMain .text").text("�E� �E��E��E�E���E�� �E����하�E� �E�지 �E�습�E�다.");
 	set_scroll_hide($("#oshiraseDetail .dialog"));
 }
@@ -2356,7 +2356,7 @@ function load_train_search_data() {
 				"type": expressCoreTrain && typeof expressCoreTrain.type !== "undefined" ? String(expressCoreTrain.type) : (daiya && typeof daiya.type !== "undefined" ? String(daiya.type) : ""),
 				"value": "",
 				"name": displayName,
-				"status": "こ�E列車�E現在走行してぁE��せん、E,
+				"status": "\\u3053\\u306e\\u5217\\u8eca\\u306f\\u73fe\\u5728\\u8d70\\u884c\\u3057\\u3066\\u3044\\u307e\\u305b\\u3093\\u3002",
 				"baseName": nameInfo.baseName,
 				"goNumber": nameInfo.goNumber,
 				"hasCustomName": !!nameInfo.baseName,
@@ -2406,7 +2406,7 @@ function load_train_search_data() {
 function populate_train_search_name_select(searchData) {
 	const select = $("#trainSearchNameSelect");
 	select.empty();
-	select.append($("<option>").val("").text("列車名を選抁E));
+	select.append($("<option>").val("").text("\u5217\u8eca\u540d\u3092\u9078\u629e"));
 	if (searchData && Array.isArray(searchData.names)) {
 		searchData.names.forEach((name) => {
 			select.append($("<option>").val(name).text(name));
@@ -2467,17 +2467,17 @@ function run_train_number_search() {
 	const digits = $("#trainSearchNumberInput").val().replace(/[^\d]/g, "");
 	const suffix = ($("#trainSearchSuffixSelect").val() || "D").toUpperCase();
 	if (!digits) {
-		render_train_search_results([], "列番を�E力してください、E, "列番を�E力してください、E);
+		render_train_search_results([], "\u5217\u756a\u3092\u5165\u529b\u3057\u3066\u304f\u3060\u3055\u3044\u3002", "\u5217\u756a\u3092\u5165\u529b\u3057\u3066\u304f\u3060\u3055\u3044\u3002");
 		return;
 	}
 	const keyword = digits + suffix;
 	load_train_search_data()
 		.then((searchData) => {
 			const results = searchData.trains.filter(train => train.cbango.toUpperCase() === keyword);
-			render_train_search_results(results, "検索結果");
+			render_train_search_results(results, "\u691c\u7d22\u7d50\u679c");
 		})
 		.catch(() => {
-			render_train_search_results([], "検索チE�Eタを取得できませんでした、E, "検索チE�Eタを取得できませんでした、E);
+			render_train_search_results([], "\u691c\u7d22\u30c7\u30fc\u30bf\u3092\u53d6\u5f97\u3067\u304d\u307e\u305b\u3093\u3067\u3057\u305f\u3002", "\u691c\u7d22\u30c7\u30fc\u30bf\u3092\u53d6\u5f97\u3067\u304d\u307e\u305b\u3093\u3067\u3057\u305f\u3002");
 		});
 }
 
@@ -2488,7 +2488,7 @@ function run_train_name_search() {
 	const selectedName = $("#trainSearchNameSelect").val();
 	const goNumber = $("#trainSearchNameNumberInput").val().replace(/[^\d]/g, "");
 	if (!selectedName) {
-		render_train_search_results([], "列車名を選択してください、E, "列車名を選択してください、E);
+		render_train_search_results([], "\u5217\u8eca\u540d\u3092\u9078\u629e\u3057\u3066\u304f\u3060\u3055\u3044\u3002", "\u5217\u8eca\u540d\u3092\u9078\u629e\u3057\u3066\u304f\u3060\u3055\u3044\u3002");
 		return;
 	}
 	load_train_search_data()
@@ -2498,10 +2498,10 @@ function run_train_name_search() {
 				if (!goNumber) return true;
 				return train.goNumber === goNumber;
 			});
-			render_train_search_results(results, "検索結果");
+			render_train_search_results(results, "\u691c\u7d22\u7d50\u679c");
 		})
 		.catch(() => {
-			render_train_search_results([], "検索チE�Eタを取得できませんでした、E, "検索チE�Eタを取得できませんでした、E);
+			render_train_search_results([], "\u691c\u7d22\u30c7\u30fc\u30bf\u3092\u53d6\u5f97\u3067\u304d\u307e\u305b\u3093\u3067\u3057\u305f\u3002", "\u691c\u7d22\u30c7\u30fc\u30bf\u3092\u53d6\u5f97\u3067\u304d\u307e\u305b\u3093\u3067\u3057\u305f\u3002");
 		});
 }
 
@@ -2518,7 +2518,7 @@ function normalize_train_search_text(text) {
 function render_train_search_results(results, headerText, emptyMessage) {
 	$("#trainSearchResultInfo").text(headerText || "");
 	if (!results.length) {
-		$("#trainSearchResult").html("<div class='train-search-empty'>" + (emptyMessage || "該当する�E車�Eありません、E) + "</div>");
+		$("#trainSearchResult").html("<div class='train-search-empty'>" + (emptyMessage || "\u8a72\u5f53\u3059\u308b\u5217\u8eca\u306f\u3042\u308a\u307e\u305b\u3093\u3002") + "</div>");
 		return;
 	}
 	let html = "";
