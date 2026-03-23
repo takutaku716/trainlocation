@@ -349,6 +349,11 @@ $(function ($) {
 		const isRunning = $(this).attr("data-running") !== "0";
 		close_train_search_dialog();
 		if (!isRunning) {
+			const searchTrain = find_train_search_result(cbango);
+			if (searchTrain && searchTrain.detailTrain) {
+				showTrainDetailDialog($("#trainDetail"), searchTrain.detailTrain);
+				return;
+			}
 			show_train_not_running_message();
 			return;
 		}
@@ -2235,6 +2240,11 @@ function show_train_not_running_message() {
 /*
  * 列車検索データを読み込む
  */
+function find_train_search_result(cbango) {
+	if (!cachedTrainSearchData || !Array.isArray(cachedTrainSearchData.trains)) return undefined;
+	return cachedTrainSearchData.trains.find((train) => train.cbango === String(cbango || "").toUpperCase());
+}
+
 function load_train_search_data() {
 	if (cachedTrainSearchData && (Date.now() - cachedTrainSearchLoadedAt) < TRAIN_SEARCH_CACHE_TTL) {
 		return Promise.resolve(cachedTrainSearchData);
@@ -2248,6 +2258,8 @@ function load_train_search_data() {
 	const daiyaUrl = "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/webunkou/json/daiya/daiya_00" + (lang === "ja" ? "" : "_" + lang) + ".json?" + mstNow;
 	const expressMasterPromise = jqxhr_to_promise($.getJSON("https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/webunkou/json/master/express_master.json?" + mstNow));
 	const expressCorePromise = jqxhr_to_promise($.getJSON("https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/trainlocation/json/express/core/express_core.json?" + mstNow));
+	const expressNowPromise = jqxhr_to_promise($.getJSON("https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/trainlocation/json/express/now/express_now.json?" + trnNow))
+		.catch(() => ({ "trains": [] }));
 	const typePromise = cachedResshaTypeData ? Promise.resolve(cachedResshaTypeData) : jqxhr_to_promise($.getJSON("https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/webunkou/json/master/ressha_type_master.json?" + mstNow));
 	const ekiPromise = cachedEkiData ? Promise.resolve(cachedEkiData) : jqxhr_to_promise($.getJSON("https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/webunkou/json/master/eki_master.json?" + mstNow));
 	const locationPromises = searchSourceRosens.map((rosen) =>
@@ -2260,17 +2272,25 @@ function load_train_search_data() {
 		jqxhr_to_promise($.getJSON(daiyaUrl)),
 		expressMasterPromise,
 		expressCorePromise,
+		expressNowPromise,
 		typePromise,
 		ekiPromise,
 		Promise.all(locationPromises)
-	]).then(([daiyaData, expressMaster, expressCore, typeData, ekiData, locationDataList]) => {
+	]).then(([daiyaData, expressMaster, expressCore, expressNowData, typeData, ekiData, locationDataList]) => {
 		cachedResshaTypeData = typeData;
 		cachedEkiData = ekiData;
 		const daiyaMap = new Map();
+		const expressNowMap = new Map();
 		if (daiyaData && Array.isArray(daiyaData.today)) {
 			daiyaData.today.forEach((row) => {
 				if (!row || !row.cbango) return;
 				daiyaMap.set(String(row.cbango), row);
+			});
+		}
+		if (expressNowData && Array.isArray(expressNowData.trains)) {
+			expressNowData.trains.forEach((train) => {
+				if (!train || !train.cbango) return;
+				expressNowMap.set(String(train.cbango).toUpperCase(), train);
 			});
 		}
 
@@ -2305,6 +2325,14 @@ function load_train_search_data() {
 			const cbango = String(cbangoKey).toUpperCase();
 			if (trainMap.has(cbango)) return;
 			const nameInfo = parse_train_name(daiya && daiya.name ? daiya.name : "");
+			const expressNow = expressNowMap.get(cbango);
+			const statusDetail = expressNow ? (
+				lang === "ja" ? expressNow.statusDetail :
+				lang === "en" ? expressNow.statusDetailEn :
+				lang === "tc" ? expressNow.statusDetailTc :
+				lang === "sc" ? expressNow.statusDetailSc :
+				lang === "kr" ? expressNow.statusDetailKr : ""
+			) : "";
 			trainMap.set(cbango, {
 				"cbango": cbango,
 				"type": daiya && typeof daiya.type !== "undefined" ? String(daiya.type) : "",
@@ -2314,7 +2342,21 @@ function load_train_search_data() {
 				"baseName": nameInfo.baseName,
 				"goNumber": nameInfo.goNumber,
 				"hasCustomName": !!nameInfo.baseName,
-				"isRunning": false
+				"isRunning": false,
+				"detailTrain": expressNow ? {
+					"cbango": cbango,
+					"name": daiya && daiya.name ? daiya.name : cbango,
+					"type": daiya && typeof daiya.type !== "undefined" ? String(daiya.type) : "",
+					"shuEki": daiya ? daiya.shuEkiKey : "",
+					"ryosu": daiya ? daiya.ryosu : "",
+					"senku": "00",
+					"runStatus": expressNow.runStatus,
+					"yokuStatus": expressNow.yokuStatus,
+					"yokuDetail": expressNow.yokuDetail,
+					"status": expressNow.status,
+					"statusDetail": statusDetail,
+					"chien": expressNow.chien
+				} : null
 			});
 		});
 		const trains = Array.from(trainMap.values()).sort((a, b) => a.cbango.localeCompare(b.cbango, "ja"));
