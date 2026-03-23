@@ -2309,7 +2309,10 @@ function populate_train_search_name_select(searchData) {
  * 列車名と号数を分解する
  */
 function parse_train_name(name) {
-	const text = String(name || "").trim();
+	const text = String(name || "")
+		.replace(/[０-９]/g, (char) => String.fromCharCode(char.charCodeAt(0) - 0xFEE0))
+		.replace(/\u3000/g, " ")
+		.trim();
 	if (!text) return { "baseName": "", "goNumber": "" };
 	const match = text.match(/^(.*?)(\d+)号?$/);
 	if (!match) return { "baseName": text, "goNumber": "" };
