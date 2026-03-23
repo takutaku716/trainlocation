@@ -40,6 +40,11 @@ let locationAutoRefreshEnabled = false;
 let locationAutoRefreshInterval = LOCATION_AUTO_REFRESH_DEFAULT_INTERVAL;
 // 次回自動更新予定時刻
 let nextLocationAutoRefreshAt = null;
+// 列車検索用キャッシュ
+let cachedTrainSearchData = null;
+let trainSearchDataPromise = null;
+let cachedTrainSearchLoadedAt = 0;
+const TRAIN_SEARCH_CACHE_TTL = 30000;
 
 window.onload = function(){
 	load_location_auto_refresh_settings();
@@ -245,7 +250,16 @@ $(function ($) {
 		reset_train_search_dialog();
 		$("#trainSearchDetail").fadeIn("fast");
 		set_scroll_hide($("#trainSearchDetail .dialog"));
-		$("#trainSearchNumberInput").trigger("focus");
+		$("#trainSearchResultInfo").text("読み込み中...");
+		load_train_search_data()
+			.then((searchData) => {
+				populate_train_search_name_select(searchData);
+				$("#trainSearchResultInfo").empty();
+				$("#trainSearchNumberInput").trigger("focus");
+			})
+			.catch(() => {
+				$("#trainSearchResultInfo").text("検索データを取得できませんでした。");
+			});
 	});
 
 	// 駅選択をクリックしたときの動き
@@ -324,11 +338,23 @@ $(function ($) {
 	$(document).on("keydown", "#trainSearchNumberInput", function(event) {
 		if (event.key === "Enter") run_train_number_search();
 	});
-	$(document).on("keydown", "#trainSearchNameInput", function(event) {
+	$(document).on("keydown", "#trainSearchNameNumberInput", function(event) {
 		if (event.key === "Enter") run_train_name_search();
 	});
-	$(document).on("click", "#trainSearchResult .express-train-contents", function() {
+	$(document).on("click", "#trainSearchResult .train-search-result-item", function(event) {
+		event.preventDefault();
+		event.stopImmediatePropagation();
+		const targetRosen = $(this).attr("value");
+		const cbango = $(this).attr("cbango");
 		close_train_search_dialog();
+		if (!targetRosen || !cbango) return;
+		const currentRosen = get_param_rosen();
+		const currentCbango = get_param_cbango();
+		if (currentRosen === targetRosen && currentCbango === cbango) {
+			init_disp();
+		} else {
+			location.hash = "rosen=" + targetRosen + "&cbango=" + cbango;
+		}
 	});
 
 	// 重要なお知らせをクリックしたときの動き
@@ -2174,7 +2200,7 @@ function get_param_cbango() {
  */
 function reset_train_search_dialog() {
 	$("#trainSearchNumberInput").val("");
-	$("#trainSearchNameInput").val("");
+	$("#trainSearchNameNumberInput").val("");
 	$("#trainSearchResultInfo").empty();
 	$("#trainSearchResult").empty();
 }
@@ -2188,22 +2214,137 @@ function close_train_search_dialog() {
 }
 
 /*
- * 検索対象の特急列車一覧を取得
+ * 列車検索データを読み込む
  */
-function get_searchable_train_list() {
-	const trainMap = new Map();
-	$("#expTab .express-train-contents").each(function() {
-		const cbango = $(this).attr("cbango");
-		if (!cbango || trainMap.has(cbango)) return;
-		trainMap.set(cbango, {
-			"cbango": cbango,
-			"type": $(this).attr("type"),
-			"value": $(this).attr("value"),
-			"name": $(this).find(".train-name").text().trim(),
-			"status": $(this).find(".unkou-label").text().trim()
+function load_train_search_data() {
+	if (cachedTrainSearchData && (Date.now() - cachedTrainSearchLoadedAt) < TRAIN_SEARCH_CACHE_TTL) {
+		return Promise.resolve(cachedTrainSearchData);
+	}
+	if (trainSearchDataPromise) return trainSearchDataPromise;
+
+	const lang = document.documentElement.dataset.lang;
+	const mstNow = Date.now() >>> 16;
+	const trnNow = Date.now() >>> 10;
+	const searchSourceRosens = ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15"];
+	const daiyaUrl = "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/webunkou/json/daiya/daiya_00" + (lang === "ja" ? "" : "_" + lang) + ".json?" + mstNow;
+	const typePromise = cachedResshaTypeData ? Promise.resolve(cachedResshaTypeData) : jqxhr_to_promise($.getJSON("https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/webunkou/json/master/ressha_type_master.json?" + mstNow));
+	const ekiPromise = cachedEkiData ? Promise.resolve(cachedEkiData) : jqxhr_to_promise($.getJSON("https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/webunkou/json/master/eki_master.json?" + mstNow));
+	const locationPromises = searchSourceRosens.map((rosen) =>
+		jqxhr_to_promise($.getJSON(get_location_json_url(rosen, trnNow)))
+			.then((data) => ({ "rosen": rosen, "data": data }))
+			.catch(() => null)
+	);
+
+	trainSearchDataPromise = Promise.all([
+		jqxhr_to_promise($.getJSON(daiyaUrl)),
+		typePromise,
+		ekiPromise,
+		Promise.all(locationPromises)
+	]).then(([daiyaData, typeData, ekiData, locationDataList]) => {
+		cachedResshaTypeData = typeData;
+		cachedEkiData = ekiData;
+		const daiyaMap = new Map();
+		if (daiyaData && Array.isArray(daiyaData.today)) {
+			daiyaData.today.forEach((row) => {
+				if (!row || !row.cbango) return;
+				daiyaMap.set(String(row.cbango), row);
+			});
+		}
+
+		const trainMap = new Map();
+		locationDataList.filter(Boolean).forEach((entry) => {
+			if (!entry.data || !Array.isArray(entry.data.trains)) return;
+			entry.data.trains.forEach((train) => {
+				if (!train || !train.cbango) return;
+				const cbango = String(train.cbango).toUpperCase();
+				const daiya = daiyaMap.get(String(train.cbango));
+				const nameInfo = parse_train_name(daiya && daiya.name ? daiya.name : "");
+				const displayName = build_train_search_display_name(train, daiya, typeData, ekiData);
+				const targetRosen = normalizeMergedRosen(entry.rosen, nameInfo.baseName || displayName);
+				const candidate = {
+					"cbango": cbango,
+					"type": String(train.type || ""),
+					"value": targetRosen,
+					"name": displayName,
+					"status": getTrainChienText(train),
+					"baseName": nameInfo.baseName,
+					"goNumber": nameInfo.goNumber,
+					"hasCustomName": !!nameInfo.baseName
+				};
+				const current = trainMap.get(cbango);
+				if (!current || (!current.hasCustomName && candidate.hasCustomName)) {
+					trainMap.set(cbango, candidate);
+				}
+			});
 		});
+		const trains = Array.from(trainMap.values()).sort((a, b) => a.cbango.localeCompare(b.cbango, "ja"));
+		const names = Array.from(new Set(trains.map((train) => train.baseName).filter(Boolean))).sort((a, b) => a.localeCompare(b, "ja"));
+		cachedTrainSearchData = { "trains": trains, "names": names };
+		cachedTrainSearchLoadedAt = Date.now();
+		trainSearchDataPromise = null;
+		return cachedTrainSearchData;
+	}).catch((error) => {
+		trainSearchDataPromise = null;
+		throw error;
 	});
-	return Array.from(trainMap.values());
+
+	return trainSearchDataPromise;
+}
+
+/*
+ * 列車名プルダウンを構築する
+ */
+function populate_train_search_name_select(searchData) {
+	const select = $("#trainSearchNameSelect");
+	select.empty();
+	select.append($("<option>").val("").text("列車名を選択"));
+	if (searchData && Array.isArray(searchData.names)) {
+		searchData.names.forEach((name) => {
+			select.append($("<option>").val(name).text(name));
+		});
+	}
+}
+
+/*
+ * 列車名と号数を分解する
+ */
+function parse_train_name(name) {
+	const text = String(name || "").trim();
+	if (!text) return { "baseName": "", "goNumber": "" };
+	const match = text.match(/^(.*?)(\d+)号?$/);
+	if (!match) return { "baseName": text, "goNumber": "" };
+	return {
+		"baseName": match[1].trim(),
+		"goNumber": match[2]
+	};
+}
+
+/*
+ * 列車検索用の表示名を作成する
+ */
+function build_train_search_display_name(train, daiya, typeData, ekiData) {
+	if (daiya && daiya.name) return daiya.name;
+	const lang = document.documentElement.dataset.lang;
+	const type = typeData.find((row) => String(row.type) == String(train.type));
+	let typeName = "";
+	if (type) {
+		typeName = type.type === 8 ? "快速" : (type.typeText[lang] || type.typeText.ja || "");
+	}
+	const dest = ekiData.find((row) => row.key == train.shuEkiKey);
+	const destName = dest ? (dest[lang] || dest.ja || "") : "";
+	return (typeName + (destName ? " " + destName + "行" : "")).trim() || String(train.cbango || "");
+}
+
+/*
+ * HTMLエスケープ
+ */
+function escape_train_search_html(text) {
+	return String(text || "")
+		.replace(/&/g, "&amp;")
+		.replace(/</g, "&lt;")
+		.replace(/>/g, "&gt;")
+		.replace(/\"/g, "&quot;")
+		.replace(/'/g, "&#39;");
 }
 
 /*
@@ -2217,21 +2358,38 @@ function run_train_number_search() {
 		return;
 	}
 	const keyword = digits + suffix;
-	const results = get_searchable_train_list().filter(train => train.cbango.toUpperCase() === keyword);
-	render_train_search_results(results, "検索結果");
+	load_train_search_data()
+		.then((searchData) => {
+			const results = searchData.trains.filter(train => train.cbango.toUpperCase() === keyword);
+			render_train_search_results(results, "検索結果");
+		})
+		.catch(() => {
+			render_train_search_results([], "検索データを取得できませんでした。", "検索データを取得できませんでした。");
+		});
 }
 
 /*
  * 列車名検索を行う
  */
 function run_train_name_search() {
-	const keyword = normalize_train_search_text($("#trainSearchNameInput").val());
-	if (!keyword) {
-		render_train_search_results([], "列車名を入力してください。", "列車名を入力してください。");
+	const selectedName = $("#trainSearchNameSelect").val();
+	const goNumber = $("#trainSearchNameNumberInput").val().replace(/[^\d]/g, "");
+	if (!selectedName) {
+		render_train_search_results([], "列車名を選択してください。", "列車名を選択してください。");
 		return;
 	}
-	const results = get_searchable_train_list().filter(train => normalize_train_search_text(train.name).includes(keyword));
-	render_train_search_results(results, "検索結果");
+	load_train_search_data()
+		.then((searchData) => {
+			const results = searchData.trains.filter((train) => {
+				if (train.baseName !== selectedName) return false;
+				if (!goNumber) return true;
+				return train.goNumber === goNumber;
+			});
+			render_train_search_results(results, "検索結果");
+		})
+		.catch(() => {
+			render_train_search_results([], "検索データを取得できませんでした。", "検索データを取得できませんでした。");
+		});
 }
 
 /*
@@ -2252,12 +2410,12 @@ function render_train_search_results(results, headerText, emptyMessage) {
 	}
 	let html = "";
 	results.forEach(train => {
-		html += "<div class='express-train-contents' cbango='" + train.cbango + "' type='" + train.type + "' value='" + train.value + "'>";
+		html += "<div class='express-train-contents train-search-result-item' cbango='" + escape_train_search_html(train.cbango) + "' type='" + escape_train_search_html(train.type) + "' value='" + escape_train_search_html(train.value) + "'>";
 		html += "<div class='search-result-main'>";
-		html += "<span class='search-result-cbango'>" + train.cbango + "</span>";
-		html += "<span class='train-name'>" + train.name + "</span>";
+		html += "<span class='search-result-cbango'>" + escape_train_search_html(train.cbango) + "</span>";
+		html += "<span class='train-name'>" + escape_train_search_html(train.name) + "</span>";
 		html += "</div>";
-		html += "<span class='unkou-label" + (train.status && train.status.indexOf("遅れ") >= 0 ? " chien" : "") + "'>" + (train.status || "") + "</span>";
+		html += "<span class='unkou-label" + (train.status && train.status.indexOf("遅れ") >= 0 ? " chien" : "") + "'>" + escape_train_search_html(train.status || "") + "</span>";
 		html += "</div>";
 	});
 	$("#trainSearchResult").html(html);
