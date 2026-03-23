@@ -2355,15 +2355,20 @@ function load_train_search_data() {
 				lang === "sc" ? expressNow.statusDetailSc :
 				lang === "kr" ? expressNow.statusDetailKr : ""
 			) : "";
+			const resolvedType = resolve_train_search_type(
+				expressCoreTrain && typeof expressCoreTrain.type !== "undefined" ? String(expressCoreTrain.type) : (daiya && typeof daiya.type !== "undefined" ? String(daiya.type) : ""),
+				daiya ? daiya.name : "",
+				typeData
+			);
 			const displayName = build_train_search_display_name({
-				"type": expressCoreTrain && typeof expressCoreTrain.type !== "undefined" ? String(expressCoreTrain.type) : (daiya && typeof daiya.type !== "undefined" ? String(daiya.type) : ""),
+				"type": resolvedType,
 				"shuEkiKey": daiya ? daiya.shuEkiKey : "",
 				"cbango": cbango
 			}, daiya, typeData, ekiData);
 			const detailTrain = daiya ? {
 				"cbango": cbango,
 				"name": daiya.name || "",
-				"type": expressCoreTrain && typeof expressCoreTrain.type !== "undefined" ? String(expressCoreTrain.type) : (daiya && typeof daiya.type !== "undefined" ? String(daiya.type) : ""),
+				"type": resolvedType,
 				"shuEki": daiya.shuEkiKey || "",
 				"ryosu": daiya.ryosu || "",
 				"senku": daiya.senku || "00"
@@ -2378,7 +2383,7 @@ function load_train_search_data() {
 			}
 			trainMap.set(cbango, {
 				"cbango": cbango,
-				"type": expressCoreTrain && typeof expressCoreTrain.type !== "undefined" ? String(expressCoreTrain.type) : (daiya && typeof daiya.type !== "undefined" ? String(daiya.type) : ""),
+				"type": resolvedType,
 				"value": "",
 				"name": displayName,
 				"status": "この列車は現在走行していません。",
@@ -2455,7 +2460,8 @@ function build_train_search_display_name(train, daiya, typeData, ekiData) {
 	const destText = destName ? " " + destName + "行" : "";
 	const nameInfo = parse_train_name(daiya && daiya.name ? daiya.name : "");
 	if (nameInfo.baseName) return (daiya.name + destText).trim();
-	const type = typeData.find((row) => String(row.type) == String(train.type));
+	const resolvedType = resolve_train_search_type(train.type, daiya ? daiya.name : "", typeData);
+	const type = typeData.find((row) => String(row.type) == String(resolvedType));
 	let typeName = "";
 	if (type) {
 		typeName = type.type === 8 ? "快速" : (type.typeText[lang] || type.typeText.ja || "");
@@ -2469,6 +2475,40 @@ function build_train_search_display_name(train, daiya, typeData, ekiData) {
 /*
  * HTMLエスケープ
  */
+function resolve_train_search_type(type, name, typeData) {
+	const resolvedType = String(type || "");
+	if (resolvedType) return resolvedType;
+	const trainName = String(name || "");
+	if (trainName && Array.isArray(typeData)) {
+		let matchedType = "";
+		let matchedLength = 0;
+		typeData.forEach((row) => {
+			if (!row) return;
+			const labels = [];
+			if (row.labelText) {
+				if (row.labelText.ja) labels.push(String(row.labelText.ja));
+				if (row.labelText[document.documentElement.dataset.lang]) labels.push(String(row.labelText[document.documentElement.dataset.lang]));
+			}
+			if (row.typeText) {
+				if (row.typeText.ja) labels.push(String(row.typeText.ja));
+				if (row.typeText[document.documentElement.dataset.lang]) labels.push(String(row.typeText[document.documentElement.dataset.lang]));
+			}
+			labels.forEach((label) => {
+				if (!label || trainName.indexOf(label) < 0) return;
+				if (label.length > matchedLength) {
+					matchedType = String(row.type || "");
+					matchedLength = label.length;
+				}
+			});
+		});
+		if (matchedType) return matchedType;
+	}
+	if (trainName.indexOf("特別快速") >= 0) return "5";
+	if (trainName.indexOf("快速") >= 0) return "8";
+	if (trainName.indexOf("普通") >= 0) return "3";
+	return "";
+}
+
 function escape_train_search_html(text) {
 	return String(text || "")
 		.replace(/&/g, "&amp;")
