@@ -2227,6 +2227,8 @@ function load_train_search_data() {
 	const trnNow = Date.now() >>> 10;
 	const searchSourceRosens = ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15"];
 	const daiyaUrl = "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/webunkou/json/daiya/daiya_00" + (lang === "ja" ? "" : "_" + lang) + ".json?" + mstNow;
+	const expressMasterPromise = jqxhr_to_promise($.getJSON("https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/webunkou/json/master/express_master.json?" + mstNow));
+	const expressCorePromise = jqxhr_to_promise($.getJSON("https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/trainlocation/json/express/core/express_core.json?" + mstNow));
 	const typePromise = cachedResshaTypeData ? Promise.resolve(cachedResshaTypeData) : jqxhr_to_promise($.getJSON("https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/webunkou/json/master/ressha_type_master.json?" + mstNow));
 	const ekiPromise = cachedEkiData ? Promise.resolve(cachedEkiData) : jqxhr_to_promise($.getJSON("https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/webunkou/json/master/eki_master.json?" + mstNow));
 	const locationPromises = searchSourceRosens.map((rosen) =>
@@ -2237,10 +2239,12 @@ function load_train_search_data() {
 
 	trainSearchDataPromise = Promise.all([
 		jqxhr_to_promise($.getJSON(daiyaUrl)),
+		expressMasterPromise,
+		expressCorePromise,
 		typePromise,
 		ekiPromise,
 		Promise.all(locationPromises)
-	]).then(([daiyaData, typeData, ekiData, locationDataList]) => {
+	]).then(([daiyaData, expressMaster, expressCore, typeData, ekiData, locationDataList]) => {
 		cachedResshaTypeData = typeData;
 		cachedEkiData = ekiData;
 		const daiyaMap = new Map();
@@ -2278,7 +2282,17 @@ function load_train_search_data() {
 			});
 		});
 		const trains = Array.from(trainMap.values()).sort((a, b) => a.cbango.localeCompare(b.cbango, "ja"));
-		const names = Array.from(new Set(trains.map((train) => train.baseName).filter(Boolean))).sort((a, b) => a.localeCompare(b, "ja"));
+		const activeExpressKeys = new Set(
+			(expressCore && Array.isArray(expressCore.expresses) ? expressCore.expresses : [])
+				.filter((row) => row && Array.isArray(row.trains) && row.trains.length > 0)
+				.map((row) => row.key)
+		);
+		const names = Array.from(new Set(
+			(expressMaster && Array.isArray(expressMaster) ? expressMaster : [])
+				.filter((row) => activeExpressKeys.has(row.key))
+				.map((row) => row.name && row.name[lang] ? row.name[lang] : "")
+				.filter(Boolean)
+		)).sort((a, b) => a.localeCompare(b, "ja"));
 		cachedTrainSearchData = { "trains": trains, "names": names };
 		cachedTrainSearchLoadedAt = Date.now();
 		trainSearchDataPromise = null;

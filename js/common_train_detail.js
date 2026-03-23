@@ -65,7 +65,7 @@ function showTrainDetailDialog(target, train, isError) {
 		$.when(
 			$.getJSON("https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/webunkou/json/master/eki_master.json?" + mstNow),
 			$.getJSON("https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/webunkou/json/master/ressha_type_master.json?" + mstNow),
-			$.getJSON("./ORIGINAL/location_master" + (lang === "ja" ? "" : "_" + lang) + ".json?" + mstNow),
+			$.getJSON("./original/location_master" + (lang === "ja" ? "" : "_" + lang) + ".json?" + mstNow),
 			$.getJSON("https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/webunkou/json/daiya/daiya_" + train.senku + (lang === "ja" ? "" : "_" + lang) + ".json?" + mstNow)
 		)
 		.done(function(ekiMasterBase, resshaTypeMasterBase, posNameMasterBase, daiyaBase) {
