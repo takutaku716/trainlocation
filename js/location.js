@@ -240,6 +240,14 @@ $(function ($) {
 		set_scroll_hide($("#refreshSettingDetail .dialog"));
 	});
 
+	// 列車検索ボタンをクリックしたときの動き
+	$("#trainSearchBtn, #trainSearchBtnSub").on("click", function() {
+		reset_train_search_dialog();
+		$("#trainSearchDetail").fadeIn("fast");
+		set_scroll_hide($("#trainSearchDetail .dialog"));
+		$("#trainSearchNumberInput").trigger("focus");
+	});
+
 	// 駅選択をクリックしたときの動き
 	$(document).on("click", ".header-btn.eki", function() {
 		// テンプレートのhtmlから駅を取得
@@ -272,6 +280,11 @@ $(function ($) {
 		set_scroll_show($("#searchDetail .dialog"));
 	});
 
+	// 列車検索ダイアログを閉じる
+	$(document).on("click", "#trainSearchDetail, #trainSearchDetail .common-subtitle.header", function() {
+		close_train_search_dialog();
+	});
+
 	// 自動更新設定ダイアログを閉じる
 	$(document).on("click", "#refreshSettingDetail, #refreshSettingDetail .close", function() {
 		$("#refreshSettingDetail").fadeOut("fast");
@@ -301,6 +314,23 @@ $(function ($) {
 		$("body,html").animate({scrollTop: pos});
 	});
 
+	// 列車検索の実行
+	$(document).on("click", "#trainSearchNumberBtn", function() {
+		run_train_number_search();
+	});
+	$(document).on("click", "#trainSearchNameBtn", function() {
+		run_train_name_search();
+	});
+	$(document).on("keydown", "#trainSearchNumberInput", function(event) {
+		if (event.key === "Enter") run_train_number_search();
+	});
+	$(document).on("keydown", "#trainSearchNameInput", function(event) {
+		if (event.key === "Enter") run_train_name_search();
+	});
+	$(document).on("click", "#trainSearchResult .express-train-contents", function() {
+		close_train_search_dialog();
+	});
+
 	// 重要なお知らせをクリックしたときの動き
 	$(document).on("click", "#popupDetailBtn", function() {
 		// ポップアップダイアログ内の重要なお知らせを開く。
@@ -321,7 +351,7 @@ $(function ($) {
 	});
 
 	// バブリングを停止
-	$(document).on("click", "#guideDetail .dialog, #searchDetail .dialog, #popupDetail .dialog, #refreshSettingDetail .dialog", function(event) {
+	$(document).on("click", "#guideDetail .dialog, #searchDetail .dialog, #trainSearchDetail .dialog, #popupDetail .dialog, #refreshSettingDetail .dialog", function(event) {
 		event.stopPropagation();
 	});
 
@@ -1059,7 +1089,7 @@ function set_responsive() {
 	let margin = 0;
 	let lang = document.documentElement.dataset.lang;
 	if (!(userAgent.indexOf('iPhone') > 0 || userAgent.indexOf('iPad') > 0 || userAgent.indexOf('Android') > 0 || userAgent.indexOf('Mobile') > 0 )) {
-		if ($("#guideDetail").is(":visible") || $("#searchDetail").is(":visible") || $("#popupDetail").is(":visible") || $("#refreshSettingDetail").is(":visible") || $("#resshaDetail").is(":visible") || $("#oshiraseDetail").is(":visible")) {
+		if ($("#guideDetail").is(":visible") || $("#searchDetail").is(":visible") || $("#trainSearchDetail").is(":visible") || $("#popupDetail").is(":visible") || $("#refreshSettingDetail").is(":visible") || $("#resshaDetail").is(":visible") || $("#oshiraseDetail").is(":visible")) {
 			// いずれかのダイアログが表示されていた場合
 			margin = scrollbarWidth;
 		}
@@ -1068,6 +1098,7 @@ function set_responsive() {
 		if (windowWidth <= 550) {
 			$("#guideDetail .dialog").css("margin", "0px " + scrollbarWidth + "px 0px 0px");
 			$("#searchDetail .dialog").css("margin", "0px " + scrollbarWidth + "px 0px 0px");
+			$("#trainSearchDetail .dialog").css("margin", "0px " + scrollbarWidth + "px 0px 0px");
 			$("#popupDetail .dialog").css("margin", "0px " + scrollbarWidth + "px 0px 0px");
 			$("#refreshSettingDetail .dialog").css("margin", "0px " + scrollbarWidth + "px 0px 0px");
 			$("#resshaDetail .dialog").css("margin", "0px " + scrollbarWidth + "px 0px 0px");
@@ -1079,6 +1110,7 @@ function set_responsive() {
 				$("#guideDetail .dialog").css("marginLeft", scrollbarWidth + "px");
 			}
 			$("#searchDetail .dialog").css("marginLeft", scrollbarWidth + "px");
+			$("#trainSearchDetail .dialog").css("marginLeft", scrollbarWidth + "px");
 			$("#popupDetail .dialog").css("marginLeft", scrollbarWidth + "px");
 			$("#refreshSettingDetail .dialog").css("marginLeft", scrollbarWidth + "px");
 			$("#resshaDetail .dialog").css("marginLeft", scrollbarWidth + "px");
@@ -1097,6 +1129,7 @@ function set_responsive() {
 	} else {
 		$("#guideDetail .dialog").css("margin", "0px");
 		$("#searchDetail .dialog").css("margin", "0px");
+		$("#trainSearchDetail .dialog").css("margin", "0px");
 		$("#popupDetail .dialog").css("margin", "0px");
 		$("#refreshSettingDetail .dialog").css("margin", "0px");
 		$("#resshaDetail .dialog").css("margin", "0px");
@@ -1123,7 +1156,7 @@ function set_responsive() {
 		if (lang == "ja") $(".sub-footer .sub-footer-contents.popup .sub-footer-unkou-msg").html("重要な<br>お知らせ");
 		// サイドメニュー内の折り畳みを閉じる。
 		toggle_close();
-		if (!($("#guideDetail").is(":visible") || $("#searchDetail").is(":visible") || $("#popupDetail").is(":visible") || $("#refreshSettingDetail").is(":visible") || $("#resshaDetail").is(":visible") || $(".trainDetailDialog").is(":visible") || $("#oshiraseDetail").is(":visible"))) {
+		if (!($("#guideDetail").is(":visible") || $("#searchDetail").is(":visible") || $("#trainSearchDetail").is(":visible") || $("#popupDetail").is(":visible") || $("#refreshSettingDetail").is(":visible") || $("#resshaDetail").is(":visible") || $(".trainDetailDialog").is(":visible") || $("#oshiraseDetail").is(":visible"))) {
 			// ダイアログが表示されていない場合
 			// bodyのスクロールを有効にする。
 			set_scroll_show_side_menu();
@@ -1150,7 +1183,7 @@ function set_responsive() {
 		$(".sub-header").css("width", "calc(100% - " + margin + "px)");
 		$(".sub-footer .homen-footer-contents").css("width", "calc(100% - " + margin + "px)");
 		if (lang == "ja") $(".sub-footer .sub-footer-contents.popup .sub-footer-unkou-msg").html("重要なお知らせ");
-		if (!($("#guideDetail").is(":visible") || $("#searchDetail").is(":visible") || $("#popupDetail").is(":visible") || $("#refreshSettingDetail").is(":visible") || $("#resshaDetail").is(":visible") || $(".trainDetailDialog").is(":visible") || $("#oshiraseDetail").is(":visible"))) {
+		if (!($("#guideDetail").is(":visible") || $("#searchDetail").is(":visible") || $("#trainSearchDetail").is(":visible") || $("#popupDetail").is(":visible") || $("#refreshSettingDetail").is(":visible") || $("#resshaDetail").is(":visible") || $(".trainDetailDialog").is(":visible") || $("#oshiraseDetail").is(":visible"))) {
 			// ダイアログが表示されていない場合
 			// bodyのスクロールを有効にする。
 			set_scroll_show_side_menu();
@@ -2134,6 +2167,100 @@ function get_param_cbango() {
 		if (params[1].indexOf("cbango=") >= 0) return params[1].substring(7);
 		else return "";
 	}
+}
+
+/*
+ * 列車検索ダイアログを初期状態に戻す
+ */
+function reset_train_search_dialog() {
+	$("#trainSearchNumberInput").val("");
+	$("#trainSearchNameInput").val("");
+	$("#trainSearchResultInfo").empty();
+	$("#trainSearchResult").empty();
+}
+
+/*
+ * 列車検索ダイアログを閉じる
+ */
+function close_train_search_dialog() {
+	$("#trainSearchDetail").fadeOut("fast");
+	set_scroll_show($("#trainSearchDetail .dialog"));
+}
+
+/*
+ * 検索対象の特急列車一覧を取得
+ */
+function get_searchable_train_list() {
+	const trainMap = new Map();
+	$("#expTab .express-train-contents").each(function() {
+		const cbango = $(this).attr("cbango");
+		if (!cbango || trainMap.has(cbango)) return;
+		trainMap.set(cbango, {
+			"cbango": cbango,
+			"type": $(this).attr("type"),
+			"value": $(this).attr("value"),
+			"name": $(this).find(".train-name").text().trim(),
+			"status": $(this).find(".unkou-label").text().trim()
+		});
+	});
+	return Array.from(trainMap.values());
+}
+
+/*
+ * 列番検索を行う
+ */
+function run_train_number_search() {
+	const digits = $("#trainSearchNumberInput").val().replace(/[^\d]/g, "");
+	const suffix = ($("#trainSearchSuffixSelect").val() || "D").toUpperCase();
+	if (!digits) {
+		render_train_search_results([], "列番を入力してください。", "列番を入力してください。");
+		return;
+	}
+	const keyword = digits + suffix;
+	const results = get_searchable_train_list().filter(train => train.cbango.toUpperCase() === keyword);
+	render_train_search_results(results, "検索結果");
+}
+
+/*
+ * 列車名検索を行う
+ */
+function run_train_name_search() {
+	const keyword = normalize_train_search_text($("#trainSearchNameInput").val());
+	if (!keyword) {
+		render_train_search_results([], "列車名を入力してください。", "列車名を入力してください。");
+		return;
+	}
+	const results = get_searchable_train_list().filter(train => normalize_train_search_text(train.name).includes(keyword));
+	render_train_search_results(results, "検索結果");
+}
+
+/*
+ * 検索用文字列を正規化
+ */
+function normalize_train_search_text(text) {
+	return String(text || "").toLowerCase().replace(/[\s\u3000]+/g, "");
+}
+
+/*
+ * 列車検索結果を描画
+ */
+function render_train_search_results(results, headerText, emptyMessage) {
+	$("#trainSearchResultInfo").text(headerText || "");
+	if (!results.length) {
+		$("#trainSearchResult").html("<div class='train-search-empty'>" + (emptyMessage || "該当する列車はありません。") + "</div>");
+		return;
+	}
+	let html = "";
+	results.forEach(train => {
+		html += "<div class='express-train-contents' cbango='" + train.cbango + "' type='" + train.type + "' value='" + train.value + "'>";
+		html += "<div class='search-result-main'>";
+		html += "<span class='search-result-cbango'>" + train.cbango + "</span>";
+		html += "<span class='train-name'>" + train.name + "</span>";
+		html += "</div>";
+		html += "<span class='unkou-label" + (train.status && train.status.indexOf("遅れ") >= 0 ? " chien" : "") + "'>" + (train.status || "") + "</span>";
+		html += "</div>";
+	});
+	$("#trainSearchResult").html(html);
 }
 
 /*
