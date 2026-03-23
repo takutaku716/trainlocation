@@ -2294,9 +2294,29 @@ function load_train_search_data() {
 				const cbango = String(row.cbango);
 				const current = daiyaMap.get(cbango);
 				const candidate = Object.assign({ "senku": entry.senku }, row);
-				if (!current || (!current.name && candidate.name) || (current.senku !== "00" && candidate.senku === "00")) {
+				if (!current) {
 					daiyaMap.set(cbango, candidate);
+					return;
 				}
+				const merged = Object.assign({}, current);
+				Object.keys(candidate).forEach((key) => {
+					const value = candidate[key];
+					if (value === "" || value === null || typeof value === "undefined") return;
+					if (key === "senku") {
+						if (!merged.senku || (merged.senku !== "00" && value === "00")) merged.senku = value;
+						return;
+					}
+					if (key === "stations") {
+						if (!Array.isArray(merged.stations) || merged.stations.length === 0 || (Array.isArray(value) && value.length > merged.stations.length)) {
+							merged.stations = value;
+						}
+						return;
+					}
+					if (merged[key] === "" || merged[key] === null || typeof merged[key] === "undefined") {
+						merged[key] = value;
+					}
+				});
+				daiyaMap.set(cbango, merged);
 			});
 		});
 		if (expressNowData && Array.isArray(expressNowData.trains)) {
