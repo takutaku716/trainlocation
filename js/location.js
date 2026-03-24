@@ -2242,7 +2242,8 @@ function show_train_not_running_message() {
  */
 function find_train_search_result(cbango) {
 	if (!cachedTrainSearchData || !Array.isArray(cachedTrainSearchData.trains)) return undefined;
-	return cachedTrainSearchData.trains.find((train) => train.cbango === String(cbango || "").toUpperCase());
+	const normalizedCbango = normalize_train_search_cbango(cbango);
+	return cachedTrainSearchData.trains.find((train) => normalize_train_search_cbango(train.cbango) === normalizedCbango);
 }
 
 function load_train_search_data() {
@@ -2255,7 +2256,7 @@ function load_train_search_data() {
 	const mstNow = Date.now() >>> 16;
 	const trnNow = Date.now() >>> 10;
 	const searchSourceRosens = ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15"];
-	const daiyaSourceSenkus = ["00"].concat(searchSourceRosens);
+	const daiyaSourceSenkus = ["00"].concat(searchSourceRosens, ["19"]);
 	const expressMasterPromise = jqxhr_to_promise($.getJSON("https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/webunkou/json/master/express_master.json?" + mstNow));
 	const expressCorePromise = jqxhr_to_promise($.getJSON("https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/trainlocation/json/express/core/express_core.json?" + mstNow));
 	const expressNowPromise = jqxhr_to_promise($.getJSON("https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/trainlocation/json/express/now/express_now.json?" + trnNow))
@@ -2529,6 +2530,13 @@ function resolve_train_search_type(type, name, typeData) {
 	return "";
 }
 
+function normalize_train_search_cbango(cbango) {
+	const text = String(cbango || "").trim().toUpperCase();
+	const match = text.match(/^0*(\d+)([A-Z]+)$/);
+	if (!match) return text;
+	return String(Number(match[1])) + match[2];
+}
+
 function escape_train_search_html(text) {
 	return String(text || "")
 		.replace(/&/g, "&amp;")
@@ -2548,10 +2556,10 @@ function run_train_number_search() {
 		render_train_search_results([], "列番を入力してください。", "列番を入力してください。");
 		return;
 	}
-	const keyword = digits + suffix;
+	const keyword = normalize_train_search_cbango(digits + suffix);
 	load_train_search_data()
 		.then((searchData) => {
-			const results = searchData.trains.filter(train => train.cbango.toUpperCase() === keyword);
+			const results = searchData.trains.filter((train) => normalize_train_search_cbango(train.cbango) === keyword);
 			render_train_search_results(results, "検索結果");
 		})
 		.catch(() => {
