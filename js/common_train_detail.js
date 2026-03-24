@@ -102,18 +102,33 @@ function showTrainDetailDialog(target, train, isError) {
 			const lang = document.documentElement.dataset.lang;
 			// 列車種別名を取得する。
 			const resshaTypeInfo = resshaTypeMaster.find(ressha => ressha.type == type);
-			// 列車種別名を画面に表示する。
-			if (resshaTypeInfo) {
-				const resshaTypeName =
-					resshaTypeInfo.type === 8 ? "快速" :
-					(resshaTypeInfo.typeText && (resshaTypeInfo.typeText[lang] || resshaTypeInfo.typeText.ja)) ||
-					(resshaTypeInfo.labelText && (resshaTypeInfo.labelText[lang] || resshaTypeInfo.labelText.ja)) ||
-					"";
-				if (!resshaTypeName) return;
-				$(dialog).find(".type-label").attr("data-type", type);
-				$(dialog).find(".type-label").text(resshaTypeName);
-				$(dialog).find(".type-label").removeClass("hide");
+			const typeLabel = $(dialog).find(".type-label");
+			// 未走行列車の検索結果から開く詳細ダイアログでは、種別は主要なものだけ文字表示する。
+			if (!resshaTypeInfo) {
+				typeLabel.attr("data-type", "0");
+				typeLabel.text("");
+				typeLabel.removeClass("hide");
+				return;
 			}
+			if (String(type) !== "1" && String(type) !== "3" && String(type) !== "4") {
+				typeLabel.attr("data-type", "0");
+				typeLabel.text("");
+				typeLabel.removeClass("hide");
+				return;
+			}
+			const resshaTypeName =
+				(resshaTypeInfo.typeText && (resshaTypeInfo.typeText[lang] || resshaTypeInfo.typeText.ja)) ||
+				(resshaTypeInfo.labelText && (resshaTypeInfo.labelText[lang] || resshaTypeInfo.labelText.ja)) ||
+				"";
+			if (!resshaTypeName) {
+				typeLabel.attr("data-type", "0");
+				typeLabel.text("");
+				typeLabel.removeClass("hide");
+				return;
+			}
+			typeLabel.attr("data-type", type);
+			typeLabel.text(resshaTypeName);
+			typeLabel.removeClass("hide");
 		}
 		/**
 		 * ダイアログに｢列車情報｣を描画する。
