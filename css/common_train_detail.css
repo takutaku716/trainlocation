@@ -143,6 +143,11 @@
 			.trainDetailDialog .train-info dl dt.type-item .type-label[data-type='8'] {
 				background-color: #07c;
 			}
+			/* ｢列車種別｣のアイコン (その他・未判定) */
+			.trainDetailDialog .train-info dl dt.type-item .type-label[data-type='0'] {
+				background-color: #777;
+				color: transparent;
+			}
 		/* ｢現在地｣のアイコン */
 		.trainDetailDialog .train-info dl dt.pos-item .pos-label {
 			background-color: #777;
