@@ -2379,7 +2379,9 @@ function load_train_search_data() {
 			const resolvedType = resolve_train_search_type(
 				expressCoreTrain && typeof expressCoreTrain.type !== "undefined" ? String(expressCoreTrain.type) : (daiya && typeof daiya.type !== "undefined" ? String(daiya.type) : ""),
 				daiya ? daiya.name : "",
-				typeData
+				typeData,
+				cbango,
+				daiya ? daiya.senku : ""
 			);
 			const displayName = build_train_search_display_name({
 				"type": resolvedType,
@@ -2481,7 +2483,7 @@ function build_train_search_display_name(train, daiya, typeData, ekiData) {
 	const destText = destName ? " " + destName + "行" : "";
 	const nameInfo = parse_train_name(daiya && daiya.name ? daiya.name : "");
 	if (nameInfo.baseName) return (daiya.name + destText).trim();
-	const resolvedType = resolve_train_search_type(train.type, daiya ? daiya.name : "", typeData);
+	const resolvedType = resolve_train_search_type(train.type, daiya ? daiya.name : "", typeData, train.cbango, daiya ? daiya.senku : "");
 	const type = typeData.find((row) => String(row.type) == String(resolvedType));
 	let typeName = "";
 	if (type) {
@@ -2496,9 +2498,12 @@ function build_train_search_display_name(train, daiya, typeData, ekiData) {
 /*
  * HTMLエスケープ
  */
-function resolve_train_search_type(type, name, typeData) {
+function resolve_train_search_type(type, name, typeData, cbango, senku) {
+	if (String(senku || "") === "19") return "4";
 	const resolvedType = String(type || "");
 	if (resolvedType) return resolvedType;
+	const normalizedCbango = normalize_train_search_cbango(cbango);
+	if (normalizedCbango.endsWith("B")) return "4";
 	const trainName = String(name || "");
 	if (trainName && Array.isArray(typeData)) {
 		let matchedType = "";
