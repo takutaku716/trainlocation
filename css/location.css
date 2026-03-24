@@ -2869,6 +2869,53 @@ section#refreshSettingDetail {
 	}
 }
 @media (max-width:480px) {
+	section#trainSearchDetail .dialog-outer {
+		box-sizing: border-box;
+		padding: 8px;
+	}
+	section#trainSearchDetail .dialog {
+		max-width: 100%;
+		width: 100%;
+	}
+	section#trainSearchDetail .dialog #trainSearchDetailMain {
+		padding: 12px 10px;
+	}
+	section#trainSearchDetail .dialog .train-search-message,
+	section#trainSearchDetail .dialog .train-search-form,
+	section#trainSearchDetail .dialog .train-search-result-info,
+	section#trainSearchDetail .dialog .train-search-result {
+		margin-left: 0;
+		margin-right: 0;
+	}
+	section#trainSearchDetail .dialog .train-search-controls {
+		display: grid;
+		gap: 6px;
+		grid-template-columns: 1fr 84px;
+	}
+	section#trainSearchDetail .dialog .train-search-controls select,
+	section#trainSearchDetail .dialog .train-search-controls input,
+	section#trainSearchDetail .dialog .train-search-controls .common-button,
+	section#trainSearchDetail .dialog #trainSearchNameSelect,
+	section#trainSearchDetail .dialog #trainSearchNameNumberInput {
+		box-sizing: border-box;
+		width: 100%;
+	}
+	section#trainSearchDetail .dialog #trainSearchNumberInput,
+	section#trainSearchDetail .dialog #trainSearchNameSelect {
+		grid-column: 1 / -1;
+	}
+	section#trainSearchDetail .dialog #trainSearchSuffixSelect,
+	section#trainSearchDetail .dialog #trainSearchNameNumberInput {
+		grid-column: 1;
+	}
+	section#trainSearchDetail .dialog #trainSearchNumberBtn,
+	section#trainSearchDetail .dialog #trainSearchNameBtn {
+		grid-column: 2;
+		min-width: 0;
+		padding-left: 0;
+		padding-right: 0;
+	}
+
 	/* 北海道新幹線への路線のリンク */
 	#stationList .eki-panel .shin-link {
 		width: 50px;
