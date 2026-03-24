@@ -101,16 +101,18 @@ function showTrainDetailDialog(target, train, isError) {
 		function drawResshaType(dialog, type, resshaTypeMaster) {
 			const lang = document.documentElement.dataset.lang;
 			// 列車種別名を取得する。
-			resshaTypeInfo = resshaTypeMaster.find(ressha => ressha.type == type);
+			const resshaTypeInfo = resshaTypeMaster.find(ressha => ressha.type == type);
 			// 列車種別名を画面に表示する。
-			if (resshaTypeInfo && resshaTypeInfo.labelText[lang]) {
-				// 列車種別名を取得できた場合は、画面に表示する。
-				const resshaTypeName = resshaTypeInfo.labelText[lang];
-				if (resshaTypeName) {
-					$(dialog).find(".type-label").attr("data-type", type);
-					$(dialog).find(".type-label").text(resshaTypeName);
-					$(dialog).find(".type-label").removeClass("hide");
-				}
+			if (resshaTypeInfo) {
+				const resshaTypeName =
+					resshaTypeInfo.type === 8 ? "快速" :
+					(resshaTypeInfo.typeText && (resshaTypeInfo.typeText[lang] || resshaTypeInfo.typeText.ja)) ||
+					(resshaTypeInfo.labelText && (resshaTypeInfo.labelText[lang] || resshaTypeInfo.labelText.ja)) ||
+					"";
+				if (!resshaTypeName) return;
+				$(dialog).find(".type-label").attr("data-type", type);
+				$(dialog).find(".type-label").text(resshaTypeName);
+				$(dialog).find(".type-label").removeClass("hide");
 			}
 		}
 		/**
