@@ -3,6 +3,11 @@
  */
 function set_side_area_chien() {
 	let now = Date.now() >>> 10;
+	const mergedRosenMap = {
+		"51": ["01", "05"],
+		"52": ["02", "07", "09"],
+		"53": ["02", "13"]
+	};
 	// エリア名を取得
 	$.when(
 		$.getJSON("https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/trainlocation/json/rosen/now/rosen_now.json?" + now)
@@ -23,7 +28,11 @@ function set_side_area_chien() {
 		}
 
 		$("#localTab .rosen-name-contents").each(function(i, row) {
-			let nowStatus = nowdata.lines.find((v) => v.rosen == $(row).attr("value"));
+			const rosenValue = $(row).attr("value");
+			let nowStatus = nowdata.lines.find((v) => v.rosen == rosenValue);
+			if (typeof nowStatus === "undefined" && mergedRosenMap[rosenValue]) {
+				nowStatus = getMergedRosenStatus(nowdata.lines, mergedRosenMap[rosenValue]);
+			}
 			if (typeof nowStatus !== "undefined") {
 				// 遅延情報の表示
 				$(row).append(getRosenChienText(nowStatus));
@@ -39,6 +48,19 @@ function set_side_area_chien() {
 		$('#message').html(errormessage);
 		$('#message').show();
 	});
+
+	function getMergedRosenStatus(lines, rosenList) {
+		const targets = rosenList
+			.map((rosen) => lines.find((line) => line.rosen == rosen))
+			.filter(Boolean);
+		if (targets.length < 1) return undefined;
+		const merged = Object.assign({}, targets[0]);
+		merged.maxChien = targets.reduce((maxValue, line) => {
+			const value = typeof line.maxChien === "number" ? line.maxChien : Number(line.maxChien || 0);
+			return value > maxValue ? value : maxValue;
+		}, 0);
+		return merged;
+	}
 }
 
 /**
