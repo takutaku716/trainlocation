@@ -1,24 +1,24 @@
-﻿// 繧ｹ繧ｯ繝ｭ繝ｼ繝ｫ縺ｮ鬮倥＆菫晄戟逕ｨ
+// スクロールの高さ保持用
 let scrollY = 0;
-// 驕ｷ遘ｻ蜑阪・霍ｯ邱壻ｿ晄戟逕ｨ
+// 遷移前の路線保持用
 let befRosen = "";
-// 繧ｹ繧ｯ繝ｭ繝ｼ繝ｫ逕ｨ縺ｮ鬧・く繝ｼ菫晄戟逕ｨ
+// スクロール用の駅キー保持用
 let scrollKey = "";
-// 繧ｵ繧､繝峨Γ繝九Η繝ｼ繧ｯ繝ｪ繝・け譎・
+// サイドメニュークリック時
 let isSideMenuClick = false;
-// 逕ｻ髱｢蛻晄悄陦ｨ遉ｺ譎ょ愛螳夂畑
+// 画面初期表示時判定用
 let isLoad = true;
-// 繝繧､繧｢繝ｭ繧ｰ陦ｨ遉ｺ譎ょ愛螳夂畑
+// ダイアログ表示時判定用
 let isDialogDisp = false;
-// 繧ｵ繧､繝峨Γ繝九Η繝ｼ陦ｨ遉ｺ譎ょ愛螳夂畑
+// サイドメニュー表示時判定用
 let isSideMenuDisp = false;
-// 讓ｪ蟷・Μ繧ｵ繧､繧ｺ蛻､螳夂畑
+// 横幅リサイズ判定用
 let beforeWidth = 0;
-// 逕ｻ髱｢陦ｨ遉ｺ蜃ｦ逅・ｮ溯｡悟愛螳夂畑
+// 画面表示処理実行判定用
 let isNotInitDisp = false;
-// 襍ｰ陦御ｽ咲ｽｮ閾ｪ蜍墓峩譁ｰ縺ｮ譌｢螳夐俣髫・ms)
+// 走行位置自動更新の既定間隔(ms)
 const LOCATION_AUTO_REFRESH_DEFAULT_INTERVAL = 15000;
-// 閾ｪ蜍墓峩譁ｰ險ｭ螳壹・菫晏ｭ倥く繝ｼ
+// 自動更新設定の保存キー
 const LOCATION_AUTO_REFRESH_ENABLED_KEY = "location_auto_refresh_enabled";
 const LOCATION_AUTO_REFRESH_INTERVAL_KEY = "location_auto_refresh_interval";
 const LOCATION_JSON_SOURCE_MAP = {
@@ -26,44 +26,36 @@ const LOCATION_JSON_SOURCE_MAP = {
 	"52": ["02", "07", "09"],
 	"53": ["02", "13"]
 };
-// 襍ｰ陦御ｽ咲ｽｮ閾ｪ蜍墓峩譁ｰ繧ｿ繧､繝槭・
+// 走行位置自動更新タイマー
 let locationAutoRefreshTimer = null;
-// 蛻苓ｻ企∈謚槭い繝九Γ繝ｼ繧ｷ繝ｧ繝ｳ繧ｿ繧､繝槭・
+// 列車選択アニメーションタイマー
 let resshaAnimationTimer = null;
-// 閾ｪ蜍墓峩譁ｰ逕ｨ縺ｮ霍ｯ邱壻ｿ晄戟
+// 自動更新用の路線保持
 let autoRefreshRosen = "";
-// 蛻苓ｻ雁・謠冗判逕ｨ繝槭せ繧ｿ縺ｮ繧ｭ繝｣繝・す繝･
+// 列車再描画用マスタのキャッシュ
 let cachedResshaTypeData = null;
 let cachedEkiData = null;
-// 閾ｪ蜍墓峩譁ｰ險ｭ螳・
+// 自動更新設定
 let locationAutoRefreshEnabled = false;
 let locationAutoRefreshInterval = LOCATION_AUTO_REFRESH_DEFAULT_INTERVAL;
-// 谺｡蝗櫁・蜍墓峩譁ｰ莠亥ｮ壽凾蛻ｻ
+// 次回自動更新予定時刻
 let nextLocationAutoRefreshAt = null;
-// 蛻苓ｻ頑､懃ｴ｢逕ｨ繧ｭ繝｣繝・す繝･
+// 列車検索用キャッシュ
 let cachedTrainSearchData = null;
 let trainSearchDataPromise = null;
 let cachedTrainSearchLoadedAt = 0;
 const TRAIN_SEARCH_CACHE_TTL = 30000;
-// 追跡解除時のスクロール位置保持
-let preserveScrollAfterHashChange = false;
-let preservedScrollTop = 0;
-
-function preserve_scroll_after_hash_change() {
-	preserveScrollAfterHashChange = true;
-	preservedScrollTop = $(window).scrollTop();
-}
 
 window.onload = function(){
 	load_location_auto_refresh_settings();
-	// 迴ｾ蝨ｨ陦ｨ遉ｺ荳ｭ縺ｮ霍ｯ邱壹ｒ蜿門ｾ・
+	// 現在表示中の路線を取得
 	let param_rosen = get_param_rosen();
-	// 襍ｰ陦御ｽ咲ｽｮ繧定｡ｨ遉ｺ
+	// 走行位置を表示
 	if (param_rosen != "") set_station_list(param_rosen, null);
-	// 繧ｨ繝ｪ繧｢蛻･迥ｶ豕゛SON繧定ｪｭ縺ｿ霎ｼ繧薙〒縲・°陦梧ュ蝣ｱ繧定ｨｭ螳壹☆繧九・
+	// エリア別状況JSONを読み込んで、運行情報を設定する。
 	set_unko_info(param_rosen);
 
-	// 繝昴ャ繝励い繝・・html蛻､譁ｭ
+	// ポップアップhtml判断
 	let now = Date.now() >>> 16;
 	let lang = document.documentElement.dataset.lang;
 	let popup_url = lang == "ja" ? "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/trainlocation/CMUNKOU/inc_location_popup.html?" + now : "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/trainlocation/CMUNKOU/inc_location_popup_" + lang + ".html?" + now;
@@ -82,16 +74,16 @@ window.onload = function(){
 		}
 	})
 
-	// 繧ｵ繧､繝峨Γ繝九Η繝ｼ縲蜷・ｷｯ邱壹・驕・ｻｶ諠・ｱ縺ｮ險ｭ螳・
+	// サイドメニュー　各路線の遅延情報の設定
 	set_side_area_chien();
-	// 繧ｵ繧､繝峨Γ繝九Η繝ｼ縲蜷・音諤･蛻苓ｻ翫・繧ｿ繝ｳ縺ｮ菴懈・
+	// サイドメニュー　各特急列車ボタンの作成
 	createSideExpressList();
 
 	hsize = $(window).height();
 	$(".side-menu").css("height", hsize - 60 + "px");
 
 	if (!is_reload()) {
-		// 譛ｭ蟷瑚ｿ鷹リ縺ｮ霍ｯ邱壹・蝣ｴ蜷医∝・譛溯｡ｨ遉ｺ繧呈惆蟷碁ｧ・捉霎ｺ縺ｫ縺吶ｋ縲ゑｼ域峩譁ｰ譎ゆｻ･螟厄ｼ・
+		// 札幌近郊の路線の場合、初期表示を札幌駅周辺にする。（更新時以外）
 		if (!get_param_id() && !get_param_cbango()) {
 			let rosen = get_param_rosen();
 			if ((rosen == "01" || rosen == "02" || rosen == "03") && $("div[key='091']").length > 0) {
@@ -100,82 +92,82 @@ window.onload = function(){
 		}
 	}
 
-	// 驕ｸ謚槭＆繧後※縺・ｋ繧ｿ繝悶↓陦ｨ遉ｺ繧貞粋繧上○繧・
+	// 選択されているタブに表示を合わせる
 	str = $('input:radio[name="sideSelect"]:checked').val();
 	tab_select(str);
-	// 繝倥ャ繝繝ｼ縺ｮ鬮倥＆蛻・・菴咏區繧定ｨｭ螳壹☆繧九・
+	// ヘッダーの高さ分の余白を設定する。
 	set_header_height();
 
-	// 繧ｵ繧､繝峨Γ繝九Η繝ｼ險ｭ螳・
+	// サイドメニュー設定
 	set_side_menu(false);
 
-	// 蛻晄悄陦ｨ遉ｺ譎ゅ・讓ｪ蟷・ｿ晄戟
+	// 初期表示時の横幅保持
 	beforeWidth = window.innerWidth;
 
 	$(function(){
-		// 繝壹・繧ｸ縺ｮ譛蠕後′鬧・〒邨ゅｏ縺｣縺ｦ縺・ｋ霍ｯ邱夲ｼ・8縲・3・峨〒繧ｵ繝悶ヵ繝・ち繝ｼ縺ｮ陦ｨ遉ｺ縺後≠縺｣縺溷ｴ蜷医∽ｸ九↓菴咏區繧定ｿｽ蜉縺吶ｋ
+		// ページの最後が駅で終わっている路線（08、13）でサブフッターの表示があった場合、下に余白を追加する
 		eki_end_margin();
 	});
 };
 
 window.onresize = function () {
-	// 繧ｵ繧､繝峨Γ繝九Η繝ｼ縺ｮ鬮倥＆繧堤判髱｢繧ｵ繧､繧ｺ縺ｫ蜷医ｏ縺帙※險ｭ螳・
+	// サイドメニューの高さを画面サイズに合わせて設定
 	hsize = $(window).height();
 	$(".side-menu").css("height", hsize - 60 + "px");
 	if (beforeWidth != window.innerWidth && !isDialogDisp) {
-		// 讓ｪ蟷・Μ繧ｵ繧､繧ｺ譎・
+		// 横幅リサイズ時
 		scrollY = window.scrollY;
 	}
 
-	// 逕ｻ髱｢蟷・・繧ｵ繧､繧ｺ縺ｫ蜷医ｏ縺帙※逕ｻ髱｢鬆・岼繧貞宛蠕｡縺吶ｋ縲・繧｢繝峨Ξ繧ｹ繝舌・縺ｫ繧医ｋ鬮倥＆縺ｮ繝ｪ繧ｵ繧､繧ｺ縺ｧ縺ｯ螳溯｡後＠縺ｪ縺・
+	// 画面幅のサイズに合わせて画面項目を制御する。(アドレスバーによる高さのリサイズでは実行しない)
 	if (beforeWidth != window.innerWidth) {
 		set_responsive();
 	}
 
-	// 縺顔衍繧峨○縺ｮ繧ｵ繧､繧ｺ縺ｫ繧医▲縺ｦ蟄占ｦ∫ｴ縺ｮ讓ｪ蟷・ｒ險ｭ螳壹☆繧九・
+	// お知らせのサイズによって子要素の横幅を設定する。
 	set_oshirase_width();
 
-	// 繝倥ャ繝繝ｼ縺ｮ鬮倥＆蛻・・菴咏區繧定ｨｭ螳壹☆繧九・
+	// ヘッダーの高さ分の余白を設定する。
 	set_header_height();
 
-	// PC逕ｨ陦ｨ遉ｺ縺ｮ蝣ｴ蜷医√ち繝夜∈謚槭→陦ｨ遉ｺ蜀・ｮｹ繧剃ｸ閾ｴ縺輔○繧・
+	// PC用表示の場合、タブ選択と表示内容を一致させる
 	if (window.innerWidth > 1000) {
 		str = $('input:radio[name="sideSelect"]:checked').val();
 		tab_select_resize(str);
 	}
 
-	// 繝ｪ繧ｵ繧､繧ｺ蠕後・讓ｪ蟷・ｿ晄戟
+	// リサイズ後の横幅保持
 	beforeWidth = window.innerWidth;
 
-	// 繝壹・繧ｸ縺ｮ譛蠕後′鬧・〒邨ゅｏ縺｣縺ｦ縺・ｋ霍ｯ邱夲ｼ・8縲・3・峨〒繧ｵ繝悶ヵ繝・ち繝ｼ縺ｮ陦ｨ遉ｺ縺後≠縺｣縺溷ｴ蜷医∽ｸ九↓菴咏區繧定ｿｽ蜉縺吶ｋ
+	// ページの最後が駅で終わっている路線（08、13）でサブフッターの表示があった場合、下に余白を追加する
 	eki_end_margin();
 };
 
 window.onscroll = function () {
 	if (!(isLoad || isDialogDisp || isSideMenuDisp)) {
-		// 繧ｹ繧ｯ繝ｭ繝ｼ繝ｫ菴咲ｽｮ繧剃ｿ晏ｭ・
+		// スクロール位置を保存
 		window.sessionStorage.setItem("scrollY", window.scrollY - 50);
 		scrollY = window.scrollY;
 	}
 };
 
 window.onhashchange = function () {
-	// 繝上ャ繧ｷ繝･縺九ｉid・磯ｧ・く繝ｼ・峨ｒ蜿門ｾ・
+	// ハッシュからid（駅キー）を取得
 	let param_id = get_param_id();
 
-	// 霍ｯ邱壹ｒ蛻・ｊ譖ｿ縺医◆髫帙∝・霆翫・襍､譫繧帝撼陦ｨ遉ｺ
+	// 路線を切り替えた際、列車の赤枠を非表示
 	$(".ressha-animation").hide();
 
-	// 逕ｻ髱｢陦ｨ遉ｺ蜃ｦ逅・
+	// 画面表示処理
 	if (!isNotInitDisp) init_disp(scrollKey, () => {
 
 		if (param_id) {
-			// 繝上ャ繧ｷ繝･縺ｫ鬧・D縺悟ｭ伜惠縺励◆蝣ｴ蜷医∝ｯｾ雎｡縺ｮ鬧・∪縺ｧ繧ｹ繧ｯ繝ｭ繝ｼ繝ｫ
+			// ハッシュに駅IDが存在した場合、対象の駅までスクロール
 			let pos = $("div[key='" + param_id + "']").offset().top - 380;
 			$("body,html").scrollTop(pos);
 		}
 
-		// 繝倥ャ繝繝ｼ縺ｮ鬮倥＆蛻・・菴咏區繧定ｨｭ螳壹☆繧九・
+		// ヘッダーの高さ分の余白を設定する。
 		set_header_height();
 	})
 
@@ -184,25 +176,25 @@ window.onhashchange = function () {
 
 $(function ($) {
 	sync_refresh_setting_controls();
-	// 驕ｸ謚橸ｼ医お繝ｪ繧｢縺九ｉ驕ｸ謚橸ｼ冗音諤･蛻苓ｻ翫°繧蛾∈謚橸ｼ峨ち繝悶・驕ｸ謚槭ｒ蛻・ｊ譖ｿ縺医◆縺ｨ縺阪・蜍輔″
+	// 選択（エリアから選択／特急列車から選択）タブの選択を切り替えたときの動き
 	$(document).on('change', 'input[name="sideSelect"]', function () {
 		str = $('input:radio[name="sideSelect"]:checked').val();
 		tab_select(str);
 	});
 
-	// 繧ｵ繧､繝峨Γ繝九Η繝ｼ縺ｮ蜷・お繝ｪ繧｢繧偵け繝ｪ繝・け縺励◆縺ｨ縺阪・蜍輔″
+	// サイドメニューの各エリアをクリックしたときの動き
 	$(document).on("click", ".side-menu .area-contents .area-name-label", function () {
-		// 閾ｪ蛻・ｒ縺薙ｌ縺九ｉ髢九￥蝣ｴ蜷医∽ｻ悶・螻暮幕繧偵☆縺ｹ縺ｦ髢峨§繧・
+		// 自分をこれから開く場合、他の展開をすべて閉じる
 		if ($(this).next().css("display") === "none") {
 			$(".rosen-name-list").css("display", "none");
 			$(".area-name-label").removeClass("open");
 		}
-		// 譏守ｴｰ繧帝幕縺擾ｼ城哩縺倥ｋ
+		// 明細を開く／閉じる
 		$(this).next().stop().slideToggle(100);
 		$(this).toggleClass("open");
 	});
 
-	// 霍ｯ邱夐∈謚槭・繧ｿ繝ｳ繧偵け繝ｪ繝・け縺励◆縺ｨ縺阪・蜍輔″
+	// 路線選択ボタンをクリックしたときの動き
 	$("#localSelBtn").on("click", function() {
 		let lang = document.documentElement.dataset.lang;
 		$(".side-menu").css("transform", "translateX(0px)");
@@ -211,16 +203,16 @@ $(function ($) {
 		$("#expTab").hide();
 		$("#sideMenu .side-menu .area-contents-header").show();
 		$("#sideMenu .side-menu-outer").show();
-		if (lang == "ja") $("#sideHeader").text("霍ｯ邱夐∈謚・);
+		if (lang == "ja") $("#sideHeader").text("路線選択");
 		if (lang == "en") $("#sideHeader").text("Select a line");
-		if (lang == "tc") $("#sideHeader").text("驕ｸ謫・ｷｯ邱・);
-		if (lang == "sc") $("#sideHeader").text("騾画叫霍ｯ郤ｿ");
-		if (lang == "kr") $("#sideHeader").text("・ｸ・ ・夋・);
-		// body縺ｮ繧ｹ繧ｯ繝ｭ繝ｼ繝ｫ繧堤┌蜉ｹ縺ｫ縺吶ｋ縲・
+		if (lang == "tc") $("#sideHeader").text("選擇路線");
+		if (lang == "sc") $("#sideHeader").text("选择路线");
+		if (lang == "kr") $("#sideHeader").text("노선 선택");
+		// bodyのスクロールを無効にする。
 		set_scroll_hide_side_menu();
 	});
 
-	// 迚ｹ諤･蛻苓ｻ企∈謚槭・繧ｿ繝ｳ繧偵け繝ｪ繝・け縺励◆縺ｨ縺阪・蜍輔″
+	// 特急列車選択ボタンをクリックしたときの動き
 	$("#expSelBtn").on("click", function() {
 		let lang = document.documentElement.dataset.lang;
 		$(".side-menu").css("transform", "translateX(0px)");
@@ -229,36 +221,36 @@ $(function ($) {
 		$("#expTab").show();
 		$("#sideMenu .side-menu .area-contents-header").show();
 		$("#sideMenu .side-menu-outer").show();
-		if (lang == "ja") $("#sideHeader").text("迚ｹ諤･蛻苓ｻ企∈謚・);
+		if (lang == "ja") $("#sideHeader").text("特急列車選択");
 		if (lang == "en") $("#sideHeader").text("Select a limited express");
-		if (lang == "tc") $("#sideHeader").text("驕ｸ謫・音諤･蛻苓ｻ・);
-		if (lang == "sc") $("#sideHeader").text("騾画叫迚ｹ諤･蛻苓ｽｦ");
-		if (lang == "kr") $("#sideHeader").text("孖ｹ・餓龍・ｨ ・夋・);
-		// body縺ｮ繧ｹ繧ｯ繝ｭ繝ｼ繝ｫ繧堤┌蜉ｹ縺ｫ縺吶ｋ縲・
+		if (lang == "tc") $("#sideHeader").text("選擇特急列車");
+		if (lang == "sc") $("#sideHeader").text("选择特急列车");
+		if (lang == "kr") $("#sideHeader").text("특급열차 선택");
+		// bodyのスクロールを無効にする。
 		set_scroll_hide_side_menu();
 	});
 
-	// 迴ｾ蝨ｨ蝨ｰ驕ｸ謚槭・繧ｿ繝ｳ繧偵け繝ｪ繝・け縺励◆縺ｨ縺阪・蜍輔″
+	// 現在地選択ボタンをクリックしたときの動き
 	$(".header-btn.pos").on("click", function() {
-		// 繝ｭ繝ｼ繝・ぅ繝ｳ繧ｰ繧｢繝九Γ繝ｼ繧ｷ繝ｧ繝ｳ繧定｡ｨ遉ｺ
+		// ローディングアニメーションを表示
 		loading_animation_display();
-		// 迴ｾ蝨ｨ蝨ｰ縺九ｉ荳逡ｪ霑代＞鬧・ｒ陦ｨ遉ｺ
+		// 現在地から一番近い駅を表示
 		get_pos_info(false);
 	});
 
-	// 閾ｪ蜍墓峩譁ｰ險ｭ螳壹・繧ｿ繝ｳ繧偵け繝ｪ繝・け縺励◆縺ｨ縺阪・蜍輔″
+	// 自動更新設定ボタンをクリックしたときの動き
 	$("#refreshSettingBtn, #refreshSettingBtnSub").on("click", function() {
 		sync_refresh_setting_controls();
 		$("#refreshSettingDetail").fadeIn("fast");
 		set_scroll_hide($("#refreshSettingDetail .dialog"));
 	});
 
-	// 蛻苓ｻ頑､懃ｴ｢繝懊ち繝ｳ繧偵け繝ｪ繝・け縺励◆縺ｨ縺阪・蜍輔″
+	// 列車検索ボタンをクリックしたときの動き
 	$("#trainSearchBtn, #trainSearchBtnSub").on("click", function() {
 		reset_train_search_dialog();
 		$("#trainSearchDetail").fadeIn("fast");
 		set_scroll_hide($("#trainSearchDetail .dialog"));
-		$("#trainSearchResultInfo").text("隱ｭ縺ｿ霎ｼ縺ｿ荳ｭ...");
+		$("#trainSearchResultInfo").text("読み込み中...");
 		load_train_search_data()
 			.then((searchData) => {
 				populate_train_search_name_select(searchData);
@@ -266,15 +258,15 @@ $(function ($) {
 				$("#trainSearchNumberInput").trigger("focus");
 			})
 			.catch(() => {
-				$("#trainSearchResultInfo").text("讀懃ｴ｢繝・・繧ｿ繧貞叙蠕励〒縺阪∪縺帙ｓ縺ｧ縺励◆縲・);
+				$("#trainSearchResultInfo").text("検索データを取得できませんでした。");
 			});
 	});
 
-	// 鬧・∈謚槭ｒ繧ｯ繝ｪ繝・け縺励◆縺ｨ縺阪・蜍輔″
+	// 駅選択をクリックしたときの動き
 	$(document).on("click", ".header-btn.eki", function() {
-		// 繝・Φ繝励Ξ繝ｼ繝医・html縺九ｉ鬧・ｒ蜿門ｾ・
+		// テンプレートのhtmlから駅を取得
 		let list = $("#stationList .eki-panel .eki-contents a");
-		// 蜿門ｾ励＠縺滄ｧ・°繧峨・繧ｿ繝ｳ繧偵ム繧､繧｢繝ｭ繧ｰ縺ｫ陦ｨ遉ｺ縺吶ｋ蜀・ｮｹ繧剃ｽ懈・
+		// 取得した駅からボタンをダイアログに表示する内容を作成
 		let html = "<ul>";
 		for(let row of list){
 			html += "<li>";
@@ -284,35 +276,36 @@ $(function ($) {
 		}
 		html += "</ul>";
 
-		// 鬧・∈謚槭ム繧､繧｢繝ｭ繧ｰ蜀・↓鬧・・繝ｪ繧ｹ繝医ｒ陦ｨ遉ｺ
+		// 駅選択ダイアログ内に駅のリストを表示
 		$("#searchDetail .train-link").html(html);
 
-		// 鬧・∈謚槭ム繧､繧｢繝ｭ繧ｰ繧帝幕縺上・
+		// 駅選択ダイアログを開く。
 		$("#searchDetail").fadeIn("fast");
 		$("#searchDetailMain").scrollTop(0);
-		// 繝繧､繧｢繝ｭ繧ｰ繧帝幕縺上→縺阪・body縺ｮ繧ｹ繧ｯ繝ｭ繝ｼ繝ｫ縺ｮ蛻ｶ蠕｡
+		// ダイアログを開くときのbodyのスクロールの制御
 		set_scroll_hide($("#searchDetail .dialog"));
 	});
 
-	// 鬧・∈謚槭ム繧､繧｢繝ｭ繧ｰ蜀・・・｢髢峨§繧具ｽ｣繝懊ち繝ｳ繧偵け繝ｪ繝・け縺励◆縺ｨ縺阪・蜍輔″
+	// 駅選択ダイアログ内の｢閉じる｣ボタンをクリックしたときの動き
 	$(document).on("click", "#searchDetail, #searchDetail .common-subtitle.header", function() {
-		// 鬧・∈謚槭ム繧､繧｢繝ｭ繧ｰ繧帝哩縺倥ｋ縲・		$("#searchDetail").fadeOut("fast");
-		// 繝繧､繧｢繝ｭ繧ｰ繧帝哩縺倥◆縺ｨ縺阪・body縺ｮ繧ｹ繧ｯ繝ｭ繝ｼ繝ｫ縺ｮ蛻ｶ蠕｡
+		// 駅選択ダイアログを閉じる。
+		$("#searchDetail").fadeOut("fast");
+		// ダイアログを閉じたときのbodyのスクロールの制御
 		set_scroll_show($("#searchDetail .dialog"));
 	});
 
-	// 蛻苓ｻ頑､懃ｴ｢繝繧､繧｢繝ｭ繧ｰ繧帝哩縺倥ｋ
+	// 列車検索ダイアログを閉じる
 	$(document).on("click", "#trainSearchDetail, #trainSearchDetail .common-subtitle.header", function() {
 		close_train_search_dialog();
 	});
 
-	// 閾ｪ蜍墓峩譁ｰ險ｭ螳壹ム繧､繧｢繝ｭ繧ｰ繧帝哩縺倥ｋ
+	// 自動更新設定ダイアログを閉じる
 	$(document).on("click", "#refreshSettingDetail, #refreshSettingDetail .close", function() {
 		$("#refreshSettingDetail").fadeOut("fast");
 		set_scroll_show($("#refreshSettingDetail .dialog"));
 	});
 
-	// 閾ｪ蜍墓峩譁ｰ險ｭ螳壹ｒ驕ｩ逕ｨ縺吶ｋ
+	// 自動更新設定を適用する
 	$(document).on("click", "#refreshSettingApplyBtn", function() {
 		const enabled = $("#refreshEnabledSelect").val() === "on";
 		const intervalSeconds = Number($("#refreshIntervalSelect").val());
@@ -321,21 +314,22 @@ $(function ($) {
 		set_scroll_show($("#refreshSettingDetail .dialog"));
 	});
 
-	// 鬧・∈謚槭ム繧､繧｢繝ｭ繧ｰ蜀・・蜷・ｧ・・繝懊ち繝ｳ繧偵け繝ｪ繝・け縺励◆縺ｨ縺阪・蜍輔″
+	// 駅選択ダイアログ内の各駅のボタンをクリックしたときの動き
 	$(document).on("click", "#searchDetail .train-link li" , function() {
-		// 鬧・∈謚槭ム繧､繧｢繝ｭ繧ｰ繧帝哩縺倥ｋ縲・
+		// 駅選択ダイアログを閉じる。
 		$("#searchDetail").fadeOut("fast");
-		// 繝繧､繧｢繝ｭ繧ｰ繧帝哩縺倥◆縺ｨ縺阪・body縺ｮ繧ｹ繧ｯ繝ｭ繝ｼ繝ｫ縺ｮ蛻ｶ蠕｡
+		// ダイアログを閉じたときのbodyのスクロールの制御
 		set_scroll_show($("#searchDetail .dialog"));
 
-		// 鬧・さ繝ｼ繝峨ｒ蜿門ｾ・
+		// 駅コードを取得
 		let id = this.children[1].getAttribute("value");
-		// 蟇ｾ雎｡縺ｮ鬧・∪縺ｧ繧ｹ繧ｯ繝ｭ繝ｼ繝ｫ
+		// 対象の駅までスクロール
 		let pos = $("div[key='" + id + "']").offset().top - 380;
 		$("body,html").animate({scrollTop: pos});
 	});
 
-	// 蛻苓ｻ頑､懃ｴ｢縺ｮ螳溯｡・	$(document).on("click", "#trainSearchNumberBtn", function() {
+	// 列車検索の実行
+	$(document).on("click", "#trainSearchNumberBtn", function() {
 		run_train_number_search();
 	});
 	$(document).on("click", "#trainSearchNameBtn", function() {
@@ -373,57 +367,57 @@ $(function ($) {
 		}
 	});
 
-	// 驥崎ｦ√↑縺顔衍繧峨○繧偵け繝ｪ繝・け縺励◆縺ｨ縺阪・蜍輔″
+	// 重要なお知らせをクリックしたときの動き
 	$(document).on("click", "#popupDetailBtn", function() {
-		// 繝昴ャ繝励い繝・・繝繧､繧｢繝ｭ繧ｰ蜀・・驥崎ｦ√↑縺顔衍繧峨○繧帝幕縺上・
+		// ポップアップダイアログ内の重要なお知らせを開く。
 		$("#popupDetail").fadeIn("fast");
 		$("#popupDetailMain .popup-detail-main").scrollTop(0);
 		$("#dialogOshirase").hide();
 		$("#popupOshirase").show();
-		// 繝繧､繧｢繝ｭ繧ｰ繧帝幕縺上→縺阪・body縺ｮ繧ｹ繧ｯ繝ｭ繝ｼ繝ｫ縺ｮ蛻ｶ蠕｡
+		// ダイアログを開くときのbodyのスクロールの制御
 		set_scroll_hide($("#popupDetail .dialog"));
 	});
 
-	// 繝昴ャ繝励い繝・・繝繧､繧｢繝ｭ繧ｰ蜀・・・｢髢峨§繧具ｽ｣繝懊ち繝ｳ繧偵け繝ｪ繝・け縺励◆縺ｨ縺阪・蜍輔″
+	// ポップアップダイアログ内の｢閉じる｣ボタンをクリックしたときの動き
 	$(document).on("click", "#popupDetail, #popupDetail .close", function() {
-		// 繝昴ャ繝励い繝・・繝繧､繧｢繝ｭ繧ｰ繧帝哩縺倥ｋ縲・
+		// ポップアップダイアログを閉じる。
 		$("#popupDetail").fadeOut("fast");
-		// 繝繧､繧｢繝ｭ繧ｰ繧帝哩縺倥◆縺ｨ縺阪・body縺ｮ繧ｹ繧ｯ繝ｭ繝ｼ繝ｫ縺ｮ蛻ｶ蠕｡
+		// ダイアログを閉じたときのbodyのスクロールの制御
 		set_scroll_show($("#popupDetail .dialog"));
 	});
 
-	// 繝舌ヶ繝ｪ繝ｳ繧ｰ繧貞●豁｢
+	// バブリングを停止
 	$(document).on("click", "#guideDetail .dialog, #searchDetail .dialog, #trainSearchDetail .dialog, #popupDetail .dialog, #refreshSettingDetail .dialog", function(event) {
 		event.stopPropagation();
 	});
 
-	// 繝壹・繧ｸ縺ｮ陦ｨ遉ｺ迥ｶ諷九↓蠢懊§縺ｦ閾ｪ蜍墓峩譁ｰ繧貞宛蠕｡縺吶ｋ
+	// ページの表示状態に応じて自動更新を制御する
 	document.addEventListener("visibilitychange", handle_page_visibility_change);
 
-	// 繧ｵ繧､繝峨Γ繝九Η繝ｼ縺ｮ髢峨§繧九・繧ｿ繝ｳ繧偵け繝ｪ繝・け縺励◆縺ｨ縺阪・蜍輔″
+	// サイドメニューの閉じるボタンをクリックしたときの動き
 	$("#sideMenu .side-menu .area-contents-header, #sideMenu .side-menu-outer").on("click", function() {
 		$("#sideMenu .side-menu").css("transform", "translateX(-327px)");
 		$("#sideMenu .side-menu").css("box-shadow", "none");
 		$("#sideMenu .side-menu-outer").hide();
-		// 繧ｵ繧､繝峨Γ繝九Η繝ｼ蜀・・謚倥ｊ逡ｳ縺ｿ繧帝哩縺倥ｋ縲・
+		// サイドメニュー内の折り畳みを閉じる。
 		toggle_close();
-		// body縺ｮ繧ｹ繧ｯ繝ｭ繝ｼ繝ｫ繧呈怏蜉ｹ縺ｫ縺吶ｋ縲・
+		// bodyのスクロールを有効にする。
 		set_scroll_show_side_menu();
 	});
 
-	// 蛹ｺ髢薙ｒ繧ｯ繝ｪ繝・け縺励◆縺ｨ縺阪・蜍輔″
+	// 区間をクリックしたときの動き
 	$(document).on("click"
 	, ".rosen-name-list div, .hoka-rosen-link a, .up-rosen-link a, .down-rosen-link a, .shin-link a"
 	,  function() {
 		$("#sideMenu .side-menu-outer").hide();
 
-		// 繝ｭ繝ｼ繝・ぅ繝ｳ繧ｰ繧｢繝九Γ繝ｼ繧ｷ繝ｧ繝ｳ繧定｡ｨ遉ｺ
+		// ローディングアニメーションを表示
 		loading_animation_display();
 
-		// 迴ｾ蝨ｨ陦ｨ遉ｺ荳ｭ縺ｮ霍ｯ邱壹ｒ蜿門ｾ・
+		// 現在表示中の路線を取得
 		befRosen = get_param_rosen();
 		if ($(this).attr("class") == "rosen-name-contents") {
-			// 繧ｵ繧､繝峨Γ繝九Η繝ｼ繧ｯ繝ｪ繝・け蛻､螳夂畑縺ｮ繝輔Λ繧ｰ繧稚rue
+			// サイドメニュークリック判定用のフラグをtrue
 			isSideMenuClick = true;
 		}
 
@@ -432,92 +426,99 @@ $(function ($) {
 		scrollKey = $(this).attr("key");
 
 		if (befRosen == rosen) {
-			// 陦ｨ遉ｺ荳ｭ縺ｮ霍ｯ邱壹→驕ｷ遘ｻ蜈医・霍ｯ邱壹′蜷後§蝣ｴ蜷・
-			// 繝上ャ繧ｷ繝･縺九ｉid・磯ｧ・く繝ｼ・峨∝・霆顔分蜿ｷ繧貞叙蠕・
+			// 表示中の路線と遷移先の路線が同じ場合
+			// ハッシュからid（駅キー）、列車番号を取得
 			let param_id = get_param_id();
 			let param_cbango = get_param_cbango();
 			location.hash = "rosen=" + rosen;
-			// 鬧・く繝ｼ縲∝・霆顔分蜿ｷ縺瑚ｨｭ螳壹＆繧後※縺・◆蝣ｴ蜷医∫判髱｢陦ｨ遉ｺ蜃ｦ逅・ｒ陦後≧
+			// 駅キー、列車番号が設定されていた場合、画面表示処理を行う
 			if (!param_id && !param_cbango) init_disp(scrollKey);
 		} else {
-			// 繝上ャ繧ｷ繝･繧帝∈謚槭＠縺溯ｷｯ邱壹↓螟画峩
+			// ハッシュを選択した路線に変更
 			location.hash = "rosen=" + rosen;
 		}
 
 		$(function(){
 			if (window.innerWidth <= 1000) {
-				// 繧ｵ繧､繝峨Γ繝九Η繝ｼ蜀・・謚倥ｊ逡ｳ縺ｿ繧帝哩縺倥ｋ縲・
+				// サイドメニュー内の折り畳みを閉じる。
 				toggle_close();
-				// body縺ｮ繧ｹ繧ｯ繝ｭ繝ｼ繝ｫ繧呈怏蜉ｹ縺ｫ縺吶ｋ縲・
+				// bodyのスクロールを有効にする。
 				if (isSideMenuClick) set_scroll_show_side_menu();
 			}
 		});
 	});
 
-	// 迚ｹ諤･蜷阪ｒ繧ｯ繝ｪ繝・け縺励◆蝣ｴ蜷医・蜍輔″
+	// 特急名をクリックした場合の動き
 	$(document).on("click", ".express-name-label", function () {
 
-		// 閾ｪ蛻・ｒ縺薙ｌ縺九ｉ髢九￥蝣ｴ蜷医∽ｻ悶・螻暮幕繧偵☆縺ｹ縺ｦ髢峨§繧・
+		// 自分をこれから開く場合、他の展開をすべて閉じる
 		if ($(this).next().css("display") === "none") {
 			$(".express-train-list").css("display", "none");
 			$(".express-name-label").removeClass("open");
 		}
-		// 譏守ｴｰ繧帝幕縺擾ｼ城哩縺倥ｋ
+		// 明細を開く／閉じる
 		$(this).next().stop().slideToggle(100, () => {
-			// 閾ｪ蛻・ｒ縺薙ｌ縺九ｉ髢九￥蝣ｴ蜷医∝ｱ暮幕縺励◆繝ｪ繧ｹ繝医′隕九∴繧倶ｽ咲ｽｮ縺ｾ縺ｧ繧ｹ繧ｯ繝ｭ繝ｼ繝ｫ縺吶ｋ縲・
+			// 自分をこれから開く場合、展開したリストが見える位置までスクロールする。
 			if ($(this).next().css("display") !== "none") {
-				// 繧ｹ繧ｯ繝ｭ繝ｼ繝ｫ菴咲ｽｮ繧定ｨ育ｮ励☆繧九・
+				// スクロール位置を計算する。
 				const pos = $(this).offset().top - $(this).parent().parent().first().offset().top;
-				// 繧ｹ繧ｯ繝ｭ繝ｼ繝ｫ縺吶ｋ縲・
+				// スクロールする。
 				$(this).closest(".side-menu-scroll").animate({scrollTop: pos}, 100);
 			}
 		});
 		$(this).toggleClass("open");
 	});
 
-	// 迚ｹ諤･蛻苓ｻ雁錐繧偵け繝ｪ繝・け縺励◆縺ｨ縺阪・蜍輔″
+	// 特急列車名をクリックしたときの動き
 	$(document).on("click", ".express-train-contents", function() {
 		let lang = document.documentElement.dataset.lang;
-		// 繝ｭ繝ｼ繝・ぅ繝ｳ繧ｰ繧｢繝九Γ繝ｼ繧ｷ繝ｧ繝ｳ繧定｡ｨ遉ｺ縺吶ｋ縲・
+		// ローディングアニメーションを表示する。
 		loading_animation_display();
-		// 繧ｵ繧､繝峨Γ繝九Η繝ｼ繧ｯ繝ｪ繝・け蛻､螳夂畑縺ｮ繝輔Λ繧ｰ繧稚rue
+		// サイドメニュークリック判定用のフラグをtrue
 		isSideMenuClick = true;
-		// 蛻礼分繧貞叙蠕励☆繧九・
+		// 列番を取得する。
 		const cbango = $(this).attr("cbango");
-		// 蛻苓ｻ顔ｨｮ蛻･繧貞叙蠕励☆繧九・
+		// 列車種別を取得する。
 		const type = $(this).attr("type");
-		// 繝槭せ繧ｿ繝輔ぃ繧､繝ｫ逕ｨ縺ｮ繧ｭ繝｣繝・す繝･繝舌せ繧ｿ繝ｼ蛟､繧堤函謌舌☆繧九・UNIX蜈・悄縺九ｉ縺ｮ邨碁℃繝溘Μ遘呈焚繧貞承縺ｫ16繝薙ャ繝医す繝輔ヨ縺励◆蛟､縲・縺ｮ16荵暦ｼ・5536繝溘Μ遘停薗邏・蛻・俣髫斐〒繧ｭ繝｣繝・す繝･繧堤┌蜉ｹ蛹悶☆繧・
+		// マスタファイル用のキャッシュバスター値を生成する。(UNIX元期からの経過ミリ秒数を右に16ビットシフトした値。2の16乗＝65536ミリ秒≒約1分間隔でキャッシュを無効化する)
 		const mstNow = Date.now() >>> 16;
-		// 繝医Λ繝ｳ繝輔ぃ繧､繝ｫ逕ｨ縺ｮ繧ｭ繝｣繝・す繝･繝舌せ繧ｿ繝ｼ蛟､繧堤函謌舌☆繧九・UNIX蜈・悄縺九ｉ縺ｮ邨碁℃繝溘Μ遘呈焚繧貞承縺ｫ10繝薙ャ繝医す繝輔ヨ縺励◆蛟､縲・縺ｮ10荵暦ｼ・024繝溘Μ遘帝俣髫斐〒繧ｭ繝｣繝・す繝･繧堤┌蜉ｹ蛹悶☆繧・
+		// トランファイル用のキャッシュバスター値を生成する。(UNIX元期からの経過ミリ秒数を右に10ビットシフトした値。2の10乗＝1024ミリ秒間隔でキャッシュを無効化する)
 		const trnNow = Date.now() >>> 10;
-		// 譛譁ｰ縺ｮ蛻苓ｻ企°陦梧ュ蝣ｱ繧貞叙蠕励☆繧九・		$.when(
+		// 最新の列車運行情報を取得する。
+		$.when(
 			get_daiya_request("00", lang, mstNow),
 			get_express_now_request(trnNow)
 		)
 		.done((daiyaBase, expressNowBase) => {
-			// 蟇ｾ雎｡縺ｮ蛻苓ｻ翫・驕玖｡梧ュ蝣ｱ繧貞叙蠕励☆繧九・			const expressNow = expressNowBase[0].trains.find(train => train.cbango === cbango);
+			// 対象の列車の運行情報を取得する。
+			const expressNow = expressNowBase[0].trains.find(train => train.cbango === cbango);
 			const targetRosen = $(this).attr("value") || normalizeMergedRosen(expressNow.runRosen, $(this).find(".train-name").text());
-			// 蟇ｾ雎｡縺ｮ蛻苓ｻ翫↓譛牙柑縺ｪ霍ｯ邱壹く繝ｼ縺瑚ｨｭ螳壹＆繧後※縺・ｋ蝣ｴ蜷医・縲∝ｽ楢ｩｲ霍ｯ邱壹・繝ｼ繧ｸ縺ｮ隧ｲ蠖灘・霆贋ｽ咲ｽｮ縺ｫ驕ｷ遘ｻ縺吶ｋ縲・			if (targetRosen) {
-				// 迴ｾ蝨ｨ陦ｨ遉ｺ縺励※縺・ｋ霍ｯ邱壹ｒ蜿門ｾ励☆繧九・				const currentRosen = get_param_rosen();
-				// 迴ｾ蝨ｨhash縺ｫ險ｭ螳壹＠縺ｦ縺・ｋ蛻苓ｻ顔分蜿ｷ繧貞叙蠕励☆繧九・				const currentCbango = get_param_cbango();
+			// 対象の列車に有効な路線キーが設定されている場合は、当該路線ページの該当列車位置に遷移する。
+			if (targetRosen) {
+				// 現在表示している路線を取得する。
+				const currentRosen = get_param_rosen();
+				// 現在hashに設定している列車番号を取得する。
+				const currentCbango = get_param_cbango();
 				if (currentRosen === targetRosen && currentCbango === cbango) {
-					// 陦ｨ遉ｺ荳ｭ縺ｮ霍ｯ邱夲ｼ丞・霆顔分蜿ｷ縺ｨ驕ｷ遘ｻ蜈医・霍ｯ邱夲ｼ丞・霆顔分蜿ｷ縺悟酔縺伜ｴ蜷医〒縺ゅｌ縺ｰ縲∫判髱｢陦ｨ遉ｺ蜃ｦ逅・ｒ蜻ｼ縺ｳ蜃ｺ縺吶・					init_disp();
+					// 表示中の路線／列車番号と遷移先の路線／列車番号が同じ場合であれば、画面表示処理を呼び出す。
+					init_disp();
 
 				} else {
-					// 蛻･縺ｮ霍ｯ邱夲ｼ丞・霆顔分蜿ｷ縺ｧ縺ゅｌ縺ｰ縲√ワ繝・す繝･繧帝∈謚槭＠縺溯ｷｯ邱夲ｼ丞・霆顔分蜿ｷ縺ｫ螟画峩縺吶ｋ縲・					location.hash = "rosen=" + targetRosen + "&cbango=" + cbango;
+					// 別の路線／列車番号であれば、ハッシュを選択した路線／列車番号に変更する。
+					location.hash = "rosen=" + targetRosen + "&cbango=" + cbango;
 				}
 				return;
 			}
-			// 蟇ｾ雎｡縺ｮ蛻苓ｻ翫・繝繧､繝､繝・・繧ｿ繧貞叙蠕励☆繧九・
+			// 対象の列車のダイヤデータを取得する。
 			const daiya = daiyaBase[0].today.find(train => train.cbango === cbango);
-			// 驕玖｡檎憾諷九・隧ｳ邏ｰ繧定｡ｨ縺呎枚險繧貞叙蠕励☆繧九・
+			// 運行状態の詳細を表す文言を取得する。
 			const statuDetail =
 				lang === "ja" ? expressNow.statusDetail :
 				lang === "en" ? expressNow.statusDetailEn :
 				lang === "tc" ? expressNow.statusDetailTc :
 				lang === "sc" ? expressNow.statusDetailSc :
 				lang === "kr" ? expressNow.statusDetailKr : "";
-			// 蛻苓ｻ願ｩｳ邏ｰ諠・ｱ繝繧､繧｢繝ｭ繧ｰ繧定｡ｨ遉ｺ縺吶ｋ縲・
+			// 列車詳細情報ダイアログを表示する。
 			showTrainDetailDialog($("#trainDetail"), {
 				"cbango": cbango,
 				"name": daiya.name,
@@ -534,22 +535,22 @@ $(function ($) {
 			});
 		})
 		.fail(() => {
-			// 繝・・繧ｿ縺ｮ蜿門ｾ励↓螟ｱ謨励＠縺溷ｴ蜷医・縲√お繝ｩ繝ｼ繝｡繝・そ繝ｼ繧ｸ繧定｡ｨ遉ｺ縺吶ｋ縲・
+			// データの取得に失敗した場合は、エラーメッセージを表示する。
 			showTrainDetailDialog($("#trainDetail"), undefined, true);
 		});
 	});
 });
 
 /*
- * 逕ｻ髱｢陦ｨ遉ｺ蜃ｦ逅・
+ * 画面表示処理
  */
 function init_disp(_scrollKey, _callback) {
-	// 迴ｾ蝨ｨ陦ｨ遉ｺ荳ｭ縺ｮ霍ｯ邱壹ｒ蜿門ｾ・
+	// 現在表示中の路線を取得
 	let param_rosen = get_param_rosen();
-	// 隕∫ｴ繧偵☆縺ｹ縺ｦ蜑企勁
+	// 要素をすべて削除
 	$("#stationList").empty();
 
-	// 繝｡繝・そ繝ｼ繧ｸ繧貞炎髯､
+	// メッセージを削除
 	$("#message").empty();
 	$("#message").hide();
 
@@ -558,13 +559,13 @@ function init_disp(_scrollKey, _callback) {
 	$(".sub-footer #subFooterContents").css("transition", "transform .0s ease-out 0s,-webkit-transform .0s ease-out 0s");
 	$(".sub-footer #subFooterContents").css("transform", "translateX(0px)");
 
-	// 驕ｸ謚槭＆繧後◆蛹ｺ髢薙ｒ蝓ｺ縺ｫ襍ｰ陦御ｽ咲ｽｮ繧貞・陦ｨ遉ｺ
+	// 選択された区間を基に走行位置を再表示
 	set_station_list(param_rosen, _scrollKey, _callback);
 
-	// 繧ｨ繝ｪ繧｢蛻･迥ｶ豕゛SON繧定ｪｭ縺ｿ霎ｼ繧薙〒縲・°陦梧ュ蝣ｱ繧定ｨｭ螳壹☆繧九・
+	// エリア別状況JSONを読み込んで、運行情報を設定する。
 	set_unko_info(param_rosen);
 
-	// 繝昴ャ繝励い繝・・html蛻､譁ｭ
+	// ポップアップhtml判断
 	let now = Date.now() >>> 16;
 	let lang = document.documentElement.dataset.lang;
 	let popup_url = lang == "ja" ? "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/trainlocation/CMUNKOU/inc_location_popup.html?" + now : "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/trainlocation/CMUNKOU/inc_location_popup_" + lang + ".html?" + now;
@@ -583,12 +584,12 @@ function init_disp(_scrollKey, _callback) {
 		}
 	})
 
-	// 繝壹・繧ｸ縺ｮ譛蠕後′鬧・〒邨ゅｏ縺｣縺ｦ縺・ｋ霍ｯ邱夲ｼ・8縲・3・峨〒繧ｵ繝悶ヵ繝・ち繝ｼ縺ｮ陦ｨ遉ｺ縺後≠縺｣縺溷ｴ蜷医∽ｸ九↓菴咏區繧定ｿｽ蜉縺吶ｋ
+	// ページの最後が駅で終わっている路線（08、13）でサブフッターの表示があった場合、下に余白を追加する
 	eki_end_margin();
 }
 
 /*
- * 蛻苓ｻ翫い繧､繧ｳ繝ｳ縺ｮ襍､譫繧堤せ貊・＆縺帙ｋ
+ * 列車アイコンの赤枠を点滅させる
  */
 function set_ressha_icon_animation() {
 	let doc = document.querySelector('.ressha-animation');
@@ -607,7 +608,7 @@ function set_ressha_icon_animation() {
 }
 
 /*
- * JSON繝・・繧ｿ繧定ｪｭ縺ｿ霎ｼ縺ｿ縲・ｧ・・鬧・俣繧呈緒逕ｻ縺吶ｋ
+ * JSONデータを読み込み、駅・駅間を描画する
  */
 function get_location_json_source_list(_param_rosen) {
 	const sourceList = LOCATION_JSON_SOURCE_MAP[_param_rosen];
@@ -662,13 +663,13 @@ function load_location_now_data(_param_rosen, _now) {
 
 function set_station_list(_param_rosen, _scrollKey, _callback) {
 	stop_location_auto_refresh();
-	// 縺顔衍繧峨○谺・ｽ懈・
+	// お知らせ欄作成
 	disp_oshirase(_param_rosen);
 
-	// 蜷・玄髢薙・html繧定ｪｭ縺ｿ霎ｼ縺ｿ
+	// 各区間のhtmlを読み込み
 	const lang = document.documentElement.dataset.lang;
 
-	// 襍ｰ陦御ｽ咲ｽｮ繝壹・繧ｸ繝｡繝ｳ繝・リ繝ｳ繧ｹJSON繝輔ぃ繧､繝ｫ繧定ｪｭ縺ｿ霎ｼ繧薙〒縲√Γ繝ｳ繝・リ繝ｳ繧ｹ繝壹・繧ｸ縺ｫ蛻・ｊ譖ｿ縺医ｋ縺句愛螳壹ｒ陦後≧縲・
+	// 走行位置ページメンテナンスJSONファイルを読み込んで、メンテナンスページに切り替えるか判定を行う。
 	let mstNow = Date.now() >>> 16;
 	let nowQuery = Date.now() >>> 10;
 	let rosen_html = lang == "ja" ? `./rosen/rosen_${_param_rosen}.html` : `https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/trainlocation/rosen_${_param_rosen}_${lang}.html`;
@@ -684,19 +685,19 @@ function set_station_list(_param_rosen, _scrollKey, _callback) {
 	)
 	.done(function(rosenNameData, maintenanceData, typeData, ekiData, rosen, maintenance) {
 
-		// 迴ｾ蝨ｨ譌･莉倥ｒ險ｭ螳・
+		// 現在日付を設定
 		const now = new Date();
 		const formatted =
-			now.getFullYear() + "蟷ｴ" +
-			(now.getMonth() + 1) + "譛・ +
-			now.getDate() + "譌･" +
-			now.getHours() + "譎・ +
-			now.getMinutes() + "蛻・ +
-			now.getSeconds() + "遘堤樟蝨ｨ";
+			now.getFullYear() + "年" +
+			(now.getMonth() + 1) + "月" +
+			now.getDate() + "日" +
+			now.getHours() + "時" +
+			now.getMinutes() + "分" +
+			now.getSeconds() + "秒現在";
 
 		$("#timestamp").text(formatted);
 
-		// 霍ｯ邱壼錐繧定ｨｭ螳・
+		// 路線名を設定
 		let findRosenName = rosenNameData[0].find((v) => v.rosen == _param_rosen);
 		if (typeof findRosenName !== "undefined") {
 			if (lang == "ja") $("#title").html(findRosenName.rosenName.ja + findRosenName.kukanName.ja);
@@ -710,20 +711,20 @@ function set_station_list(_param_rosen, _scrollKey, _callback) {
 		if (result.length > 0) {
 			cachedResshaTypeData = null;
 			cachedEkiData = null;
-			// 陦ｨ遉ｺ蟇ｾ雎｡縺ｮ霍ｯ邱壹・繧ｹ繝・・繧ｿ繧ｹ縺・縺ｮ蝣ｴ蜷医√Γ繝ｳ繝・リ繝ｳ繧ｹ繝壹・繧ｸ繧定｡ｨ遉ｺ
+			// 表示対象の路線のステータスが1の場合、メンテナンスページを表示
 			$("#stationList").html(maintenance[0]);
-			// 譁ｹ髱｢縺ｮ險ｭ螳・
+			// 方面の設定
 			$(".homen-header-contents").hide();
 			$(".homen-footer-contents").hide();
 
-			// 鬧・∈謚槭・繧ｿ繝ｳ繧帝撼陦ｨ遉ｺ
+			// 駅選択ボタンを非表示
 			$(".btn-header-contents .header-btn.eki").hide();
-			// 繝輔ャ繧ｿ繝ｼ縺ｮ縺顔衍繧峨○繝ｻ驕玖｡梧ュ蝣ｱ繧定｡ｨ遉ｺ
+			// フッターのお知らせ・運行情報を表示
 			$("#subFooterContents").hide();
 
 			$(".maintenance-title").show();
 
-			// 鬧・・鬧・俣謠冗判蠕後・蠕悟・逅・
+			// 駅・駅間描画後の後処理
 			set_post_station_list(_param_rosen, _scrollKey);
 		} else {
 			load_location_now_data(_param_rosen, nowQuery)
@@ -732,12 +733,12 @@ function set_station_list(_param_rosen, _scrollKey, _callback) {
 			cachedResshaTypeData = typeData[0];
 			cachedEkiData = ekiData[0];
 			$("#stationList").html(rosen[0]);
-			// 蛻苓ｻ翫い繧､繧ｳ繝ｳ繧呈緒逕ｻ縺吶ｋ
+			// 列車アイコンを描画する
 			create_ressha_icon(_param_rosen, nowData, typeData[0], ekiData[0]);
-			// 蛻苓ｻ翫い繧､繧ｳ繝ｳ縺ｮ陦ｨ遉ｺ鬆・ｒ荳ｦ縺ｳ譖ｿ縺医ｋ
+			// 列車アイコンの表示順を並び替える
 			ressha_pos_sort();
 
-			// 譁ｹ髱｢縺ｮ險ｭ螳・
+			// 方面の設定
 			let homenUp = $("#homenNameUpText");
 			let homenDown = $("#homenNameDownText");
 			if (homenUp) $("#homenNameUp").html(homenUp.text());
@@ -745,12 +746,12 @@ function set_station_list(_param_rosen, _scrollKey, _callback) {
 			$(".homen-header-contents").show();
 			$(".homen-footer-contents").show();
 
-			// 鬧・∈謚槭・繧ｿ繝ｳ繧定｡ｨ遉ｺ
+			// 駅選択ボタンを表示
 			$(".btn-header-contents .header-btn.eki").show();
-			// 繝輔ャ繧ｿ繝ｼ縺ｮ縺顔衍繧峨○繝ｻ驕玖｡梧ュ蝣ｱ繧定｡ｨ遉ｺ
+			// フッターのお知らせ・運行情報を表示
 			$("#subFooterContents").show();
 
-			// 鬧・・鬧・俣謠冗判蠕後・蠕悟・逅・
+			// 駅・駅間描画後の後処理
 			set_post_station_list(_param_rosen, _scrollKey);
 			start_location_auto_refresh(_param_rosen);
 
@@ -771,7 +772,7 @@ function set_station_list(_param_rosen, _scrollKey, _callback) {
 }
 
 /*
- * 襍ｰ陦御ｽ咲ｽｮ縺ｮ閾ｪ蜍墓峩譁ｰ繧帝幕蟋九☆繧・
+ * 走行位置の自動更新を開始する
  */
 function start_location_auto_refresh(_param_rosen, _delay = locationAutoRefreshInterval) {
 	stop_location_auto_refresh(true);
@@ -786,7 +787,7 @@ function start_location_auto_refresh(_param_rosen, _delay = locationAutoRefreshI
 }
 
 /*
- * 襍ｰ陦御ｽ咲ｽｮ縺ｮ閾ｪ蜍墓峩譁ｰ繧貞●豁｢縺吶ｋ
+ * 走行位置の自動更新を停止する
  */
 function stop_location_auto_refresh(_preserveNextRefresh = false) {
 	if (locationAutoRefreshTimer) {
@@ -800,7 +801,7 @@ function stop_location_auto_refresh(_preserveNextRefresh = false) {
 }
 
 /*
- * 襍ｰ陦御ｽ咲ｽｮJSON縺ｮ縺ｿ繧貞・蜿門ｾ励＠縺ｦ縲∝・霆翫い繧､繧ｳ繝ｳ縺縺大・謠冗判縺吶ｋ
+ * 走行位置JSONのみを再取得して、列車アイコンだけ再描画する
  */
 function refresh_location_positions(_param_rosen) {
 	if (!_param_rosen || _param_rosen !== get_param_rosen()) return;
@@ -813,12 +814,12 @@ function refresh_location_positions(_param_rosen) {
 		redraw_location_positions(_param_rosen, nowData);
 	})
 	.catch(function() {
-		// 閾ｪ蜍墓峩譁ｰ螟ｱ謨玲凾縺ｯ谺｡蝗樊峩譁ｰ繧貞ｾ・▽
+		// 自動更新失敗時は次回更新を待つ
 	});
 }
 
 /*
- * 襍ｰ陦御ｽ咲ｽｮ繧｢繧､繧ｳ繝ｳ繧貞ｷｮ縺玲崛縺医※蜀肴緒逕ｻ縺吶ｋ
+ * 走行位置アイコンを差し替えて再描画する
  */
 function redraw_location_positions(_param_rosen, _nowData) {
 	clear_location_positions(_param_rosen);
@@ -829,7 +830,7 @@ function redraw_location_positions(_param_rosen, _nowData) {
 }
 
 /*
- * 譌｢蟄倥・襍ｰ陦御ｽ咲ｽｮ繧｢繧､繧ｳ繝ｳ繧偵け繝ｪ繧｢縺吶ｋ
+ * 既存の走行位置アイコンをクリアする
  */
 function clear_location_positions(_param_rosen) {
 	$("#stationList .ressha-animation").remove();
@@ -853,22 +854,22 @@ function clear_location_positions(_param_rosen) {
 }
 
 /*
- * 迴ｾ蝨ｨ譎ょ綾陦ｨ遉ｺ繧呈峩譁ｰ縺吶ｋ
+ * 現在時刻表示を更新する
  */
 function update_location_timestamp() {
 	const now = new Date();
 	const formatted =
-		now.getFullYear() + "蟷ｴ" +
-		(now.getMonth() + 1) + "譛・ +
-		now.getDate() + "譌･" +
-		now.getHours() + "譎・ +
-		now.getMinutes() + "蛻・ +
-		now.getSeconds() + "遘堤樟蝨ｨ";
+		now.getFullYear() + "年" +
+		(now.getMonth() + 1) + "月" +
+		now.getDate() + "日" +
+		now.getHours() + "時" +
+		now.getMinutes() + "分" +
+		now.getSeconds() + "秒現在";
 	$("#timestamp").text(formatted);
 }
 
 /*
- * 驕ｸ謚樔ｸｭ縺ｮ蛻苓ｻ翫′縺ゅｋ蝣ｴ蜷医∝・謠冗判蠕後↓襍､譫繧剃ｻ倥￠逶ｴ縺・
+ * 選択中の列車がある場合、再描画後に赤枠を付け直す
  */
 function restore_selected_train_marker(_follow = false) {
 	const param_cbango = get_param_cbango();
@@ -896,7 +897,7 @@ function scroll_selected_train_into_view(_ressha) {
 }
 
 /*
- * 閾ｪ蜍墓峩譁ｰ險ｭ螳壹ｒ隱ｭ縺ｿ霎ｼ繧
+ * 自動更新設定を読み込む
  */
 function load_location_auto_refresh_settings() {
 	const storedEnabled = localStorage.getItem(LOCATION_AUTO_REFRESH_ENABLED_KEY);
@@ -907,7 +908,7 @@ function load_location_auto_refresh_settings() {
 }
 
 /*
- * 閾ｪ蜍墓峩譁ｰ險ｭ螳壼・蜉帶ｬ・↓迴ｾ蝨ｨ蛟､繧貞渚譏縺吶ｋ
+ * 自動更新設定入力欄に現在値を反映する
  */
 function sync_refresh_setting_controls() {
 	$("#refreshEnabledSelect").val(locationAutoRefreshEnabled ? "on" : "off");
@@ -915,24 +916,24 @@ function sync_refresh_setting_controls() {
 }
 
 /*
- * 閾ｪ蜍墓峩譁ｰ迥ｶ諷九・陦ｨ遉ｺ繧呈峩譁ｰ縺吶ｋ
+ * 自動更新状態の表示を更新する
  */
 function update_refresh_status_label() {
 	const lang = document.documentElement.dataset.lang;
 	const intervalSeconds = locationAutoRefreshInterval / 1000;
 	const messages = {
-		ja: "閾ｪ蜍墓峩譁ｰON (" + intervalSeconds + "遘帝俣髫・",
+		ja: "自動更新ON (" + intervalSeconds + "秒間隔)",
 		en: "Auto refresh ON (" + intervalSeconds + " sec)",
-		tc: "閾ｪ蜍墓峩譁ｰON・域ｯ・ + intervalSeconds + "遘抵ｼ・,
-		sc: "閾ｪ蜉ｨ譖ｴ譁ｰON・域ｯ・ + intervalSeconds + "遘抵ｼ・,
-		kr: "・尖徐 ・ｱ・ ON (" + intervalSeconds + "・・"
+		tc: "自動更新ON（每" + intervalSeconds + "秒）",
+		sc: "自动更新ON（每" + intervalSeconds + "秒）",
+		kr: "자동 갱신 ON (" + intervalSeconds + "초)"
 	};
 	const nextMessages = {
-		ja: "谺｡蝗樊峩譁ｰ・・ + format_refresh_time(nextLocationAutoRefreshAt),
+		ja: "次回更新：" + format_refresh_time(nextLocationAutoRefreshAt),
 		en: "Next: " + format_refresh_time(nextLocationAutoRefreshAt),
-		tc: "荳区ｬ｡譖ｴ譁ｰ・・ + format_refresh_time(nextLocationAutoRefreshAt),
-		sc: "荳区ｬ｡譖ｴ譁ｰ・・ + format_refresh_time(nextLocationAutoRefreshAt),
-		kr: "・､・・・ｱ・: " + format_refresh_time(nextLocationAutoRefreshAt)
+		tc: "下次更新：" + format_refresh_time(nextLocationAutoRefreshAt),
+		sc: "下次更新：" + format_refresh_time(nextLocationAutoRefreshAt),
+		kr: "다음 갱신: " + format_refresh_time(nextLocationAutoRefreshAt)
 	};
 	if (locationAutoRefreshEnabled) {
 		const message = (messages[lang] || messages.ja) + (nextLocationAutoRefreshAt ? "  " + (nextMessages[lang] || nextMessages.ja) : "");
@@ -943,7 +944,7 @@ function update_refresh_status_label() {
 }
 
 /*
- * 谺｡蝗櫁・蜍墓峩譁ｰ莠亥ｮ壽凾蛻ｻ繧定ｨｭ螳壹☆繧・
+ * 次回自動更新予定時刻を設定する
  */
 function set_next_location_auto_refresh_time(_delay = locationAutoRefreshInterval) {
 	nextLocationAutoRefreshAt = new Date(Date.now() + _delay);
@@ -951,18 +952,18 @@ function set_next_location_auto_refresh_time(_delay = locationAutoRefreshInterva
 }
 
 /*
- * 繝倥ャ繝繝ｼ陦ｨ遉ｺ逕ｨ縺ｫ譎ょ綾繧呈紛蠖｢縺吶ｋ
+ * ヘッダー表示用に時刻を整形する
  */
 function format_refresh_time(_date) {
 	if (!_date) return "";
 	const hours = String(_date.getHours()).padStart(2, "0");
 	const minutes = String(_date.getMinutes()).padStart(2, "0");
 	const seconds = String(_date.getSeconds()).padStart(2, "0");
-	return hours + "譎・ + minutes + "蛻・ + seconds + "遘・;
+	return hours + "時" + minutes + "分" + seconds + "秒";
 }
 
 /*
- * 閾ｪ蜍墓峩譁ｰ險ｭ螳壹ｒ驕ｩ逕ｨ縺吶ｋ
+ * 自動更新設定を適用する
  */
 function apply_location_auto_refresh_settings(_enabled, _interval, _persist = true) {
 	const wasEnabled = locationAutoRefreshEnabled;
@@ -986,7 +987,7 @@ function apply_location_auto_refresh_settings(_enabled, _interval, _persist = tr
 }
 
 /*
- * 繝壹・繧ｸ縺ｮ陦ｨ遉ｺ迥ｶ諷九↓蠢懊§縺ｦ閾ｪ蜍墓峩譁ｰ繧貞●豁｢繝ｻ蜀埼幕縺吶ｋ
+ * ページの表示状態に応じて自動更新を停止・再開する
  */
 function handle_page_visibility_change() {
 	const currentRosen = get_param_rosen();
@@ -1010,11 +1011,11 @@ function handle_page_visibility_change() {
 }
 
 /*
- * 鬧・・鬧・俣謠冗判蠕後・蠕悟・逅・
+ * 駅・駅間描画後の後処理
  */
 function set_post_station_list(_param_rosen, _scrollKey) {
 	if (["09", "52"].includes(_param_rosen)) {
-		// 蜃ｽ鬢ｨ邱喙髟ｷ荳・Κ・槫・鬢ｨ髢転縺ｮ蝣ｴ蜷・
+		// 函館線[長万部～函館間]の場合
 		if ($(".fujishiro-panel").height() > 800){
 			$("#fujishiro1").hide();
 			$("#fujishiro2").hide();
@@ -1025,49 +1026,45 @@ function set_post_station_list(_param_rosen, _scrollKey) {
 
 	set_responsive();
 
-	// 繧ｹ繧ｯ繝ｭ繝ｼ繝ｫ菴咲ｽｮ縺悟・鬆ｭ縺ｫ縺ゅｋ蝣ｴ蜷医∬ｷｯ邱壽緒逕ｻ繧ｿ繧､繝溘Φ繧ｰ縺ｧ繝倥ャ繝繝ｼ縺ｮ菴咏區縺ｮ鬮倥＆繧定ｨｭ螳・
+	// スクロール位置が先頭にある場合、路線描画タイミングでヘッダーの余白の高さを設定
 	if ($("body,html").scrollTop() == 0) set_header_height();
 
-	// 蛻晄悄陦ｨ遉ｺ譎ゅ・縺ｿ
+	// 初期表示時のみ
 	if (isLoad) {
 		let param_cbango = get_param_cbango();
 		if (param_cbango) {
-			// 繝上ャ繧ｷ繝･縺ｫcbango縺悟ｭ伜惠縺励◆蝣ｴ蜷亥・逅・ｒ螳溯｡・
+			// ハッシュにcbangoが存在した場合処理を実行
 			ressha_run_check();
 			window.sessionStorage.setItem("scrollY", window.scrollY - 50);
 		} else if (is_reload()) {
-			// 繧ｻ繝・す繝ｧ繝ｳ縺ｫ菫晏ｭ倥＠縺溘せ繧ｯ繝ｭ繝ｼ繝ｫ菴咲ｽｮ繧貞叙蠕・
+			// セッションに保存したスクロール位置を取得
 			let scroll = Number(window.sessionStorage.getItem("scrollY"));
 			if (!isNaN(scroll)) {
-				// 譖ｴ譁ｰ譎ゅ√せ繧ｯ繝ｭ繝ｼ繝ｫ菴咲ｽｮ繧定ｨｭ螳・
+				// 更新時、スクロール位置を設定
 				$("body,html").scrollTop(scroll + 50);
 			}
 		} else {
 			let param_id = get_param_id();
 			if (param_id) {
-				// 繝上ャ繧ｷ繝･縺ｫ鬧・D縺悟ｭ伜惠縺励◆蝣ｴ蜷医∝ｯｾ雎｡縺ｮ鬧・∪縺ｧ繧ｹ繧ｯ繝ｭ繝ｼ繝ｫ
+				// ハッシュに駅IDが存在した場合、対象の駅までスクロール
 				let pos = $("div[key='" + param_id + "']").offset().top - 380;
 				$("body,html").animate({scrollTop: pos});
 				window.sessionStorage.setItem("scrollY", pos - 50);
 			} else {
-				// 譛ｭ蟷瑚ｿ鷹リ縺ｮ霍ｯ邱壹・蝣ｴ蜷医∝・譛溯｡ｨ遉ｺ繧呈惆蟷碁ｧ・捉霎ｺ縺ｫ縺吶ｋ縲・
+				// 札幌近郊の路線の場合、初期表示を札幌駅周辺にする。
 				set_disp_scroll_spo();
 			}
 		}
 
-		// 蛻晄悄陦ｨ遉ｺ縺ｮ繝輔Λ繧ｰ繧断alse
+		// 初期表示のフラグをfalse
 		isLoad = false;
 	} else {
 		let param_cbango = get_param_cbango();
 		if (param_cbango) {
-			// 繝上ャ繧ｷ繝･縺ｫcbango縺悟ｭ伜惠縺励◆蝣ｴ蜷亥・逅・ｒ螳溯｡・
+			// ハッシュにcbangoが存在した場合処理を実行
 			ressha_run_check();
-		} else if (preserveScrollAfterHashChange) {
-			$("body,html").scrollTop(preservedScrollTop);
-			scrollY = preservedScrollTop;
-			preserveScrollAfterHashChange = false;
 		} else {
-			// 逕ｻ髱｢繧ｹ繧ｯ繝ｭ繝ｼ繝ｫ菴咲ｽｮ險ｭ螳・
+			// 画面スクロール位置設定
 			set_disp_scroll(_param_rosen, _scrollKey);
 		}
 	}
@@ -1075,43 +1072,43 @@ function set_post_station_list(_param_rosen, _scrollKey) {
 	scrollKey = "";
 	isSideMenuClick = false;
 
-	// 繝ｭ繝ｼ繝・ぅ繝ｳ繧ｰ繧｢繝九Γ繝ｼ繧ｷ繝ｧ繝ｳ繧帝撼陦ｨ遉ｺ縺ｫ縺吶ｋ
+	// ローディングアニメーションを非表示にする
 	loading_animation_hidden();
 }
 
 /*
- * 逕ｻ髱｢繧ｹ繧ｯ繝ｭ繝ｼ繝ｫ菴咲ｽｮ險ｭ螳・
+ * 画面スクロール位置設定
  */
 function set_disp_scroll(_param_rosen, _scrollKey) {
-	// 莉冶ｷｯ邱壹°繧蛾・遘ｻ縺励※縺阪◆蝣ｴ蜷医・・遘ｻ蜈・・邱夊ｷｯ縺ｮ繝ｪ繝ｳ繧ｯ縺ｮ邂・園縺ｾ縺ｧ繧ｹ繧ｯ繝ｭ繝ｼ繝ｫ
+	// 他路線から遷移してきた場合、遷移元の線路のリンクの箇所までスクロール
 	let doc = $("a[value='" + befRosen + "']");
 	if (_scrollKey && _scrollKey != "") {
-		// 鬧・・邂・園縺ｾ縺ｧ繧ｹ繧ｯ繝ｭ繝ｼ繝ｫ
+		// 駅の箇所までスクロール
 		doc = $("div[key='" + _scrollKey + "']");
 	}
 
 	if (isSideMenuClick) {
-		// 譛ｭ蟷瑚ｿ鷹リ縺ｮ霍ｯ邱壹・蝣ｴ蜷医∝・譛溯｡ｨ遉ｺ繧呈惆蟷碁ｧ・捉霎ｺ縺ｫ縺吶ｋ縲・
+		// 札幌近郊の路線の場合、初期表示を札幌駅周辺にする。
 		set_disp_scroll_spo();
 	} else if (doc.length > 0) {
 		let scroll = doc.offset().top - 310;
-		if (_param_rosen == "01" && _scrollKey == "090") scroll -= 120; // SP1 譯大恍鬧・∈縺ｮ驕ｷ遘ｻ
-		if (_param_rosen == "03" && _scrollKey == "090") scroll -= 120; // SP3 譯大恍鬧・∈縺ｮ驕ｷ遘ｻ
-		if (_param_rosen == "06" && _scrollKey == "227") scroll += 80;  // DO3 蠢玲枚鬧・∈縺ｮ驕ｷ遘ｻ
-		if (_param_rosen == "13" && _scrollKey == "220") scroll -= 110; // DT1 霑ｽ蛻・ｧ・∈縺ｮ驕ｷ遘ｻ
-		if (_param_rosen == "01" && befRosen == "02") scroll -= 120;	// SP2縺九ｉSP1縺ｸ縺ｮ驕ｷ遘ｻ
-		if (_param_rosen == "13" && befRosen == "14") scroll -= 120;	// DT2縺九ｉDT1縺ｸ縺ｮ驕ｷ遘ｻ
-		if (_param_rosen == "02" && befRosen == "01") scroll -= 120;	// SP1縺九ｉSP2縺ｸ縺ｮ驕ｷ遘ｻ
+		if (_param_rosen == "01" && _scrollKey == "090") scroll -= 120; // SP1 桑園駅への遷移
+		if (_param_rosen == "03" && _scrollKey == "090") scroll -= 120; // SP3 桑園駅への遷移
+		if (_param_rosen == "06" && _scrollKey == "227") scroll += 80;  // DO3 志文駅への遷移
+		if (_param_rosen == "13" && _scrollKey == "220") scroll -= 110; // DT1 追分駅への遷移
+		if (_param_rosen == "01" && befRosen == "02") scroll -= 120;	// SP2からSP1への遷移
+		if (_param_rosen == "13" && befRosen == "14") scroll -= 120;	// DT2からDT1への遷移
+		if (_param_rosen == "02" && befRosen == "01") scroll -= 120;	// SP1からSP2への遷移
 		$("body,html").scrollTop(scroll);
 		scrollY = scroll;
 	} else {
-		// 繝壹・繧ｸ繝医ャ繝励∈繧ｹ繧ｯ繝ｭ繝ｼ繝ｫ
+		// ページトップへスクロール
 		$("body,html").scrollTop(0);
 	}
 }
 
 /*
- * 譛ｭ蟷瑚ｿ鷹リ縺ｮ霍ｯ邱壹・蝣ｴ蜷医∝・譛溯｡ｨ遉ｺ繧呈惆蟷碁ｧ・捉霎ｺ縺ｫ縺吶ｋ縲・
+ * 札幌近郊の路線の場合、初期表示を札幌駅周辺にする。
  */
 function set_disp_scroll_spo() {
 	if (!get_param_id() && !get_param_cbango()) {
@@ -1121,7 +1118,7 @@ function set_disp_scroll_spo() {
 			$("body,html").scrollTop(scroll);
 			scrollY = scroll;
 		} else {
-			// 繝壹・繧ｸ繝医ャ繝励∈繧ｹ繧ｯ繝ｭ繝ｼ繝ｫ
+			// ページトップへスクロール
 			$("body,html").scrollTop(0);
 			scrollY = 0;
 		}
@@ -1129,25 +1126,25 @@ function set_disp_scroll_spo() {
 }
 
 /*
- * 逕ｻ髱｢蟷・・繧ｵ繧､繧ｺ縺ｫ蜷医ｏ縺帙※逕ｻ髱｢鬆・岼繧貞宛蠕｡縺吶ｋ縲・
+ * 画面幅のサイズに合わせて画面項目を制御する。
  */
 function set_responsive() {
 	let userAgent = navigator.userAgent;
 	let windowWidth = window.innerWidth;
-	let scrollbarWidth; // 繧ｰ繝ｭ繝ｼ繝舌Ν繧ｹ繧ｳ繝ｼ繝励〒螳｣險
+	let scrollbarWidth; // グローバルスコープで宣言
 	document.addEventListener('DOMContentLoaded', (event) => {
    	scrollbarWidth = window.innerWidth - document.body.clientWidth;
-    	// 縺薙・繧ｹ繧ｳ繝ｼ繝怜・縺ｧscrollbarWidth縺ｮ蛟､繧定ｨｭ螳・
+    	// このスコープ内でscrollbarWidthの値を設定
 	});
 	let margin = 0;
 	let lang = document.documentElement.dataset.lang;
 	if (!(userAgent.indexOf('iPhone') > 0 || userAgent.indexOf('iPad') > 0 || userAgent.indexOf('Android') > 0 || userAgent.indexOf('Mobile') > 0 )) {
 		if ($("#guideDetail").is(":visible") || $("#searchDetail").is(":visible") || $("#trainSearchDetail").is(":visible") || $("#popupDetail").is(":visible") || $("#refreshSettingDetail").is(":visible") || $("#resshaDetail").is(":visible") || $("#oshiraseDetail").is(":visible")) {
-			// 縺・★繧後°縺ｮ繝繧､繧｢繝ｭ繧ｰ縺瑚｡ｨ遉ｺ縺輔ｌ縺ｦ縺・◆蝣ｴ蜷・
+			// いずれかのダイアログが表示されていた場合
 			margin = scrollbarWidth;
 		}
 
-		// PC縺ｮ蝣ｴ蜷・
+		// PCの場合
 		if (windowWidth <= 550) {
 			$("#guideDetail .dialog").css("margin", "0px " + scrollbarWidth + "px 0px 0px");
 			$("#searchDetail .dialog").css("margin", "0px " + scrollbarWidth + "px 0px 0px");
@@ -1170,7 +1167,7 @@ function set_responsive() {
 			$("#oshiraseDetail .dialog").css("marginLeft", scrollbarWidth + "px");
 		}
 
-		// 逕ｻ髱｢繧ｵ繧､繧ｺ縺御ｸ闊ｬ逧・↑繧ｹ繝槭・繧ｵ繧､繧ｺ莉･荳九→縺ｪ縺｣縺溷ｴ蜷医∫判髱｢繧堤ｸｮ蟆上＆縺帙ｋ
+		// 画面サイズが一般的なスマホサイズ以下となった場合、画面を縮小させる
 		if (windowWidth <= 385) {
 			let tr = (385 - windowWidth + 5) * 0.00275;
 			$(".main-contents").css("transform", `scale(${1 - tr})`);
@@ -1188,7 +1185,7 @@ function set_responsive() {
 		$("#resshaDetail .dialog").css("margin", "0px");
 		$("#oshiraseDetail .dialog").css("margin", "0px");
 
-		// 逕ｻ髱｢繧ｵ繧､繧ｺ縺御ｸ闊ｬ逧・↑繧ｹ繝槭・繧ｵ繧､繧ｺ莉･荳九→縺ｪ縺｣縺溷ｴ蜷医∫判髱｢繧堤ｸｮ蟆上＆縺帙ｋ
+		// 画面サイズが一般的なスマホサイズ以下となった場合、画面を縮小させる
 		if (windowWidth <= 375) {
 			let tr = (375 - windowWidth) * 0.00265;
 			$(".main-contents").css("transform", `scale(${1 - tr})`);
@@ -1200,26 +1197,26 @@ function set_responsive() {
 	}
 
 	if (windowWidth <= 1000) {
-		// 繧ｵ繧､繝峨Γ繝九Η繝ｼ繧帝國縺・
+		// サイドメニューを隠す
 		$("#sideMenu .side-menu").css("transform", "translateX(-327px)");
 		$("#sideMenu .side-menu").css("box-shadow", "none");
 		$("#sideMenu .side-menu-outer").hide();
 		$(".sub-header").css("width", "calc(100% - " + margin + "px)");
 		$(".sub-footer .homen-footer-contents").css("width", "calc(100% - " + margin + "px)");
-		if (lang == "ja") $(".sub-footer .sub-footer-contents.popup .sub-footer-unkou-msg").html("驥崎ｦ√↑<br>縺顔衍繧峨○");
-		// 繧ｵ繧､繝峨Γ繝九Η繝ｼ蜀・・謚倥ｊ逡ｳ縺ｿ繧帝哩縺倥ｋ縲・
+		if (lang == "ja") $(".sub-footer .sub-footer-contents.popup .sub-footer-unkou-msg").html("重要な<br>お知らせ");
+		// サイドメニュー内の折り畳みを閉じる。
 		toggle_close();
 		if (!($("#guideDetail").is(":visible") || $("#searchDetail").is(":visible") || $("#trainSearchDetail").is(":visible") || $("#popupDetail").is(":visible") || $("#refreshSettingDetail").is(":visible") || $("#resshaDetail").is(":visible") || $(".trainDetailDialog").is(":visible") || $("#oshiraseDetail").is(":visible"))) {
-			// 繝繧､繧｢繝ｭ繧ｰ縺瑚｡ｨ遉ｺ縺輔ｌ縺ｦ縺・↑縺・ｴ蜷・
-			// body縺ｮ繧ｹ繧ｯ繝ｭ繝ｼ繝ｫ繧呈怏蜉ｹ縺ｫ縺吶ｋ縲・
+			// ダイアログが表示されていない場合
+			// bodyのスクロールを有効にする。
 			set_scroll_show_side_menu();
 		}
 
-		// 繝｡繝ｳ繝・リ繝ｳ繧ｹ繝壹・繧ｸ縺ｮ繧ｿ繧､繝医Ν縺ｮ蛻ｶ蠕｡
+		// メンテナンスページのタイトルの制御
 		if (windowWidth <= 575) {
 			let text = $(".maintenance-title").html();
 			if (text && text.indexOf("<br>") == -1) {
-				$(".maintenance-title").html(text.replace("繝｡繝ｳ繝・リ繝ｳ繧ｹ", "<br>繝｡繝ｳ繝・リ繝ｳ繧ｹ"));
+				$(".maintenance-title").html(text.replace("メンテナンス", "<br>メンテナンス"));
 			}
 		} else {
 			let text = $(".maintenance-title").html();
@@ -1228,24 +1225,24 @@ function set_responsive() {
 			}
 		}
 	} else {
-		// 繧ｵ繧､繝峨Γ繝九Η繝ｼ繧定｡ｨ遉ｺ縺吶ｋ
+		// サイドメニューを表示する
 		margin += 325;
 		$("#sideMenu .side-menu").css("transform", "translateX(0px)");
 		$("#sideMenu .side-menu .area-contents-header").hide();
 		$("#sideMenu .side-menu-outer").hide();
 		$(".sub-header").css("width", "calc(100% - " + margin + "px)");
 		$(".sub-footer .homen-footer-contents").css("width", "calc(100% - " + margin + "px)");
-		if (lang == "ja") $(".sub-footer .sub-footer-contents.popup .sub-footer-unkou-msg").html("驥崎ｦ√↑縺顔衍繧峨○");
+		if (lang == "ja") $(".sub-footer .sub-footer-contents.popup .sub-footer-unkou-msg").html("重要なお知らせ");
 		if (!($("#guideDetail").is(":visible") || $("#searchDetail").is(":visible") || $("#trainSearchDetail").is(":visible") || $("#popupDetail").is(":visible") || $("#refreshSettingDetail").is(":visible") || $("#resshaDetail").is(":visible") || $(".trainDetailDialog").is(":visible") || $("#oshiraseDetail").is(":visible"))) {
-			// 繝繧､繧｢繝ｭ繧ｰ縺瑚｡ｨ遉ｺ縺輔ｌ縺ｦ縺・↑縺・ｴ蜷・
-			// body縺ｮ繧ｹ繧ｯ繝ｭ繝ｼ繝ｫ繧呈怏蜉ｹ縺ｫ縺吶ｋ縲・
+			// ダイアログが表示されていない場合
+			// bodyのスクロールを有効にする。
 			set_scroll_show_side_menu();
 		}
 	}
 }
 
 /*
- * 蛻苓ｻ翫い繧､繧ｳ繝ｳ繧呈緒逕ｻ縺吶ｋ縲・
+ * 列車アイコンを描画する。
  */
 function create_ressha_icon(_param_rosen, _nowData, _typeData, _ekiData) {
 	_nowData.trains.forEach(nowRow => {
@@ -1257,24 +1254,24 @@ function create_ressha_icon(_param_rosen, _nowData, _typeData, _ekiData) {
 
 		if (pos != "" && $("." + pos).length > 0) {
 			if (pos == "R9P11U" || pos == "R9P10U" || pos == "R9P9U" || pos == "R1P160U") {
-				// 譁ｰ蜃ｽ鬢ｨ蛹玲沫鬧・ｷｦ蛛ｴ・・9P11U・・
-				// 譁ｰ蜃ｽ鬢ｨ蛹玲沫・樔ｻ∝ｱｱ髢灘ｷｦ蛛ｴ・・9P10U・・
-				// 莉∝ｱｱ鬧・ｷｦ蛛ｴ・・9P9U・・
-				// 譁ｰ蜊・ｭｳ遨ｺ貂ｯ・槫漉蜊・ｭｳ髢灘ｷｦ蛛ｴ・・1P160U・峨・蝣ｴ蜷・
+				// 新函館北斗駅左側（R9P11U）
+				// 新函館北斗～仁山間左側（R9P10U）
+				// 仁山駅左側（R9P9U）
+				// 新千歳空港～南千歳間左側（R1P160U）の場合
 				$("." + nowRow.pos).append(create_html_up_ressha_icon(nowRow, _typeData, _ekiData));
 				$("." + nowRow.pos).addClass("up");
 			} else if (pos == "R9P11D" || pos == "R9P10D" || pos == "R9P9D" || pos == "R1P160D") {
-				// 譁ｰ蜃ｽ鬢ｨ蛹玲沫鬧・承蛛ｴ・・9P11D・・
-				// 譁ｰ蜃ｽ鬢ｨ蛹玲沫・樔ｻ∝ｱｱ髢灘承蛛ｴ・・9P10D・・
-				// 莉∝ｱｱ鬧・承蛛ｴ・・9P9D・・
-				// 譁ｰ蜊・ｭｳ遨ｺ貂ｯ・槫漉蜊・ｭｳ髢灘承蛛ｴ・・1P160D・・
+				// 新函館北斗駅右側（R9P11D）
+				// 新函館北斗～仁山間右側（R9P10D）
+				// 仁山駅右側（R9P9D）
+				// 新千歳空港～南千歳間右側（R1P160D）
 				if ($("." + nowRow.pos).children(".ressha").length < 4) {
 					$(create_html_down_ressha_icon(nowRow, _typeData, _ekiData)).prependTo("." + nowRow.pos);
 				} else {
 					$("." + nowRow.pos).append(create_html_down_ressha_icon(nowRow, _typeData, _ekiData));
 				}
 			} else if (pos == "R9P26U") {
-				// 阯､蝓守ｷ夲ｼ・9P26U・・
+				// 藤城線（R9P26U）
 				if ($("." + nowRow.pos).children(".ressha").length < 4) {
 					$(create_html_up_ressha_icon(nowRow, _typeData, _ekiData)).prependTo("." + nowRow.pos);
 					$("." + nowRow.pos).addClass("up");
@@ -1283,11 +1280,11 @@ function create_ressha_icon(_param_rosen, _nowData, _typeData, _ekiData) {
 					$("." + nowRow.pos).addClass("up");
 				}
 			} else if (pos == "R1P119U") {
-				// 譁ｰ蜊・ｭｳ遨ｺ貂ｯ鬧・ｷｦ蛛ｴ・・1P119U・峨・蝣ｴ蜷・
+				// 新千歳空港駅左側（R1P119U）の場合
 				$("." + nowRow.pos).append(create_html_up_ressha_icon(nowRow, _typeData, _ekiData));
 				$("." + nowRow.pos).addClass("up");
 			} else if (pos == "R1P119D") {
-				// 譁ｰ蜊・ｭｳ遨ｺ貂ｯ鬧・承蛛ｴ・・1P119D・峨・蝣ｴ蜷・
+				// 新千歳空港駅右側（R1P119D）の場合
 				if ($("." + nowRow.pos).children().length < 2) {
 					if ($("." + nowRow.pos).children(".ressha").length < 1) {
 						$("." + nowRow.pos).append(create_html_down_ressha_icon(nowRow, _typeData, _ekiData));
@@ -1298,14 +1295,14 @@ function create_ressha_icon(_param_rosen, _nowData, _typeData, _ekiData) {
 					$("." + nowRow.pos).append(create_html_down_ressha_icon(nowRow, _typeData, _ekiData));
 				}
 			} else if ($("." + pos).offset().left < width / 2 + add) {
-				// 繧｢繧､繧ｳ繝ｳ陦ｨ遉ｺ菴咲ｽｮ縺檎判髱｢蜊雁・繧医ｊ蟾ｦ縺ｮ蝣ｴ蜷・
+				// アイコン表示位置が画面半分より左の場合
 				$("." + nowRow.pos).append(create_html_up_ressha_icon(nowRow, _typeData, _ekiData));
 				$("." + nowRow.pos).addClass("up");
 			} else {
-				// 繧｢繧､繧ｳ繝ｳ陦ｨ遉ｺ菴咲ｽｮ縺檎判髱｢蜊雁・繧医ｊ蜿ｳ縺ｮ蝣ｴ蜷・
+				// アイコン表示位置が画面半分より右の場合
 				if ($("." + nowRow.pos).children(".ressha").length < 6) {
 					if ($("." + nowRow.pos).parent().parent().parent(".eki").length > 0) {
-						// 鬧・・蝣ｴ蜷・
+						// 駅の場合
 						if ($("." + nowRow.pos).children(".ressha").length < 3) {
 							$("." + nowRow.pos).append(create_html_down_ressha_icon(nowRow, _typeData, _ekiData));
 						} else {
@@ -1315,7 +1312,7 @@ function create_ressha_icon(_param_rosen, _nowData, _typeData, _ekiData) {
 							test.outerHTML = create_html_down_ressha_icon(nowRow, _typeData, _ekiData);
 						}
 					} else {
-						// 鬧・俣縺ｮ蝣ｴ蜷・
+						// 駅間の場合
 						$(create_html_down_ressha_icon(nowRow, _typeData, _ekiData)).prependTo("." + nowRow.pos);
 					}
 				} else {
@@ -1325,23 +1322,23 @@ function create_ressha_icon(_param_rosen, _nowData, _typeData, _ekiData) {
 		}
 	});
 
-	// TID蛹ｺ髢灘､悶・鬮倥＆繧定ｨｭ螳・
+	// TID区間外の高さを設定
 	set_hirendo_height();
 
-	// 蜃ｽ鬢ｨ鬧・捉霎ｺ縺ｮ鬮倥＆繧定ｨｭ螳・
+	// 函館駅周辺の高さを設定
 	if (["09", "52"].includes(_param_rosen)) set_hakodate_height();
 }
 
 /*
- * TID蛹ｺ髢灘､悶・鬮倥＆繧定ｨｭ螳・
+ * TID区間外の高さを設定
  */
 function set_hirendo_height() {
-	// TID蛹ｺ髢灘､悶・轤ｹ邱壼・縺ｫ蛻苓ｻ翫い繧､繧ｳ繝ｳ繧定｡ｨ遉ｺ縺吶ｋ鬆伜沺縺鯉ｼ偵▽ or ・薙▽ or ・斐▽蟄伜惠縺吶ｋ繝代ち繝ｼ繝ｳ繧定・・縺鈴ｫ倥＆繧定ｨｭ螳壹・
-	// 蛻苓ｻ翫い繧､繧ｳ繝ｳ陦ｨ遉ｺ鬆伜沺・偵▽
+	// TID区間外の点線内に列車アイコンを表示する領域が２つ or ３つ or ４つ存在するパターンを考慮し高さを設定。
+	// 列車アイコン表示領域２つ
 	$(".hirendo-contents.two-ressha-contents").each(function(i, row) {
 		let ressha = row.getElementsByClassName("hirendo-ressha-panel");
 		if (ressha[0].children[0].childElementCount >= 2 || ressha[1].children[0].childElementCount >= 2) {
-			// ・偵▽縺ｮ鬆伜沺荳ｭ縺ｮ荳翫・隕∫ｴ蜀・↓蛻苓ｻ翫′・偵▽莉･荳雁ｭ伜惠縺吶ｋ蝣ｴ蜷・
+			// ２つの領域中の上の要素内に列車が２つ以上存在する場合
 			let resshaCount = 0;
 			if (ressha[0].children[0].childElementCount > ressha[1].children[0].childElementCount) {
 				resshaCount = ressha[0].children[0].childElementCount;
@@ -1353,7 +1350,7 @@ function set_hirendo_height() {
 
 			let eki = row.getElementsByClassName("hirendo-eki-contents")[0];
 			if (eki.classList[1] == "one-eki") {
-				// 鬧・′・代▽縺ｮ蝣ｴ蜷・
+				// 駅が１つの場合
 				let margin = 50 * resshaCount + 12 * (resshaCount - 2);
 				let height = 70 * resshaCount;
 				eki.children[0].style.marginTop = margin + "px";
@@ -1364,7 +1361,7 @@ function set_hirendo_height() {
 				ressha[0].children[0].style.padding = "8px 0";
 				ressha[1].children[0].style.padding = "8px 0";
 			} else if (eki.classList[1] == "three-eki") {
-				// 鬧・′・薙▽縺ｮ蝣ｴ蜷・
+				// 駅が３つの場合
 				let margin = 23 * resshaCount + 5 * (resshaCount - 2);
 				let height = 65 * resshaCount;
 				eki.children[0].style.marginTop = margin + "px";
@@ -1377,7 +1374,7 @@ function set_hirendo_height() {
 		}
 
 		if (ressha[0].children[1].childElementCount >= 2 || ressha[1].children[1].childElementCount >= 2) {
-			// ・偵▽縺ｮ鬆伜沺荳ｭ縺ｮ荳九・隕∫ｴ蜀・↓蛻苓ｻ翫′・偵▽莉･荳雁ｭ伜惠縺吶ｋ蝣ｴ蜷・
+			// ２つの領域中の下の要素内に列車が２つ以上存在する場合
 			let resshaCount = 0;
 			if (ressha[0].children[1].childElementCount > ressha[1].children[1].childElementCount) {
 				resshaCount = ressha[0].children[1].childElementCount;
@@ -1389,7 +1386,7 @@ function set_hirendo_height() {
 
 			let eki = row.getElementsByClassName("hirendo-eki-contents")[0];
 			if (eki.classList[1] == "one-eki") {
-				// 鬧・′・代▽縺ｮ蝣ｴ蜷・
+				// 駅が１つの場合
 				let margin = 50 * resshaCount + 12 * (resshaCount - 2);
 				let height = 70 * resshaCount;
 				eki.children[0].style.marginBottom = margin + "px";
@@ -1400,7 +1397,7 @@ function set_hirendo_height() {
 				ressha[0].children[1].style.padding = "8px 0";
 				ressha[1].children[1].style.padding = "8px 0";
 			} else if (eki.classList[1] == "three-eki") {
-				// 鬧・′・薙▽縺ｮ蝣ｴ蜷・
+				// 駅が３つの場合
 				let margin = 23 * resshaCount + 5 * (resshaCount - 2);
 				let height = 65 * resshaCount;
 				eki.children[2].style.marginTop = margin + "px";
@@ -1413,11 +1410,11 @@ function set_hirendo_height() {
 		}
 	});
 
-	// 蛻苓ｻ翫い繧､繧ｳ繝ｳ陦ｨ遉ｺ鬆伜沺・薙▽
+	// 列車アイコン表示領域３つ
 	$(".hirendo-contents.three-ressha-contents").each(function(i, row) {
 		let ressha = row.getElementsByClassName("hirendo-ressha-panel");
 		if (ressha[0].children[0].childElementCount >= 2 || ressha[1].children[0].childElementCount >= 2) {
-			// ・薙▽縺ｮ鬆伜沺荳ｭ縺ｮ荳翫・隕∫ｴ蜀・↓蛻苓ｻ翫′・偵▽莉･荳雁ｭ伜惠縺吶ｋ蝣ｴ蜷・
+			// ３つの領域中の上の要素内に列車が２つ以上存在する場合
 			let resshaCount = 0;
 			if (ressha[0].children[0].childElementCount > ressha[1].children[0].childElementCount) {
 				resshaCount = ressha[0].children[0].childElementCount;
@@ -1429,7 +1426,7 @@ function set_hirendo_height() {
 
 			let eki = row.getElementsByClassName("hirendo-eki-contents")[0];
 			if (eki.classList[1] == "two-eki") {
-				// 鬧・′・偵▽縺ｮ蝣ｴ蜷・
+				// 駅が２つの場合
 				let margin = 50 * resshaCount + 12 * (resshaCount - 2);
 				let height = 70 * resshaCount;
 				eki.children[0].style.marginTop = margin + "px";
@@ -1443,7 +1440,7 @@ function set_hirendo_height() {
 		}
 
 		if (ressha[0].children[1].childElementCount >= 2 || ressha[1].children[1].childElementCount >= 2) {
-			// ・薙▽縺ｮ鬆伜沺荳ｭ縺ｮ逵溘ｓ荳ｭ縺ｮ隕∫ｴ蜀・↓蛻苓ｻ翫′・偵▽莉･荳雁ｭ伜惠縺吶ｋ蝣ｴ蜷・
+			// ３つの領域中の真ん中の要素内に列車が２つ以上存在する場合
 			let resshaCount = 0;
 			if (ressha[0].children[1].childElementCount > ressha[1].children[1].childElementCount) {
 				resshaCount = ressha[0].children[1].childElementCount;
@@ -1455,7 +1452,7 @@ function set_hirendo_height() {
 
 			let eki = row.getElementsByClassName("hirendo-eki-contents")[0];
 			if (eki.classList[1] == "two-eki") {
-				// 鬧・′・偵▽縺ｮ蝣ｴ蜷・
+				// 駅が２つの場合
 				let margin = 33 * resshaCount;
 				let height = 70 * resshaCount;
 				eki.children[0].style.marginBottom = margin + "px";
@@ -1470,7 +1467,7 @@ function set_hirendo_height() {
 		}
 
 		if (ressha[0].children[2].childElementCount >= 2 || ressha[1].children[2].childElementCount >= 2) {
-			// ・薙▽縺ｮ鬆伜沺荳ｭ縺ｮ荳九・隕∫ｴ蜀・↓蛻苓ｻ翫′・偵▽莉･荳雁ｭ伜惠縺吶ｋ蝣ｴ蜷・
+			// ３つの領域中の下の要素内に列車が２つ以上存在する場合
 			let resshaCount = 0;
 			if (ressha[0].children[2].childElementCount > ressha[1].children[2].childElementCount) {
 				resshaCount = ressha[0].children[2].childElementCount;
@@ -1482,7 +1479,7 @@ function set_hirendo_height() {
 
 			let eki = row.getElementsByClassName("hirendo-eki-contents")[0];
 			if (eki.classList[1] == "two-eki") {
-				// 鬧・′・偵▽縺ｮ蝣ｴ蜷・
+				// 駅が２つの場合
 				let margin = 50 * resshaCount + 12 * (resshaCount - 2);
 				let height = 70 * resshaCount;
 				ressha[0].style.gap = "35px";
@@ -1496,11 +1493,11 @@ function set_hirendo_height() {
 		}
 	});
 
-	// 蛻苓ｻ翫い繧､繧ｳ繝ｳ陦ｨ遉ｺ鬆伜沺・斐▽
+	// 列車アイコン表示領域４つ
 	$(".hirendo-contents.four-ressha-contents").each(function(i, row) {
 		let ressha = row.getElementsByClassName("hirendo-ressha-panel");
 		if (ressha[0].children[0].childElementCount >= 2 || ressha[1].children[0].childElementCount >= 2) {
-			// ・斐▽縺ｮ鬆伜沺荳ｭ縺ｮ荳逡ｪ荳翫・隕∫ｴ蜀・↓蛻苓ｻ翫′・偵▽莉･荳雁ｭ伜惠縺吶ｋ蝣ｴ蜷・
+			// ４つの領域中の一番上の要素内に列車が２つ以上存在する場合
 			let resshaCount = 0;
 			if (ressha[0].children[0].childElementCount > ressha[1].children[0].childElementCount) {
 				resshaCount = ressha[0].children[0].childElementCount;
@@ -1512,7 +1509,7 @@ function set_hirendo_height() {
 
 			let eki = row.getElementsByClassName("hirendo-eki-contents")[0];
 			if (eki.classList[1] == "three-eki") {
-				// 鬧・′・薙▽縺ｮ蝣ｴ蜷・
+				// 駅が３つの場合
 				let margin = 50 * resshaCount+ 12 * (resshaCount - 2);
 				let height = 70 * resshaCount;
 				ressha[0].style.gap = "35px";
@@ -1526,7 +1523,7 @@ function set_hirendo_height() {
 		}
 
 		if (ressha[0].children[1].childElementCount >= 2 || ressha[1].children[1].childElementCount >= 2) {
-			// ・斐▽縺ｮ鬆伜沺荳ｭ縺ｮ荳翫°繧会ｼ堤分逶ｮ縺ｮ隕∫ｴ蜀・↓蛻苓ｻ翫′・偵▽莉･荳雁ｭ伜惠縺吶ｋ蝣ｴ蜷・
+			// ４つの領域中の上から２番目の要素内に列車が２つ以上存在する場合
 			let resshaCount = 0;
 			if (ressha[0].children[1].childElementCount > ressha[1].children[1].childElementCount) {
 				resshaCount = ressha[0].children[1].childElementCount;
@@ -1538,7 +1535,7 @@ function set_hirendo_height() {
 
 			let eki = row.getElementsByClassName("hirendo-eki-contents")[0];
 			if (eki.classList[1] == "three-eki") {
-				// 鬧・′・薙▽縺ｮ蝣ｴ蜷・
+				// 駅が３つの場合
 				let margin = 35 * resshaCount;
 				let height = 70 * resshaCount;
 				ressha[0].style.gap = "35px";
@@ -1553,7 +1550,7 @@ function set_hirendo_height() {
 		}
 
 		if (ressha[0].children[2].childElementCount >= 2 || ressha[1].children[2].childElementCount >= 2) {
-			// ・斐▽縺ｮ鬆伜沺荳ｭ縺ｮ荳翫°繧会ｼ鍋分逶ｮ縺ｮ隕∫ｴ蜀・↓蛻苓ｻ翫′・偵▽莉･荳雁ｭ伜惠縺吶ｋ蝣ｴ蜷・
+			// ４つの領域中の上から３番目の要素内に列車が２つ以上存在する場合
 			let resshaCount = 0;
 			if (ressha[0].children[2].childElementCount > ressha[1].children[2].childElementCount) {
 				resshaCount = ressha[0].children[2].childElementCount;
@@ -1565,7 +1562,7 @@ function set_hirendo_height() {
 
 			let eki = row.getElementsByClassName("hirendo-eki-contents")[0];
 			if (eki.classList[1] == "three-eki") {
-				// 鬧・′・薙▽縺ｮ蝣ｴ蜷・
+				// 駅が３つの場合
 				let margin = 35 * resshaCount;
 				let height = 70 * resshaCount;
 				ressha[0].style.gap = "35px";
@@ -1580,7 +1577,7 @@ function set_hirendo_height() {
 		}
 
 		if (ressha[0].children[3].childElementCount >= 2 || ressha[1].children[3].childElementCount >= 2) {
-			// ・斐▽縺ｮ鬆伜沺荳ｭ縺ｮ荳逡ｪ荳九・隕∫ｴ蜀・↓蛻苓ｻ翫′・偵▽莉･荳雁ｭ伜惠縺吶ｋ蝣ｴ蜷・
+			// ４つの領域中の一番下の要素内に列車が２つ以上存在する場合
 			let resshaCount = 0;
 			if (ressha[0].children[3].childElementCount > ressha[1].children[3].childElementCount) {
 				resshaCount = ressha[0].children[3].childElementCount;
@@ -1592,7 +1589,7 @@ function set_hirendo_height() {
 
 			let eki = row.getElementsByClassName("hirendo-eki-contents")[0];
 			if (eki.classList[1] == "three-eki") {
-				// 鬧・′・薙▽縺ｮ蝣ｴ蜷・
+				// 駅が３つの場合
 				let margin = 50 * resshaCount+ 12 * (resshaCount - 2);
 				let height = 70 * resshaCount;
 				ressha[0].style.gap = "35px";
@@ -1608,13 +1605,13 @@ function set_hirendo_height() {
 }
 
 /*
- * 蜃ｽ鬢ｨ鬧・捉霎ｺ縺ｮ鬮倥＆繧定ｨｭ螳・
+ * 函館駅周辺の高さを設定
  */
 function set_hakodate_height() {
 	let countUH = document.querySelector(".R10P41U").childElementCount;
 	let countDH = document.querySelector(".R10P41D").childElementCount;
 	if ((countUH >= 3 || countDH >= 3)) {
-			// 蜃ｽ鬢ｨ鬧・↓蛻苓ｻ翫′・薙▽莉･荳雁ｭ伜惠縺吶ｋ蝣ｴ蜷・
+			// 函館駅に列車が３つ以上存在する場合
 			let resshaCount = countDH > countUH ? countDH : countUH;
 			if (resshaCount > 6) resshaCount = 6;
 			let height = 210 + (resshaCount - 2) * 65;
@@ -1624,7 +1621,7 @@ function set_hakodate_height() {
 	let countUG = document.querySelector(".R10P1U").childElementCount;
 	let countDG = document.querySelector(".R10P1D").childElementCount;
 	if ((countUG >= 4 || countDG >= 4)) {
-			// 莠皮ｨ憺Ο鬧・↓蛻苓ｻ翫′・斐▽莉･荳雁ｭ伜惠縺吶ｋ蝣ｴ蜷・
+			// 五稜郭駅に列車が４つ以上存在する場合
 			$("#stationList .item.goryokaku").css("height", "136px");
 			$("#goryokaku").hide();
 			$("#goryokakuLong").show();
@@ -1632,19 +1629,19 @@ function set_hakodate_height() {
 }
 
 /*
- *縲荳翫ｊ蛻苓ｻ翫・繧｢繧､繧ｳ繝ｳ縺ｮhtml繧堤函謌舌☆繧九・
+ *　上り列車のアイコンのhtmlを生成する。
  */
 function create_html_up_ressha_icon(_nowRow, _typeData, _ekiData) {
 	let lang = document.documentElement.dataset.lang;
 	let objItem = document.createElement("div");
 	objItem.classList.add("ressha");
 
-	// 蛻苓ｻ顔ｨｮ蛻･繝槭せ繧ｿ縺九ｉ蛻苓ｻ顔ｨｮ蛻･繧貞叙蠕・
+	// 列車種別マスタから列車種別を取得
 	let type = _typeData.find((v) => v.type == _nowRow.type);
-	// 繧｢繧､繧ｳ繝ｳ蜀・・蛻苓ｻ顔ｨｮ蛻･繧定ｨｭ螳・
+	// アイコン内の列車種別を設定
 	let iconArea = document.createElement("div");
 	iconArea.classList.add("icon-img");
-	// 譁ｰ蟷ｹ邱壻ｻ･螟悶↓縺ｯ蛻苓ｻ顔ｨｮ蛻･縺ｮ譁・ｭ励ｒ繧｢繧､繧ｳ繝ｳ縺ｫ蜈･繧後ｋ
+	// 新幹線以外には列車種別の文字をアイコンに入れる
 	if(_nowRow.type != "4") {
 		let objSbt = document.createElement("span");
 		objSbt.classList.add("ressha-sbt");
@@ -1656,15 +1653,15 @@ function create_html_up_ressha_icon(_nowRow, _typeData, _ekiData) {
 	}
 	objItem.appendChild(iconArea);
 
-	// 驕・ｻｶ繧定ｨｭ螳・
+	// 遅延を設定
 	let chienText = "";
 	if (_nowRow.chien > 0) {
 		if (_nowRow.chien >= 999) {
-			if (lang == "ja") chienText = "+螟ｧ蟷・;
+			if (lang == "ja") chienText = "+大幅";
 			if (lang == "en") chienText = "+Very";
-			if (lang == "tc") chienText = "+螟ｧ蟷・;
-			if (lang == "sc") chienText = "+螟ｧ蟷・;
-			if (lang == "kr") chienText = "+・尞ｭ";
+			if (lang == "tc") chienText = "+大幅";
+			if (lang == "sc") chienText = "+大幅";
+			if (lang == "kr") chienText = "+대폭";
 		} else {
 			chienText = "+" + _nowRow.chien;
 		}
@@ -1674,14 +1671,14 @@ function create_html_up_ressha_icon(_nowRow, _typeData, _ekiData) {
 	objOkure.textContent = chienText;
 	objItem.appendChild(objOkure);
 
-	// 蛻苓ｻ翫い繧､繧ｳ繝ｳ縺ｮ遏｢蜊ｰ繧定ｨｭ螳・
+	// 列車アイコンの矢印を設定
 	let objArrow = document.createElement("img");
 	objArrow.classList.add("arrow");
 	objArrow.setAttribute("src", "./images/home/train_icon_arrow_up.svg");
 	objArrow.setAttribute("alt", "");
 	objItem.appendChild(objArrow);
 
-	// 陦悟・繧定ｨｭ螳・
+	// 行先を設定
 	if (lang == "ja") {
 		let objYukisaki = document.createElement("span");
 		objYukisaki.classList.add("yukisaki-label");
@@ -1689,7 +1686,7 @@ function create_html_up_ressha_icon(_nowRow, _typeData, _ekiData) {
 		objItem.appendChild(objYukisaki);
 	}
 
-	// 驛ｨ蛻・°莨代・・√ｒ險ｭ螳・
+	// 部分運休の！を設定
 	if (_nowRow.status == "2") {
 		let objExclamation = document.createElement("img");
 		objExclamation.classList.add("exclamation");
@@ -1698,29 +1695,29 @@ function create_html_up_ressha_icon(_nowRow, _typeData, _ekiData) {
 		objItem.appendChild(objExclamation);
 	}
 
-	// 蛻苓ｻ願ｩｳ邏ｰ縺ｫ陦ｨ遉ｺ縺吶ｋ蜀・ｮｹ縺ｮ險ｭ螳・
+	// 列車詳細に表示する内容の設定
 	create_ressha_detail(objItem, _nowRow, _typeData, _ekiData);
 
 	return objItem.outerHTML;
 }
 
 /*
- * 荳九ｊ蛻苓ｻ翫・繧｢繧､繧ｳ繝ｳ縺ｮhtml繧堤函謌舌☆繧九・
+ * 下り列車のアイコンのhtmlを生成する。
  */
 function create_html_down_ressha_icon(_nowRow, _typeData, _ekiData) {
 	let lang = document.documentElement.dataset.lang;
 	let objItem = document.createElement("div");
 	objItem.classList.add("ressha");
 
-	// 驕・ｻｶ繧定ｨｭ螳・
+	// 遅延を設定
 	let chienText = "";
 	if (_nowRow.chien > 0) {
 		if (_nowRow.chien >= 999) {
-			if (lang == "ja") chienText = "+螟ｧ蟷・;
+			if (lang == "ja") chienText = "+大幅";
 			if (lang == "en") chienText = "+Very";
-			if (lang == "tc") chienText = "+螟ｧ蟷・;
-			if (lang == "sc") chienText = "+螟ｧ蟷・;
-			if (lang == "kr") chienText = "+・尞ｭ";
+			if (lang == "tc") chienText = "+大幅";
+			if (lang == "sc") chienText = "+大幅";
+			if (lang == "kr") chienText = "+대폭";
 		} else {
 			chienText = "+" + _nowRow.chien;
 		}
@@ -1730,12 +1727,12 @@ function create_html_down_ressha_icon(_nowRow, _typeData, _ekiData) {
 	objOkure.textContent = chienText;
 	objItem.appendChild(objOkure);
 
-	// 蛻苓ｻ顔ｨｮ蛻･繝槭せ繧ｿ縺九ｉ蛻苓ｻ顔ｨｮ蛻･繧貞叙蠕・
+	// 列車種別マスタから列車種別を取得
 	let type = _typeData.find((v) => v.type == _nowRow.type);
-	// 繧｢繧､繧ｳ繝ｳ蜀・・蛻苓ｻ顔ｨｮ蛻･繧定ｨｭ螳・
+	// アイコン内の列車種別を設定
 	let iconArea = document.createElement("div");
 	iconArea.classList.add("icon-img");
-	// 譁ｰ蟷ｹ邱壻ｻ･螟悶↓縺ｯ蛻苓ｻ顔ｨｮ蛻･縺ｮ譁・ｭ励ｒ繧｢繧､繧ｳ繝ｳ縺ｫ蜈･繧後ｋ
+	// 新幹線以外には列車種別の文字をアイコンに入れる
 	if(_nowRow.type != "4") {
 		let objSbt = document.createElement("span");
 		objSbt.classList.add("ressha-sbt");
@@ -1747,14 +1744,14 @@ function create_html_down_ressha_icon(_nowRow, _typeData, _ekiData) {
 	}
 	objItem.appendChild(iconArea);
 
-	// 蛻苓ｻ翫い繧､繧ｳ繝ｳ縺ｮ遏｢蜊ｰ繧定ｨｭ螳・
+	// 列車アイコンの矢印を設定
 	let objArrow = document.createElement("img");
 	objArrow.classList.add("arrow");
 	objArrow.setAttribute("src", "./images/home/train_icon_arrow_down.svg");
 	objArrow.setAttribute("alt", "");
 	objItem.appendChild(objArrow);
 
-	// 陦悟・繧定ｨｭ螳・
+	// 行先を設定
 	if (lang == "ja") {
 		let objYukisaki = document.createElement("span");
 		objYukisaki.classList.add("yukisaki-label");
@@ -1762,7 +1759,7 @@ function create_html_down_ressha_icon(_nowRow, _typeData, _ekiData) {
 		objItem.appendChild(objYukisaki);
 	}
 
-	// 驛ｨ蛻・°莨代・・√ｒ險ｭ螳・
+	// 部分運休の！を設定
 	if (_nowRow.status == "2") {
 		let objExclamation = document.createElement("img");
 		objExclamation.classList.add("exclamation");
@@ -1771,28 +1768,28 @@ function create_html_down_ressha_icon(_nowRow, _typeData, _ekiData) {
 		objItem.appendChild(objExclamation);
 	}
 
-	// 蛻苓ｻ願ｩｳ邏ｰ縺ｫ陦ｨ遉ｺ縺吶ｋ蜀・ｮｹ縺ｮ險ｭ螳・
+	// 列車詳細に表示する内容の設定
 	create_ressha_detail(objItem, _nowRow, _typeData, _ekiData);
 
 	return objItem.outerHTML;
 }
 
 /*
- * 蛻苓ｻ願ｩｳ邏ｰ逕ｨ縺ｮ髫縺苓ｦ∫ｴ繧定ｨｭ螳壹☆繧九・
+ * 列車詳細用の隠し要素を設定する。
  */
 function create_ressha_detail(_objItem, _nowRow, _typeData, _ekiData) {
 	let lang = document.documentElement.dataset.lang;
-	// 蛻苓ｻ顔ｨｮ蛻･繝槭せ繧ｿ縺九ｉ蛻苓ｻ顔ｨｮ蛻･繧貞叙蠕・
+	// 列車種別マスタから列車種別を取得
 	let type = _typeData.find((v) => v.type == _nowRow.type);
 
-	// 髫縺怜ｱ樊ｧ繧定ｨｭ螳壹☆繧九ゑｼ磯°陦梧ュ蝣ｱ隧ｳ邏ｰ繧定｡ｨ遉ｺ縺吶ｋ髫帙↓菴ｿ逕ｨ縺吶ｋ・・
+	// 隠し属性を設定する。（運行情報詳細を表示する際に使用する）
 	{
-		// 蛻苓ｻ顔分蜿ｷ
+		// 列車番号
 		{
 			_objItem.dataset.cbango = _nowRow.cbango;
 		}
 
-		// 蛻苓ｻ顔ｨｮ蛻･繧定｡ｨ縺呵牡繧定ｨｭ螳壹・
+		// 列車種別を表す色を設定。
 		{
 			if (type && type.labelColor) {
 				_objItem.dataset.ressha_type = type.labelColor;
@@ -1801,11 +1798,11 @@ function create_ressha_detail(_objItem, _nowRow, _typeData, _ekiData) {
 			}
 		}
 
-		// 蛻苓ｻ顔ｨｮ蛻･蜷・
+		// 列車種別名
 		{
 			if (type) {
 				if (type.type === 8) {
-					_objItem.dataset.ressha_type_name = "蠢ｫ騾・;
+					_objItem.dataset.ressha_type_name = "快速";
 				} else {
 					_objItem.dataset.ressha_type_name = type.typeText[lang];
 				}
@@ -1813,127 +1810,127 @@ function create_ressha_detail(_objItem, _nowRow, _typeData, _ekiData) {
 
 		}
 
-		// 驕玖｡檎憾諷九さ繝ｼ繝・窶ｻ0=蜈ｨ蛹ｺ髢馴°莨代・=驕玖ｻ｢縲・=驛ｨ蛻・°莨・
+		// 運行状態コード ※0=全区間運休、1=運転、2=部分運休
 		_objItem.dataset.unkou = _nowRow.status;
 
 		if (lang == "ja") {
-			// 驕玖｡檎憾諷句錐
+			// 運行状態名
 			{
-				if (_nowRow.status == "0") _objItem.dataset.unkou_name = "蜈ｨ蛹ｺ髢馴°莨・;
+				if (_nowRow.status == "0") _objItem.dataset.unkou_name = "全区間運休";
 				if (_nowRow.status == "1") _objItem.dataset.unkou_name = "";
-				if (_nowRow.status == "2") _objItem.dataset.unkou_name = "驛ｨ蛻・°莨・;
+				if (_nowRow.status == "2") _objItem.dataset.unkou_name = "部分運休";
 			}
-			// 驕玖｡檎憾諷玖ｩｳ邏ｰ
+			// 運行状態詳細
 			{
-				if (!_nowRow.statusDetail || _nowRow.statusDetail == "") _objItem.dataset.unkou_detail = "笏";
+				if (!_nowRow.statusDetail || _nowRow.statusDetail == "") _objItem.dataset.unkou_detail = "─";
 				else _objItem.dataset.unkou_detail = _nowRow.statusDetail;
 			}
 		}
 		else if (lang == "en") {
-			// 驕玖｡檎憾諷句錐
+			// 運行状態名
 			{
 				if (_nowRow.status == "0") _objItem.dataset.unkou_name = "All sections cancelled";
 				if (_nowRow.status == "1") _objItem.dataset.unkou_name = "";
 				if (_nowRow.status == "2") _objItem.dataset.unkou_name = "Partially cancelled";
 			}
-			// 驕玖｡檎憾諷玖ｩｳ邏ｰ
+			// 運行状態詳細
 			{
-				if (!_nowRow.statusDetailEn || _nowRow.statusDetailEn == "") _objItem.dataset.unkou_detail = "笏";
+				if (!_nowRow.statusDetailEn || _nowRow.statusDetailEn == "") _objItem.dataset.unkou_detail = "─";
 				else _objItem.dataset.unkou_detail = _nowRow.statusDetailEn;
 			}
 		}
 		else if (lang == "tc") {
-			// 驕玖｡檎憾諷句錐
+			// 運行状態名
 			{
-				if (_nowRow.status == "0") _objItem.dataset.unkou_name = "蜈ｨ蜊髢灘●鬧・;
+				if (_nowRow.status == "0") _objItem.dataset.unkou_name = "全區間停駛";
 				if (_nowRow.status == "1") _objItem.dataset.unkou_name = "";
-				if (_nowRow.status == "2") _objItem.dataset.unkou_name = "驛ｨ蛻・●鬧・;
+				if (_nowRow.status == "2") _objItem.dataset.unkou_name = "部分停駛";
 			}
-			// 驕玖｡檎憾諷玖ｩｳ邏ｰ
+			// 運行状態詳細
 			{
-				if (!_nowRow.statusDetailTc || _nowRow.statusDetailTc == "") _objItem.dataset.unkou_detail = "笏";
+				if (!_nowRow.statusDetailTc || _nowRow.statusDetailTc == "") _objItem.dataset.unkou_detail = "─";
 				else _objItem.dataset.unkou_detail = _nowRow.statusDetailTc;
 			}
 		}
 		else if (lang == "sc") {
-			// 驕玖｡檎憾諷句錐
+			// 運行状態名
 			{
-				if (_nowRow.status == "0") _objItem.dataset.unkou_name = "蜈ｨ蛹ｺ髣ｴ蛛憺ｩｶ";
+				if (_nowRow.status == "0") _objItem.dataset.unkou_name = "全区间停驶";
 				if (_nowRow.status == "1") _objItem.dataset.unkou_name = "";
-				if (_nowRow.status == "2") _objItem.dataset.unkou_name = "驛ｨ蛻・●鬩ｶ";
+				if (_nowRow.status == "2") _objItem.dataset.unkou_name = "部分停驶";
 			}
-			// 驕玖｡檎憾諷玖ｩｳ邏ｰ
+			// 運行状態詳細
 			{
-				if (!_nowRow.statusDetailSc || _nowRow.statusDetailSc == "") _objItem.dataset.unkou_detail = "笏";
+				if (!_nowRow.statusDetailSc || _nowRow.statusDetailSc == "") _objItem.dataset.unkou_detail = "─";
 				else _objItem.dataset.unkou_detail = _nowRow.statusDetailSc;
 			}
 		}
 		else if (lang == "kr") {
-			// 驕玖｡檎憾諷句錐
+			// 運行状態名
 			{
-				if (_nowRow.status == "0") _objItem.dataset.unkou_name = "・・・ｬ・・br>・ｴ嵂・・卓ｧ";
+				if (_nowRow.status == "0") _objItem.dataset.unkou_name = "전 구간<br>운행 중지";
 				if (_nowRow.status == "1") _objItem.dataset.unkou_name = "";
-				if (_nowRow.status == "2") _objItem.dataset.unkou_name = "・・・・ｴ嵂・br>・卓ｧ";
+				if (_nowRow.status == "2") _objItem.dataset.unkou_name = "부분 운행<br>중지";
 			}
-			// 驕玖｡檎憾諷玖ｩｳ邏ｰ
+			// 運行状態詳細
 			{
-				if (!_nowRow.statusDetailKr || _nowRow.statusDetailKr == "") _objItem.dataset.unkou_detail = "笏";
+				if (!_nowRow.statusDetailKr || _nowRow.statusDetailKr == "") _objItem.dataset.unkou_detail = "─";
 				else _objItem.dataset.unkou_detail = _nowRow.statusDetailKr;
 			}
 		}
 
-		// 驕・ｌ
+		// 遅れ
 		_objItem.dataset.chien = _nowRow.chien ? _nowRow.chien : "0";
 		if (_nowRow.yokuStatus == 1 || _nowRow.yokuStatus == 2) {
 			_objItem.dataset.chien_text = _nowRow.yokuDetail[lang];
 		} else if (_nowRow.chien >= 1) {
-			const CHIEN_LABEL_DELAYED_HOUR = { "ja": "{0}譎る俣驕・ｌ", "en": "{0} hour(s) late", "tc": "蟒ｶ驕ｲ{0}蟆乗凾", "sc": "蟒ｶ霑毬0}蟆乗慮", "kr": "{0}・懋ｰ・・・ｰ" };
-			const CHIEN_LABEL_DELAYED_HR_MIN = { "ja": "{0}譎る俣{1}蛻・≦繧・, "en": "{0} hr {1} min late", "tc": "蟒ｶ驕ｲ{0}蟆乗凾{1}蛻・, "sc": "蟒ｶ霑毬0}蟆乗慮{1}蛻・, "kr": "{0}・懋ｰ・{1}・・・・ｰ" };
-			const CHIEN_LABEL_DELAYED_MINUTES = { "ja": "{0}蛻・≦繧・, "en": "{0} minutes late", "tc": "蟒ｶ驕ｲ{0}蛻・, "sc": "蟒ｶ霑毬0}蛻・, "kr": "{0}・・・・ｰ" };
+			const CHIEN_LABEL_DELAYED_HOUR = { "ja": "{0}時間遅れ", "en": "{0} hour(s) late", "tc": "延遲{0}小時", "sc": "延迟{0}小时", "kr": "{0}시간 지연" };
+			const CHIEN_LABEL_DELAYED_HR_MIN = { "ja": "{0}時間{1}分遅れ", "en": "{0} hr {1} min late", "tc": "延遲{0}小時{1}分", "sc": "延迟{0}小时{1}分", "kr": "{0}시간 {1}분 지연" };
+			const CHIEN_LABEL_DELAYED_MINUTES = { "ja": "{0}分遅れ", "en": "{0} minutes late", "tc": "延遲{0}分", "sc": "延迟{0}分", "kr": "{0}분 지연" };
 			let chienHour = Math.floor(_nowRow.chien / 60);
 			let chienMin = _nowRow.chien % 60;
 			if (chienHour > 0){
-				if (chienMin > 0) _objItem.dataset.chien_text = CHIEN_LABEL_DELAYED_HR_MIN[lang].replace("{0}", chienHour).replace("{1}", chienMin); // 縲後・凾髢薙・・驕・ｌ縲・
-				else _objItem.dataset.chien_text = CHIEN_LABEL_DELAYED_HOUR[lang].replace("{0}",chienHour); // 縲後・凾髢馴≦繧後・
+				if (chienMin > 0) _objItem.dataset.chien_text = CHIEN_LABEL_DELAYED_HR_MIN[lang].replace("{0}", chienHour).replace("{1}", chienMin); // 「〇時間〇分遅れ」
+				else _objItem.dataset.chien_text = CHIEN_LABEL_DELAYED_HOUR[lang].replace("{0}",chienHour); // 「〇時間遅れ」
 			} else {
-				// 闍ｱ隱槭〒1蛻・≦繧後・蝣ｴ蜷医・ minute late縲阪↓縺ｪ繧・
+				// 英語で1分遅れの場合「1 minute late」になる
 				if (lang == "en" && chienMin == 1)_objItem.dataset.chien_text = chienMin + " minute late";
-				else _objItem.dataset.chien_text = CHIEN_LABEL_DELAYED_MINUTES[lang].replace("{0}", chienMin); // 縲後・・驕・ｌ縲・
+				else _objItem.dataset.chien_text = CHIEN_LABEL_DELAYED_MINUTES[lang].replace("{0}", chienMin); // 「〇分遅れ」
 			}
 		} else {
 			_objItem.dataset.chien_status = "0"
 		}
 
-		// 邱壼玄
+		// 線区
 		_objItem.dataset.senku = _nowRow.senku;
 
-		// 蝨ｰ轤ｹ繧ｭ繝ｼ
+		// 地点キー
 		_objItem.dataset.pos = _nowRow.pos;
 
-		// 鬧・・繧ｹ繧ｿ縺九ｉ繝繧､繝､繝・・繧ｿ縺ｮ邨ら捩鬧・ｒ蜿門ｾ励☆繧・
+		// 駅マスタからダイヤデータの終着駅を取得する
 		let findEki = _ekiData.find((v) => v.key == _nowRow.shuEkiKey);
 
-		// 陦悟・
-		if (lang == "ja") _objItem.dataset.shu_eki = typeof findEki !== "undefined" ? findEki.ja + " 陦後″" : "陦後″";
+		// 行先
+		if (lang == "ja") _objItem.dataset.shu_eki = typeof findEki !== "undefined" ? findEki.ja + " 行き" : "行き";
 		if (lang == "en") _objItem.dataset.shu_eki = typeof findEki !== "undefined" ? "For " + findEki.en : "For ";
-		if (lang == "tc") _objItem.dataset.shu_eki = typeof findEki !== "undefined" ? "髢句ｾ" + findEki.tc : "髢句ｾ";
-		if (lang == "sc") _objItem.dataset.shu_eki = typeof findEki !== "undefined" ? "蠑蠕" + findEki.sc : "蠑蠕";
-		if (lang == "kr") _objItem.dataset.shu_eki = typeof findEki !== "undefined" ? findEki.kr + "嵂・ : "嵂・;
+		if (lang == "tc") _objItem.dataset.shu_eki = typeof findEki !== "undefined" ? "開往" + findEki.tc : "開往";
+		if (lang == "sc") _objItem.dataset.shu_eki = typeof findEki !== "undefined" ? "开往" + findEki.sc : "开往";
+		if (lang == "kr") _objItem.dataset.shu_eki = typeof findEki !== "undefined" ? findEki.kr + "행" : "행";
 
-		// 霆贋ｸ｡謨ｰ
+		// 車両数
 		_objItem.dataset.ryosu = _nowRow.ryosu && _nowRow.ryosu != 0 ? _nowRow.ryosu : "";
 		if (_objItem.dataset.ryosu != "") {
-			if (lang == "ja") _objItem.dataset.ryosu += "荳｡";
+			if (lang == "ja") _objItem.dataset.ryosu += "両";
 			if (lang == "en") _objItem.dataset.ryosu += " car(s)";
-			if (lang == "tc") _objItem.dataset.ryosu += "遽霆雁ｻ・;
-			if (lang == "sc") _objItem.dataset.ryosu += "闃りｽｦ蜴｢";
-			if (lang == "kr") _objItem.dataset.ryosu += "・・寬ｸ・ｱ";
+			if (lang == "tc") _objItem.dataset.ryosu += "節車廂";
+			if (lang == "sc") _objItem.dataset.ryosu += "节车厢";
+			if (lang == "kr") _objItem.dataset.ryosu += "량 편성";
 		}
 	}
 }
 
 /*
- * 繝倥ャ繝繝ｼ縺ｮ鬮倥＆蛻・・菴咏區繧定ｨｭ螳壹☆繧九・
+ * ヘッダーの高さ分の余白を設定する。
  */
 function set_header_height() {
 	let height = $(".train-guide-contents .sub-header").height();
@@ -1941,7 +1938,7 @@ function set_header_height() {
 }
 
 /*
- * 繝繧､繧｢繝ｭ繧ｰ繧帝幕縺上→縺阪・body縺ｮ繧ｹ繧ｯ繝ｭ繝ｼ繝ｫ繧堤┌蜉ｹ縺ｫ縺吶ｋ縲・
+ * ダイアログを開くときのbodyのスクロールを無効にする。
  */
 function set_scroll_hide(dialog) {
 	let userAgent = navigator.userAgent;
@@ -1950,14 +1947,14 @@ function set_scroll_hide(dialog) {
 	let width = 0;
 	if (windowWidth > 1000) width = 325;
 
-	if (!$("#sideMenu .side-menu-outer").is(":visible")) scrollY = window.scrollY; // 繧ｵ繧､繝峨Γ繝九Η繝ｼ髱櫁｡ｨ遉ｺ譎・
+	if (!$("#sideMenu .side-menu-outer").is(":visible")) scrollY = window.scrollY; // サイドメニュー非表示時
 	$("body").css("overflow-y", "hidden");
 	$("body").css("position", "fixed");
 	$(".station-list-contents").css("position", "relative");
-	if (!$("#sideMenu .side-menu-outer").is(":visible")) $(".station-list-contents").css("top",  scrollY * -1 + "px"); // 繧ｵ繧､繝峨Γ繝九Η繝ｼ髱櫁｡ｨ遉ｺ譎・
+	if (!$("#sideMenu .side-menu-outer").is(":visible")) $(".station-list-contents").css("top",  scrollY * -1 + "px"); // サイドメニュー非表示時
 
 	if (!(userAgent.indexOf('iPhone') > 0 || userAgent.indexOf('iPad') > 0 || userAgent.indexOf('Android') > 0 || userAgent.indexOf('Mobile') > 0 )) {
-		// PC縺ｮ蝣ｴ蜷・
+		// PCの場合
 		width += scrollbarWidth;
 		$("body").css("width", "calc(100% - " + scrollbarWidth + "px)");
 		$("header").css("width", "calc(100% - " + scrollbarWidth + "px)");
@@ -1986,7 +1983,7 @@ function set_scroll_hide(dialog) {
 }
 
 /*
- * 繝繧､繧｢繝ｭ繧ｰ繧帝哩縺倥ｋ縺ｨ縺阪・body縺ｮ繧ｹ繧ｯ繝ｭ繝ｼ繝ｫ繧呈怏蜉ｹ縺ｫ縺吶ｋ縲・
+ * ダイアログを閉じるときのbodyのスクロールを有効にする。
  */
 function set_scroll_show(dialog) {
 	let userAgent = navigator.userAgent;
@@ -2001,7 +1998,7 @@ function set_scroll_show(dialog) {
 	window.scrollTo(0, scrollY);
 
 	if (!(userAgent.indexOf('iPhone') > 0 || userAgent.indexOf('iPad') > 0 || userAgent.indexOf('Android') > 0 || userAgent.indexOf('Mobile') > 0 )) {
-		// PC縺ｮ蝣ｴ蜷・
+		// PCの場合
 		$("body").css("width", "100%");
 		$("header").css("width", "100%");
 		$(".sub-header").css("width", "calc(100% - " + width + "px)");
@@ -2031,7 +2028,7 @@ function set_scroll_show(dialog) {
 }
 
 /*
- * 繧ｵ繧､繝峨Γ繝九Η繝ｼ繧帝幕縺上→縺阪・body縺ｮ繧ｹ繧ｯ繝ｭ繝ｼ繝ｫ繧堤┌蜉ｹ縺ｫ縺吶ｋ縲・
+ * サイドメニューを開くときのbodyのスクロールを無効にする。
  */
 function set_scroll_hide_side_menu() {
 	let userAgent = navigator.userAgent;
@@ -2043,7 +2040,7 @@ function set_scroll_hide_side_menu() {
 	$(".station-list-contents").css("top",  scrollY * -1 + "px");
 
 	if (!(userAgent.indexOf('iPhone') > 0 || userAgent.indexOf('iPad') > 0 || userAgent.indexOf('Android') > 0 || userAgent.indexOf('Mobile') > 0 )) {
-		// PC縺ｮ蝣ｴ蜷・
+		// PCの場合
 		$("body").css("width", "calc(100% - " + scrollbarWidth + "px)");
 		$("header").css("width", "calc(100% - " + scrollbarWidth + "px)");
 		$(".sub-header").css("width", "calc(100% - " + scrollbarWidth + "px)");
@@ -2058,7 +2055,7 @@ function set_scroll_hide_side_menu() {
 }
 
 /*
- * 繧ｵ繧､繝峨Γ繝九Η繝ｼ繧帝哩縺倥ｋ縺ｨ縺阪・body縺ｮ繧ｹ繧ｯ繝ｭ繝ｼ繝ｫ繧呈怏蜉ｹ縺ｫ縺吶ｋ縲・
+ * サイドメニューを閉じるときのbodyのスクロールを有効にする。
  */
 function set_scroll_show_side_menu() {
 	let userAgent = navigator.userAgent;
@@ -2069,11 +2066,11 @@ function set_scroll_show_side_menu() {
 	$("body").css("overflow-y", "scroll");
 	$("body").css("position", "static");
 	$(".station-list-contents").css("position", "static");
-	// 繧ｵ繧､繝峨Γ繝九Η繝ｼ縺ｮ陦ｨ遉ｺ縺後≠繧句ｴ蜷医・縺ｿ(莉冶ｷｯ邱壹∈縺ｮ遘ｻ蜍輔・蝣ｴ蜷医・繧ｹ繧ｯ繝ｭ繝ｼ繝ｫ縺ｮ遘ｻ蜍輔ｒ陦後ｏ縺ｪ縺・
+	// サイドメニューの表示がある場合のみ(他路線への移動の場合はスクロールの移動を行わない)
 	if (isSideMenuDisp) window.scrollTo(0, scrollY);
 
 	if (!(userAgent.indexOf('iPhone') > 0 || userAgent.indexOf('iPad') > 0 || userAgent.indexOf('Android') > 0 || userAgent.indexOf('Mobile') > 0 )) {
-		// PC縺ｮ蝣ｴ蜷・
+		// PCの場合
 		$("body").css("width", "100%");
 		$("header").css("width", "100%");
 		$(".sub-header").css("width", "calc(100% - " + width + "px)");
@@ -2088,11 +2085,11 @@ function set_scroll_show_side_menu() {
 }
 
 /*
- * 繧ｿ繝夜∈謚樊凾縺ｮ蛻ｶ蠕｡蜃ｦ逅・
+ * タブ選択時の制御処理
  */
 function tab_select(_str) {
 
-	// 繧ｿ繝門・縺ｮ謚倥ｊ逡ｳ縺ｿ繧帝哩縺倥ｋ縲・
+	// タブ内の折り畳みを閉じる。
 	toggle_close();
 
 	if (_str == "Exp") {
@@ -2105,7 +2102,7 @@ function tab_select(_str) {
 }
 
 /*
- * 繧ｿ繝夜∈謚樊凾縺ｮ蛻ｶ蠕｡蜃ｦ逅・ｼ医Μ繧ｵ繧､繧ｺ譎ゑｼ・
+ * タブ選択時の制御処理（リサイズ時）
  */
 function tab_select_resize(_str) {
 
@@ -2119,24 +2116,24 @@ function tab_select_resize(_str) {
 }
 
 /*
- * 繧ｿ繝門・縺ｮ謚倥ｊ逡ｳ縺ｿ繧帝哩縺倥ｋ縲・
+ * タブ内の折り畳みを閉じる。
  */
 function toggle_close() {
-	// 迚ｹ諤･繝ｪ繧ｹ繝医ｒ縺溘◆繧
+	// 特急リストをたたむ
 	$(".express-train-list").css("display", "none");
-	// 迚ｹ諤･繝ｪ繧ｹ繝医・隕句・縺暦ｼ井ｸ芽ｧ抵ｼ峨ｒ蛻晄悄蛹・
+	// 特急リストの見出し（三角）を初期化
 	$(".express-name-label").removeClass("open");
-	// 繧ｵ繧､繝峨Γ繝九Η繝ｼ繧偵◆縺溘・
+	// サイドメニューをたたむ
 	$(".rosen-name-list").css("display", "none");
-	// 繧ｵ繧､繝峨Γ繝九Η繝ｼ縺ｮ隕句・縺暦ｼ井ｸ芽ｧ抵ｼ峨ｒ蛻晄悄蛹・
+	// サイドメニューの見出し（三角）を初期化
 	$(".area-name-label").removeClass("open");
 }
 
 /*
- * 繝上ャ繧ｷ繝･縺ｫ菫晄戟縺励◆蛻苓ｻ顔分蜿ｷ縺ｮ蛻苓ｻ翫′襍ｰ陦御ｸｭ縺狗｢ｺ隱阪ｒ陦後≧
+ * ハッシュに保持した列車番号の列車が走行中か確認を行う
  */
 function ressha_run_check() {
-	// 繝ｭ繝ｼ繝・ぅ繝ｳ繧ｰ繧｢繝九Γ繝ｼ繧ｷ繝ｧ繝ｳ繧定｡ｨ遉ｺ
+	// ローディングアニメーションを表示
 	loading_animation_display();
 	$("body,html").scrollTop(0);
 
@@ -2144,7 +2141,7 @@ function ressha_run_check() {
 	let ressha = $("div[data-cbango='" + param_cbango + "']");
 	if (ressha.length > 0) {
 		let pos = ressha.offset().top - 260;
-		// 繝ｪ繝ｭ繝ｼ繝峨＆繧後◆蝣ｴ蜷医い繝九Γ繝ｼ繧ｷ繝ｧ繝ｳ繧定｡後ｏ縺ｪ縺・
+		// リロードされた場合アニメーションを行わない
 		if (!is_reload()) {
 			$("body,html").animate({scrollTop: pos});
 		} else {
@@ -2155,42 +2152,42 @@ function ressha_run_check() {
 		let html = "<img class='ressha-animation' src='./images/home/ressha_mark.svg' alt>"
 		ressha.append(html);
 
-		// 驕ｸ謚槭＠縺溷・霆翫↓襍､譫繧偵▽縺代※蠑ｷ隱ｿ縺吶ｋ
+		// 選択した列車に赤枠をつけて強調する
 		set_ressha_icon_animation();
 
-		// 繝ｭ繝ｼ繝・ぅ繝ｳ繧ｰ繧｢繝九Γ繝ｼ繧ｷ繝ｧ繝ｳ繧帝撼陦ｨ遉ｺ縺ｫ縺吶ｋ
+		// ローディングアニメーションを非表示にする
 		loading_animation_hidden();
 
 	} else {
-		// 迴ｾ蝨ｨ陦ｨ遉ｺ荳ｭ縺ｮ霍ｯ邱壹ｒ蜿門ｾ・
+		// 現在表示中の路線を取得
 		isNotInitDisp = true;
 		let rosen = get_param_rosen();
 		location.hash = "rosen=" + rosen;
-		// 繝壹・繧ｸ縺ｮ隱ｭ縺ｿ霎ｼ縺ｿ縺檎ｵゅｏ縺｣縺ｦ縺九ｉ繝繧､繧｢繝ｭ繧ｰ陦ｨ遉ｺ
+		// ページの読み込みが終わってからダイアログ表示
 		$("#oshiraseDetail").fadeIn("fast");
 		let lang = document.documentElement.dataset.lang;
-		if (lang == "ja") $("#oshiraseDetailMain .text").text("迴ｾ蝨ｨ縺ｯ縺薙・蛻苓ｻ翫・蝟ｶ讌ｭ譎る俣螟悶〒縺吶・);
+		if (lang == "ja") $("#oshiraseDetailMain .text").text("現在はこの列車の営業時間外です。");
 		if (lang == "en") $("#oshiraseDetailMain .text").text("This train is not in operation now.");
-		if (lang == "tc") $("#oshiraseDetailMain .text").text("迴ｾ蝨ｨ髱樊悽蛻苓ｻ顔・驕区凾髢薙・);
-		if (lang == "sc") $("#oshiraseDetailMain .text").text("邇ｰ蝨ｨ髱樊悽蛻苓ｽｦ關･霑先慮髣ｴ縲・);
-		if (lang == "kr") $("#oshiraseDetailMain .text").text("嶸・椪 ・ｴ ・ｴ・ｨ・・・ｼ嵂駕葺・ ・溢ｧ ・喜慣・壱共.");
+		if (lang == "tc") $("#oshiraseDetailMain .text").text("現在非本列車營運時間。");
+		if (lang == "sc") $("#oshiraseDetailMain .text").text("现在非本列车营运时间。");
+		if (lang == "kr") $("#oshiraseDetailMain .text").text("현재 이 열차는 주행하고 있지 않습니다.");
 		set_scroll_hide($("#oshiraseDetail .dialog"));
 	}
 
 	if (window.innerWidth <= 1000) {
-		// 繧ｵ繧､繝峨Γ繝九Η繝ｼ繧帝哩縺倥ｋ
+		// サイドメニューを閉じる
 		$("#sideMenu .side-menu").css("transform", "translateX(-327px)");
 		$("#sideMenu .side-menu").css("box-shadow", "none");
 		$("#localTab").show();
 		$("#expTab").show();
 		$("#sideMenu .side-menu-outer").hide();
-		// 繧ｵ繧､繝峨Γ繝九Η繝ｼ蜀・・謚倥ｊ逡ｳ縺ｿ繧帝哩縺倥ｋ縲・
+		// サイドメニュー内の折り畳みを閉じる。
 		toggle_close();
 	}
 }
 
 /*
- * 繝上ャ繧ｷ繝･縺九ｉ霍ｯ邱壹ｒ蜿門ｾ・
+ * ハッシュから路線を取得
  */
 function get_param_rosen() {
 	let params = location.hash.slice(1).split('&');
@@ -2201,7 +2198,7 @@ function get_param_rosen() {
 }
 
 /*
- * 繝上ャ繧ｷ繝･縺九ｉid・磯ｧ・く繝ｼ・峨ｒ蜿門ｾ・
+ * ハッシュからid（駅キー）を取得
  */
 function get_param_id() {
 	let params = location.hash.slice(1).split('&');
@@ -2212,7 +2209,7 @@ function get_param_id() {
 }
 
 /*
- * 繝上ャ繧ｷ繝･縺九ｉcbango繧貞叙蠕・
+ * ハッシュからcbangoを取得
  */
 function get_param_cbango() {
 	let params = location.hash.slice(1).split('&');
@@ -2223,7 +2220,8 @@ function get_param_cbango() {
 }
 
 /*
- * 蛻苓ｻ頑､懃ｴ｢繝繧､繧｢繝ｭ繧ｰ繧貞・譛溽憾諷九↓謌ｻ縺・ */
+ * 列車検索ダイアログを初期状態に戻す
+ */
 function reset_train_search_dialog() {
 	$("#trainSearchNumberInput").val("");
 	$("#trainSearchNameNumberInput").val("");
@@ -2232,7 +2230,7 @@ function reset_train_search_dialog() {
 }
 
 /*
- * 蛻苓ｻ頑､懃ｴ｢繝繧､繧｢繝ｭ繧ｰ繧帝哩縺倥ｋ
+ * 列車検索ダイアログを閉じる
  */
 function close_train_search_dialog() {
 	$("#trainSearchDetail").fadeOut("fast");
@@ -2240,21 +2238,21 @@ function close_train_search_dialog() {
 }
 
 /*
- * 迴ｾ蝨ｨ襍ｰ陦後＠縺ｦ縺・↑縺・・霆翫ｒ驕ｸ謚槭＠縺滄圀縺ｮ繝｡繝・そ繝ｼ繧ｸ繧定｡ｨ遉ｺ縺吶ｋ
+ * 現在走行していない列車を選択した際のメッセージを表示する
  */
 function show_train_not_running_message() {
 	$("#oshiraseDetail").fadeIn("fast");
 	let lang = document.documentElement.dataset.lang;
-	if (lang == "ja") $("#oshiraseDetailMain .text").text("縺薙・蛻苓ｻ翫・迴ｾ蝨ｨ襍ｰ陦後＠縺ｦ縺・∪縺帙ｓ縲・);
+	if (lang == "ja") $("#oshiraseDetailMain .text").text("この列車は現在走行していません。");
 	if (lang == "en") $("#oshiraseDetailMain .text").text("This train is not currently running.");
-	if (lang == "tc") $("#oshiraseDetailMain .text").text("譛ｬ蛻苓ｻ顔岼蜑肴悴陦碁ｧ帙・);
-	if (lang == "sc") $("#oshiraseDetailMain .text").text("譛ｬ蛻苓ｽｦ逶ｮ蜑肴悴霑占｡後・);
-	if (lang == "kr") $("#oshiraseDetailMain .text").text("・ｴ ・ｴ・ｨ・・嶸・椪 ・ｼ嵂駕葺・ ・溢ｧ ・喜慣・壱共.");
+	if (lang == "tc") $("#oshiraseDetailMain .text").text("本列車目前未行駛。");
+	if (lang == "sc") $("#oshiraseDetailMain .text").text("本列车目前未运行。");
+	if (lang == "kr") $("#oshiraseDetailMain .text").text("이 열차는 현재 주행하고 있지 않습니다.");
 	set_scroll_hide($("#oshiraseDetail .dialog"));
 }
 
 /*
- * 蛻苓ｻ頑､懃ｴ｢繝・・繧ｿ繧定ｪｭ縺ｿ霎ｼ繧
+ * 列車検索データを読み込む
  */
 function find_train_search_result(cbango) {
 	if (!cachedTrainSearchData || !Array.isArray(cachedTrainSearchData.trains)) return undefined;
@@ -2425,7 +2423,7 @@ function load_train_search_data() {
 				"type": resolvedType,
 				"value": "",
 				"name": displayName,
-				"status": "縺薙・蛻苓ｻ翫・迴ｾ蝨ｨ襍ｰ陦後＠縺ｦ縺・∪縺帙ｓ縲・,
+				"status": "この列車は現在走行していません。",
 				"baseName": nameInfo.baseName,
 				"goNumber": nameInfo.goNumber,
 				"hasCustomName": !!nameInfo.baseName,
@@ -2465,11 +2463,12 @@ function load_train_search_data() {
 }
 
 /*
- * 蛻苓ｻ雁錐繝励Ν繝繧ｦ繝ｳ繧呈ｧ狗ｯ峨☆繧・ */
+ * 列車名プルダウンを構築する
+ */
 function populate_train_search_name_select(searchData) {
 	const select = $("#trainSearchNameSelect");
 	select.empty();
-	select.append($("<option>").val("").text("蛻苓ｻ雁錐繧帝∈謚・));
+	select.append($("<option>").val("").text("列車名を選択"));
 	if (searchData && Array.isArray(searchData.names)) {
 		searchData.names.forEach((name) => {
 			select.append($("<option>").val(name).text(name));
@@ -2478,15 +2477,15 @@ function populate_train_search_name_select(searchData) {
 }
 
 /*
- * 蛻苓ｻ雁錐縺ｨ蜿ｷ謨ｰ繧貞・隗｣縺吶ｋ
+ * 列車名と号数を分解する
  */
 function parse_train_name(name) {
 	const text = String(name || "")
-		.replace(/[・・・兢/g, (char) => String.fromCharCode(char.charCodeAt(0) - 0xFEE0))
+		.replace(/[０-９]/g, (char) => String.fromCharCode(char.charCodeAt(0) - 0xFEE0))
 		.replace(/\u3000/g, " ")
 		.trim();
 	if (!text) return { "baseName": "", "goNumber": "" };
-	const match = text.match(/^(.*?)(\d+)蜿ｷ?$/);
+	const match = text.match(/^(.*?)(\d+)号?$/);
 	if (!match) return { "baseName": text, "goNumber": "" };
 	return {
 		"baseName": match[1].trim(),
@@ -2495,21 +2494,21 @@ function parse_train_name(name) {
 }
 
 /*
- * 蛻苓ｻ頑､懃ｴ｢逕ｨ縺ｮ陦ｨ遉ｺ蜷阪ｒ菴懈・縺吶ｋ
+ * 列車検索用の表示名を作成する
  */
 function build_train_search_display_name(train, daiya, typeData, ekiData) {
 	const lang = document.documentElement.dataset.lang;
 	const destKey = train.shuEkiKey || (daiya ? daiya.shuEkiKey : "");
 	const dest = ekiData.find((row) => row.key == destKey);
 	const destName = dest ? (dest[lang] || dest.ja || "") : "";
-	const destText = destName ? " " + destName + "陦・ : "";
+	const destText = destName ? " " + destName + "行" : "";
 	const nameInfo = parse_train_name(daiya && daiya.name ? daiya.name : "");
 	if (nameInfo.baseName) return (daiya.name + destText).trim();
 	const resolvedType = resolve_train_search_type(train.type, daiya ? daiya.name : "", typeData, train.cbango, daiya ? daiya.senku : "");
 	const type = typeData.find((row) => String(row.type) == String(resolvedType));
 	let typeName = "";
 	if (type) {
-		typeName = type.type === 8 ? "蠢ｫ騾・ : (type.typeText[lang] || type.typeText.ja || "");
+		typeName = type.type === 8 ? "快速" : (type.typeText[lang] || type.typeText.ja || "");
 	}
 	const displayName = (typeName + destText).trim();
 	if (displayName) return displayName;
@@ -2518,7 +2517,8 @@ function build_train_search_display_name(train, daiya, typeData, ekiData) {
 }
 
 /*
- * HTML繧ｨ繧ｹ繧ｱ繝ｼ繝・ */
+ * HTMLエスケープ
+ */
 function resolve_train_search_type(type, name, typeData, cbango, senku) {
 	if (String(senku || "") === "19") return "4";
 	const resolvedType = String(type || "");
@@ -2550,9 +2550,9 @@ function resolve_train_search_type(type, name, typeData, cbango, senku) {
 		});
 		if (matchedType) return matchedType;
 	}
-	if (trainName.indexOf("迚ｹ蛻･蠢ｫ騾・) >= 0) return "5";
-	if (trainName.indexOf("蠢ｫ騾・) >= 0) return "8";
-	if (trainName.indexOf("譎ｮ騾・) >= 0) return "3";
+	if (trainName.indexOf("特別快速") >= 0) return "5";
+	if (trainName.indexOf("快速") >= 0) return "8";
+	if (trainName.indexOf("普通") >= 0) return "3";
 	return "";
 }
 
@@ -2573,34 +2573,34 @@ function escape_train_search_html(text) {
 }
 
 /*
- * 蛻礼分讀懃ｴ｢繧定｡後≧
+ * 列番検索を行う
  */
 function run_train_number_search() {
 	const digits = $("#trainSearchNumberInput").val().replace(/[^\d]/g, "");
 	const suffix = ($("#trainSearchSuffixSelect").val() || "D").toUpperCase();
 	if (!digits) {
-		render_train_search_results([], "蛻礼分繧貞・蜉帙＠縺ｦ縺上□縺輔＞縲・, "蛻礼分繧貞・蜉帙＠縺ｦ縺上□縺輔＞縲・);
+		render_train_search_results([], "列番を入力してください。", "列番を入力してください。");
 		return;
 	}
 	const keyword = normalize_train_search_cbango(digits + suffix);
 	load_train_search_data()
 		.then((searchData) => {
 			const results = searchData.trains.filter((train) => normalize_train_search_cbango(train.cbango) === keyword);
-			render_train_search_results(results, "讀懃ｴ｢邨先棡");
+			render_train_search_results(results, "検索結果");
 		})
 		.catch(() => {
-			render_train_search_results([], "讀懃ｴ｢繝・・繧ｿ繧貞叙蠕励〒縺阪∪縺帙ｓ縺ｧ縺励◆縲・, "讀懃ｴ｢繝・・繧ｿ繧貞叙蠕励〒縺阪∪縺帙ｓ縺ｧ縺励◆縲・);
+			render_train_search_results([], "検索データを取得できませんでした。", "検索データを取得できませんでした。");
 		});
 }
 
 /*
- * 蛻苓ｻ雁錐讀懃ｴ｢繧定｡後≧
+ * 列車名検索を行う
  */
 function run_train_name_search() {
 	const selectedName = $("#trainSearchNameSelect").val();
 	const goNumber = $("#trainSearchNameNumberInput").val().replace(/[^\d]/g, "");
 	if (!selectedName) {
-		render_train_search_results([], "蛻苓ｻ雁錐繧帝∈謚槭＠縺ｦ縺上□縺輔＞縲・, "蛻苓ｻ雁錐繧帝∈謚槭＠縺ｦ縺上□縺輔＞縲・);
+		render_train_search_results([], "列車名を選択してください。", "列車名を選択してください。");
 		return;
 	}
 	load_train_search_data()
@@ -2610,27 +2610,27 @@ function run_train_name_search() {
 				if (!goNumber) return true;
 				return train.goNumber === goNumber;
 			});
-			render_train_search_results(results, "讀懃ｴ｢邨先棡");
+			render_train_search_results(results, "検索結果");
 		})
 		.catch(() => {
-			render_train_search_results([], "讀懃ｴ｢繝・・繧ｿ繧貞叙蠕励〒縺阪∪縺帙ｓ縺ｧ縺励◆縲・, "讀懃ｴ｢繝・・繧ｿ繧貞叙蠕励〒縺阪∪縺帙ｓ縺ｧ縺励◆縲・);
+			render_train_search_results([], "検索データを取得できませんでした。", "検索データを取得できませんでした。");
 		});
 }
 
 /*
- * 讀懃ｴ｢逕ｨ譁・ｭ怜・繧呈ｭ｣隕丞喧
+ * 検索用文字列を正規化
  */
 function normalize_train_search_text(text) {
 	return String(text || "").toLowerCase().replace(/[\s\u3000]+/g, "");
 }
 
 /*
- * 蛻苓ｻ頑､懃ｴ｢邨先棡繧呈緒逕ｻ
+ * 列車検索結果を描画
  */
 function render_train_search_results(results, headerText, emptyMessage) {
 	$("#trainSearchResultInfo").text(headerText || "");
 	if (!results.length) {
-		$("#trainSearchResult").html("<div class='train-search-empty'>" + (emptyMessage || "隧ｲ蠖薙☆繧句・霆翫・縺ゅｊ縺ｾ縺帙ｓ縲・) + "</div>");
+		$("#trainSearchResult").html("<div class='train-search-empty'>" + (emptyMessage || "該当する列車はありません。") + "</div>");
 		return;
 	}
 	let html = "";
@@ -2640,31 +2640,31 @@ function render_train_search_results(results, headerText, emptyMessage) {
 		html += "<span class='search-result-cbango'>" + escape_train_search_html(train.cbango) + "</span>";
 		html += "<span class='train-name'>" + escape_train_search_html(train.name) + "</span>";
 		html += "</div>";
-		html += "<span class='unkou-label" + (train.status && train.status.indexOf("驕・ｌ") >= 0 ? " chien" : "") + "'>" + escape_train_search_html(train.status || "") + "</span>";
+		html += "<span class='unkou-label" + (train.status && train.status.indexOf("遅れ") >= 0 ? " chien" : "") + "'>" + escape_train_search_html(train.status || "") + "</span>";
 		html += "</div>";
 	});
 	$("#trainSearchResult").html(html);
 }
 
 /*
- * rosen_xx.html縺ｫ陦ｨ險倥＆繧後◆蝨ｰ轤ｹ繧ｳ繝ｼ繝峨・鬆・↓蛻苓ｻ翫い繧､繧ｳ繝ｳ縺ｮ陦ｨ遉ｺ繧剃ｸｦ縺ｳ譖ｿ縺医ｋ
+ * rosen_xx.htmlに表記された地点コードの順に列車アイコンの表示を並び替える
  */
 function ressha_pos_sort() {
 	let resshaIconArray =  Array.from($("#stationList .ressha-icon"));
-	// 蛻苓ｻ翫′2縺､莉･荳翫≠繧句慍轤ｹ繧貞叙蠕・
+	// 列車が2つ以上ある地点を取得
 	let result = resshaIconArray.filter((v) => v.childElementCount > 1);
 	result.forEach(posArea => {
-		// 荳ｦ縺ｳ譖ｿ縺医ｋ蝓ｺ貅悶→縺ｪ繧句慍轤ｹ繧ｳ繝ｼ繝峨ｒclass縺九ｉ蜿門ｾ・
+		// 並び替える基準となる地点コードをclassから取得
 		let sortArray = Array.from(posArea.classList);
-		// 荳ｦ縺ｳ譖ｿ縺医ｋ蟇ｾ雎｡縺ｮ蛻苓ｻ翫ｒ蜿門ｾ・
+		// 並び替える対象の列車を取得
 		let resshaArray =Array.from(posArea.childNodes);
 		resshaArray.sort((a, b) => sortArray.indexOf(a.dataset.pos) - sortArray.indexOf(b.dataset.pos));
-		// 荳句髄縺榊・霆翫い繧､繧ｳ繝ｳ縺ｮ荳ｦ縺ｳ譖ｿ縺・
+		// 下向き列車アイコンの並び替え
 		resshaArray.filter((v) => v.className == "dummy").forEach(row => {
 			resshaArray = resshaArray.splice(1);
 			resshaArray.splice(2, 0, row);
 		});
-		// 蛻苓ｻ翫ｒ荳ｦ縺ｳ譖ｿ縺亥ｾ後・繧ゅ・縺ｫ鄂ｮ縺肴鋤縺医ｋ
+		// 列車を並び替え後のものに置き換える
 		while(posArea.firstChild) {
 			posArea.removeChild(posArea.firstChild);
 		}
@@ -2675,18 +2675,18 @@ function ressha_pos_sort() {
 }
 
 /*
- * 繝壹・繧ｸ縺ｮ譛蠕後′鬧・〒邨ゅｏ縺｣縺ｦ縺・ｋ霍ｯ邱夲ｼ・8縲・3・峨〒繧ｵ繝悶ヵ繝・ち繝ｼ縺ｮ陦ｨ遉ｺ縺後≠縺｣縺溷ｴ蜷医∽ｸ九↓菴咏區繧定ｿｽ蜉縺吶ｋ
+ * ページの最後が駅で終わっている路線（08、13）でサブフッターの表示があった場合、下に余白を追加する
  */
 function eki_end_margin() {
 	if ($(".sub-footer").height() <= 0) return;
 	let paramRosen = get_param_rosen();
 	let marginHeight = $(".sub-footer").height() + 10;
 	if (paramRosen == "08") {
-		// end-eki-sub-footer-margin縺梧里縺ｫ霑ｽ蜉貂医∩縺縺｣縺溷ｴ蜷医↓縺ｯ鬮倥＆縺ｮ縺ｿ繧貞､画峩縺吶ｋ
+		// end-eki-sub-footer-marginが既に追加済みだった場合には高さのみを変更する
 		if($(".end-eki-sub-footer-margin").length > 0) {
 			$(".end-eki-sub-footer-margin").css("height", marginHeight + "px");
 		} else {
-			// 菴咏區逕ｨ縺ｮHTML繧定ｿｽ蜉縺吶ｋ
+			// 余白用のHTMLを追加する
 			let add_html = document.createElement("div");
 			add_html.className = "end-eki-sub-footer-margin";
 			$(".eki-panel.eki.end").after(add_html);
@@ -2694,24 +2694,22 @@ function eki_end_margin() {
 		}
 	}
 	if (paramRosen == "13") {
-		// 陦ｨ遉ｺ蟇ｾ雎｡螟悶お繝ｪ繧｢縺ｫ繧ｵ繝悶ヵ繝・ち繝ｼ蛻・・菴咏區繧定ｿｽ蜉縺吶ｋ
+		// 表示対象外エリアにサブフッター分の余白を追加する
 		$(".eki-panel.non-service-area .hirendo-contents").css("padding", "8px 0 " + marginHeight + "px 0");
 	}
 }
 
 /*
- * 逕ｻ髱｢譖ｴ譁ｰ蛻､螳壼・逅・
+ * 画面更新判定処理
  */
 function is_reload() {
 	if (window.performance) {
 		if (window.performance.getEntriesByType('navigation').length) {
 			if (window.performance.getEntriesByType('navigation')[0].type === 'reload') {
-				// 譖ｴ譁ｰ譎・
+				// 更新時
 				return true;
 			}
 		}
 	}
 	return false;
 }
-
-

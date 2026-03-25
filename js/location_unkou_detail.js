@@ -1,38 +1,38 @@
-﻿/**
- * ・｢蛻苓ｻ願ｩｳ邏ｰ諠・ｱ・｣繝繧､繧｢繝ｭ繧ｰ縺ｮ繧ｿ繧､繝医Ν縲・
+/**
+ * ｢列車詳細情報｣ダイアログのタイトル。
  */
 const DETAILED_TRAIN_INFORMATION_DIALOG_TITLES = {
-	"ja": "蛻苓ｻ願ｩｳ邏ｰ諠・ｱ",
+	"ja": "列車詳細情報",
 	"en": "Detailed train information",
-	"tc": "蛻苓ｻ願ｩｳ邏ｰ雉・ｨ・,
-	"sc": "蛻苓ｽｦ隸ｦ扈・ｿ｡諱ｯ",
-	"kr": "・ｴ・ｨ ・・┷ ・簿ｳｴ"
+	"tc": "列車詳細資訊",
+	"sc": "列车详细信息",
+	"kr": "열차 상세 정보"
 };
 
 $(function ($) {
 	let lang = document.documentElement.dataset.lang;
-	// 蛻苓ｻ翫・繧｢繧､繧ｳ繝ｳ繧偵け繝ｪ繝・け縺励◆縺ｨ縺阪・蜍輔″
+	// 列車のアイコンをクリックしたときの動き
 	$(document).on("click", ".ressha-icon .ressha", function() {
 		let lang = document.documentElement.dataset.lang;
-		// 繝ｭ繝ｼ繝・ぅ繝ｳ繧ｰ繧｢繝九Γ繝ｼ繧ｷ繝ｧ繝ｳ繧定｡ｨ遉ｺ
+		// ローディングアニメーションを表示
 		loading_animation_display();
 
-		// 蛻苓ｻ頑ュ蝣ｱ繝繧､繧｢繝ｭ繧ｰ縺ｫ蛟､繧定ｨｭ螳壹☆繧九・
+		// 列車情報ダイアログに値を設定する。
 		{
 			let dataset = this.dataset;
-			// 繝倥ャ繝繝ｼ繧ｿ繧､繝医Ν
+			// ヘッダータイトル
 			$("#headerTitle").text(DETAILED_TRAIN_INFORMATION_DIALOG_TITLES[lang]);
-			// 蛻苓ｻ顔ｨｮ蛻･蜷・
+			// 列車種別名
 			if (lang == "ja") $("#resshaTypeName").text(dataset.ressha_type_name);
-			// 陦悟・
+			// 行先
 			$("#shuEki").html(dataset.shu_eki);
-			// 荳｡謨ｰ
+			// 両数
 			$("#ryosu").html(dataset.ryosu);
-			// 驕玖｡檎憾諷句錐
+			// 運行状態名
 			$("#resshaDetailUnkouName").html(dataset.unkou_name);
-			// 驕玖｡檎憾諷玖ｩｳ邏ｰ
+			// 運行状態詳細
 			$("#resshaDetailUnkouText").text(dataset.unkou_detail);
-			if (dataset.unkou_detail === "笏") { //驕玖｡檎憾諷玖ｩｳ邏ｰ縺後娯楳縲阪↑繧蛾撼陦ｨ遉ｺ縺ｫ縺吶ｋ
+			if (dataset.unkou_detail === "─") { //運行状態詳細が「─」なら非表示にする
 				$("#resshaDetailUnkouName").hide();
 				$("#resshaDetailUnkouText").hide();
 
@@ -46,26 +46,27 @@ $(function ($) {
 				$("#resshaDetailUnkouText").show();
 				$("#dialogsSurface .text.pos").css("borderBottomWidth", "1px");
 			}
-			// 蛻苓ｻ顔ｨｮ蛻･繧ｳ繝ｼ繝・
+			// 列車種別コード
 			if (lang == "ja") $("#resshaDetail").attr("dataResshaTypeColor", dataset.ressha_type);
-			// 驕玖｡檎憾諷九さ繝ｼ繝・			$("#resshaDetail").attr("dataUnkou", dataset.unkou);
-			// 驕・ｌ隧ｳ邏ｰ
+			// 運行状態コード
+			$("#resshaDetail").attr("dataUnkou", dataset.unkou);
+			// 遅れ詳細
 			$("#chienDetail").text(dataset.chien_text);
 			$("#trackTrainBtn").attr("data-cbango", dataset.cbango);
 			const isTracking = get_param_cbango() === dataset.cbango;
 			$("#trackTrainBtn").attr("data-tracking", isTracking ? "1" : "0");
 			if (isTracking) {
-				if (lang == "ja") $("#trackTrainBtn").text("霑ｽ霍｡隗｣髯､");
+				if (lang == "ja") $("#trackTrainBtn").text("追跡解除");
 				if (lang == "en") $("#trackTrainBtn").text("Untrack");
-				if (lang == "tc") $("#trackTrainBtn").text("隗｣髯､霑ｽ雹､");
-				if (lang == "sc") $("#trackTrainBtn").text("隗｣髯､霑ｽ雕ｪ");
-				if (lang == "kr") $("#trackTrainBtn").text("・肥・﨑ｴ・・);
+				if (lang == "tc") $("#trackTrainBtn").text("解除追蹤");
+				if (lang == "sc") $("#trackTrainBtn").text("解除追踪");
+				if (lang == "kr") $("#trackTrainBtn").text("추적 해제");
 			} else {
-				if (lang == "ja") $("#trackTrainBtn").text("霑ｽ霍｡");
+				if (lang == "ja") $("#trackTrainBtn").text("追跡");
 				if (lang == "en") $("#trackTrainBtn").text("Track");
-				if (lang == "tc") $("#trackTrainBtn").text("霑ｽ雹､");
-				if (lang == "sc") $("#trackTrainBtn").text("霑ｽ雕ｪ");
-				if (lang == "kr") $("#trackTrainBtn").text("・肥・);
+				if (lang == "tc") $("#trackTrainBtn").text("追蹤");
+				if (lang == "sc") $("#trackTrainBtn").text("追踪");
+				if (lang == "kr") $("#trackTrainBtn").text("추적");
 			}
 
 			if (dataset.chien_status == "0") {
@@ -76,7 +77,7 @@ $(function ($) {
 				$("#chienIcon").show();
 				$("#chienDetail").show();
 
-				if (dataset.unkou_detail === "笏") {
+				if (dataset.unkou_detail === "─") {
 					$("#dialogsSurface .text.chien").css("borderBottomWidth", "0px");
 				} else {
 					$("#dialogsSurface .text.chien").css("borderBottomWidth", "1px");
@@ -86,8 +87,8 @@ $(function ($) {
 			let pos = dataset.pos;
 			let senku = dataset.senku;
 			let now = Date.now() >>> 16;
-			//驕玖｡檎分蜿ｷ
-			// 驕玖｡檎分蜿ｷ・亥・霆顔分蜿ｷ縺ｮ繝ｩ繝吶Ν縺ｨ謨ｰ蛟､繧貞・縺代※蛻ｶ蠕｡・・
+			//運行番号
+			// 運行番号（列車番号のラベルと数値を分けて制御）
 			$("#cbangoDetail").text(dataset.cbango);
 			$("#cbangoIcon").removeClass("hide");
 			$("#cbangoDetail").removeClass("hide");
@@ -98,66 +99,66 @@ $(function ($) {
 				$.getJSON("https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/webunkou/json/daiya/daiya_" + senku + (lang === "ja" ? "" : "_" + lang) + ".json?" + now)
 			)
 			.done(function(posNameMasterBase, ekiMasterBase, daiyaBase) {
-				// 迴ｾ蝨ｨ蝨ｰ
+				// 現在地
 				$("#posDetailText").text(posNameMasterBase[0][pos]);
-				// 繝繧､繝､繝・・繧ｿ菴懈・
+				// ダイヤデータ作成
 				create_daiya(dataset, ekiMasterBase, daiyaBase);
 				$('#resshaDetailMessage').empty();
 				$('#resshaDetailMessage').hide();
 				$('#resshaDetailMain').show();
-				// 蛻苓ｻ願ｩｳ邏ｰ繝懊ャ繧ｯ繧ｹ繧帝幕縺上・
+				// 列車詳細ボックスを開く。
 				$("#resshaDetail").fadeIn("fast");
 				$("#teisyaTableArea").scrollTop(0);
 			})
 			.fail(function() {
-				// JSON繝輔ぃ繧､繝ｫ縺ｮ隱ｭ縺ｿ霎ｼ縺ｿ縺ｫ螟ｱ謨励＠縺溘→縺阪・蜃ｦ逅・
+				// JSONファイルの読み込みに失敗したときの処理
 				$("#resshaDetailMessage").html(`<h3 class="ressha-detail-message">${get_error_message()}</h3>`);
 				$("#resshaDetailMessage").show();
 				$("#resshaDetailMain").hide();
-				// 蛻苓ｻ願ｩｳ邏ｰ繝懊ャ繧ｯ繧ｹ繧帝幕縺上・
+				// 列車詳細ボックスを開く。
 				$("#resshaDetail").fadeIn("fast");
 				$("#teisyaTableArea").scrollTop(0);
 			});
 		}
 
 		$("#unkouDetailMain").hide();
-		// 繝繧､繧｢繝ｭ繧ｰ繧帝幕縺上→縺阪・body縺ｮ繧ｹ繧ｯ繝ｭ繝ｼ繝ｫ縺ｮ蛻ｶ蠕｡
+		// ダイアログを開くときのbodyのスクロールの制御
 		set_scroll_hide($("#resshaDetail .dialog"));
 	});
 
-	// 驕玖｡梧ュ蝣ｱ繧偵け繝ｪ繝・け縺励◆縺ｨ縺阪・蜍輔″
+	// 運行情報をクリックしたときの動き
 	$(document).on("click", "#unkouInfoBtn", function() {
-		// 繝ｭ繝ｼ繝・ぅ繝ｳ繧ｰ繧｢繝九Γ繝ｼ繧ｷ繝ｧ繝ｳ繧定｡ｨ遉ｺ
+		// ローディングアニメーションを表示
 		loading_animation_display();
-		// 繝倥ャ繝繝ｼ繧ｿ繧､繝医Ν
-		if (lang == "ja") $("#headerTitle").text("蛻苓ｻ企°陦梧ュ蝣ｱ");
+		// ヘッダータイトル
+		if (lang == "ja") $("#headerTitle").text("列車運行情報");
 		if (lang == "en") $("#headerTitle").text("Train Operation Information");
-		if (lang == "tc") $("#headerTitle").text("蛻苓ｻ企°陦檎朽諷・);
-		if (lang == "sc") $("#headerTitle").text("蛻苓ｽｦ霑占｡御ｿ｡諱ｯ");
-		if (lang == "kr") $("#headerTitle").text("・ｴ・ｨ ・ｴ嵂・・簿ｳｴ");
+		if (lang == "tc") $("#headerTitle").text("列車運行狀態");
+		if (lang == "sc") $("#headerTitle").text("列车运行信息");
+		if (lang == "kr") $("#headerTitle").text("열차 운행 정보");
 
-		// 驕玖｡瑚ｩｳ邏ｰ繝懊ャ繧ｯ繧ｹ繧帝幕縺上・
+		// 運行詳細ボックスを開く。
 		$("#resshaDetail").fadeIn("fast");
 		$("#unkouDetailMain").scrollTop(0);
 		$("#resshaDetailMain").hide();
 		$("#unkouDetailMain").show();
-		// 繝繧､繧｢繝ｭ繧ｰ繧帝幕縺上→縺阪・body縺ｮ繧ｹ繧ｯ繝ｭ繝ｼ繝ｫ縺ｮ蛻ｶ蠕｡
+		// ダイアログを開くときのbodyのスクロールの制御
 		set_scroll_hide($("#resshaDetail .dialog"));
 	});
 
-	// 驕玖｡瑚ｩｳ邏ｰ繝懊ャ繧ｯ繧ｹ蜀・・・｢髢峨§繧具ｽ｣繝懊ち繝ｳ繧偵け繝ｪ繝・け縺励◆縺ｨ縺阪・蜍輔″
+	// 運行詳細ボックス内の｢閉じる｣ボタンをクリックしたときの動き
 	$(document).on("click", "#resshaDetail, #resshaDetail .close", function() {
-		// 驕玖｡梧ュ蝣ｱ繝懊ャ繧ｯ繧ｹ繧帝哩縺倥ｋ縲・
+		// 運行情報ボックスを閉じる。
 		$("#resshaDetail").fadeOut("fast");
 		$('#resshaDetailMain').fadeOut("fast");
 		$('#resshaDetailMessage').fadeOut("fast");
-		// 繝繧､繧｢繝ｭ繧ｰ繧帝哩縺倥◆縺ｨ縺阪・body縺ｮ繧ｹ繧ｯ繝ｭ繝ｼ繝ｫ縺ｮ蛻ｶ蠕｡
+		// ダイアログを閉じたときのbodyのスクロールの制御
 		set_scroll_show($("#resshaDetail .dialog"));
-		// 繝ｭ繝ｼ繝・ぅ繝ｳ繧ｰ繧｢繝九Γ繝ｼ繧ｷ繝ｧ繝ｳ繧帝撼陦ｨ遉ｺ
+		// ローディングアニメーションを非表示
 		loading_animation_hidden();
 	});
 
-	// 繝舌ヶ繝ｪ繝ｳ繧ｰ繧貞●豁｢
+	// バブリングを停止
 	$(document).on("click", "#resshaDetail .dialog", function(event) {
 		event.stopPropagation();
 	});
@@ -174,7 +175,6 @@ $(function ($) {
 		$('#resshaDetailMessage').fadeOut("fast");
 		set_scroll_show($("#resshaDetail .dialog"));
 		if (isTracking) {
-			if (typeof preserve_scroll_after_hash_change === "function") preserve_scroll_after_hash_change();
 			location.hash = "rosen=" + rosen;
 			return;
 		}
@@ -183,13 +183,14 @@ $(function ($) {
 });
 
 /*
- * 繝繧､繝､繝・・繧ｿ菴懈・
+ * ダイヤデータ作成
  */
 function create_daiya(_dataset, _ekiMaster, _daiyaData) {
-	// 蜃ｦ逅・′邨ゅｏ繧九∪縺ｧ繝繧､繝､繝・・繧ｿ縺ｯ髱櫁｡ｨ遉ｺ
+	// 処理が終わるまでダイヤデータは非表示
 	$("#teisyaTableArea div").empty();
 	if (_dataset.senku == "") {
-		// 諢帷ｧｰ蜷阪↓蛻苓ｻ顔ｨｮ蛻･繧定ｨｭ螳・		$("#aisho").text(_dataset.ressha_type_name);
+		// 愛称名に列車種別を設定
+		$("#aisho").text(_dataset.ressha_type_name);
 		return;
 	}
 
@@ -198,25 +199,26 @@ function create_daiya(_dataset, _ekiMaster, _daiyaData) {
 	const hasDelay = chien > 0;
 	let findDaiya = _daiyaData[0].today.find((v) => v.cbango == _dataset.cbango);
 	if (typeof findDaiya !== "undefined") {
-		// 諢帷ｧｰ蜷・		$("#aisho").text(findDaiya.name);
+		// 愛称名
+		$("#aisho").text(findDaiya.name);
 		$("#teisyaTableArea .adjusted-notice").toggle(hasDelay);
 
-		// 譎ょ綾陦ｨ
+		// 時刻表
 		if (findDaiya.stations.length > 0) {
 			let html = "<table id='teisyaTable' border='1' width='80%'>";
 
 			if (hasDelay) {
-				if (lang == "ja") html += "<tr><th width='50%'>蛛懆ｻ企ｧ・/th><th width='25%'>螳壼綾</th><th width='25%'>驕・ｻｶ閠・・</th></tr>";
+				if (lang == "ja") html += "<tr><th width='50%'>停車駅</th><th width='25%'>定刻</th><th width='25%'>遅延考慮</th></tr>";
 				if (lang == "en") html += "<tr><th width='50%'>Stops</th><th width='25%'>Scheduled time</th><th width='25%'>Adjusted</th></tr>";
-				if (lang == "tc") html += "<tr><th width='50%'>蛛憺擒遶・/th><th width='25%'>貅夜ｻ・/th><th width='25%'>蟒ｶ驕ｲ蠕・/th></tr>";
-				if (lang == "sc") html += "<tr><th width='50%'>蛛憺擒遶・/th><th width='25%'>蜃・せ</th><th width='25%'>譎夂せ蜷・/th></tr>";
-				if (lang == "kr") html += "<tr><th width='50%'>・菩ｰｨ・ｭ</th><th width='25%'>奝ｵ・・・ｴ嵂餓亨・・/th><th width='25%'>・・ｰ ・們・</th></tr>";
+				if (lang == "tc") html += "<tr><th width='50%'>停靠站</th><th width='25%'>準點</th><th width='25%'>延遲後</th></tr>";
+				if (lang == "sc") html += "<tr><th width='50%'>停靠站</th><th width='25%'>准点</th><th width='25%'>晚点后</th></tr>";
+				if (lang == "kr") html += "<tr><th width='50%'>정차역</th><th width='25%'>통상 운행시각</th><th width='25%'>지연 반영</th></tr>";
 			} else {
-				if (lang == "ja") html += "<tr><th width='65%'>蛛懆ｻ企ｧ・/th><th width='35%'>螳壼綾</th></tr>";
+				if (lang == "ja") html += "<tr><th width='65%'>停車駅</th><th width='35%'>定刻</th></tr>";
 				if (lang == "en") html += "<tr><th width='65%'>Stops</th><th width='35%'>Scheduled time</th></tr>";
-				if (lang == "tc") html += "<tr><th width='65%'>蛛憺擒遶・/th><th width='35%'>貅夜ｻ・/th></tr>";
-				if (lang == "sc") html += "<tr><th width='65%'>蛛憺擒遶・/th><th width='35%'>蜃・せ</th></tr>";
-				if (lang == "kr") html += "<tr><th width='65%'>・菩ｰｨ・ｭ</th><th width='35%'>奝ｵ・・・ｴ嵂餓亨・・/th></tr>";
+				if (lang == "tc") html += "<tr><th width='65%'>停靠站</th><th width='35%'>準點</th></tr>";
+				if (lang == "sc") html += "<tr><th width='65%'>停靠站</th><th width='35%'>准点</th></tr>";
+				if (lang == "kr") html += "<tr><th width='65%'>정차역</th><th width='35%'>통상 운행시각</th></tr>";
 			}
 
 			for (let i of Object.keys(findDaiya.stations)) {
@@ -228,12 +230,12 @@ function create_daiya(_dataset, _ekiMaster, _daiyaData) {
 					if (lang == "ja") {
 						html += "<td>" + findRowEki.ja + "</td>";
 						if (i == findDaiya.stations.length - 1) {
-							html += "<td align='center'>" + time + " 逹</td>";
-							if (hasDelay) html += "<td align='center' style='color:#f00;font-weight:bold;'>" + adjustedTime + " 逹</td>";
+							html += "<td align='center'>" + time + " 着</td>";
+							if (hasDelay) html += "<td align='center' style='color:#f00;font-weight:bold;'>" + adjustedTime + " 着</td>";
 						}
 						else {
-							html += "<td align='center'>" + time + " 逋ｺ</td>";
-							if (hasDelay) html += "<td align='center' style='color:#f00;font-weight:bold;'>" + adjustedTime + " 逋ｺ</td>";
+							html += "<td align='center'>" + time + " 発</td>";
+							if (hasDelay) html += "<td align='center' style='color:#f00;font-weight:bold;'>" + adjustedTime + " 発</td>";
 						}
 					} else if (lang == "en") {
 						html += "<td>" + findRowEki.en + "</td>";
@@ -248,32 +250,32 @@ function create_daiya(_dataset, _ekiMaster, _daiyaData) {
 					} else if (lang == "tc") {
 						html += "<td>" + findRowEki.tc + "</td>";
 						if (i == findDaiya.stations.length - 1) {
-							html += "<td align='center'>" + time + " 蛻ｰ</td>";
-							if (hasDelay) html += "<td align='center' style='color:#f00;font-weight:bold;'>" + adjustedTime + " 蛻ｰ</td>";
+							html += "<td align='center'>" + time + " 到</td>";
+							if (hasDelay) html += "<td align='center' style='color:#f00;font-weight:bold;'>" + adjustedTime + " 到</td>";
 						}
 						else {
-							html += "<td align='center'>" + time + " 髢・/td>";
-							if (hasDelay) html += "<td align='center' style='color:#f00;font-weight:bold;'>" + adjustedTime + " 髢・/td>";
+							html += "<td align='center'>" + time + " 開</td>";
+							if (hasDelay) html += "<td align='center' style='color:#f00;font-weight:bold;'>" + adjustedTime + " 開</td>";
 						}
 					} else if (lang == "sc") {
 						html += "<td>" + findRowEki.sc + "</td>";
 						if (i == findDaiya.stations.length - 1) {
-							html += "<td align='center'>" + time + " 蛻ｰ</td>";
-							if (hasDelay) html += "<td align='center' style='color:#f00;font-weight:bold;'>" + adjustedTime + " 蛻ｰ</td>";
+							html += "<td align='center'>" + time + " 到</td>";
+							if (hasDelay) html += "<td align='center' style='color:#f00;font-weight:bold;'>" + adjustedTime + " 到</td>";
 						}
 						else {
-							html += "<td align='center'>" + time + " 蠑</td>";
-							if (hasDelay) html += "<td align='center' style='color:#f00;font-weight:bold;'>" + adjustedTime + " 蠑</td>";
+							html += "<td align='center'>" + time + " 开</td>";
+							if (hasDelay) html += "<td align='center' style='color:#f00;font-weight:bold;'>" + adjustedTime + " 开</td>";
 						}
 					} else if (lang == "kr") {
 						html += "<td>" + findRowEki.kr + "</td>";
 						if (i == findDaiya.stations.length - 1) {
-							html += "<td align='center'>" + time + " ・・ｰｩ</td>";
-							if (hasDelay) html += "<td align='center' style='color:#f00;font-weight:bold;'>" + adjustedTime + " ・・ｰｩ</td>";
+							html += "<td align='center'>" + time + " 도착</td>";
+							if (hasDelay) html += "<td align='center' style='color:#f00;font-weight:bold;'>" + adjustedTime + " 도착</td>";
 						}
 						else {
-							html += "<td align='center'>" + time + " ・罹ｰ・/td>";
-							if (hasDelay) html += "<td align='center' style='color:#f00;font-weight:bold;'>" + adjustedTime + " ・罹ｰ・/td>";
+							html += "<td align='center'>" + time + " 출발</td>";
+							if (hasDelay) html += "<td align='center' style='color:#f00;font-weight:bold;'>" + adjustedTime + " 출발</td>";
 						}
 					}
 					html += "</tr>";
@@ -282,13 +284,14 @@ function create_daiya(_dataset, _ekiMaster, _daiyaData) {
 			html += "</table>";
 			$("#teisyaTableArea div").html(html);
 		} else {
-			// 繝繧､繝､繝・・繧ｿ髱櫁｡ｨ遉ｺ
+			// ダイヤデータ非表示
 			$("#teisyaTableArea div").empty();
 		}
 	} else {
-		// 諢帷ｧｰ蜷阪↓蛻苓ｻ顔ｨｮ蛻･繧定ｨｭ螳・		$("#aisho").text(_dataset.ressha_type_name);
+		// 愛称名に列車種別を設定
+		$("#aisho").text(_dataset.ressha_type_name);
 		$("#teisyaTableArea .adjusted-notice").hide();
-		// 繝繧､繝､繝・・繧ｿ髱櫁｡ｨ遉ｺ
+		// ダイヤデータ非表示
 		$("#teisyaTableArea div").empty();
 	}
 }
@@ -302,4 +305,3 @@ function calc_adjusted_time(_time, _chien) {
 	const adjustedMinute = String(normalizedMinutes % 60).padStart(2, "0");
 	return adjustedHour + ":" + adjustedMinute;
 }
-
