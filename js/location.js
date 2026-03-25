@@ -629,27 +629,25 @@ function jqxhr_to_promise(_jqxhr) {
 }
 
 function merge_location_now_data(_nowDataList) {
-	const cbangoCountMap = new Map();
+	const seenCbangoMap = new Map();
 	const mergedTrains = [];
 
 	_nowDataList.forEach((nowData) => {
 		if (!nowData || !Array.isArray(nowData.trains)) return;
 
 		nowData.trains.forEach((row) => {
-			mergedTrains.push(row);
-			if (!row || !row.cbango) return;
-
+			if (!row || !row.cbango) {
+				mergedTrains.push(row);
+				return;
+			}
 			const cbango = String(row.cbango);
-			cbangoCountMap.set(cbango, (cbangoCountMap.get(cbango) || 0) + 1);
+			if (seenCbangoMap.has(cbango)) return;
+			seenCbangoMap.set(cbango, true);
+			mergedTrains.push(row);
 		});
 	});
 
-	return {
-		trains: mergedTrains.filter((row) => {
-		if (!row || !row.cbango) return true;
-		return cbangoCountMap.get(String(row.cbango)) === 1;
-		})
-	};
+	return { trains: mergedTrains };
 }
 
 function load_location_now_data(_param_rosen, _now) {
