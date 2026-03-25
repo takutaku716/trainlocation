@@ -21,6 +21,7 @@ const LOCATION_AUTO_REFRESH_DEFAULT_INTERVAL = 15000;
 // 自動更新設定の保存キー
 const LOCATION_AUTO_REFRESH_ENABLED_KEY = "location_auto_refresh_enabled";
 const LOCATION_AUTO_REFRESH_INTERVAL_KEY = "location_auto_refresh_interval";
+const TRACKING_SCROLL_ENABLED_KEY = "tracking_scroll_enabled";
 const LOCATION_JSON_SOURCE_MAP = {
 	"51": ["01", "05"],
 	"52": ["02", "07", "09"],
@@ -48,6 +49,7 @@ const TRAIN_SEARCH_CACHE_TTL = 30000;
 let preserveScrollAfterHashChange = false;
 let preservedScrollTop = 0;
 let suppressTrackScrollOnce = false;
+let trackingScrollEnabled = true;
 
 function preserve_scroll_after_hash_change() {
 	preserveScrollAfterHashChange = true;
@@ -59,8 +61,51 @@ function suppress_track_scroll_once() {
 	preservedScrollTop = $(window).scrollTop();
 }
 
+function load_tracking_scroll_setting() {
+	const stored = localStorage.getItem(TRACKING_SCROLL_ENABLED_KEY);
+	trackingScrollEnabled = stored === null ? true : stored === "true";
+}
+
+function save_tracking_scroll_setting() {
+	localStorage.setItem(TRACKING_SCROLL_ENABLED_KEY, trackingScrollEnabled ? "true" : "false");
+}
+
+function update_tracking_footer_controls() {
+	const lang = document.documentElement.dataset.lang;
+	const hasTracking = !!get_param_cbango();
+	const scrollLabels = trackingScrollEnabled ? {
+		"ja": "\u30b9\u30af\u30ed\u30fc\u30eb<br>\u89e3\u9664",
+		"en": "Scroll<br>OFF",
+		"tc": "Scroll<br>OFF",
+		"sc": "Scroll<br>OFF",
+		"kr": "Scroll<br>OFF"
+	} : {
+		"ja": "\u30b9\u30af\u30ed\u30fc\u30eb<br>ON",
+		"en": "Scroll<br>ON",
+		"tc": "Scroll<br>ON",
+		"sc": "Scroll<br>ON",
+		"kr": "Scroll<br>ON"
+	};
+	const releaseLabels = {
+		"ja": "\u8ffd\u8de1<br>\u89e3\u9664",
+		"en": "Untrack",
+		"tc": "Untrack",
+		"sc": "Untrack",
+		"kr": "Untrack"
+	};
+
+	if (hasTracking) {
+		$("#trackingFooterContents").removeAttr("hidden").show();
+		$("#trackScrollToggleBtn .sub-footer-unkou-msg").html(scrollLabels[lang] || scrollLabels.ja);
+		$("#trackReleaseBtn .sub-footer-unkou-msg").html(releaseLabels[lang] || releaseLabels.ja);
+	} else {
+		$("#trackingFooterContents").attr("hidden", "hidden").hide();
+	}
+}
+
 window.onload = function(){
 	load_location_auto_refresh_settings();
+	load_tracking_scroll_setting();
 	// 現在表示中の路線を取得
 	let param_rosen = get_param_rosen();
 	// 走行位置を表示
@@ -404,6 +449,19 @@ $(function ($) {
 	});
 
 	// バブリングを停止
+	$(document).on("click", "#trackReleaseBtn", function() {
+		const rosen = get_param_rosen();
+		if (!rosen || !get_param_cbango()) return;
+		preserve_scroll_after_hash_change();
+		location.hash = "rosen=" + rosen;
+	});
+
+	$(document).on("click", "#trackScrollToggleBtn", function() {
+		trackingScrollEnabled = !trackingScrollEnabled;
+		save_tracking_scroll_setting();
+		update_tracking_footer_controls();
+	});
+
 	$(document).on("click", "#guideDetail .dialog, #searchDetail .dialog, #trainSearchDetail .dialog, #popupDetail .dialog, #refreshSettingDetail .dialog", function(event) {
 		event.stopPropagation();
 	});
@@ -843,7 +901,8 @@ function redraw_location_positions(_param_rosen, _nowData) {
 	create_ressha_icon(_param_rosen, _nowData, cachedResshaTypeData, cachedEkiData);
 	ressha_pos_sort();
 	update_location_timestamp();
-	restore_selected_train_marker(true);
+	restore_selected_train_marker(trackingScrollEnabled);
+	update_tracking_footer_controls();
 }
 
 /*
@@ -1092,6 +1151,7 @@ function set_post_station_list(_param_rosen, _scrollKey) {
 
 	scrollKey = "";
 	isSideMenuClick = false;
+	update_tracking_footer_controls();
 
 	// ローディングアニメーションを非表示にする
 	loading_animation_hidden();
