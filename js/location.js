@@ -826,7 +826,7 @@ function redraw_location_positions(_param_rosen, _nowData) {
 	create_ressha_icon(_param_rosen, _nowData, cachedResshaTypeData, cachedEkiData);
 	ressha_pos_sort();
 	update_location_timestamp();
-	restore_selected_train_marker();
+	restore_selected_train_marker(true);
 }
 
 /*
@@ -871,13 +871,29 @@ function update_location_timestamp() {
 /*
  * 選択中の列車がある場合、再描画後に赤枠を付け直す
  */
-function restore_selected_train_marker() {
+function restore_selected_train_marker(_follow = false) {
 	const param_cbango = get_param_cbango();
 	if (!param_cbango) return;
 	const ressha = $("div[data-cbango='" + param_cbango + "']");
 	if (!ressha.length) return;
 	ressha.append("<img class='ressha-animation' src='./images/home/ressha_mark.svg' alt>");
 	set_ressha_icon_animation();
+	if (_follow) {
+		scroll_selected_train_into_view(ressha);
+	}
+}
+
+function scroll_selected_train_into_view(_ressha) {
+	if (!_ressha || !_ressha.length) return;
+	if ($("#guideDetail").is(":visible") || $("#searchDetail").is(":visible") || $("#trainSearchDetail").is(":visible") || $("#popupDetail").is(":visible") || $("#refreshSettingDetail").is(":visible") || $("#resshaDetail").is(":visible") || $(".trainDetailDialog").is(":visible") || $("#oshiraseDetail").is(":visible")) {
+		return;
+	}
+	const currentScroll = $(window).scrollTop();
+	const viewportHeight = window.innerHeight || $(window).height();
+	const targetScroll = Math.max(0, _ressha.offset().top - (viewportHeight / 2) + (_ressha.outerHeight() / 2));
+	if (Math.abs(currentScroll - targetScroll) < 4) return;
+	$("html, body").stop(true).animate({ scrollTop: targetScroll }, 250);
+	window.sessionStorage.setItem("scrollY", Math.max(0, targetScroll - 50));
 }
 
 /*
