@@ -52,6 +52,12 @@ $(function ($) {
 			$("#resshaDetail").attr("dataUnkou", dataset.unkou);
 			// 遅れ詳細
 			$("#chienDetail").text(dataset.chien_text);
+			$("#trackTrainBtn").attr("data-cbango", dataset.cbango);
+			if (lang == "ja") $("#trackTrainBtn").text("追跡");
+			if (lang == "en") $("#trackTrainBtn").text("Track");
+			if (lang == "tc") $("#trackTrainBtn").text("追蹤");
+			if (lang == "sc") $("#trackTrainBtn").text("追踪");
+			if (lang == "kr") $("#trackTrainBtn").text("추적");
 
 			if (dataset.chien_status == "0") {
 				$("#chienIcon").hide();
@@ -84,7 +90,7 @@ $(function ($) {
 			)
 			.done(function(posNameMasterBase, ekiMasterBase, daiyaBase) {
 				// 現在地
-				$("#posDetail").text(posNameMasterBase[0][pos]);
+				$("#posDetailText").text(posNameMasterBase[0][pos]);
 				// ダイヤデータ作成
 				create_daiya(dataset, ekiMasterBase, daiyaBase);
 				$('#resshaDetailMessage').empty();
@@ -145,6 +151,23 @@ $(function ($) {
 	// バブリングを停止
 	$(document).on("click", "#resshaDetail .dialog", function(event) {
 		event.stopPropagation();
+	});
+
+	$(document).on("click", "#trackTrainBtn", function(event) {
+		event.preventDefault();
+		event.stopPropagation();
+		const cbango = $(this).attr("data-cbango");
+		const rosen = get_param_rosen();
+		if (!cbango || !rosen) return;
+		$("#resshaDetail").fadeOut("fast");
+		$('#resshaDetailMain').fadeOut("fast");
+		$('#resshaDetailMessage').fadeOut("fast");
+		set_scroll_show($("#resshaDetail .dialog"));
+		if (get_param_cbango() === cbango) {
+			ressha_run_check();
+			return;
+		}
+		location.hash = "rosen=" + rosen + "&cbango=" + cbango;
 	});
 });
 
