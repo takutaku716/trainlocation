@@ -165,27 +165,28 @@ window.onscroll = function () {
 };
 
 window.onhashchange = function () {
-	// ハッシュからid（駅キー）を取得
+	// 繝上ャ繧ｷ繝･縺九ｉid・磯ｧ・く繝ｼ・峨ｒ蜿門ｾ・
 	let param_id = get_param_id();
 
-	// 路線を切り替えた際、列車の赤枠を非表示
+	// 霍ｯ邱壹ｒ蛻・ｊ譖ｿ縺医◆髫帙∝・霆翫・襍､譫繧帝撼陦ｨ遉ｺ
 	$(".ressha-animation").hide();
 
-	// 画面表示処理
+	// 逕ｻ髱｢陦ｨ遉ｺ蜃ｦ逅・
 	if (!isNotInitDisp) init_disp(scrollKey, () => {
 
 		if (param_id) {
-			// ハッシュに駅IDが存在した場合、対象の駅までスクロール
+			// 繝上ャ繧ｷ繝･縺ｫ鬧・D縺悟ｭ伜惠縺励◆蝣ｴ蜷医∝ｯｾ雎｡縺ｮ鬧・∪縺ｧ繧ｹ繧ｯ繝ｭ繝ｼ繝ｫ
 			let pos = $("div[key='" + param_id + "']").offset().top - 380;
 			$("body,html").scrollTop(pos);
 		}
-	} else {
-		suppressTrackScrollOnce = false;
-	}
 
-		// ヘッダーの高さ分の余白を設定する。
+		// 繝倥ャ繝繝ｼ縺ｮ鬮倥＆蛻・・菴咏區繧定ｨｭ螳壹☆繧九・
 		set_header_height();
 	})
+
+	if (suppressTrackScrollOnce && !get_param_cbango()) {
+		suppressTrackScrollOnce = false;
+	}
 
 	isNotInitDisp = false;
 }
