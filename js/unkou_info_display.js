@@ -4,6 +4,7 @@
 function set_unko_info(_param_rosen) {
 	let now = Date.now() >>> 10;
 	let lang = document.documentElement.dataset.lang;
+	if (set_merged_unko_info(_param_rosen, now, lang)) return;
 
 	if (_param_rosen == "01" || _param_rosen == "02" || _param_rosen == "03") {
 		// 札幌近郊
@@ -291,6 +292,113 @@ function set_unko_info(_param_rosen) {
 	} else {
 		$("#unkouInfo").hide();
 	}
+}
+
+function set_merged_unko_info(_param_rosen, _now, _lang) {
+	const mergedAreaMap = {
+		"51": ["01", "02"],
+		"52": ["01", "02", "03"],
+		"53": ["01", "05"]
+	};
+	const targetAreas = mergedAreaMap[_param_rosen];
+	if (!targetAreas) return false;
+
+	const areaConfigs = {
+		"01": {
+			"fileName": _lang === "ja" ? "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/webunkou/json/area/area_01.json?" : "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/webunkou/json/area/area_01_" + _lang + ".json?",
+			"statusKey": "spo",
+			"areaName": getAreaName("01"),
+			"senkus": [["express", "01"], ["airport", "02"], ["hakochise", "03"], ["gakuen", "04"]]
+		},
+		"02": {
+			"fileName": _lang === "ja" ? "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/webunkou/json/area/area_02.json?" : "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/webunkou/json/area/area_02_" + _lang + ".json?",
+			"statusKey": "doo",
+			"areaName": getAreaName("02"),
+			"senkus": [["express", "05"], ["airport", "06"], ["hakochise", "07"], ["gakuen", "08"], ["muroran", "09"], ["hidaka", "10"]]
+		},
+		"03": {
+			"fileName": _lang === "ja" ? "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/webunkou/json/area/area_03.json?" : "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/webunkou/json/area/area_03_" + _lang + ".json?",
+			"statusKey": "donan",
+			"areaName": getAreaName("03"),
+			"senkus": [["express", "11"], ["hakodateLiner", "12"], ["hakodate", "13"]]
+		},
+		"05": {
+			"fileName": _lang === "ja" ? "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/webunkou/json/area/area_05.json?" : "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/webunkou/json/area/area_05_" + _lang + ".json?",
+			"statusKey": "doto",
+			"areaName": getAreaName("05"),
+			"senkus": [["express", "19"], ["sekisho", "20"], ["nemuro", "21"], ["hanasaki", "22"], ["senmo", "23"]]
+		}
+	};
+
+	Promise.all(targetAreas.map((areaKey) => {
+		const config = areaConfigs[areaKey];
+		if (!config) return Promise.resolve(null);
+		return new Promise((resolve) => {
+			$.getJSON(config.fileName + _now, function(topData) {
+				resolve({
+					"config": config,
+					"data": topData
+				});
+			}).fail(function() {
+				resolve(null);
+			});
+		});
+	})).then((results) => {
+		const activeResults = results.filter((result) => {
+			return result && result.data && result.data.today && result.data.today.areaStatus && result.data.today.areaStatus[result.config.statusKey] == "1";
+		});
+		if (activeResults.length < 1) {
+			$("#unkouInfo").hide();
+			return;
+		}
+
+		const areaNames = activeResults.map((result) => result.config.areaName);
+		const titleAreaName = areaNames.join("・");
+		$("#unkouInfo").show();
+		$("#titleAreaName").text(titleAreaName);
+		$("#senkuList").show();
+		$("#commonSenkuOperation").show();
+		$("#senkuListAreaName").text(titleAreaName);
+		$("#gaikyoAreaName").text(titleAreaName);
+
+		let html = "";
+		activeResults.forEach((result) => {
+			html += "<div class='merged-area-operation'>";
+			html += "<div class='merged-area-operation-title'>" + result.config.areaName + "</div>";
+			html += "<ul>";
+			result.config.senkus.forEach((senkuInfo) => {
+				const status = result.data.today.senkuStatus ? result.data.today.senkuStatus[senkuInfo[0]] : undefined;
+				html += create_list(status, senkuInfo[1]);
+			});
+			html += "</ul>";
+			html += "</div>";
+		});
+		$("#commonSenkuOperation").html(html);
+
+		const gaikyoList = [];
+		let hasComment = false;
+		activeResults.forEach((result) => {
+			if (Array.isArray(result.data.today.gaikyo)) gaikyoList.push(...result.data.today.gaikyo);
+		});
+		if (gaikyoList.length > 0) {
+			create_gaikyo(gaikyoList);
+		} else {
+			$("#dialogGaikyo .gaikyo-frame").empty();
+		}
+		activeResults.forEach((result) => {
+			if (Array.isArray(result.data.today.areaComments)) {
+				result.data.today.areaComments.forEach((row) => {
+					hasComment = true;
+					$("#dialogGaikyo .gaikyo-frame").append("<div>" + row.comment + "</div>");
+				});
+			}
+		});
+		if (gaikyoList.length < 1 && !hasComment) {
+			$("#dialogGaikyo .gaikyo-frame").html("<span>" + get_gaikyo_info_message() + "</span>");
+		}
+	});
+
+	return true;
 }
 
 /*
