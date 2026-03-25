@@ -179,6 +179,7 @@ $(function ($) {
 			location.hash = "rosen=" + rosen;
 			return;
 		}
+		if (typeof suppress_track_scroll_once === "function") suppress_track_scroll_once();
 		location.hash = "rosen=" + rosen + "&cbango=" + cbango;
 	});
 });

@@ -47,9 +47,15 @@ let cachedTrainSearchLoadedAt = 0;
 const TRAIN_SEARCH_CACHE_TTL = 30000;
 let preserveScrollAfterHashChange = false;
 let preservedScrollTop = 0;
+let suppressTrackScrollOnce = false;
 
 function preserve_scroll_after_hash_change() {
 	preserveScrollAfterHashChange = true;
+	preservedScrollTop = $(window).scrollTop();
+}
+
+function suppress_track_scroll_once() {
+	suppressTrackScrollOnce = true;
 	preservedScrollTop = $(window).scrollTop();
 }
 
@@ -173,6 +179,9 @@ window.onhashchange = function () {
 			let pos = $("div[key='" + param_id + "']").offset().top - 380;
 			$("body,html").scrollTop(pos);
 		}
+	} else {
+		suppressTrackScrollOnce = false;
+	}
 
 		// ヘッダーの高さ分の余白を設定する。
 		set_header_height();
@@ -2146,14 +2155,17 @@ function toggle_close() {
 function ressha_run_check() {
 	// ローディングアニメーションを表示
 	loading_animation_display();
-	$("body,html").scrollTop(0);
+	if (!suppressTrackScrollOnce) $("body,html").scrollTop(0);
 
 	let param_cbango = get_param_cbango();
 	let ressha = $("div[data-cbango='" + param_cbango + "']");
 	if (ressha.length > 0) {
 		let pos = ressha.offset().top - 260;
 		// リロードされた場合アニメーションを行わない
-		if (!is_reload()) {
+		if (suppressTrackScrollOnce) {
+			$("body,html").scrollTop(preservedScrollTop);
+			suppressTrackScrollOnce = false;
+		} else if (!is_reload()) {
 			$("body,html").animate({scrollTop: pos});
 		} else {
 			$("body,html").scrollTop(pos);
