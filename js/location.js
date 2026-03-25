@@ -74,7 +74,7 @@ function update_tracking_footer_controls() {
 	const lang = document.documentElement.dataset.lang;
 	const hasTracking = !!get_param_cbango();
 	const scrollLabels = trackingScrollEnabled ? {
-		"ja": "\u30b9\u30af\u30ed\u30fc\u30eb<br>\u89e3\u9664",
+		"ja": "\u30b9\u30af\u30ed\u30fc\u30eb<br>OFF",
 		"en": "Scroll<br>OFF",
 		"tc": "Scroll<br>OFF",
 		"sc": "Scroll<br>OFF",
@@ -460,6 +460,14 @@ $(function ($) {
 		trackingScrollEnabled = !trackingScrollEnabled;
 		save_tracking_scroll_setting();
 		update_tracking_footer_controls();
+		if (trackingScrollEnabled) {
+			const param_cbango = get_param_cbango();
+			if (!param_cbango) return;
+			const ressha = $("div[data-cbango='" + param_cbango + "']");
+			if (ressha.length) {
+				scroll_selected_train_into_view(ressha);
+			}
+		}
 	});
 
 	$(document).on("click", "#guideDetail .dialog, #searchDetail .dialog, #trainSearchDetail .dialog, #popupDetail .dialog, #refreshSettingDetail .dialog", function(event) {
