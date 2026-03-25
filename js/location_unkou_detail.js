@@ -53,11 +53,21 @@ $(function ($) {
 			// 遅れ詳細
 			$("#chienDetail").text(dataset.chien_text);
 			$("#trackTrainBtn").attr("data-cbango", dataset.cbango);
-			if (lang == "ja") $("#trackTrainBtn").text("追跡");
-			if (lang == "en") $("#trackTrainBtn").text("Track");
-			if (lang == "tc") $("#trackTrainBtn").text("追蹤");
-			if (lang == "sc") $("#trackTrainBtn").text("追踪");
-			if (lang == "kr") $("#trackTrainBtn").text("추적");
+			const isTracking = get_param_cbango() === dataset.cbango;
+			$("#trackTrainBtn").attr("data-tracking", isTracking ? "1" : "0");
+			if (isTracking) {
+				if (lang == "ja") $("#trackTrainBtn").text("追跡解除");
+				if (lang == "en") $("#trackTrainBtn").text("Untrack");
+				if (lang == "tc") $("#trackTrainBtn").text("解除追蹤");
+				if (lang == "sc") $("#trackTrainBtn").text("解除追踪");
+				if (lang == "kr") $("#trackTrainBtn").text("추적 해제");
+			} else {
+				if (lang == "ja") $("#trackTrainBtn").text("追跡");
+				if (lang == "en") $("#trackTrainBtn").text("Track");
+				if (lang == "tc") $("#trackTrainBtn").text("追蹤");
+				if (lang == "sc") $("#trackTrainBtn").text("追踪");
+				if (lang == "kr") $("#trackTrainBtn").text("추적");
+			}
 
 			if (dataset.chien_status == "0") {
 				$("#chienIcon").hide();
@@ -158,13 +168,14 @@ $(function ($) {
 		event.stopPropagation();
 		const cbango = $(this).attr("data-cbango");
 		const rosen = get_param_rosen();
+		const isTracking = $(this).attr("data-tracking") === "1";
 		if (!cbango || !rosen) return;
 		$("#resshaDetail").fadeOut("fast");
 		$('#resshaDetailMain').fadeOut("fast");
 		$('#resshaDetailMessage').fadeOut("fast");
 		set_scroll_show($("#resshaDetail .dialog"));
-		if (get_param_cbango() === cbango) {
-			ressha_run_check();
+		if (isTracking) {
+			location.hash = "rosen=" + rosen;
 			return;
 		}
 		location.hash = "rosen=" + rosen + "&cbango=" + cbango;
