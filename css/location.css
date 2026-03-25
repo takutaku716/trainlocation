@@ -2190,6 +2190,9 @@ section#unkouDetail {
 		section#resshaDetail #commonSenkuOperation .merged-area-operation {
 			margin-bottom: 14px;
 		}
+			section#resshaDetail #commonSenkuOperation .merged-area-operation:first-child {
+				margin-top: 8px;
+			}
 			section#resshaDetail #commonSenkuOperation .merged-area-operation:last-child {
 				margin-bottom: 0;
 			}
