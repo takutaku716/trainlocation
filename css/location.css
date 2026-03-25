@@ -256,6 +256,10 @@ header {
 	display: none;
 }
 
+#trackingFooterContents {
+	display: none;
+}
+
 .sub-footer {
 	padding: 5px 0;
 	position: fixed;
@@ -277,6 +281,33 @@ header {
 		/* サブフッター内の重要なお知らせ領域 */
 		.sub-footer .sub-footer-contents.popup {
 			display: none;
+		}
+
+		.sub-footer #trackingFooterContents .sub-footer-contents.tracking-control {
+			width: 96px;
+		}
+
+		.sub-footer #trackingFooterContents .sub-footer-contents.tracking-control .unko-info-header {
+			background-color: #1d6f98;
+			border-radius: 48px;
+			color: #fff;
+			display: flex;
+			height: 96px;
+			justify-content: center;
+			padding: 0;
+			width: 96px;
+		}
+
+			.sub-footer #trackingFooterContents .sub-footer-contents.tracking-control .unko-info-header:hover {
+				background-color: #2785b4;
+			}
+
+		.sub-footer #trackingFooterContents .sub-footer-contents.tracking-control .sub-footer-unkou-msg {
+			line-height: 1.5;
+			margin: 0;
+			padding: 0;
+			text-align: center;
+			width: auto;
 		}
 
 		/* サブフッター内のお知らせ表示領域 */
@@ -2893,6 +2924,21 @@ section#refreshSettingDetail {
 			margin-left: 1px;
 			line-height: 14px;
 		}
+
+	.sub-footer #trackingFooterContents .sub-footer-contents.tracking-control {
+		width: 92px;
+	}
+
+	.sub-footer #trackingFooterContents .sub-footer-contents.tracking-control .unko-info-header {
+		height: 92px;
+		width: 92px;
+	}
+
+	.sub-footer #trackingFooterContents .sub-footer-contents.tracking-control .sub-footer-unkou-msg {
+		line-height: 1.7;
+		margin: 0;
+		width: auto;
+	}
 
 	/* 列車アイコン 上向きの列車用 */
 	#stationList .eki-panel .ressha-contents .ressha-icon.up {
