@@ -2421,12 +2421,19 @@ function load_train_search_data() {
 				.filter((row) => row && Array.isArray(row.trains) && row.trains.length > 0)
 				.map((row) => row.key)
 		);
-		const names = Array.from(new Set(
+		const expressNames = Array.from(new Set(
 			(expressMaster && Array.isArray(expressMaster) ? expressMaster : [])
 				.filter((row) => activeExpressKeys.has(row.key))
 				.map((row) => row.name && row.name[lang] ? row.name[lang] : "")
 				.filter(Boolean)
-		)).sort((a, b) => a.localeCompare(b, "ja"));
+		));
+		const shinkansenNames = Array.from(new Set(
+			Array.from(daiyaMap.values())
+				.filter((row) => row && String(row.senku || "") === "19")
+				.map((row) => parse_train_name(row.name).baseName)
+				.filter(Boolean)
+		));
+		const names = Array.from(new Set(expressNames.concat(shinkansenNames))).sort((a, b) => a.localeCompare(b, "ja"));
 		cachedTrainSearchData = { "trains": trains, "names": names };
 		cachedTrainSearchLoadedAt = Date.now();
 		trainSearchDataPromise = null;
