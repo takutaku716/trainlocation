@@ -258,6 +258,9 @@ header {
 
 #trackingFooterContents {
 	display: none;
+	flex-direction: column;
+	align-items: flex-end;
+	width: 100%;
 }
 
 .sub-footer {
@@ -284,6 +287,10 @@ header {
 		}
 
 		.sub-footer #trackingFooterContents .sub-footer-contents.tracking-control {
+			background: transparent;
+			box-shadow: none;
+			margin-left: auto;
+			opacity: 1;
 			width: 96px;
 		}
 
@@ -2926,6 +2933,7 @@ section#refreshSettingDetail {
 		}
 
 	.sub-footer #trackingFooterContents .sub-footer-contents.tracking-control {
+		margin-left: auto;
 		width: 92px;
 	}
 
