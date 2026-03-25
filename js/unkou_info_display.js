@@ -376,9 +376,21 @@ function set_merged_unko_info(_param_rosen, _now, _lang) {
 		$("#commonSenkuOperation").html(html);
 
 		const gaikyoList = [];
+		const gaikyoSet = new Set();
+		const commentSet = new Set();
 		let hasComment = false;
 		activeResults.forEach((result) => {
-			if (Array.isArray(result.data.today.gaikyo)) gaikyoList.push(...result.data.today.gaikyo);
+			if (!Array.isArray(result.data.today.gaikyo)) return;
+			result.data.today.gaikyo.forEach((row) => {
+				const key = [
+					row && row.time ? row.time : "",
+					row && row.title ? row.title : "",
+					row && row.honbun ? row.honbun : ""
+				].join("||");
+				if (gaikyoSet.has(key)) return;
+				gaikyoSet.add(key);
+				gaikyoList.push(row);
+			});
 		});
 		if (gaikyoList.length > 0) {
 			create_gaikyo(gaikyoList);
@@ -388,6 +400,8 @@ function set_merged_unko_info(_param_rosen, _now, _lang) {
 		activeResults.forEach((result) => {
 			if (Array.isArray(result.data.today.areaComments)) {
 				result.data.today.areaComments.forEach((row) => {
+					if (!row || !row.comment || commentSet.has(row.comment)) return;
+					commentSet.add(row.comment);
 					hasComment = true;
 					$("#dialogGaikyo .gaikyo-frame").append("<div>" + row.comment + "</div>");
 				});
