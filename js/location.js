@@ -486,8 +486,8 @@ $(function ($) {
 		const trnNow = Date.now() >>> 10;
 		// 最新の列車運行情報を取得する。
 		$.when(
-			$.getJSON("https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/webunkou/json/daiya/daiya_00" + (lang === "ja" ? "" : "_" + lang) + ".json?" + mstNow),
-			$.getJSON("https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/trainlocation/json/express/now/express_now.json?" + trnNow)
+			get_daiya_request("00", lang, mstNow),
+			get_express_now_request(trnNow)
 		)
 		.done((daiyaBase, expressNowBase) => {
 			// 対象の列車の運行情報を取得する。
@@ -653,7 +653,7 @@ function merge_location_now_data(_nowDataList) {
 function load_location_now_data(_param_rosen, _now) {
 	const sourceRosens = get_location_json_source_list(_param_rosen);
 	return Promise.all(
-		sourceRosens.map((rosen) => jqxhr_to_promise($.getJSON(get_location_json_url(rosen, _now))).catch(() => null))
+		sourceRosens.map((rosen) => jqxhr_to_promise(get_location_now_request(rosen, _now)).catch(() => null))
 	).then((nowDataList) => {
 		const successDataList = nowDataList.filter((nowData) => nowData && Array.isArray(nowData.trains));
 		if (successDataList.length < 1) throw new Error("location now json load failed");
@@ -2272,18 +2272,18 @@ function load_train_search_data() {
 	const searchSourceRosens = ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15"];
 	const daiyaSourceSenkus = ["00"].concat(searchSourceRosens, ["19"]);
 	const expressMasterPromise = jqxhr_to_promise($.getJSON("https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/webunkou/json/master/express_master.json?" + mstNow));
-	const expressCorePromise = jqxhr_to_promise($.getJSON("https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/trainlocation/json/express/core/express_core.json?" + mstNow));
-	const expressNowPromise = jqxhr_to_promise($.getJSON("https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/trainlocation/json/express/now/express_now.json?" + trnNow))
+	const expressCorePromise = jqxhr_to_promise(get_express_core_request(mstNow));
+	const expressNowPromise = jqxhr_to_promise(get_express_now_request(trnNow))
 		.catch(() => ({ "trains": [] }));
 	const typePromise = cachedResshaTypeData ? Promise.resolve(cachedResshaTypeData) : jqxhr_to_promise($.getJSON("https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/webunkou/json/master/ressha_type_master.json?" + mstNow));
 	const ekiPromise = cachedEkiData ? Promise.resolve(cachedEkiData) : jqxhr_to_promise($.getJSON("https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/webunkou/json/master/eki_master.json?" + mstNow));
 	const locationPromises = searchSourceRosens.map((rosen) =>
-		jqxhr_to_promise($.getJSON(get_location_json_url(rosen, trnNow)))
+		jqxhr_to_promise(get_location_now_request(rosen, trnNow))
 			.then((data) => ({ "rosen": rosen, "data": data }))
 			.catch(() => null)
 	);
 	const daiyaPromises = daiyaSourceSenkus.map((senku) =>
-		jqxhr_to_promise($.getJSON("https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/webunkou/json/daiya/daiya_" + senku + (lang === "ja" ? "" : "_" + lang) + ".json?" + mstNow))
+		jqxhr_to_promise(get_daiya_request(senku, lang, mstNow))
 			.then((data) => ({ "senku": senku, "data": data }))
 			.catch(() => null)
 	);

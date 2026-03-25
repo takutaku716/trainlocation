@@ -1,3 +1,61 @@
+function is_test_mode() {
+	const params = new URLSearchParams(location.search);
+	return params.get("test") === "1";
+}
+
+function get_test_mode_search() {
+	return is_test_mode() ? "?test=1" : "";
+}
+
+function build_page_url(_path, _hash) {
+	return _path + get_test_mode_search() + (_hash ? "#" + _hash : "");
+}
+
+function get_testable_json_request(_testUrl, _remoteUrl) {
+	if (!is_test_mode()) return $.getJSON(_remoteUrl);
+
+	const deferred = $.Deferred();
+	$.getJSON(_testUrl)
+		.done((data) => deferred.resolve(data))
+		.fail(() => {
+			$.getJSON(_remoteUrl)
+				.done((data) => deferred.resolve(data))
+				.fail((jqXHR, textStatus, errorThrown) => deferred.reject(jqXHR, textStatus, errorThrown));
+		});
+	return deferred.promise();
+}
+
+function get_location_now_request(_rosen, _now) {
+	const testUrl = "./testdata/location/location_" + _rosen + "_now.json?" + _now;
+	const remoteUrl = "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/trainlocation/json/location/now/location_" + _rosen + "_now.json?" + _now;
+	return get_testable_json_request(testUrl, remoteUrl);
+}
+
+function get_express_now_request(_now) {
+	const testUrl = "./testdata/express/express_now.json?" + _now;
+	const remoteUrl = "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/trainlocation/json/express/now/express_now.json?" + _now;
+	return get_testable_json_request(testUrl, remoteUrl);
+}
+
+function get_express_core_request(_now) {
+	const testUrl = "./testdata/express/express_core.json?" + _now;
+	const remoteUrl = "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/trainlocation/json/express/core/express_core.json?" + _now;
+	return get_testable_json_request(testUrl, remoteUrl);
+}
+
+function get_daiya_request(_senku, _lang, _now) {
+	const suffix = _lang === "ja" ? "" : "_" + _lang;
+	const testUrl = "./testdata/daiya/daiya_" + _senku + suffix + ".json?" + _now;
+	const remoteUrl = "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/webunkou/json/daiya/daiya_" + _senku + suffix + ".json?" + _now;
+	return get_testable_json_request(testUrl, remoteUrl);
+}
+
+function get_rosen_now_request(_now) {
+	const testUrl = "./testdata/rosen/rosen_now.json?" + _now;
+	const remoteUrl = "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/trainlocation/json/rosen/now/rosen_now.json?" + _now;
+	return get_testable_json_request(testUrl, remoteUrl);
+}
+
 /*
  * サイドメニュー　各路線の遅延情報の設定
  */
@@ -10,7 +68,7 @@ function set_side_area_chien() {
 	};
 	// エリア名を取得
 	$.when(
-		$.getJSON("https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/trainlocation/json/rosen/now/rosen_now.json?" + now)
+		get_rosen_now_request(now)
 	)
 	.done(function(nowdata) {
 		// 現在日付表示
@@ -103,8 +161,8 @@ function createSideExpressList(onLabelClickEvent) {
 	// 特急列車に関する情報を読み込んで、特急列車リストを描画する。
 	$.when(
 		$.getJSON("https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/webunkou/json/master/express_master.json?" + mstNow),
-		$.getJSON("https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/trainlocation/json/express/core/express_core.json?" + mstNow),
-		$.getJSON("https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/trainlocation/json/express/now/express_now.json?" + trnNow)
+		get_express_core_request(mstNow),
+		get_express_now_request(trnNow)
 	)
 	.done((expressMasterBase, coreDataBase, nowDataBase) => {
 		const expressMaster = expressMasterBase[0];

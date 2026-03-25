@@ -134,8 +134,8 @@ $(function ($) {
 
 		//路線が取得出来たらページ移動
 		if (param_rosen != "") {
-			if (lang === "ja") window.location.href = "./location.html#rosen=" + param_rosen;
-			else window.location.href = "./location_" + lang + ".html#rosen=" + param_rosen;
+			if (lang === "ja") window.location.href = build_page_url("./location.html", "rosen=" + param_rosen);
+			else window.location.href = build_page_url("./location_" + lang + ".html", "rosen=" + param_rosen);
 		}
 	});
 
@@ -153,8 +153,8 @@ $(function ($) {
 		const trnNow = Date.now() >>> 10;
 		// 最新の特車運行情報を取得する。
 		$.when(
-			$.getJSON("https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/webunkou/json/daiya/daiya_00" + (lang === "ja" ? "" : "_" + lang) + ".json?" + mstNow),
-			$.getJSON("https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/trainlocation/json/express/now/express_now.json?" + trnNow)
+			get_daiya_request("00", lang, mstNow),
+			get_express_now_request(trnNow)
 		)
 		.done((daiyaBase, expressNowBase) => {
 			// 対象の列車の運行情報を取得する。
@@ -162,7 +162,7 @@ $(function ($) {
 			const targetRosen = $(this).attr("value") || normalizeMergedRosen(expressNow.runRosen, $(this).find(".train-name").text());
 			// 対象の列車に有効な路線キーが設定されている場合は、当該路線ページの該当列車位置に遷移する。
 			if (targetRosen) {
-				window.location.href = "./location" + (lang === "ja" ? "" : "_" + lang) + ".html#rosen=" + targetRosen + "&cbango=" + cbango;
+				window.location.href = build_page_url("./location" + (lang === "ja" ? "" : "_" + lang) + ".html", "rosen=" + targetRosen + "&cbango=" + cbango);
 				// ローディングアニメーション非表示
 				loading_animation_hidden();
 				return;
