@@ -45,6 +45,13 @@ let cachedTrainSearchData = null;
 let trainSearchDataPromise = null;
 let cachedTrainSearchLoadedAt = 0;
 const TRAIN_SEARCH_CACHE_TTL = 30000;
+let preserveScrollAfterHashChange = false;
+let preservedScrollTop = 0;
+
+function preserve_scroll_after_hash_change() {
+	preserveScrollAfterHashChange = true;
+	preservedScrollTop = $(window).scrollTop();
+}
 
 window.onload = function(){
 	load_location_auto_refresh_settings();
@@ -1063,6 +1070,10 @@ function set_post_station_list(_param_rosen, _scrollKey) {
 		if (param_cbango) {
 			// ハッシュにcbangoが存在した場合処理を実行
 			ressha_run_check();
+		} else if (preserveScrollAfterHashChange) {
+			$("body,html").scrollTop(preservedScrollTop);
+			scrollY = preservedScrollTop;
+			preserveScrollAfterHashChange = false;
 		} else {
 			// 画面スクロール位置設定
 			set_disp_scroll(_param_rosen, _scrollKey);

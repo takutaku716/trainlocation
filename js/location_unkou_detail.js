@@ -175,6 +175,7 @@ $(function ($) {
 		$('#resshaDetailMessage').fadeOut("fast");
 		set_scroll_show($("#resshaDetail .dialog"));
 		if (isTracking) {
+			if (typeof preserve_scroll_after_hash_change === "function") preserve_scroll_after_hash_change();
 			location.hash = "rosen=" + rosen;
 			return;
 		}
