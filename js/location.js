@@ -74,17 +74,17 @@ function update_tracking_footer_controls() {
 	const lang = document.documentElement.dataset.lang;
 	const hasTracking = !!get_param_cbango();
 	const scrollLabels = trackingScrollEnabled ? {
-		"ja": "\u30b9\u30af\u30ed\u30fc\u30eb<br>OFF",
-		"en": "Scroll<br>OFF",
-		"tc": "Scroll<br>OFF",
-		"sc": "Scroll<br>OFF",
-		"kr": "Scroll<br>OFF"
+		"ja": "\u8ffd\u5f93\u4e2d",
+		"en": "Follow<br>ON",
+		"tc": "Follow<br>ON",
+		"sc": "Follow<br>ON",
+		"kr": "Follow<br>ON"
 	} : {
-		"ja": "\u30b9\u30af\u30ed\u30fc\u30eb<br>ON",
-		"en": "Scroll<br>ON",
-		"tc": "Scroll<br>ON",
-		"sc": "Scroll<br>ON",
-		"kr": "Scroll<br>ON"
+		"ja": "\u8ffd\u5f93\u505c\u6b62",
+		"en": "Follow<br>OFF",
+		"tc": "Follow<br>OFF",
+		"sc": "Follow<br>OFF",
+		"kr": "Follow<br>OFF"
 	};
 	const releaseLabels = {
 		"ja": "\u8ffd\u8de1<br>\u89e3\u9664",
@@ -96,9 +96,11 @@ function update_tracking_footer_controls() {
 
 	if (hasTracking) {
 		$("#trackingFooterContents").removeAttr("hidden").show();
+		$("#trackScrollToggleBtn").attr("data-state", trackingScrollEnabled ? "on" : "off");
 		$("#trackScrollToggleBtn .sub-footer-unkou-msg").html(scrollLabels[lang] || scrollLabels.ja);
 		$("#trackReleaseBtn .sub-footer-unkou-msg").html(releaseLabels[lang] || releaseLabels.ja);
 	} else {
+		$("#trackScrollToggleBtn").removeAttr("data-state");
 		$("#trackingFooterContents").attr("hidden", "hidden").hide();
 	}
 }
