@@ -287,10 +287,12 @@ header {
 		}
 
 		.sub-footer #trackingFooterContents .sub-footer-contents.tracking-control {
-			background: transparent;
+			background-color: #1d6f98;
+			border-radius: 8px;
 			box-shadow: 5px 5px 10px rgb(0 0 0 / 40%);
 			margin-left: auto;
 			opacity: 0.9;
+			overflow: hidden;
 			width: 72px;
 		}
 
