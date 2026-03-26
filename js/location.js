@@ -72,22 +72,23 @@ function save_tracking_scroll_setting() {
 
 function update_tracking_footer_controls() {
 	const lang = document.documentElement.dataset.lang;
-	const hasTracking = !!get_param_cbango();
+	const trackedCbango = get_param_cbango();
+	const hasTracking = !!trackedCbango;
 	const scrollLabels = trackingScrollEnabled ? {
 		"ja": "\u8ffd\u5f93\u4e2d",
-		"en": "Follow<br>ON",
-		"tc": "Follow<br>ON",
-		"sc": "Follow<br>ON",
-		"kr": "Follow<br>ON"
+		"en": "Follow ON",
+		"tc": "Follow ON",
+		"sc": "Follow ON",
+		"kr": "Follow ON"
 	} : {
 		"ja": "\u8ffd\u5f93\u505c\u6b62",
-		"en": "Follow<br>OFF",
-		"tc": "Follow<br>OFF",
-		"sc": "Follow<br>OFF",
-		"kr": "Follow<br>OFF"
+		"en": "Follow OFF",
+		"tc": "Follow OFF",
+		"sc": "Follow OFF",
+		"kr": "Follow OFF"
 	};
 	const releaseLabels = {
-		"ja": "\u8ffd\u8de1<br>\u89e3\u9664",
+		"ja": "\u8ffd\u8de1\u89e3\u9664",
 		"en": "Untrack",
 		"tc": "Untrack",
 		"sc": "Untrack",
@@ -96,11 +97,14 @@ function update_tracking_footer_controls() {
 
 	if (hasTracking) {
 		$("#trackingFooterContents").removeAttr("hidden").show();
-		$("#trackScrollToggleBtn").attr("data-state", trackingScrollEnabled ? "on" : "off");
-		$("#trackScrollToggleBtn .sub-footer-unkou-msg").html(scrollLabels[lang] || scrollLabels.ja);
-		$("#trackReleaseBtn .sub-footer-unkou-msg").html(releaseLabels[lang] || releaseLabels.ja);
+		$("#trackScrollToggleBtn")
+			.attr("data-state", trackingScrollEnabled ? "on" : "off")
+			.toggleClass("is-off", !trackingScrollEnabled);
+		$("#trackScrollToggleBtn .tracking-cbango").text(trackedCbango);
+		$("#trackScrollToggleBtn .tracking-status").text(scrollLabels[lang] || scrollLabels.ja);
+		$("#trackReleaseBtn .sub-footer-unkou-msg").text(releaseLabels[lang] || releaseLabels.ja);
 	} else {
-		$("#trackScrollToggleBtn").removeAttr("data-state");
+		$("#trackScrollToggleBtn").removeAttr("data-state").removeClass("is-off");
 		$("#trackingFooterContents").attr("hidden", "hidden").hide();
 	}
 }
