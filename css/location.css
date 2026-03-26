@@ -314,15 +314,15 @@ header {
 			}
 
 		.sub-footer #trackScrollToggleBtn.is-off {
-			background-color: #6b7780;
+			background-color: #6b7780 !important;
 		}
 
 		.sub-footer #trackScrollToggleBtn.is-off .unko-info-header {
-			background-color: #6b7780;
+			background-color: #6b7780 !important;
 		}
 
 			.sub-footer #trackScrollToggleBtn.is-off .unko-info-header:hover {
-				background-color: #7c8891;
+				background-color: #7c8891 !important;
 			}
 
 		.sub-footer #trackingFooterContents .sub-footer-contents.tracking-control .sub-footer-unkou-msg {
