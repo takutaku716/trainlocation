@@ -99,12 +99,13 @@ function update_tracking_footer_controls() {
 		$("#trackingFooterContents").removeAttr("hidden").show();
 		$("#trackScrollToggleBtn")
 			.attr("data-state", trackingScrollEnabled ? "on" : "off")
-			.toggleClass("is-off", !trackingScrollEnabled);
+			.toggleClass("is-off", !trackingScrollEnabled)
+			.toggleClass("is-following", trackingScrollEnabled);
 		$("#trackScrollToggleBtn .tracking-cbango").text(trackedCbango);
 		$("#trackScrollToggleBtn .tracking-status").text(scrollLabels[lang] || scrollLabels.ja);
 		$("#trackReleaseBtn .sub-footer-unkou-msg").text(releaseLabels[lang] || releaseLabels.ja);
 	} else {
-		$("#trackScrollToggleBtn").removeAttr("data-state").removeClass("is-off");
+		$("#trackScrollToggleBtn").removeAttr("data-state").removeClass("is-off is-following");
 		$("#trackingFooterContents").attr("hidden", "hidden").hide();
 	}
 }
