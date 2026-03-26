@@ -302,7 +302,7 @@ header {
 			color: #fff;
 			display: flex;
 			flex-direction: column;
-			height: 72px;
+			height: 60px;
 			align-items: center;
 			justify-content: center;
 			padding: 0;
@@ -2971,7 +2971,7 @@ section#refreshSettingDetail {
 	}
 
 	.sub-footer #trackingFooterContents .sub-footer-contents.tracking-control .unko-info-header {
-		height: 68px;
+		height: 58px;
 		width: 68px;
 	}
 
