@@ -263,6 +263,11 @@ header {
 	width: 100%;
 }
 
+@keyframes tracking-follow-blink {
+	0%, 100% { opacity: 0.9; }
+	50% { opacity: 0.55; }
+}
+
 .sub-footer {
 	padding: 5px 0;
 	position: fixed;
@@ -324,6 +329,10 @@ header {
 			.sub-footer #trackScrollToggleBtn.is-off .unko-info-header:hover {
 				background-color: #7c8891 !important;
 			}
+
+		.sub-footer #trackScrollToggleBtn.is-following .unko-info-header {
+			animation: tracking-follow-blink 1.2s ease-in-out infinite;
+		}
 
 		.sub-footer #trackingFooterContents .sub-footer-contents.tracking-control .sub-footer-unkou-msg {
 			display: flex;
