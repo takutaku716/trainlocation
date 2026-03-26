@@ -311,6 +311,18 @@ header {
 				background-color: #2785b4;
 			}
 
+		.sub-footer #trackScrollToggleBtn[data-state="off"] {
+			background-color: #6b7780;
+		}
+
+		.sub-footer #trackScrollToggleBtn[data-state="off"] .unko-info-header {
+			background-color: #6b7780;
+		}
+
+			.sub-footer #trackScrollToggleBtn[data-state="off"] .unko-info-header:hover {
+				background-color: #7c8891;
+			}
+
 		.sub-footer #trackingFooterContents .sub-footer-contents.tracking-control .sub-footer-unkou-msg {
 			font-size: 13px;
 			line-height: 1.5;
