@@ -61,6 +61,13 @@ function suppress_track_scroll_once() {
 	preservedScrollTop = $(window).scrollTop();
 }
 
+function clear_tracked_train_selection(_preserveScroll = false) {
+	const rosen = get_param_rosen();
+	if (!rosen || !get_param_cbango()) return;
+	if (_preserveScroll) preserve_scroll_after_hash_change();
+	location.hash = "rosen=" + rosen;
+}
+
 function load_tracking_scroll_setting() {
 	const stored = localStorage.getItem(TRACKING_SCROLL_ENABLED_KEY);
 	trackingScrollEnabled = stored === null ? true : stored === "true";
@@ -457,10 +464,7 @@ $(function ($) {
 
 	// バブリングを停止
 	$(document).on("click", "#trackReleaseBtn", function() {
-		const rosen = get_param_rosen();
-		if (!rosen || !get_param_cbango()) return;
-		preserve_scroll_after_hash_change();
-		location.hash = "rosen=" + rosen;
+		clear_tracked_train_selection(true);
 	});
 
 	$(document).on("click", "#trackScrollToggleBtn", function() {
@@ -966,7 +970,10 @@ function restore_selected_train_marker(_follow = false) {
 	const param_cbango = get_param_cbango();
 	if (!param_cbango) return;
 	const ressha = $("div[data-cbango='" + param_cbango + "']");
-	if (!ressha.length) return;
+	if (!ressha.length) {
+		clear_tracked_train_selection(true);
+		return;
+	}
 	ressha.append("<img class='ressha-animation' src='./images/home/ressha_mark.svg' alt>");
 	set_ressha_icon_animation();
 	if (_follow) {
