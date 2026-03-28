@@ -3103,12 +3103,12 @@ section#refreshSettingDetail {
 		font-size: 14px;
 		overflow: hidden;
 	}
-	section#trainSearchDetail .dialog .search-result-title.has-number {
+	section#trainSearchDetail .dialog .search-result-title.has-number.stacked {
 		align-items: flex-start;
 		flex-direction: column;
 		gap: 1px;
 	}
-	section#trainSearchDetail .dialog .search-result-title.has-number .search-result-name {
+	section#trainSearchDetail .dialog .search-result-title.has-number.stacked .search-result-name {
 		max-width: 100%;
 	}
 	section#trainSearchDetail .dialog .search-result-number {
