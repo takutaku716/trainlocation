@@ -2715,11 +2715,24 @@ section#trainSearchDetail {
 				line-height: 1.2;
 			}
 			section#trainSearchDetail .dialog .search-result-title {
+				align-items: baseline;
+				column-gap: 4px;
+				display: flex;
 				font-size: 15px;
 				font-weight: bold;
 				line-height: 1.15;
 				min-width: 0;
-				word-break: break-word;
+				overflow: hidden;
+			}
+			section#trainSearchDetail .dialog .search-result-name {
+				min-width: 0;
+				overflow: hidden;
+				text-overflow: ellipsis;
+				white-space: nowrap;
+			}
+			section#trainSearchDetail .dialog .search-result-number {
+				flex: none;
+				white-space: nowrap;
 			}
 			section#trainSearchDetail .dialog .search-result-destination {
 				color: #333;
@@ -3089,8 +3102,18 @@ section#refreshSettingDetail {
 	section#trainSearchDetail .dialog .search-result-title {
 		font-size: 14px;
 		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
+	}
+	section#trainSearchDetail .dialog .search-result-title.has-number {
+		align-items: flex-start;
+		flex-direction: column;
+		gap: 1px;
+	}
+	section#trainSearchDetail .dialog .search-result-title.has-number .search-result-name {
+		max-width: 100%;
+	}
+	section#trainSearchDetail .dialog .search-result-number {
+		font-size: 12px;
+		line-height: 1.1;
 	}
 	section#trainSearchDetail .dialog .search-result-destination,
 	section#trainSearchDetail .dialog .unkou-label {
