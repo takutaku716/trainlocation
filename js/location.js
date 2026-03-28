@@ -2719,7 +2719,32 @@ function run_train_name_search() {
 				if (!goNumber) return true;
 				return train.goNumber === goNumber;
 			});
-			render_train_search_results(results, "検索結果");
+			if (!goNumber) {
+				const groupedResults = {
+					"\u4e0a\u308a\u5217\u8eca": [],
+					"\u4e0b\u308a\u5217\u8eca": [],
+					"\u305d\u306e\u4ed6": []
+				};
+				results.forEach((train) => {
+					const goNumberValue = Number(train.goNumber || "");
+					if (train.goNumber && !Number.isNaN(goNumberValue)) {
+						if (goNumberValue % 2 === 0) groupedResults["\u4e0a\u308a\u5217\u8eca"].push(train);
+						else groupedResults["\u4e0b\u308a\u5217\u8eca"].push(train);
+						return;
+					}
+					groupedResults["\u305d\u306e\u4ed6"].push(train);
+				});
+				Object.keys(groupedResults).forEach((key) => {
+					groupedResults[key].sort((a, b) => {
+						const numA = Number(a.goNumber || "9999");
+						const numB = Number(b.goNumber || "9999");
+						return numA - numB;
+					});
+				});
+				render_train_search_grouped_results(groupedResults, "\u691c\u7d22\u7d50\u679c");
+				return;
+			}
+            render_train_search_results(results, "\u691c\u7d22\u7d50\u679c");
 		})
 		.catch(() => {
 			render_train_search_results([], "検索データを取得できませんでした。", "検索データを取得できませんでした。");
@@ -2762,12 +2787,7 @@ function update_train_search_result_title_layout() {
 	});
 }
 
-function render_train_search_results(results, headerText, emptyMessage) {
-	$("#trainSearchResultInfo").text(headerText || "");
-	if (!results.length) {
-		$("#trainSearchResult").html("<div class='train-search-empty'>" + (emptyMessage || "該当する列車はありません。") + "</div>");
-		return;
-	}
+function build_train_search_result_items(results) {
 	let html = "";
 	results.forEach(train => {
 		const nameParts = split_train_search_result_name(train.name);
@@ -2787,7 +2807,32 @@ function render_train_search_results(results, headerText, emptyMessage) {
 		html += "<span class='unkou-label" + (train.status && train.status.indexOf("遅れ") >= 0 ? " chien" : "") + "'>" + escape_train_search_html(train.status || "") + "</span>";
 		html += "</div>";
 	});
-	$("#trainSearchResult").html(html);
+	return html;
+}
+
+function render_train_search_results(results, headerText, emptyMessage) {
+	$("#trainSearchResultInfo").text(headerText || "");
+	if (!results.length) {
+		$("#trainSearchResult").html("<div class='train-search-empty'>" + (emptyMessage || "該当する列車はありません。") + "</div>");
+		return;
+	}
+	$(`#trainSearchResult`).html(build_train_search_result_items(results));
+	update_train_search_result_title_layout();
+}
+
+function render_train_search_grouped_results(groupMap, headerText, emptyMessage) {
+	$(`#trainSearchResultInfo`).text(headerText || "");
+	const groupEntries = Object.entries(groupMap).filter(([, rows]) => rows && rows.length);
+	if (!groupEntries.length) {
+		$(`#trainSearchResult`).html("<div class='train-search-empty'>" + (emptyMessage || "該当する列車はありません。") + "</div>");
+		return;
+	}
+	let html = "";
+	groupEntries.forEach(([label, rows]) => {
+		html += "<div class='train-search-group-label'>" + escape_train_search_html(label) + "</div>";
+		html += build_train_search_result_items(rows);
+	});
+	$(`#trainSearchResult`).html(html);
 	update_train_search_result_title_layout();
 }
 
