@@ -2753,10 +2753,17 @@ function render_train_search_results(results, headerText, emptyMessage) {
 	let html = "";
 	results.forEach(train => {
 		const nameParts = split_train_search_result_name(train.name);
+		const titleText = train.baseName || nameParts.title || train.name;
+		const numberText = train.baseName && train.goNumber ? train.goNumber + "号" : "";
 		html += "<div class='express-train-contents train-search-result-item' cbango='" + escape_train_search_html(train.cbango) + "' type='" + escape_train_search_html(train.type) + "' value='" + escape_train_search_html(train.value) + "' data-running='" + (train.isRunning === false ? "0" : "1") + "'>";
 		html += "<div class='search-result-main'>";
 		html += "<span class='search-result-cbango'>" + escape_train_search_html(train.cbango) + "</span>";
-		html += "<span class='search-result-title'>" + escape_train_search_html(nameParts.title || train.name) + "</span>";
+		html += "<span class='search-result-title" + (numberText ? " has-number" : "") + "'>";
+		html += "<span class='search-result-name'>" + escape_train_search_html(titleText) + "</span>";
+		if (numberText) {
+			html += "<span class='search-result-number'>" + escape_train_search_html(numberText) + "</span>";
+		}
+		html += "</span>";
 		html += "<span class='search-result-destination'>" + escape_train_search_html(nameParts.destination) + "</span>";
 		html += "</div>";
 		html += "<span class='unkou-label" + (train.status && train.status.indexOf("遅れ") >= 0 ? " chien" : "") + "'>" + escape_train_search_html(train.status || "") + "</span>";
