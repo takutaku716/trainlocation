@@ -2733,6 +2733,17 @@ function normalize_train_search_text(text) {
 /*
  * 列車検索結果を描画
  */
+function split_train_search_result_name(name) {
+	const text = String(name || "").trim();
+	if (!text) return { "title": "", "destination": "" };
+	const splitIndex = text.lastIndexOf(" ");
+	if (splitIndex < 0) return { "title": text, "destination": "" };
+	return {
+		"title": text.slice(0, splitIndex).trim(),
+		"destination": text.slice(splitIndex + 1).trim()
+	};
+}
+
 function render_train_search_results(results, headerText, emptyMessage) {
 	$("#trainSearchResultInfo").text(headerText || "");
 	if (!results.length) {
@@ -2741,10 +2752,12 @@ function render_train_search_results(results, headerText, emptyMessage) {
 	}
 	let html = "";
 	results.forEach(train => {
+		const nameParts = split_train_search_result_name(train.name);
 		html += "<div class='express-train-contents train-search-result-item' cbango='" + escape_train_search_html(train.cbango) + "' type='" + escape_train_search_html(train.type) + "' value='" + escape_train_search_html(train.value) + "' data-running='" + (train.isRunning === false ? "0" : "1") + "'>";
 		html += "<div class='search-result-main'>";
 		html += "<span class='search-result-cbango'>" + escape_train_search_html(train.cbango) + "</span>";
-		html += "<span class='train-name'>" + escape_train_search_html(train.name) + "</span>";
+		html += "<span class='search-result-title'>" + escape_train_search_html(nameParts.title || train.name) + "</span>";
+		html += "<span class='search-result-destination'>" + escape_train_search_html(nameParts.destination) + "</span>";
 		html += "</div>";
 		html += "<span class='unkou-label" + (train.status && train.status.indexOf("遅れ") >= 0 ? " chien" : "") + "'>" + escape_train_search_html(train.status || "") + "</span>";
 		html += "</div>";
