@@ -1,4 +1,4 @@
-﻿function is_test_mode() {
+function is_test_mode() {
 	const params = new URLSearchParams(location.search);
 	return params.get("test") === "1";
 }
@@ -57,7 +57,8 @@ function get_rosen_now_request(_now) {
 }
 
 /*
- * 繧ｵ繧､繝峨Γ繝九Η繝ｼ縲蜷・ｷｯ邱壹・驕・ｻｶ諠・ｱ縺ｮ險ｭ螳・ */
+ * サイドメニュー　各路線の遅延情報の設定
+ */
 function set_side_area_chien() {
 	let now = Date.now() >>> 10;
 	const mergedRosenMap = {
@@ -65,20 +66,21 @@ function set_side_area_chien() {
 		"52": ["02", "07", "09"],
 		"53": ["02", "13"]
 	};
-	// 繧ｨ繝ｪ繧｢蜷阪ｒ蜿門ｾ・	$.when(
+	// エリア名を取得
+	$.when(
 		get_rosen_now_request(now)
 	)
 	.done(function(nowdata) {
-		// 迴ｾ蝨ｨ譌･莉倩｡ｨ遉ｺ
+		// 現在日付表示
 		function setTimestamp(nowdata) {
 			const now = new Date();
 			const formatted =
-				now.getFullYear() + "蟷ｴ" +
-				(now.getMonth() + 1).toString().padStart(2, "0") + "譛・ +
-				now.getDate().toString().padStart(2, "0") + "譌･" +
-				now.getHours().toString().padStart(2, "0") + "譎・ +
-				now.getMinutes().toString().padStart(2, "0") + "蛻・ +
-				now.getSeconds().toString().padStart(2, "0") + "遘堤樟蝨ｨ";
+				now.getFullYear() + "年" +
+				(now.getMonth() + 1).toString().padStart(2, "0") + "月" +
+				now.getDate().toString().padStart(2, "0") + "日" +
+				now.getHours().toString().padStart(2, "0") + "時" +
+				now.getMinutes().toString().padStart(2, "0") + "分" +
+				now.getSeconds().toString().padStart(2, "0") + "秒現在";
 
 			$("#timestamp").text(formatted);
 		}
@@ -92,6 +94,7 @@ function set_side_area_chien() {
 				nowStatus = getMergedRosenStatus(nowdata.lines, mergedRosenMap[rosenValue]);
 			}
 			if (typeof nowStatus !== "undefined") {
+				// 遅延情報の表示
 				const chienText = getRosenChienText(nowStatus);
 				if (chienText) {
 					$(row).addClass("has-chien");
@@ -99,7 +102,7 @@ function set_side_area_chien() {
 				}
 			}
 		});
-		// firefox逕ｨ縺ｫ驕ｩ逕ｨ縺励※縺・ｋmargin-right繧帝≦蟒ｶ譁・ｨ縺後↑縺・ｴ蜷育┌蜉ｹ縺ｫ縺吶ｋ縲・
+		// firefox用に適用しているmargin-rightを遅延文言がない場合無効にする。
 		if ($('.rosen-name-contents[value="01"] .chien').length == 0) $('.rosen-name-contents[value="01"] .main').css("margin-right", "0px");
 		if ($('.rosen-name-contents[value="03"] .chien').length == 0) $('.rosen-name-contents[value="03"] .main').css("margin-right", "0px");
 		if ($('.rosen-name-contents[value="10"] .chien').length == 0) $('.rosen-name-contents[value="10"] .main').css("margin-right", "0px");
@@ -125,43 +128,43 @@ function set_side_area_chien() {
 }
 
 /**
- * 蜷・ｷｯ邱壹・驕・ｻｶ蛻・焚縺ｫ蟇ｾ蠢懊＠縺滓枚險繧貞叙蠕励☆繧九・
+ * 各路線の遅延分数に対応した文言を取得する。
  */
 function getRosenChienText(_nowStatus) {
-	const CHIEN_LABEL_DELAYED_HOUR = { "ja": "譛螟ｧ{0}譎る俣驕・ｌ", "en": "Delayed for <br>{0} hour(s) or less", "tc": "譛髟ｷ蟒ｶ驕ｲ{0}蟆乗凾髏・, "sc": "譛髟ｿ蟒ｶ霑毬0}蟆乗慮髓・, "kr": "・罹劇 {0}・懋ｰ・・・ｰ" };
-	const CHIEN_LABEL_DELAYED_HR_MIN = { "ja": "譛螟ｧ{0}譎る俣{1}蛻・≦繧・, "en": "Delayed for <br>{0} hr {1} min or less", "tc": "譛髟ｷ蟒ｶ驕ｲ{0}蟆乗凾{1}蛻・据", "sc": "譛髟ｿ蟒ｶ霑毬0}蟆乗慮{1}蛻・帖", "kr": "・罹劇 {0}・懋ｰ・{1}・・・・ｰ" };
-	const CHIEN_LABEL_DELAYED_MINUTES = { "ja": "譛螟ｧ{0}蛻・≦繧・, "en": "Delayed for <br>{0} minutes or less", "tc": "譛髟ｷ蟒ｶ驕ｲ{0}蛻・据", "sc": "譛髟ｿ蟒ｶ霑毬0}蛻・帖", "kr": "・罹劇 {0}・・・・ｰ" };
-	const CHIEN_LABEL_VERY_LATE = { "ja": "螟ｧ蟷・↑驕・ｌ縺ゅｊ", "en": "Very late", "tc": "螟ｧ蟷・ｻｶ驕ｲ", "sc": "螟ｧ蟷・ｻｶ霑・, "kr": "・尞ｭ ・・ｰ ・溢搆" };
+	const CHIEN_LABEL_DELAYED_HOUR = { "ja": "最大{0}時間遅れ", "en": "Delayed for <br>{0} hour(s) or less", "tc": "最長延遲{0}小時鐘", "sc": "最长延迟{0}小时钟", "kr": "최대 {0}시간 지연" };
+	const CHIEN_LABEL_DELAYED_HR_MIN = { "ja": "最大{0}時間{1}分遅れ", "en": "Delayed for <br>{0} hr {1} min or less", "tc": "最長延遲{0}小時{1}分鐘", "sc": "最长延迟{0}小时{1}分钟", "kr": "최대 {0}시간 {1}분 지연" };
+	const CHIEN_LABEL_DELAYED_MINUTES = { "ja": "最大{0}分遅れ", "en": "Delayed for <br>{0} minutes or less", "tc": "最長延遲{0}分鐘", "sc": "最长延迟{0}分钟", "kr": "최대 {0}분 지연" };
+	const CHIEN_LABEL_VERY_LATE = { "ja": "大幅な遅れあり", "en": "Very late", "tc": "大幅延遲", "sc": "大幅延迟", "kr": "대폭 지연 있음" };
 	const lang = document.documentElement.dataset.lang;
 
-	if (!_nowStatus.maxChien || _nowStatus.maxChien <= 4) { // 蟷ｳ蟶ｸ驕玖ｻ｢縺ｮ蝣ｴ蜷医・菴輔ｂ陦ｨ遉ｺ縺励↑縺・
+	if (!_nowStatus.maxChien || _nowStatus.maxChien <= 4) { // 平常運転の場合は何も表示しない
 		return "";
-	} else if (_nowStatus.maxChien >= 999) { // 100蛻・ｻ･荳翫↑繧峨悟､ｧ蟷・↑驕・ｌ縺ゅｊ縲・
+	} else if (_nowStatus.maxChien >= 999) { // 100分以上なら「大幅な遅れあり」
 		return `<span class="unkou-label chien very-late">${CHIEN_LABEL_VERY_LATE[lang]}</span>`;
 	} else {
-		// 驕・ｌ譎ょ・陦ｨ遉ｺ
+		// 遅れ時分表示
 		let chienHour = Math.floor(_nowStatus.maxChien / 60);
 		let chienMin = _nowStatus.maxChien % 60;
 		if (chienHour > 0){
-			if (chienMin > 0) return `<span class="unkou-label chien">${CHIEN_LABEL_DELAYED_HR_MIN[lang].replace("{0}", chienHour).replace("{1}", chienMin)}</span>`; // 縲梧怙螟ｧ縲・凾髢薙・・驕・ｌ縲・
-			else return `<span class="unkou-label chien">${CHIEN_LABEL_DELAYED_HOUR[lang].replace("{0}",chienHour)}</span>`; // 縲梧怙螟ｧ縲・凾髢馴≦繧後・
+			if (chienMin > 0) return `<span class="unkou-label chien">${CHIEN_LABEL_DELAYED_HR_MIN[lang].replace("{0}", chienHour).replace("{1}", chienMin)}</span>`; // 「最大〇時間〇分遅れ」
+			else return `<span class="unkou-label chien">${CHIEN_LABEL_DELAYED_HOUR[lang].replace("{0}",chienHour)}</span>`; // 「最大〇時間遅れ」
 		} else {
-			return `<span class="unkou-label chien">${CHIEN_LABEL_DELAYED_MINUTES[lang].replace("{0}", chienMin)}</span>`; // 縲梧怙螟ｧ縲・・驕・ｌ縲・
+			return `<span class="unkou-label chien">${CHIEN_LABEL_DELAYED_MINUTES[lang].replace("{0}", chienMin)}</span>`; // 「最大〇分遅れ」
 		}
 	}
 }
 
 /**
- * 繧ｵ繧､繝峨Γ繝九Η繝ｼ縲蜷・音諤･蛻苓ｻ翫・繧ｿ繝ｳ縺ｮ菴懈・
- * @param onLabelClickEvent 迚ｹ諤･諢帷ｧｰ蜷阪・繝ｩ繝吶Ν繧偵け繝ｪ繝・け縺励◆縺ｨ縺阪↓螳溯｡後☆繧句・逅・ｒ險倩ｿｰ縺励◆髢｢謨ｰ縲・
+ * サイドメニュー　各特急列車ボタンの作成
+ * @param onLabelClickEvent 特急愛称名のラベルをクリックしたときに実行する処理を記述した関数。
  */
 function createSideExpressList(onLabelClickEvent) {
 	const lang = document.documentElement.dataset.lang;
-	// 繝槭せ繧ｿ繝輔ぃ繧､繝ｫ逕ｨ縺ｮ繧ｭ繝｣繝・す繝･繝舌せ繧ｿ繝ｼ蛟､繧堤函謌舌☆繧九・UNIX蜈・悄縺九ｉ縺ｮ邨碁℃繝溘Μ遘呈焚繧貞承縺ｫ16繝薙ャ繝医す繝輔ヨ縺励◆蛟､縲・縺ｮ16荵暦ｼ・5536繝溘Μ遘停薗邏・蛻・俣髫斐〒繧ｭ繝｣繝・す繝･繧堤┌蜉ｹ蛹悶☆繧・
+	// マスタファイル用のキャッシュバスター値を生成する。(UNIX元期からの経過ミリ秒数を右に16ビットシフトした値。2の16乗＝65536ミリ秒≒約1分間隔でキャッシュを無効化する)
 	const mstNow = Date.now() >>> 16;
-	// 繝医Λ繝ｳ繝輔ぃ繧､繝ｫ逕ｨ縺ｮ繧ｭ繝｣繝・す繝･繝舌せ繧ｿ繝ｼ蛟､繧堤函謌舌☆繧九・UNIX蜈・悄縺九ｉ縺ｮ邨碁℃繝溘Μ遘呈焚繧貞承縺ｫ10繝薙ャ繝医す繝輔ヨ縺励◆蛟､縲・縺ｮ10荵暦ｼ・024繝溘Μ遘帝俣髫斐〒繧ｭ繝｣繝・す繝･繧堤┌蜉ｹ蛹悶☆繧・
+	// トランファイル用のキャッシュバスター値を生成する。(UNIX元期からの経過ミリ秒数を右に10ビットシフトした値。2の10乗＝1024ミリ秒間隔でキャッシュを無効化する)
 	const trnNow = Date.now() >>> 10;
-	// 迚ｹ諤･蛻苓ｻ翫↓髢｢縺吶ｋ諠・ｱ繧定ｪｭ縺ｿ霎ｼ繧薙〒縲∫音諤･蛻苓ｻ翫Μ繧ｹ繝医ｒ謠冗判縺吶ｋ縲・
+	// 特急列車に関する情報を読み込んで、特急列車リストを描画する。
 	$.when(
 		$.getJSON("https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/webunkou/json/master/express_master.json?" + mstNow),
 		get_express_core_request(mstNow),
@@ -171,51 +174,51 @@ function createSideExpressList(onLabelClickEvent) {
 		const expressMaster = expressMasterBase[0];
 		const coreData = coreDataBase[0];
 		const nowData = nowDataBase[0];
-		// 迚ｹ諤･諢帷ｧｰ蜷阪・繧ｰ繝ｫ繝ｼ繝怜腰菴阪↓縲∫音諤･蛻苓ｻ翫ｒ鬆・分縺ｫ逕ｻ髱｢縺ｫ霑ｽ蜉縺吶ｋ縲・
+		// 特急愛称名のグループ単位に、特急列車を順番に画面に追加する。
 		const expressListElement = $("#expTab");
 		expressMaster.forEach(express => {
-			// 蠖捺律縺ｮ襍ｰ陦悟・霆翫・繝ｪ繧ｹ繝医ｒ蜿門ｾ励☆繧九・
+			// 当日の走行列車のリストを取得する。
 			const coreTrains = coreData.expresses.find(trains => trains.key === express.key);
-			// 蠖捺律縺ｮ襍ｰ陦悟・霆翫′縺ｪ縺・ｴ蜷医・縲∝・逅・ｵゆｺ・☆繧九・
+			// 当日の走行列車がない場合は、処理終了する。
 			if (!coreTrains || !coreTrains.trains || coreTrains.trains.length === 0) return;
 
-			// 迚ｹ諤･蛻苓ｻ翫・繝・Φ繝励Ξ繝ｼ繝医ｒ蜿門ｾ励＠縺ｦ縲∫判髱｢縺ｫ霑ｽ蜉縺吶ｋ縲・
+			// 特急列車のテンプレートを取得して、画面に追加する。
 			const expressElement = (function(key) {
 				const cloneElement = $(expressListElement).find("template#expItemTemplate")[0].content.cloneNode(true);
 				$(cloneElement).find(".area-contents").attr("data-key", key);
 				$(expressListElement).append(cloneElement);
 				return $(expressListElement).find(".area-contents[data-key='" + key +"']");
 			}(express.key));
-			// 諢帷ｧｰ蜷阪ｒ險ｭ螳壹☆繧九・
+			// 愛称名を設定する。
 			$(expressElement).find(".express-name-label .main").text(express.name[lang]);
-			// 蛹ｺ髢灘錐繧定ｨｭ螳壹☆繧九・
+			// 区間名を設定する。
 			$(expressElement).find(".express-name-label .sub").text(express.kukanText[lang]);
-			// 繝ｩ繝吶Ν繧ｯ繝ｪ繝・け譎ゅ・蜃ｦ逅・う繝吶Φ繝医ｒ霑ｽ蜉縺吶ｋ縲・
+			// ラベルクリック時の処理イベントを追加する。
 			if (onLabelClickEvent) {
 				$(expressElement).find(".express-name-label").on("click", {"kukanList": express.kukanList}, onLabelClickEvent);
 			}
 
-			// 繧ｹ繝槭・繝｢繝ｼ繝峨・迚ｹ諤･諢帷ｧｰ蜷阪・繧ｿ繝ｳ繧定ｿｽ蜉縺吶ｋ縲・
+			// スマホモードの特急愛称名ボタンを追加する。
 			if ($(expressListElement).find(".exp-operation-list").length) {
-				// 繝・Φ繝励Ξ繝ｼ繝医ｒ蜿門ｾ励＠縺ｦ逕ｻ髱｢縺ｫ霑ｽ蜉縺吶ｋ縲・
+				// テンプレートを取得して画面に追加する。
 				const spExpressElement = (function(key) {
 					const cloneElement =$(expressListElement).find(".exp-operation-list ul template")[0].content.cloneNode(true);
 					$(cloneElement).find(".sp-express-item").attr("data-key", key);
 					$(expressListElement).find(".exp-operation-list ul").append(cloneElement);
 					return $(expressListElement).find(".exp-operation-list ul li[data-key='" + key +"']");
 				}(express.key));
-				// 諢帷ｧｰ蜷阪ｒ險ｭ螳壹☆繧九・
+				// 愛称名を設定する。
 				$(spExpressElement).find(".sp-express-name-label .main").text(express.name[lang]);
-				// 蛹ｺ髢灘錐繧定ｨｭ螳壹☆繧九・
+				// 区間名を設定する。
 				$(spExpressElement).find(".sp-express-name-label .sub").text(express.kukanText[lang]);
-				// 繝ｩ繝吶Ν繧ｭ繝ｼ繧定ｨｭ螳壹☆繧九・
+				// ラベルキーを設定する。
 				$(spExpressElement).find("input").attr("id", "exp" + express.key);
 				$(spExpressElement).find("label").attr("for", "exp" + express.key);
 			}
 
-			// 蠖楢ｩｲ諢帷ｧｰ蜷阪げ繝ｫ繝ｼ繝励↓螻槭☆繧狗音諤･蛻苓ｻ翫・繝ｪ繧ｹ繝医ｒ菴懈・縺吶ｋ縲・
+			// 当該愛称名グループに属する特急列車のリストを作成する。
 			coreTrains.trains.forEach(coreTrainInfo => {
-				// 蛻苓ｻ翫・繝・Φ繝励Ξ繝ｼ繝医ｒ蜿門ｾ励＠縺ｦ縲∫判髱｢縺ｫ霑ｽ蜉縺吶ｋ縲・
+				// 列車のテンプレートを取得して、画面に追加する。
 				const trainElement = (function(cbango, type) {
 					const cloneElement = $(expressElement).find("template")[0].content.cloneNode(true);
 					$(cloneElement).find(".express-train-contents").attr("cbango", cbango);
@@ -223,23 +226,25 @@ function createSideExpressList(onLabelClickEvent) {
 					$(expressElement).find(".express-train-list").append(cloneElement);
 					return $(expressElement).find(".express-train-contents[cbango='" + cbango +"']");
 				}(coreTrainInfo.cbango, coreTrainInfo.type));
-				// 蛻苓ｻ雁錐繧定ｨｭ螳壹☆繧九・
+				// 列車名を設定する。
 				$(trainElement).find(".train-name").html(coreTrainInfo.name[lang]);
-				// 驕玖｡檎憾豕√ｒ蜿門ｾ励☆繧九・
+				// 運行状況を取得する。
 				const nowTrainInfo = nowData.trains.find(train => train.cbango === coreTrainInfo.cbango);
 				if (nowTrainInfo) {
-					// 襍ｰ陦瑚ｷｯ邱壹ｒ險ｭ螳壹☆繧九・					$(trainElement).attr("value", normalizeMergedRosen(nowTrainInfo.runRosen, coreTrainInfo.name[lang]));
-					// 驕玖｡檎憾豕√ｒ險ｭ螳壹☆繧九・					$(trainElement).find(".unkou-label").text(getTrainChienText(nowTrainInfo));
-					// 5蛻・ｻ･荳翫・驕・ｌ縺後≠繧句ｴ蜷医・縲・≦蟒ｶ譎ゅ・繧ｹ繧ｿ繧､繝ｫ繧帝←逕ｨ縺吶ｋ縲・
+					// 走行路線を設定する。
+					$(trainElement).attr("value", normalizeMergedRosen(nowTrainInfo.runRosen, coreTrainInfo.name[lang]));
+					// 運行状況を設定する。
+					$(trainElement).find(".unkou-label").text(getTrainChienText(nowTrainInfo));
+					// 5分以上の遅れがある場合は、遅延時のスタイルを適用する。
 					if (nowTrainInfo.chien >= 5) {
 						$(trainElement).find(".unkou-label").addClass("chien");
 					}
 				}
 			});
-			// 蠖楢ｩｲ諢帷ｧｰ蜷阪げ繝ｫ繝ｼ繝励↓螻槭☆繧狗音諤･蛻苓ｻ翫・繝ｪ繧ｹ繝医・菴懈・縺悟ｮ御ｺ・＠縺溘ｉ縲∝ｽ楢ｩｲ諢帷ｧｰ蜷阪げ繝ｫ繝ｼ繝励・蛻苓ｻ翫ユ繝ｳ繝励Ξ繝ｼ繝医ｒ蜑企勁縺吶ｋ縲・
+			// 当該愛称名グループに属する特急列車のリストの作成が完了したら、当該愛称名グループの列車テンプレートを削除する。
 			$(expressElement).find("template").remove();
 		});
-		// 縺吶∋縺ｦ縺ｮ迚ｹ諤･蛻苓ｻ翫・霑ｽ蜉縺悟ｮ御ｺ・＠縺溘ｉ縲∫音諤･諢帷ｧｰ蜷阪・繧ｰ繝ｫ繝ｼ繝怜腰菴阪・繝・Φ繝励Ξ繝ｼ繝医ｒ蜑企勁縺吶ｋ縲・
+		// すべての特急列車の追加が完了したら、特急愛称名のグループ単位のテンプレートを削除する。
 		$(expressListElement).find("template#expItemTemplate").remove();
 		$(expressListElement).find(".exp-operation-list ul template").remove();
 	}).fail(() => {
@@ -250,7 +255,11 @@ function createSideExpressList(onLabelClickEvent) {
 }
 
 /**
- * 邨仙粋陦ｨ遉ｺ逕ｨ縺ｮ霍ｯ邱壹さ繝ｼ繝峨∈豁｣隕丞喧縺吶ｋ縲・ * @param runRosen 蛻苓ｻ企°陦梧ュ蝣ｱ縺ｮ霍ｯ邱壹さ繝ｼ繝峨・ * @param trainName 蛻苓ｻ雁錐縲・ * @return 驕ｷ遘ｻ蜈医→縺励※菴ｿ逕ｨ縺吶ｋ霍ｯ邱壹さ繝ｼ繝峨・ */
+ * 結合表示用の路線コードへ正規化する。
+ * @param runRosen 列車運行情報の路線コード。
+ * @param trainName 列車名。
+ * @return 遷移先として使用する路線コード。
+ */
 function normalizeMergedRosen(runRosen, trainName) {
 	if (!runRosen) return runRosen;
 	if (["51", "01", "05"].includes(runRosen)) return "51";
@@ -259,66 +268,67 @@ function normalizeMergedRosen(runRosen, trainName) {
 	if (runRosen !== "02") return runRosen;
 
 	const expressName = String(trainName || "").toLowerCase();
-	if (/(縺翫♀縺槭ｉ|縺ｨ縺九■|oozora|tokachi)/.test(expressName)) return "53";
-	if (/(蛹玲沫|縺吶★繧峨ｓ|hokuto|suzuran)/.test(expressName)) return "52";
+	if (/(おおぞら|とかち|oozora|tokachi)/.test(expressName)) return "53";
+	if (/(北斗|すずらん|hokuto|suzuran)/.test(expressName)) return "52";
 	return "52";
 }
 
 /**
- * 蛻苓ｻ翫・驕・ｻｶ蛻・焚縺ｫ蟇ｾ蠢懊＠縺滓枚險繧貞叙蠕励☆繧九・ * @param trainNowInfo 蛻苓ｻ企°陦梧ュ蝣ｱ縲・
- * @return 蛻苓ｻ翫・驕・ｻｶ蛻・焚縺ｫ蟇ｾ蠢懊＠縺滓枚險縲・
+ * 列車の遅延分数に対応した文言を取得する。
+ * @param trainNowInfo 列車運行情報。
+ * @return 列車の遅延分数に対応した文言。
  */
 function getTrainChienText(trainNowInfo) {
-	const CHIEN_LABEL_DELAYED_HOUR = { "ja": "{0}譎る俣驕・ｌ", "en": "{0} hour(s) late", "tc": "蟒ｶ驕ｲ{0}蟆乗凾", "sc": "蟒ｶ霑毬0}蟆乗慮", "kr": "{0}・懋ｰ・・・ｰ" };
-	const CHIEN_LABEL_DELAYED_HR_MIN = { "ja": "{0}譎る俣{1}蛻・≦繧・, "en": "{0} hr {1} min late", "tc": "蟒ｶ驕ｲ{0}蟆乗凾{1}蛻・, "sc": "蟒ｶ霑毬0}蟆乗慮{1}蛻・, "kr": "{0}・懋ｰ・{1}・・・・ｰ" };
-	const CHIEN_LABEL_DELAYED_MINUTES = { "ja": "{0}蛻・≦繧・, "en": "{0} minutes late", "tc": "蟒ｶ驕ｲ{0}蛻・, "sc": "蟒ｶ霑毬0}蛻・, "kr": "{0}・・・・ｰ" };
-	const CHIEN_LABEL_VERY_LATE = { "ja": "螟ｧ蟷・≦繧・, "en": "Very late", "tc": "螟ｧ蟷・ｻｶ驕ｲ", "sc": "螟ｧ蟷・ｻｶ霑・, "kr": "・尞ｭ ・・ｰ" };
-	const CHIEN_LABEL_RUNNING = { "ja": "襍ｰ陦御ｸｭ", "en": "Running", "tc": "陦碁ｧ帑ｸｭ", "sc": "陦碁ｩｶ荳ｭ", "kr": "・ｼ嵂・・・ };
+	const CHIEN_LABEL_DELAYED_HOUR = { "ja": "{0}時間遅れ", "en": "{0} hour(s) late", "tc": "延遲{0}小時", "sc": "延迟{0}小时", "kr": "{0}시간 지연" };
+	const CHIEN_LABEL_DELAYED_HR_MIN = { "ja": "{0}時間{1}分遅れ", "en": "{0} hr {1} min late", "tc": "延遲{0}小時{1}分", "sc": "延迟{0}小时{1}分", "kr": "{0}시간 {1}분 지연" };
+	const CHIEN_LABEL_DELAYED_MINUTES = { "ja": "{0}分遅れ", "en": "{0} minutes late", "tc": "延遲{0}分", "sc": "延迟{0}分", "kr": "{0}분 지연" };
+	const CHIEN_LABEL_VERY_LATE = { "ja": "大幅遅れ", "en": "Very late", "tc": "大幅延遲", "sc": "大幅延迟", "kr": "대폭 지연" };
+	const CHIEN_LABEL_RUNNING = { "ja": "走行中", "en": "Running", "tc": "行駛中", "sc": "行驶中", "kr": "주행 중" };
 	const lang = document.documentElement.dataset.lang;
 	if (trainNowInfo.runStatus === 0) {
-		// 襍ｰ陦檎ｵゆｺ・・蝣ｴ蜷医・陦ｨ遉ｺ縺ｪ縺励・
+		// 走行終了の場合は表示なし。
 		return "";
 	}
 	if (typeof trainNowInfo.chien !== "number") {
-		// 謨ｰ蛟､莉･螟悶′蜈･縺｣縺ｦ縺・ｋ蝣ｴ蜷医・陦ｨ遉ｺ縺ｪ縺励・
+		// 数値以外が入っている場合は表示なし。
 		return ""
 	}
 	if (trainNowInfo.status === 0) {
-		// 蜈ｨ蛹ｺ髢馴°莨代・蝣ｴ蜷医・陦ｨ遉ｺ縺ｪ縺励・
+		// 全区間運休の場合は表示なし。
 		return ""
 	}
 	if (trainNowInfo.chien < 1) {
-		// 驕・ｌ縺・蛻・悴貅縺ｧ襍ｰ陦御ｸｭ縺ｮ蝣ｴ蜷医・・｢襍ｰ陦御ｸｭ・｣縲・
+		// 遅れが5分未満で走行中の場合は｢走行中｣。
 		return trainNowInfo.runStatus === 1 ? CHIEN_LABEL_RUNNING[lang] : "";
 	} else if (trainNowInfo.chien < 999) {
-		// 驕・ｌ縺・蛻・ｻ･荳・00蛻・悴貅縺ｮ蝣ｴ蜷医・譎ょ・陦ｨ遉ｺ縲・
+		// 遅れが5分以上100分未満の場合は時分表示。
 		let chienHour = Math.floor(trainNowInfo.chien / 60);
 		let chienMin = trainNowInfo.chien % 60;
 		if (chienHour > 0){
-			if (chienMin > 0) return CHIEN_LABEL_DELAYED_HR_MIN[lang].replace("{0}", chienHour).replace("{1}", chienMin); // 縲後・凾髢薙・・驕・ｌ縲・
-			else return CHIEN_LABEL_DELAYED_HOUR[lang].replace("{0}",chienHour); // 縲後・凾髢馴≦繧後・
+			if (chienMin > 0) return CHIEN_LABEL_DELAYED_HR_MIN[lang].replace("{0}", chienHour).replace("{1}", chienMin); // 「〇時間〇分遅れ」
+			else return CHIEN_LABEL_DELAYED_HOUR[lang].replace("{0}",chienHour); // 「〇時間遅れ」
 		} else {
-			return CHIEN_LABEL_DELAYED_MINUTES[lang].replace("{0}", chienMin); // 縲後・・驕・ｌ縲・
+			return CHIEN_LABEL_DELAYED_MINUTES[lang].replace("{0}", chienMin); // 「〇分遅れ」
 		}
 	} else {
-		// 驕・ｌ縺・00蛻・ｻ･荳翫・蝣ｴ蜷医・・｢螟ｧ蟷・≦繧鯉ｽ｣縲・
+		// 遅れが100分以上の場合は｢大幅遅れ｣。
 		return CHIEN_LABEL_VERY_LATE[lang];
 	}
 }
 
 /*
- * 繝ｭ繝ｼ繝・ぅ繝ｳ繧ｰ繧｢繝九Γ繝ｼ繧ｷ繝ｧ繝ｳ繧帝撼陦ｨ遉ｺ
+ * ローディングアニメーションを非表示
  */
 
 function loading_animation_hidden() {
 	$('.loader').fadeOut("fast");
-	if($("#oshiraseDetail").css('display') == 'none'){ // 縺顔衍繧峨○繝繧､繧｢繝ｭ繧ｰ縺瑚｡ｨ遉ｺ縺輔ｌ縺ｦ縺・◆繧牙濠騾乗・縺ｮ閭梧勹縺ｯ豸医＆縺ｪ縺・
+	if($("#oshiraseDetail").css('display') == 'none'){ // お知らせダイアログが表示されていたら半透明の背景は消さない
 		$('#loaderBg').fadeOut("fast");
 	}
 }
 
 /*
- * 繝ｭ繝ｼ繝・ぅ繝ｳ繧ｰ繧｢繝九Γ繝ｼ繧ｷ繝ｧ繝ｳ繧定｡ｨ遉ｺ
+ * ローディングアニメーションを表示
  */
 function loading_animation_display() {
 	$('.loader').fadeIn("fast");
@@ -327,7 +337,7 @@ function loading_animation_display() {
 }
 
 /*
- * 蛻苓ｻ願ｵｰ陦御ｽ咲ｽｮ逕ｨ縲霍ｯ邱壹い繧､繧ｳ繝ｳ菴懈・
+ * 列車走行位置用　路線アイコン作成
  */
 function get_rosen_eki_icon(paramKigo) {
 
@@ -342,35 +352,35 @@ function get_rosen_eki_icon(paramKigo) {
 }
 
 /*
- * 迴ｾ蝨ｨ譌･莉倩｡ｨ遉ｺ
+ * 現在日付表示
  */
 function setTimestamp(nowData) {
 	const lang = document.documentElement.dataset.lang;
 	const timestamp = nowData.time[lang];
 	if (timestamp) {
 		if ($("#timestamp").length) {
-			// 繝倥ャ繝繝ｼ縺瑚ｪｭ縺ｿ霎ｼ縺ｿ貂医∩縺ｧ縺ゅｌ縺ｰ縲∫樟蝨ｨ譌･譎ゅｒ逶ｴ謗･蝓九ａ霎ｼ縺ｿ縺吶ｋ縲・
+			// ヘッダーが読み込み済みであれば、現在日時を直接埋め込みする。
 			$("#timestamp").text(timestamp);
 		} else {
-			// 繝倥ャ繝繝ｼ繧定ｪｭ縺ｿ霎ｼ縺ｿ荳ｭ縺ｮ蝣ｴ蜷医・縲‥ata 螻樊ｧ縺ｫ蛟､繧定ｨｭ螳壹☆繧九ゑｼ医・繝・ム繝ｼ縺ｮ隱ｭ縺ｿ霎ｼ縺ｿ蠕後↓縲‥ata 螻樊ｧ縺九ｉ蛟､繧貞叙蠕励＠縺ｦ陦ｨ遉ｺ縺吶ｋ・・
+			// ヘッダーを読み込み中の場合は、data 属性に値を設定する。（ヘッダーの読み込み後に、data 属性から値を取得して表示する）
 			$("header").data("timestamp", timestamp);
 		}
 	}
 }
 
 /*
- * 繧ｵ繧､繝峨Γ繝九Η繝ｼ險ｭ螳・
+ * サイドメニュー設定
  */
 function set_side_menu(_isTop) {
 	let lang = document.documentElement.dataset.lang;
 	let windowWidth = window.innerWidth;
 	if (lang == "ja") {
-		// 譌･譛ｬ隱槭・蝣ｴ蜷医∫判髱｢繧ｵ繧､繧ｺ縺ｫ蜷医ｏ縺帙※謾ｹ陦後ｒ險ｭ螳・
-		// 縺吶★繧峨ｓ
+		// 日本語の場合、画面サイズに合わせて改行を設定
+		// すずらん
 		if ((windowWidth < 440 || 1000 < windowWidth) || !_isTop) {
 			$("#expTab div[data-key='2'] .train-name").each(function(i, row) {
 				if (row.innerHTML.indexOf("<br>") == -1) {
-					row.innerHTML = row.innerHTML.replace("]・・, "]<br>・・);
+					row.innerHTML = row.innerHTML.replace("]（", "]<br>（");
 				}
 			});
 		} else {
@@ -379,16 +389,16 @@ function set_side_menu(_isTop) {
 			});
 		}
 
-		// 繧ｵ繝ｭ繝吶ヤ縲√が繝帙・繝・け
+		// サロベツ、オホーツク
 		if ((windowWidth < 420 || 1000 < windowWidth) || !_isTop) {
 			$("#expTab div[data-key='8'] .train-name").each(function(i, row) {
 				if (row.innerHTML.indexOf("<br>") == -1) {
-					row.innerHTML = row.innerHTML.replace("縲", "縲<br>");
+					row.innerHTML = row.innerHTML.replace("　", "　<br>");
 				}
 			});
 			$("#expTab div[data-key='9'] .train-name").each(function(i, row) {
 				if (row.innerHTML.indexOf("<br>") == -1) {
-					row.innerHTML = row.innerHTML.replace("縲", "縲<br>");
+					row.innerHTML = row.innerHTML.replace("　", "　<br>");
 				}
 			});
 		} else {
@@ -400,7 +410,7 @@ function set_side_menu(_isTop) {
 			});
 		}
 
-		// 蜃ｽ鬢ｨ邱・貂｡蟲ｶ遐ょ次邨檎罰)
+		// 函館線(渡島砂原経由)
 		if ($('.rosen-name-contents[value="10"] .chien').length > 0) {
 			if ((windowWidth < 350 || 1000 < windowWidth) || !_isTop) {
 				if ($("#localTab div[value='10'] .main").html().indexOf("<br>") == -1) {
@@ -411,8 +421,8 @@ function set_side_menu(_isTop) {
 			}
 		}
 	} else if (lang == "en") {
-		// 闍ｱ隱槭・蝣ｴ蜷医∫判髱｢繧ｵ繧､繧ｺ縺ｫ蜷医ｏ縺帙※謾ｹ陦後ｒ險ｭ螳・
-		// 蜃ｽ鬢ｨ邱・貂｡蟲ｶ遐ょ次邨檎罰)
+		// 英語の場合、画面サイズに合わせて改行を設定
+		// 函館線(渡島砂原経由)
 		if ((windowWidth < 420 || 1000 < windowWidth) || !_isTop) {
 			if ($("#localTab div[value='10'] .main").html().indexOf("<br>") == -1) {
 				$("#localTab div[value='10'] .main").html($("#localTab div[value='10'] .main").html().replace("(", "<br>("));
@@ -421,7 +431,7 @@ function set_side_menu(_isTop) {
 			$("#localTab div[value='10'] .main").html($("#localTab div[value='10'] .main").html().replace("<br>", ""));
 		}
 
-		// 遏ｳ蜍晉ｷ壹・譬ｹ螳､邱夲ｼ丞圏豬ｷ驕捺眠蟷ｹ邱・
+		// 石勝線・根室線／北海道新幹線
 		if ((windowWidth < 370 || 1000 < windowWidth) || !_isTop) {
 			if ($("#localTab div[value='13'] .main").html().indexOf("<br>") == -1) {
 				$("#localTab div[value='13'] .main").html($("#localTab div[value='13'] .main").html().replace("/", "/<br>"));
@@ -434,7 +444,7 @@ function set_side_menu(_isTop) {
 			$("#localTab div[value='15'] .main").html($("#localTab div[value='15'] .main").html().replace("<br>", " "));
 		}
 	} else if (lang == "tc" || lang == "sc") {
-		// 郢∽ｽ灘ｭ励・邁｡菴灘ｭ励・蝣ｴ蜷医∫判髱｢繧ｵ繧､繧ｺ縺ｫ蜷医ｏ縺帙※謾ｹ陦後ｒ險ｭ螳・
+		// 繁体字・簡体字の場合、画面サイズに合わせて改行を設定
 		if ($('.rosen-name-contents[value="10"] .chien').length > 0) {
 			if ((windowWidth < 350 || 1000 < windowWidth) || !_isTop) {
 			if ($("#localTab div[value='10'] .main").html().indexOf("<br>") == -1) {
@@ -445,18 +455,18 @@ function set_side_menu(_isTop) {
 		}
 		}
 	} else if (lang == "kr") {
-		// 髻灘嵜隱槭・蝣ｴ蜷医↓莉･荳九・霍ｯ邱壹〒謾ｹ陦後ｒ蜈･繧後ｋ
-		// 郢∽ｽ灘ｭ励・邁｡菴灘ｭ励・蝣ｴ蜷医∫判髱｢繧ｵ繧､繧ｺ縺ｫ蜷医ｏ縺帙※謾ｹ陦後ｒ險ｭ螳・
-		// 蜊・ｭｳ邱喙譛ｭ蟷鯉ｽ樊眠蜊・ｭｳ遨ｺ貂ｯ繝ｻ闍ｫ蟆冗鴬髢転
+		// 韓国語の場合に以下の路線で改行を入れる
+		// 繁体字・簡体字の場合、画面サイズに合わせて改行を設定
+		// 千歳線[札幌～新千歳空港・苫小牧間]
 		if ((windowWidth < 335 || 1000 < windowWidth) || !_isTop) {
 			if ($("#localTab div[value='02'] .sub").html().indexOf("<br>") == -1) {
-				$("#localTab div[value='02'] .sub").html($("#localTab div[value='02'] .sub").html().replace("繝ｻ", "繝ｻ<br>"));
+				$("#localTab div[value='02'] .sub").html($("#localTab div[value='02'] .sub").html().replace("・", "・<br>"));
 			}
 		} else {
 			$("#localTab div[value='02'] .sub").html($("#localTab div[value='02'] .sub").html().replace("<br>", ""));
 		}
 
-		// 蜃ｽ鬢ｨ邱・貂｡蟲ｶ遐ょ次邨檎罰)
+		// 函館線(渡島砂原経由)
 		if ($('.rosen-name-contents[value="10"] .chien').length > 0) {
 			if ((windowWidth < 385 || 1000 < windowWidth) || !_isTop) {
 			if ($("#localTab div[value='10'] .main").html().indexOf("<br>") == -1) {
@@ -467,10 +477,10 @@ function set_side_menu(_isTop) {
 			}
 		}
 
-		// 蛹玲ｵｷ驕捺眠蟷ｹ邱喙譁ｰ蜃ｽ鬢ｨ蛹玲沫・槫･･豢･霆ｽ縺・∪縺ｹ縺､髢転
+		// 北海道新幹線[新函館北斗～奥津軽いまべつ間]
 		if ((windowWidth < 370 || 1000 < windowWidth) || !_isTop) {
 			if ($("#localTab div[value='15'] .sub").html().indexOf("<br>") == -1) {
-				$("#localTab div[value='15'] .sub").html($("#localTab div[value='15'] .sub").html().replace("・・, "・・br>"));
+				$("#localTab div[value='15'] .sub").html($("#localTab div[value='15'] .sub").html().replace("～", "～<br>"));
 			}
 		} else {
 			$("#localTab div[value='15'] .sub").html($("#localTab div[value='15'] .sub").html().replace("<br>", ""));
