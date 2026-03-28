@@ -2727,8 +2727,10 @@ function run_train_name_search() {
 				};
 				results.forEach((train) => {
 					const goNumberValue = Number(train.goNumber || "");
-					if (train.goNumber && !Number.isNaN(goNumberValue)) {
-						if (goNumberValue % 2 === 0) groupedResults["\u4e0a\u308a\u5217\u8eca"].push(train);
+					const cbangoNumber = Number(String(train.cbango || "").replace(/[^\d]/g, ""));
+					const groupNumber = (!Number.isNaN(goNumberValue) && train.goNumber) ? goNumberValue : cbangoNumber;
+					if (!Number.isNaN(groupNumber) && groupNumber > 0) {
+						if (groupNumber % 2 === 0) groupedResults["\u4e0a\u308a\u5217\u8eca"].push(train);
 						else groupedResults["\u4e0b\u308a\u5217\u8eca"].push(train);
 						return;
 					}
@@ -2736,8 +2738,8 @@ function run_train_name_search() {
 				});
 				Object.keys(groupedResults).forEach((key) => {
 					groupedResults[key].sort((a, b) => {
-						const numA = Number(a.goNumber || "9999");
-						const numB = Number(b.goNumber || "9999");
+						const numA = Number(a.goNumber || String(a.cbango || "").replace(/[^\d]/g, "") || "9999");
+						const numB = Number(b.goNumber || String(b.cbango || "").replace(/[^\d]/g, "") || "9999");
 						return numA - numB;
 					});
 				});
