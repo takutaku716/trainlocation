@@ -3073,6 +3073,10 @@ section#refreshSettingDetail {
 
 	/* 北海道新幹線への路線のリンク */
 	section#trainSearchDetail .dialog .express-train-contents {
+		align-items: center;
+		column-gap: 8px;
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) 108px;
 		padding: 8px 36px 8px 10px;
 	}
 	section#trainSearchDetail .dialog .search-result-main {
@@ -3084,10 +3088,21 @@ section#refreshSettingDetail {
 	}
 	section#trainSearchDetail .dialog .search-result-title {
 		font-size: 14px;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
 	}
 	section#trainSearchDetail .dialog .search-result-destination,
 	section#trainSearchDetail .dialog .unkou-label {
 		font-size: 12px;
+	}
+	section#trainSearchDetail .dialog .unkou-label {
+		line-height: 1.3;
+		margin-right: 0;
+		max-width: 108px;
+		text-align: right;
+		white-space: normal;
+		word-break: keep-all;
 	}
 	#stationList .eki-panel .shin-link {
 		width: 50px;
