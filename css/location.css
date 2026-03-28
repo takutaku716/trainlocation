@@ -2693,29 +2693,45 @@ section#trainSearchDetail {
 				display: flex;
 				justify-content: space-between;
 				margin-bottom: 10px;
-				padding: 10px 42px 10px 12px;
+				padding: 8px 42px 8px 12px;
 			}
 				section#trainSearchDetail .dialog .express-train-contents:hover {
 					background-color: #ffc;
 				}
 			section#trainSearchDetail .dialog .search-result-main {
-				display: flex;
-				flex-direction: column;
-				gap: 3px;
+				align-items: center;
+				column-gap: 10px;
+				display: grid;
+				grid-template-columns: 62px minmax(0, 1fr);
+				grid-template-rows: auto auto;
+				row-gap: 2px;
 				min-width: 0;
 			}
 			section#trainSearchDetail .dialog .search-result-cbango {
 				color: #333;
 				font-size: 14px;
 				font-weight: bold;
+				grid-row: 1 / 3;
+				line-height: 1.2;
 			}
-			section#trainSearchDetail .dialog .train-name {
-				font-size: 16px;
+			section#trainSearchDetail .dialog .search-result-title {
+				font-size: 15px;
 				font-weight: bold;
+				line-height: 1.15;
+				min-width: 0;
+				word-break: break-word;
+			}
+			section#trainSearchDetail .dialog .search-result-destination {
+				color: #333;
+				font-size: 14px;
+				line-height: 1.15;
+				min-width: 0;
 				word-break: break-word;
 			}
 			section#trainSearchDetail .dialog .unkou-label {
 				margin-right: 6px;
+				font-size: 13px;
+				line-height: 1.35;
 				text-align: right;
 			}
 /* 列車検索ダイアログ（終了） */
@@ -3056,6 +3072,23 @@ section#refreshSettingDetail {
 	}
 
 	/* 北海道新幹線への路線のリンク */
+	section#trainSearchDetail .dialog .express-train-contents {
+		padding: 8px 36px 8px 10px;
+	}
+	section#trainSearchDetail .dialog .search-result-main {
+		column-gap: 8px;
+		grid-template-columns: 54px minmax(0, 1fr);
+	}
+	section#trainSearchDetail .dialog .search-result-cbango {
+		font-size: 13px;
+	}
+	section#trainSearchDetail .dialog .search-result-title {
+		font-size: 14px;
+	}
+	section#trainSearchDetail .dialog .search-result-destination,
+	section#trainSearchDetail .dialog .unkou-label {
+		font-size: 12px;
+	}
 	#stationList .eki-panel .shin-link {
 		width: 50px;
 	}
