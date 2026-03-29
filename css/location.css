@@ -2778,10 +2778,22 @@ section#trainSearchDetail {
 				word-break: break-word;
 			}
 			section#trainSearchDetail .dialog .unkou-label {
+				align-items: flex-end;
+				display: flex;
+				flex-direction: column;
 				margin-right: 6px;
 				font-size: 13px;
 				line-height: 1.35;
 				text-align: right;
+			}
+			section#trainSearchDetail .dialog .search-status-text {
+				line-height: 1.25;
+			}
+			section#trainSearchDetail .dialog .search-status-section {
+				color: #555;
+				font-size: 11px;
+				line-height: 1.2;
+				margin-top: 2px;
 			}
 /* 列車検索ダイアログ（終了） */
 /* 自動更新設定ダイアログ（開始） */
@@ -3170,6 +3182,10 @@ section#refreshSettingDetail {
 		white-space: normal;
 		word-break: normal;
 		overflow-wrap: break-word;
+	}
+	section#trainSearchDetail .dialog .search-status-section {
+		font-size: 10px;
+		line-height: 1.15;
 	}
 	#stationList .eki-panel .shin-link {
 		width: 50px;
