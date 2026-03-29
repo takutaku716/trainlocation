@@ -130,17 +130,32 @@
 
 					/* サイドメニュー内の路線名のリスト内の路線毎の領域の見出し */
 					.side-menu .area-contents .rosen-name-list .rosen-name-contents .rosen-name-label {
+						flex: 1;
+						min-width: 0;
 						margin: 0 0 0 5px;
 						font-weight: bold;
 						font-size: 13.5px;
 						display: inline-grid;
-						line-height: 25px;
+						line-height: 22px;
+					}
+					.side-menu .area-contents .rosen-name-list .rosen-name-contents.has-chien .rosen-name-label {
+						margin-right: 78px;
 					}
 						/* サイドメニュー内の路線名のリスト内の路線毎の領域の見出し 英語 */
 						[data-lang='en'] .side-menu .area-contents .rosen-name-list .rosen-name-contents .rosen-name-label,
 						[data-lang='kr'] .side-menu .area-contents .rosen-name-list .rosen-name-contents .rosen-name-label {
 							line-height: 20px;
 							margin: 5px 0 5px 5px;
+						}
+						[data-lang='en'] .side-menu .area-contents .rosen-name-list .rosen-name-contents.has-chien .rosen-name-label,
+						[data-lang='kr'] .side-menu .area-contents .rosen-name-list .rosen-name-contents.has-chien .rosen-name-label {
+							margin-right: 100px;
+						}
+
+						.side-menu .area-contents .rosen-name-list .rosen-name-contents .rosen-name-label .main,
+						.side-menu .area-contents .rosen-name-list .rosen-name-contents .rosen-name-label .sub {
+							display: block;
+							white-space: normal;
 						}
 
 						/* サイドメニュー内の路線名のリスト内の路線毎の領域の見出し 路線名表示部のサブ */
@@ -153,6 +168,10 @@
 							position: absolute;
 							right: 20px;
 							top: 7px;
+							max-width: 72px;
+							text-align: right;
+							white-space: normal;
+							line-height: 1.25;
 						}
 							/* サイドメニュー内の路線名のリスト内の路線毎の運行情報のラベル 遅延用 英語 */
 							[data-lang='en'] .side-menu .area-contents .rosen-name-list .rosen-name-contents .unkou-label.chien {

@@ -1,11 +1,103 @@
+function is_test_mode() {
+	const params = new URLSearchParams(location.search);
+	return params.get("test") === "1";
+}
+
+function get_test_scenario() {
+	if (!is_test_mode()) return "";
+	const params = new URLSearchParams(location.search);
+	return params.get("scenario") || "default";
+}
+
+function get_test_mode_search() {
+	if (!is_test_mode()) return "";
+	const params = new URLSearchParams();
+	params.set("test", "1");
+	const scenario = get_test_scenario();
+	if (scenario && scenario !== "default") params.set("scenario", scenario);
+	return "?" + params.toString();
+}
+
+function build_page_url(_path, _hash) {
+	return _path + get_test_mode_search() + (_hash ? "#" + _hash : "");
+}
+
+function get_test_urls(_relativePath) {
+	const scenario = get_test_scenario();
+	const urls = [];
+	if (scenario && scenario !== "default") {
+		urls.push("./testdata/" + scenario + "/" + _relativePath);
+	}
+	urls.push("./testdata/" + _relativePath);
+	return urls;
+}
+
+function get_testable_json_request(_testUrl, _remoteUrl) {
+	if (!is_test_mode()) return $.getJSON(_remoteUrl);
+
+	const testUrls = Array.isArray(_testUrl) ? _testUrl : [_testUrl];
+	const deferred = $.Deferred();
+
+	function requestTestUrl(index) {
+		if (index >= testUrls.length) {
+			$.getJSON(_remoteUrl)
+				.done((data) => deferred.resolve(data))
+				.fail((jqXHR, textStatus, errorThrown) => deferred.reject(jqXHR, textStatus, errorThrown));
+			return;
+		}
+		$.getJSON(testUrls[index])
+			.done((data) => deferred.resolve(data))
+			.fail(() => requestTestUrl(index + 1));
+	}
+
+	requestTestUrl(0);
+	return deferred.promise();
+}
+
+function get_location_now_request(_rosen, _now) {
+	const testUrl = get_test_urls("location/location_" + _rosen + "_now.json?" + _now);
+	const remoteUrl = "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/trainlocation/json/location/now/location_" + _rosen + "_now.json?" + _now;
+	return get_testable_json_request(testUrl, remoteUrl);
+}
+
+function get_express_now_request(_now) {
+	const testUrl = get_test_urls("express/express_now.json?" + _now);
+	const remoteUrl = "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/trainlocation/json/express/now/express_now.json?" + _now;
+	return get_testable_json_request(testUrl, remoteUrl);
+}
+
+function get_express_core_request(_now) {
+	const testUrl = get_test_urls("express/express_core.json?" + _now);
+	const remoteUrl = "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/trainlocation/json/express/core/express_core.json?" + _now;
+	return get_testable_json_request(testUrl, remoteUrl);
+}
+
+function get_daiya_request(_senku, _lang, _now) {
+	const suffix = _lang === "ja" ? "" : "_" + _lang;
+	const testUrl = get_test_urls("daiya/daiya_" + _senku + suffix + ".json?" + _now);
+	const remoteUrl = "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/webunkou/json/daiya/daiya_" + _senku + suffix + ".json?" + _now;
+	return get_testable_json_request(testUrl, remoteUrl);
+}
+
+function get_rosen_now_request(_now) {
+	const testUrl = get_test_urls("rosen/rosen_now.json?" + _now);
+	const remoteUrl = "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/trainlocation/json/rosen/now/rosen_now.json?" + _now;
+	return get_testable_json_request(testUrl, remoteUrl);
+}
+
 /*
  * サイドメニュー　各路線の遅延情報の設定
  */
 function set_side_area_chien() {
 	let now = Date.now() >>> 10;
+	const mergedRosenMap = {
+		"51": ["01", "05"],
+		"52": ["02", "07", "09"],
+		"53": ["02", "13"]
+	};
 	// エリア名を取得
 	$.when(
-		$.getJSON("https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/trainlocation/json/rosen/now/rosen_now.json?" + now)
+		get_rosen_now_request(now)
 	)
 	.done(function(nowdata) {
 		// 現在日付表示
@@ -23,10 +115,20 @@ function set_side_area_chien() {
 		}
 
 		$("#localTab .rosen-name-contents").each(function(i, row) {
-			let nowStatus = nowdata.lines.find((v) => v.rosen == $(row).attr("value"));
+			$(row).removeClass("has-chien");
+			$(row).find(".unkou-label.chien").remove();
+			const rosenValue = $(row).attr("value");
+			let nowStatus = nowdata.lines.find((v) => v.rosen == rosenValue);
+			if (typeof nowStatus === "undefined" && mergedRosenMap[rosenValue]) {
+				nowStatus = getMergedRosenStatus(nowdata.lines, mergedRosenMap[rosenValue]);
+			}
 			if (typeof nowStatus !== "undefined") {
 				// 遅延情報の表示
-				$(row).append(getRosenChienText(nowStatus));
+				const chienText = getRosenChienText(nowStatus);
+				if (chienText) {
+					$(row).addClass("has-chien");
+					$(row).append(chienText);
+				}
 			}
 		});
 		// firefox用に適用しているmargin-rightを遅延文言がない場合無効にする。
@@ -39,6 +141,19 @@ function set_side_area_chien() {
 		$('#message').html(errormessage);
 		$('#message').show();
 	});
+
+	function getMergedRosenStatus(lines, rosenList) {
+		const targets = rosenList
+			.map((rosen) => lines.find((line) => line.rosen == rosen))
+			.filter(Boolean);
+		if (targets.length < 1) return undefined;
+		const merged = Object.assign({}, targets[0]);
+		merged.maxChien = targets.reduce((maxValue, line) => {
+			const value = typeof line.maxChien === "number" ? line.maxChien : Number(line.maxChien || 0);
+			return value > maxValue ? value : maxValue;
+		}, 0);
+		return merged;
+	}
 }
 
 /**
@@ -81,8 +196,8 @@ function createSideExpressList(onLabelClickEvent) {
 	// 特急列車に関する情報を読み込んで、特急列車リストを描画する。
 	$.when(
 		$.getJSON("https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/webunkou/json/master/express_master.json?" + mstNow),
-		$.getJSON("https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/trainlocation/json/express/core/express_core.json?" + mstNow),
-		$.getJSON("https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/trainlocation/json/express/now/express_now.json?" + trnNow)
+		get_express_core_request(mstNow),
+		get_express_now_request(trnNow)
 	)
 	.done((expressMasterBase, coreDataBase, nowDataBase) => {
 		const expressMaster = expressMasterBase[0];
@@ -146,7 +261,7 @@ function createSideExpressList(onLabelClickEvent) {
 				const nowTrainInfo = nowData.trains.find(train => train.cbango === coreTrainInfo.cbango);
 				if (nowTrainInfo) {
 					// 走行路線を設定する。
-					$(trainElement).attr("value", nowTrainInfo.runRosen);
+					$(trainElement).attr("value", normalizeMergedRosen(nowTrainInfo.runRosen, coreTrainInfo.name[lang]));
 					// 運行状況を設定する。
 					$(trainElement).find(".unkou-label").text(getTrainChienText(nowTrainInfo));
 					// 5分以上の遅れがある場合は、遅延時のスタイルを適用する。
@@ -166,6 +281,25 @@ function createSideExpressList(onLabelClickEvent) {
 		$('#message').html(errormessage);
 		$('#message').show();
 	});
+}
+
+/**
+ * 結合表示用の路線コードへ正規化する。
+ * @param runRosen 列車運行情報の路線コード。
+ * @param trainName 列車名。
+ * @return 遷移先として使用する路線コード。
+ */
+function normalizeMergedRosen(runRosen, trainName) {
+	if (!runRosen) return runRosen;
+	if (["51", "01", "05"].includes(runRosen)) return "51";
+	if (["52", "07", "09"].includes(runRosen)) return "52";
+	if (["53", "13"].includes(runRosen)) return "53";
+	if (runRosen !== "02") return runRosen;
+
+	const expressName = String(trainName || "").toLowerCase();
+	if (/(おおぞら|とかち|oozora|tokachi)/.test(expressName)) return "53";
+	if (/(北斗|すずらん|hokuto|suzuran)/.test(expressName)) return "52";
+	return "52";
 }
 
 /**

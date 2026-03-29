@@ -1,0 +1,28 @@
+﻿{
+  "trains": [
+    {
+      "cbango": "11B",
+      "type": "4",
+      "pos": "R12P13U",
+      "chien": 2,
+      "shuEkiSimple": "Shin-Hakodate-Hokuto",
+      "shuEkiKey": "",
+      "status": "1",
+      "statusDetail": "",
+      "statusDetailEn": "",
+      "statusDetailTc": "",
+      "statusDetailSc": "",
+      "statusDetailKr": "",
+      "senku": "19",
+      "ryosu": "10",
+      "yokuStatus": 0,
+      "yokuDetail": {
+        "ja": "",
+        "en": "",
+        "tc": "",
+        "sc": "",
+        "kr": ""
+      }
+    }
+  ]
+}

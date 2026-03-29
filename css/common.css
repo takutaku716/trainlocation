@@ -358,3 +358,85 @@ img.unkou-icon {
 	padding: 0px 0 0px 12px;
 	text-align: left;
 }
+
+#commonTestModeBadge {
+	background-color: rgba(255, 170, 0, 0.16);
+	border: 1px solid #fa0;
+	border-radius: 999px;
+	color: #9a5b00;
+	display: inline-flex;
+	font-size: 11px;
+	font-weight: bold;
+	line-height: 1;
+	margin-left: 8px;
+	padding: 4px 8px;
+	white-space: nowrap;
+}
+
+#commonTestModeExit {
+	bottom: 10px;
+	right: 5px;
+	position: fixed;
+	z-index: 25;
+}
+
+#commonTestModeExitBtn {
+	background-color: #4c5963;
+	border: none;
+	border-radius: 8px;
+	box-shadow: 5px 5px 10px rgb(0 0 0 / 40%);
+	color: #fff;
+	cursor: pointer;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	font-size: 12px;
+	font-weight: bold;
+	height: 60px;
+	opacity: 0.9;
+	padding: 0;
+	width: 72px;
+}
+
+#commonTestModeExitBtn:hover {
+	background-color: #5f6d77;
+}
+
+#commonTestModeExitBtn .line1,
+#commonTestModeExitBtn .line2 {
+	line-height: 1.2;
+	white-space: nowrap;
+}
+
+@media (max-width: 767px) {
+	#commonTestModeBadge {
+		font-size: 10px;
+		margin-left: 6px;
+		padding: 3px 6px;
+	}
+
+	#commonTestModeExitBtn {
+		height: 58px;
+		width: 68px;
+	}
+}
+#guideTestModeEntry {
+	margin-top: 18px;
+	text-align: center;
+}
+
+#guideTestModeBtn {
+	background-color: #f5f8f2;
+	border: 1px solid #8c5;
+	border-radius: 6px;
+	color: #486b29;
+	cursor: pointer;
+	font-size: 12px;
+	font-weight: bold;
+	padding: 6px 12px;
+}
+
+#guideTestModeBtn:hover {
+	background-color: #ffc;
+}

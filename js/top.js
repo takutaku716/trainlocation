@@ -29,6 +29,9 @@ const ROSEN_NUM_KEYS = {
 	"13": ["35", "36", "40", "41", "42"],	// [南千歳～釧路間]
 	"14": ["37", "38", "39"],				// [滝川～新得間]
 	"15": ["57"],							// [新函館北斗～奥津軽いまべつ間]
+	"51": ["7", "8", "9", "10", "11", "12", "13", "14", "15"],	// [旭川～小樽間]
+	"52": ["1", "2", "3", "4", "10", "22", "23", "24", "25", "26", "30", "31", "32"],	// [札幌～函館間]
+	"53": ["10", "31", "32", "35", "36", "40", "41", "42"],	// [札幌～釧路間]
 };
 
 /*
@@ -131,8 +134,8 @@ $(function ($) {
 
 		//路線が取得出来たらページ移動
 		if (param_rosen != "") {
-			if (lang === "ja") window.location.href = "./location.html#rosen=" + param_rosen;
-			else window.location.href = "./location_" + lang + ".html#rosen=" + param_rosen;
+			if (lang === "ja") window.location.href = build_page_url("./location.html", "rosen=" + param_rosen);
+			else window.location.href = build_page_url("./location_" + lang + ".html", "rosen=" + param_rosen);
 		}
 	});
 
@@ -150,15 +153,16 @@ $(function ($) {
 		const trnNow = Date.now() >>> 10;
 		// 最新の特車運行情報を取得する。
 		$.when(
-			$.getJSON("https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/webunkou/json/daiya/daiya_00" + (lang === "ja" ? "" : "_" + lang) + ".json?" + mstNow),
-			$.getJSON("https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/trainlocation/json/express/now/express_now.json?" + trnNow)
+			get_daiya_request("00", lang, mstNow),
+			get_express_now_request(trnNow)
 		)
 		.done((daiyaBase, expressNowBase) => {
 			// 対象の列車の運行情報を取得する。
 			const expressNow = expressNowBase[0].trains.find(train => train.cbango === cbango);
+			const targetRosen = $(this).attr("value") || normalizeMergedRosen(expressNow.runRosen, $(this).find(".train-name").text());
 			// 対象の列車に有効な路線キーが設定されている場合は、当該路線ページの該当列車位置に遷移する。
-			if (expressNow.runRosen) {
-				window.location.href = "./location" + (lang === "ja" ? "" : "_" + lang) + ".html#rosen=" + expressNow.runRosen + "&cbango=" + cbango;
+			if (targetRosen) {
+				window.location.href = build_page_url("./location" + (lang === "ja" ? "" : "_" + lang) + ".html", "rosen=" + targetRosen + "&cbango=" + cbango);
 				// ローディングアニメーション非表示
 				loading_animation_hidden();
 				return;
@@ -206,10 +210,10 @@ $(function ($) {
 	//rosen-name-listでマウスが離れたとき路線選択を解除
 	$(document).on("mouseleave", ".rosen-name-list div", function () {
 
-		let val = $(this).attr("value");
 		let selectAreaName =  $(this)[0].parentElement.classList[1];
 		// 路線図の路線選択削除
-		selectArea(rosenToArea(val, selectAreaName));
+		allSelectClear();
+		selectArea(selectAreaName);
 	});
 
 	// パソコン用エリア選択
@@ -361,7 +365,10 @@ function selectRosen(rosen, selectAreaName) {
 		selectMap = $(document.getElementById(mapName).contentDocument);
 	}
 
-	var rosenNumList = ROSEN_NUM_KEYS[rosen];
+	var rosenNumList = ROSEN_NUM_KEYS[rosen] || [];
+	if (window.innerWidth <= 1000 && selectAreaName && AREA_ROSEN_KEYS[selectAreaName]) {
+		rosenNumList = rosenNumList.filter(key => AREA_ROSEN_KEYS[selectAreaName].includes(String(key)));
+	}
 	for (var i = 0; i < rosenNumList.length; i++) {
 		var pathname = "#kukan path[data-key='" + rosenNumList[i] + "']";
 		selectMap.find(pathname).attr({ "data-status": "2" });
@@ -476,10 +483,16 @@ function exp_tab_select(key) {
 function rosenToArea(rosen, selectAreaName) {
 
 	var area = "";
-	if (["01", "02", "03"].includes(rosen)) {					// 札幌近郊
+	if (["01", "03", "51"].includes(rosen)) {					// 札幌近郊
 		area = "spo";
 		// 選択しているエリアが道央エリアだった場合dooに変更
 		if(selectAreaName == "doo") area = "doo";
+	} else if (["52"].includes(rosen)) {						// 複数エリアにまたがる路線
+		if (["spo", "doo", "donan"].includes(selectAreaName)) area = selectAreaName;
+		else area = "donan";
+	} else if (["53"].includes(rosen)) {						// 複数エリアにまたがる路線
+		if (["spo", "doo", "doto"].includes(selectAreaName)) area = selectAreaName;
+		else area = "doto";
 	} else if (["04", "05", "06", "07", "08"].includes(rosen)) {// 道央エリア
 		area = "doo";
 	} else if (["09", "10"].includes(rosen)) {					// 道南エリア

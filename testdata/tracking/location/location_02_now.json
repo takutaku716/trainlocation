@@ -1,0 +1,52 @@
+{
+  "trains": [
+    {
+      "cbango": "4001D",
+      "type": "1",
+      "pos": "R1P116U",
+      "chien": 12,
+      "shuEkiSimple": "Kushiro",
+      "shuEkiKey": "360",
+      "status": "1",
+      "statusDetail": "",
+      "statusDetailEn": "",
+      "statusDetailTc": "",
+      "statusDetailSc": "",
+      "statusDetailKr": "",
+      "senku": "02",
+      "ryosu": "5",
+      "yokuStatus": 0,
+      "yokuDetail": {
+        "ja": "",
+        "en": "",
+        "tc": "",
+        "sc": "",
+        "kr": ""
+      }
+    },
+    {
+      "cbango": "3033M",
+      "type": "8",
+      "pos": "R1P104D",
+      "chien": 0,
+      "shuEkiSimple": "Sapporo",
+      "shuEkiKey": "091",
+      "status": "1",
+      "statusDetail": "",
+      "statusDetailEn": "",
+      "statusDetailTc": "",
+      "statusDetailSc": "",
+      "statusDetailKr": "",
+      "senku": "02",
+      "ryosu": "6",
+      "yokuStatus": 0,
+      "yokuDetail": {
+        "ja": "",
+        "en": "",
+        "tc": "",
+        "sc": "",
+        "kr": ""
+      }
+    }
+  ]
+}

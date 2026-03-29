@@ -21,6 +21,8 @@ $(function ($) {
 			// ヘッダーに「現在日時」を表示する。
 			const timestamp = $("header").data("timestamp");
 			if (timestamp) $("#timestamp").text(timestamp);
+			ensure_test_mode_ui();
+			start_test_mode_layout_observer();
 
 			// ヘッダーの｢メニュー(開く)｣アイコンをクリックしたときのイベントを追加する。
 			$(document).on("click", "#headerMenuOpen", () => {
@@ -68,6 +70,7 @@ $(function ($) {
 						});
 						// ｢使い方｣ボックスを開く。
 						showGuideDetail();
+                        update_guide_test_mode_button();
 						// ｢ご利用上の注意｣を埋め込み表示する。
 						if ($("#guideDetailAttention").length) {
 							// ｢ご利用上の注意｣HTMLのURLを算出する。
@@ -83,6 +86,7 @@ $(function ($) {
 				} else {
 					// ｢使い方｣ボックスを開く。
 					showGuideDetail();
+                        update_guide_test_mode_button();
 				}
 				// ｢使い方｣ボックスを開く。
 				function showGuideDetail() {
@@ -179,15 +183,118 @@ $(function ($) {
 	});
 
 	// ｢お知らせ｣のヘッダーをクリックしたときの動き
-	$(document).on("click", "#commonOshirase div .toggle", function() {
-		$(this).next().stop().slideToggle();
-		$(this).toggleClass("open");
-	});
+$(document).on("click", "#commonOshirase div .toggle", function() {
+        $(this).next().stop().slideToggle();
+        $(this).toggleClass("open");
+    });
+
+    ensure_test_mode_ui();
+    update_guide_test_mode_button();
+    start_test_mode_layout_observer();
+    $(window).on("resize", update_test_mode_exit_button_position);
 });
 
 /*
  * エラーメッセージを取得します。
  */
+function get_test_mode_labels() {
+	const lang = document.documentElement.dataset.lang;
+	return {
+		"badge": ({
+			"ja": "\u30c6\u30b9\u30c8\u30e2\u30fc\u30c9",
+			"en": "TEST MODE",
+			"tc": "TEST MODE",
+			"sc": "TEST MODE",
+			"kr": "TEST MODE"
+		})[lang] || "TEST MODE",
+		"exitLine1": ({
+			"ja": "\u30c6\u30b9\u30c8",
+			"en": "TEST",
+			"tc": "TEST",
+			"sc": "TEST",
+			"kr": "TEST"
+		})[lang] || "TEST",
+		"exitLine2": ({
+			"ja": "\u7d42\u4e86",
+			"en": "EXIT",
+			"tc": "EXIT",
+			"sc": "EXIT",
+			"kr": "EXIT"
+		})[lang] || "EXIT"
+	};
+}
+
+function enable_test_mode() {
+	const url = new URL(location.href);
+	url.searchParams.set("test", "1");
+	location.href = url.pathname + "?" + url.searchParams.toString() + url.hash;
+}
+
+function update_guide_test_mode_button() {
+	const button = $("#guideTestModeEntry");
+	if (!button.length) return;
+	button.toggle(!is_test_mode());
+}
+
+function end_test_mode() {
+	const url = new URL(location.href);
+	url.searchParams.delete("test");
+	url.searchParams.delete("scenario");
+	location.href = url.pathname + (url.searchParams.toString() ? "?" + url.searchParams.toString() : "") + url.hash;
+}
+
+function update_test_mode_exit_button_position() {
+	const button = $("#commonTestModeExit");
+	if (!button.length || !is_test_mode()) return;
+	let bottom = $("#commonPageTop").length ? 90 : 10;
+	const subFooter = $(".sub-footer");
+	if (subFooter.length) {
+		const footerBottom = parseFloat(subFooter.css("bottom")) || 0;
+		bottom = Math.max(bottom, footerBottom + subFooter.outerHeight() + 10);
+	}
+	button.css("bottom", bottom + "px");
+}
+
+function ensure_test_mode_ui() {
+	if (!is_test_mode()) {
+		$("#commonTestModeBadge").remove();
+		$("#commonTestModeExit").remove();
+		return;
+	}
+
+	const labels = get_test_mode_labels();
+	if ($("header #headerMain .title").length && !$("#commonTestModeBadge").length) {
+		$("header #headerMain .title").append("<span id='commonTestModeBadge' class='test-mode-badge'></span>");
+	}
+	$("#commonTestModeBadge").text(labels.badge);
+
+	if (!$("#commonTestModeExit").length) {
+		$("body").append("<div id='commonTestModeExit'><button type='button' id='commonTestModeExitBtn'><span class='line1'></span><span class='line2'></span></button></div>");
+	}
+	$("#commonTestModeExitBtn .line1").text(labels.exitLine1);
+	$("#commonTestModeExitBtn .line2").text(labels.exitLine2);
+	update_test_mode_exit_button_position();
+}
+
+function start_test_mode_layout_observer() {
+	if (!is_test_mode() || !window.MutationObserver) return;
+	if (window.__testModeLayoutObserverStarted) return;
+	window.__testModeLayoutObserverStarted = true;
+	const subFooter = document.querySelector(".sub-footer");
+	if (!subFooter) return;
+	const observer = new MutationObserver(function() {
+		update_test_mode_exit_button_position();
+	});
+	observer.observe(subFooter, { attributes: true, childList: true, subtree: true });
+}
+
+$(document).on("click", "#commonTestModeExitBtn", function() {
+    end_test_mode();
+});
+
+$(document).on("click", "#guideTestModeBtn", function() {
+    enable_test_mode();
+});
 function get_error_message() {
 	let lang = document.documentElement.dataset.lang;
 	let errormessage = "";

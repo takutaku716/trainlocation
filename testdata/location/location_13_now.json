@@ -1,0 +1,28 @@
+﻿{
+  "trains": [
+    {
+      "cbango": "4010D",
+      "type": "1",
+      "pos": "R7P16U",
+      "chien": 16,
+      "shuEkiSimple": "Sapporo",
+      "shuEkiKey": "",
+      "status": "1",
+      "statusDetail": "",
+      "statusDetailEn": "",
+      "statusDetailTc": "",
+      "statusDetailSc": "",
+      "statusDetailKr": "",
+      "senku": "13",
+      "ryosu": "5",
+      "yokuStatus": 0,
+      "yokuDetail": {
+        "ja": "",
+        "en": "",
+        "tc": "",
+        "sc": "",
+        "kr": ""
+      }
+    }
+  ]
+}

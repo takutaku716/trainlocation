@@ -52,6 +52,22 @@ $(function ($) {
 			$("#resshaDetail").attr("dataUnkou", dataset.unkou);
 			// 遅れ詳細
 			$("#chienDetail").text(dataset.chien_text);
+			$("#trackTrainBtn").attr("data-cbango", dataset.cbango);
+			const isTracking = get_param_cbango() === dataset.cbango;
+			$("#trackTrainBtn").attr("data-tracking", isTracking ? "1" : "0");
+			if (isTracking) {
+				if (lang == "ja") $("#trackTrainBtn").text("追跡解除");
+				if (lang == "en") $("#trackTrainBtn").text("Untrack");
+				if (lang == "tc") $("#trackTrainBtn").text("解除追蹤");
+				if (lang == "sc") $("#trackTrainBtn").text("解除追踪");
+				if (lang == "kr") $("#trackTrainBtn").text("추적 해제");
+			} else {
+				if (lang == "ja") $("#trackTrainBtn").text("追跡");
+				if (lang == "en") $("#trackTrainBtn").text("Track");
+				if (lang == "tc") $("#trackTrainBtn").text("追蹤");
+				if (lang == "sc") $("#trackTrainBtn").text("追踪");
+				if (lang == "kr") $("#trackTrainBtn").text("추적");
+			}
 
 			if (dataset.chien_status == "0") {
 				$("#chienIcon").hide();
@@ -84,7 +100,7 @@ $(function ($) {
 			)
 			.done(function(posNameMasterBase, ekiMasterBase, daiyaBase) {
 				// 現在地
-				$("#posDetail").text(posNameMasterBase[0][pos]);
+				$("#posDetailText").text(posNameMasterBase[0][pos]);
 				// ダイヤデータ作成
 				create_daiya(dataset, ekiMasterBase, daiyaBase);
 				$('#resshaDetailMessage').empty();
@@ -145,6 +161,26 @@ $(function ($) {
 	// バブリングを停止
 	$(document).on("click", "#resshaDetail .dialog", function(event) {
 		event.stopPropagation();
+	});
+
+	$(document).on("click", "#trackTrainBtn", function(event) {
+		event.preventDefault();
+		event.stopPropagation();
+		const cbango = $(this).attr("data-cbango");
+		const rosen = get_param_rosen();
+		const isTracking = $(this).attr("data-tracking") === "1";
+		if (!cbango || !rosen) return;
+		$("#resshaDetail").fadeOut("fast");
+		$('#resshaDetailMain').fadeOut("fast");
+		$('#resshaDetailMessage').fadeOut("fast");
+		set_scroll_show($("#resshaDetail .dialog"));
+		if (isTracking) {
+			if (typeof preserve_scroll_after_hash_change === "function") preserve_scroll_after_hash_change();
+			location.hash = "rosen=" + rosen;
+			return;
+		}
+		if (typeof suppress_track_scroll_once === "function") suppress_track_scroll_once();
+		location.hash = "rosen=" + rosen + "&cbango=" + cbango;
 	});
 });
 

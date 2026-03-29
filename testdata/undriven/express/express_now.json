@@ -1,0 +1,84 @@
+{
+  "trains": [
+    {
+      "cbango": "1001M",
+      "runRosen": "",
+      "chien": 0,
+      "runStatus": 0,
+      "yokuStatus": 0,
+      "yokuDetail": {
+        "ja": "",
+        "en": "",
+        "tc": "",
+        "sc": "",
+        "kr": ""
+      },
+      "status": "0",
+      "statusDetail": "",
+      "statusDetailEn": "",
+      "statusDetailTc": "",
+      "statusDetailSc": "",
+      "statusDetailKr": ""
+    },
+    {
+      "cbango": "1002M",
+      "runRosen": "",
+      "chien": 0,
+      "runStatus": 0,
+      "yokuStatus": 0,
+      "yokuDetail": {
+        "ja": "",
+        "en": "",
+        "tc": "",
+        "sc": "",
+        "kr": ""
+      },
+      "status": "0",
+      "statusDetail": "",
+      "statusDetailEn": "",
+      "statusDetailTc": "",
+      "statusDetailSc": "",
+      "statusDetailKr": ""
+    },
+    {
+      "cbango": "4001D",
+      "runRosen": "",
+      "chien": 0,
+      "runStatus": 0,
+      "yokuStatus": 0,
+      "yokuDetail": {
+        "ja": "",
+        "en": "",
+        "tc": "",
+        "sc": "",
+        "kr": ""
+      },
+      "status": "0",
+      "statusDetail": "",
+      "statusDetailEn": "",
+      "statusDetailTc": "",
+      "statusDetailSc": "",
+      "statusDetailKr": ""
+    },
+    {
+      "cbango": "4002D",
+      "runRosen": "",
+      "chien": 0,
+      "runStatus": 0,
+      "yokuStatus": 0,
+      "yokuDetail": {
+        "ja": "",
+        "en": "",
+        "tc": "",
+        "sc": "",
+        "kr": ""
+      },
+      "status": "0",
+      "statusDetail": "",
+      "statusDetailEn": "",
+      "statusDetailTc": "",
+      "statusDetailSc": "",
+      "statusDetailKr": ""
+    }
+  ]
+}

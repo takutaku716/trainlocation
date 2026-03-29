@@ -1,0 +1,28 @@
+﻿{
+  "trains": [
+    {
+      "cbango": "3878M",
+      "type": "8",
+      "pos": "R1P171U",
+      "chien": 4,
+      "shuEkiSimple": "Higashi-Muroran",
+      "shuEkiKey": "",
+      "status": "1",
+      "statusDetail": "",
+      "statusDetailEn": "",
+      "statusDetailTc": "",
+      "statusDetailSc": "",
+      "statusDetailKr": "",
+      "senku": "07",
+      "ryosu": "6",
+      "yokuStatus": 0,
+      "yokuDetail": {
+        "ja": "",
+        "en": "",
+        "tc": "",
+        "sc": "",
+        "kr": ""
+      }
+    }
+  ]
+}

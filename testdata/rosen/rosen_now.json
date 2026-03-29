@@ -1,0 +1,19 @@
+{
+  "lines": [
+    { "rosen": "01", "maxChien": 8 },
+    { "rosen": "02", "maxChien": 15 },
+    { "rosen": "03", "maxChien": 0 },
+    { "rosen": "04", "maxChien": 0 },
+    { "rosen": "05", "maxChien": 6 },
+    { "rosen": "06", "maxChien": 0 },
+    { "rosen": "07", "maxChien": 12 },
+    { "rosen": "08", "maxChien": 0 },
+    { "rosen": "09", "maxChien": 25 },
+    { "rosen": "10", "maxChien": 0 },
+    { "rosen": "11", "maxChien": 0 },
+    { "rosen": "12", "maxChien": 0 },
+    { "rosen": "13", "maxChien": 7 },
+    { "rosen": "14", "maxChien": 0 },
+    { "rosen": "15", "maxChien": 0 }
+  ]
+}

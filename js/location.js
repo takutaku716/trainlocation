@@ -21,6 +21,12 @@ const LOCATION_AUTO_REFRESH_DEFAULT_INTERVAL = 15000;
 // 自動更新設定の保存キー
 const LOCATION_AUTO_REFRESH_ENABLED_KEY = "location_auto_refresh_enabled";
 const LOCATION_AUTO_REFRESH_INTERVAL_KEY = "location_auto_refresh_interval";
+const TRACKING_SCROLL_ENABLED_KEY = "tracking_scroll_enabled";
+const LOCATION_JSON_SOURCE_MAP = {
+	"51": ["01", "05"],
+	"52": ["02", "07", "09"],
+	"53": ["02", "13"]
+};
 // 走行位置自動更新タイマー
 let locationAutoRefreshTimer = null;
 // 列車選択アニメーションタイマー
@@ -30,14 +36,91 @@ let autoRefreshRosen = "";
 // 列車再描画用マスタのキャッシュ
 let cachedResshaTypeData = null;
 let cachedEkiData = null;
+let cachedLocationMasterData = null;
 // 自動更新設定
 let locationAutoRefreshEnabled = false;
 let locationAutoRefreshInterval = LOCATION_AUTO_REFRESH_DEFAULT_INTERVAL;
 // 次回自動更新予定時刻
 let nextLocationAutoRefreshAt = null;
+// 列車検索用キャッシュ
+let cachedTrainSearchData = null;
+let trainSearchDataPromise = null;
+let cachedTrainSearchLoadedAt = 0;
+const TRAIN_SEARCH_CACHE_TTL = 30000;
+let preserveScrollAfterHashChange = false;
+let preservedScrollTop = 0;
+let suppressTrackScrollOnce = false;
+let trackingScrollEnabled = true;
+
+function preserve_scroll_after_hash_change() {
+	preserveScrollAfterHashChange = true;
+	preservedScrollTop = $(window).scrollTop();
+}
+
+function suppress_track_scroll_once() {
+	suppressTrackScrollOnce = true;
+	preservedScrollTop = $(window).scrollTop();
+}
+
+function clear_tracked_train_selection(_preserveScroll = false) {
+	const rosen = get_param_rosen();
+	if (!rosen || !get_param_cbango()) return;
+	if (_preserveScroll) preserve_scroll_after_hash_change();
+	location.hash = "rosen=" + rosen;
+}
+
+function load_tracking_scroll_setting() {
+	const stored = localStorage.getItem(TRACKING_SCROLL_ENABLED_KEY);
+	trackingScrollEnabled = stored === null ? true : stored === "true";
+}
+
+function save_tracking_scroll_setting() {
+	localStorage.setItem(TRACKING_SCROLL_ENABLED_KEY, trackingScrollEnabled ? "true" : "false");
+}
+
+function update_tracking_footer_controls() {
+	const lang = document.documentElement.dataset.lang;
+	const trackedCbango = get_param_cbango();
+	const hasTracking = !!trackedCbango;
+	const scrollLabels = trackingScrollEnabled ? {
+		"ja": "\u8ffd\u5f93\u4e2d",
+		"en": "Follow ON",
+		"tc": "Follow ON",
+		"sc": "Follow ON",
+		"kr": "Follow ON"
+	} : {
+		"ja": "\u8ffd\u5f93\u505c\u6b62",
+		"en": "Follow OFF",
+		"tc": "Follow OFF",
+		"sc": "Follow OFF",
+		"kr": "Follow OFF"
+	};
+	const releaseLabels = {
+		"ja": "\u8ffd\u8de1\u89e3\u9664",
+		"en": "Untrack",
+		"tc": "Untrack",
+		"sc": "Untrack",
+		"kr": "Untrack"
+	};
+
+	if (hasTracking) {
+		$("#trackingFooterContents").removeAttr("hidden").show();
+		$("#trackScrollToggleBtn")
+			.attr("data-state", trackingScrollEnabled ? "on" : "off")
+			.toggleClass("is-off", !trackingScrollEnabled)
+			.toggleClass("is-following", trackingScrollEnabled);
+		$("#trackScrollToggleBtn .tracking-cbango").text(trackedCbango);
+		$("#trackScrollToggleBtn .tracking-status").text(scrollLabels[lang] || scrollLabels.ja);
+		$("#trackReleaseBtn .sub-footer-unkou-msg").text(releaseLabels[lang] || releaseLabels.ja);
+	} else {
+		$("#trackScrollToggleBtn").removeAttr("data-state").removeClass("is-off is-following");
+		$("#trackingFooterContents").attr("hidden", "hidden").hide();
+	}
+}
 
 window.onload = function(){
 	load_location_auto_refresh_settings();
+	load_tracking_scroll_setting();
 	// 現在表示中の路線を取得
 	let param_rosen = get_param_rosen();
 	// 走行位置を表示
@@ -142,24 +225,28 @@ window.onscroll = function () {
 };
 
 window.onhashchange = function () {
-	// ハッシュからid（駅キー）を取得
+	// 繝上ャ繧ｷ繝･縺九ｉid・磯ｧ・く繝ｼ・峨ｒ蜿門ｾ・
 	let param_id = get_param_id();
 
-	// 路線を切り替えた際、列車の赤枠を非表示
+	// 霍ｯ邱壹ｒ蛻・ｊ譖ｿ縺医◆髫帙∝・霆翫・襍､譫繧帝撼陦ｨ遉ｺ
 	$(".ressha-animation").hide();
 
-	// 画面表示処理
+	// 逕ｻ髱｢陦ｨ遉ｺ蜃ｦ逅・
 	if (!isNotInitDisp) init_disp(scrollKey, () => {
 
 		if (param_id) {
-			// ハッシュに駅IDが存在した場合、対象の駅までスクロール
+			// 繝上ャ繧ｷ繝･縺ｫ鬧・D縺悟ｭ伜惠縺励◆蝣ｴ蜷医∝ｯｾ雎｡縺ｮ鬧・∪縺ｧ繧ｹ繧ｯ繝ｭ繝ｼ繝ｫ
 			let pos = $("div[key='" + param_id + "']").offset().top - 380;
 			$("body,html").scrollTop(pos);
 		}
 
-		// ヘッダーの高さ分の余白を設定する。
+		// 繝倥ャ繝繝ｼ縺ｮ鬮倥＆蛻・・菴咏區繧定ｨｭ螳壹☆繧九・
 		set_header_height();
 	})
+
+	if (suppressTrackScrollOnce && !get_param_cbango()) {
+		suppressTrackScrollOnce = false;
+	}
 
 	isNotInitDisp = false;
 }
@@ -235,6 +322,23 @@ $(function ($) {
 		set_scroll_hide($("#refreshSettingDetail .dialog"));
 	});
 
+	// 列車検索ボタンをクリックしたときの動き
+	$("#trainSearchBtn, #trainSearchBtnSub").on("click", function() {
+		reset_train_search_dialog();
+		$("#trainSearchDetail").fadeIn("fast");
+		set_scroll_hide($("#trainSearchDetail .dialog"));
+		$("#trainSearchResultInfo").text("読み込み中...");
+		load_train_search_data()
+			.then((searchData) => {
+				populate_train_search_name_select(searchData);
+				$("#trainSearchResultInfo").empty();
+				$("#trainSearchNumberInput").trigger("focus");
+			})
+			.catch(() => {
+				$("#trainSearchResultInfo").text("検索データを取得できませんでした。");
+			});
+	});
+
 	// 駅選択をクリックしたときの動き
 	$(document).on("click", ".header-btn.eki", function() {
 		// テンプレートのhtmlから駅を取得
@@ -267,6 +371,11 @@ $(function ($) {
 		set_scroll_show($("#searchDetail .dialog"));
 	});
 
+	// 列車検索ダイアログを閉じる
+	$(document).on("click", "#trainSearchDetail, #trainSearchDetail .common-subtitle.header", function() {
+		close_train_search_dialog();
+	});
+
 	// 自動更新設定ダイアログを閉じる
 	$(document).on("click", "#refreshSettingDetail, #refreshSettingDetail .close", function() {
 		$("#refreshSettingDetail").fadeOut("fast");
@@ -296,6 +405,48 @@ $(function ($) {
 		$("body,html").animate({scrollTop: pos});
 	});
 
+	// 列車検索の実行
+	$(document).on("click", "#trainSearchNumberBtn", function() {
+		run_train_number_search();
+	});
+	$(document).on("click", "#trainSearchNameBtn", function() {
+		run_train_name_search();
+	});
+	$(document).on("keydown", "#trainSearchNumberInput", function(event) {
+		if (event.key === "Enter") run_train_number_search();
+	});
+	$(document).on("keydown", "#trainSearchNameNumberInput", function(event) {
+		if (event.key === "Enter") run_train_name_search();
+	});
+	$(window).on("resize", function() {
+		update_train_search_result_title_layout();
+	});
+	$(document).on("click", "#trainSearchResult .train-search-result-item", function(event) {
+		event.preventDefault();
+		event.stopImmediatePropagation();
+		const targetRosen = $(this).attr("value");
+		const cbango = $(this).attr("cbango");
+		const isRunning = $(this).attr("data-running") !== "0";
+		close_train_search_dialog();
+		if (!isRunning) {
+			const searchTrain = find_train_search_result(cbango);
+			if (searchTrain && searchTrain.detailTrain) {
+				showTrainDetailDialog($("#trainDetail"), searchTrain.detailTrain);
+				return;
+			}
+			show_train_not_running_message();
+			return;
+		}
+		if (!targetRosen || !cbango) return;
+		const currentRosen = get_param_rosen();
+		const currentCbango = get_param_cbango();
+		if (currentRosen === targetRosen && currentCbango === cbango) {
+			init_disp();
+		} else {
+			location.hash = "rosen=" + targetRosen + "&cbango=" + cbango;
+		}
+	});
+
 	// 重要なお知らせをクリックしたときの動き
 	$(document).on("click", "#popupDetailBtn", function() {
 		// ポップアップダイアログ内の重要なお知らせを開く。
@@ -316,7 +467,25 @@ $(function ($) {
 	});
 
 	// バブリングを停止
-	$(document).on("click", "#guideDetail .dialog, #searchDetail .dialog, #popupDetail .dialog, #refreshSettingDetail .dialog", function(event) {
+	$(document).on("click", "#trackReleaseBtn", function() {
+		clear_tracked_train_selection(true);
+	});
+
+	$(document).on("click", "#trackScrollToggleBtn", function() {
+		trackingScrollEnabled = !trackingScrollEnabled;
+		save_tracking_scroll_setting();
+		update_tracking_footer_controls();
+		if (trackingScrollEnabled) {
+			const param_cbango = get_param_cbango();
+			if (!param_cbango) return;
+			const ressha = $("div[data-cbango='" + param_cbango + "']");
+			if (ressha.length) {
+				scroll_selected_train_into_view(ressha);
+			}
+		}
+	});
+
+	$(document).on("click", "#guideDetail .dialog, #searchDetail .dialog, #trainSearchDetail .dialog, #popupDetail .dialog, #refreshSettingDetail .dialog", function(event) {
 		event.stopPropagation();
 	});
 
@@ -415,25 +584,26 @@ $(function ($) {
 		const trnNow = Date.now() >>> 10;
 		// 最新の列車運行情報を取得する。
 		$.when(
-			$.getJSON("https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/webunkou/json/daiya/daiya_00" + (lang === "ja" ? "" : "_" + lang) + ".json?" + mstNow),
-			$.getJSON("https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/trainlocation/json/express/now/express_now.json?" + trnNow)
+			get_daiya_request("00", lang, mstNow),
+			get_express_now_request(trnNow)
 		)
 		.done((daiyaBase, expressNowBase) => {
 			// 対象の列車の運行情報を取得する。
 			const expressNow = expressNowBase[0].trains.find(train => train.cbango === cbango);
+			const targetRosen = $(this).attr("value") || normalizeMergedRosen(expressNow.runRosen, $(this).find(".train-name").text());
 			// 対象の列車に有効な路線キーが設定されている場合は、当該路線ページの該当列車位置に遷移する。
-			if (expressNow.runRosen) {
+			if (targetRosen) {
 				// 現在表示している路線を取得する。
 				const currentRosen = get_param_rosen();
 				// 現在hashに設定している列車番号を取得する。
 				const currentCbango = get_param_cbango();
-				if (currentRosen === expressNow.runRosen && currentCbango === cbango) {
+				if (currentRosen === targetRosen && currentCbango === cbango) {
 					// 表示中の路線／列車番号と遷移先の路線／列車番号が同じ場合であれば、画面表示処理を呼び出す。
 					init_disp();
 
 				} else {
 					// 別の路線／列車番号であれば、ハッシュを選択した路線／列車番号に変更する。
-					location.hash = "rosen=" + expressNow.runRosen + "&cbango=" + cbango;
+					location.hash = "rosen=" + targetRosen + "&cbango=" + cbango;
 				}
 				return;
 			}
@@ -538,6 +708,57 @@ function set_ressha_icon_animation() {
 /*
  * JSONデータを読み込み、駅・駅間を描画する
  */
+function get_location_json_source_list(_param_rosen) {
+	const sourceList = LOCATION_JSON_SOURCE_MAP[_param_rosen];
+	if (!Array.isArray(sourceList) || sourceList.length < 1) return [_param_rosen];
+
+	const uniqueSources = [...new Set(sourceList.map(String).filter(Boolean))];
+	return uniqueSources.length > 0 ? uniqueSources : [_param_rosen];
+}
+
+function get_location_json_url(_rosen, _now) {
+	return "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/trainlocation/json/location/now/location_" + _rosen + "_now.json?" + _now;
+}
+
+function jqxhr_to_promise(_jqxhr) {
+	return new Promise((resolve, reject) => {
+		_jqxhr.done((data) => resolve(data)).fail((error) => reject(error));
+	});
+}
+
+function merge_location_now_data(_nowDataList) {
+	const seenCbangoMap = new Map();
+	const mergedTrains = [];
+
+	_nowDataList.forEach((nowData) => {
+		if (!nowData || !Array.isArray(nowData.trains)) return;
+
+		nowData.trains.forEach((row) => {
+			if (!row || !row.cbango) {
+				mergedTrains.push(row);
+				return;
+			}
+			const cbango = String(row.cbango);
+			if (seenCbangoMap.has(cbango)) return;
+			seenCbangoMap.set(cbango, true);
+			mergedTrains.push(row);
+		});
+	});
+
+	return { trains: mergedTrains };
+}
+
+function load_location_now_data(_param_rosen, _now) {
+	const sourceRosens = get_location_json_source_list(_param_rosen);
+	return Promise.all(
+		sourceRosens.map((rosen) => jqxhr_to_promise(get_location_now_request(rosen, _now)).catch(() => null))
+	).then((nowDataList) => {
+		const successDataList = nowDataList.filter((nowData) => nowData && Array.isArray(nowData.trains));
+		if (successDataList.length < 1) throw new Error("location now json load failed");
+		return merge_location_now_data(successDataList);
+	});
+}
+
 function set_station_list(_param_rosen, _scrollKey, _callback) {
 	stop_location_auto_refresh();
 	// お知らせ欄作成
@@ -548,12 +769,11 @@ function set_station_list(_param_rosen, _scrollKey, _callback) {
 
 	// 走行位置ページメンテナンスJSONファイルを読み込んで、メンテナンスページに切り替えるか判定を行う。
 	let mstNow = Date.now() >>> 16;
-	let now = Date.now() >>> 10;
+	let nowQuery = Date.now() >>> 10;
 	let rosen_html = lang == "ja" ? `./rosen/rosen_${_param_rosen}.html` : `https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/trainlocation/rosen_${_param_rosen}_${lang}.html`;
 	let maintenance_html = lang == "ja" ? "./mainte/rosen_maintenance.html" : "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/trainlocation/mainte/rosen_maintenance_" + lang + ".html";
 
 	$.when(
-		$.getJSON("https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/trainlocation/json/location/now/location_" + _param_rosen + "_now.json?" + now),
 		$.getJSON("./master/rosen_name_master.json?" + mstNow),
 		$.getJSON("./mainte/rosen_maintenance.json?" + mstNow),
 		$.getJSON("https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/webunkou/json/master/ressha_type_master.json?" + mstNow),
@@ -561,7 +781,7 @@ function set_station_list(_param_rosen, _scrollKey, _callback) {
 		$.get(rosen_html),
 		$.get(maintenance_html)
 	)
-	.done(function(nowData, rosenNameData, maintenanceData, typeData, ekiData, rosen, maintenance) {
+	.done(function(rosenNameData, maintenanceData, typeData, ekiData, rosen, maintenance) {
 
 		// 現在日付を設定
 		const now = new Date();
@@ -605,12 +825,14 @@ function set_station_list(_param_rosen, _scrollKey, _callback) {
 			// 駅・駅間描画後の後処理
 			set_post_station_list(_param_rosen, _scrollKey);
 		} else {
+			load_location_now_data(_param_rosen, nowQuery)
+			.then(function(nowData) {
 			autoRefreshRosen = _param_rosen;
 			cachedResshaTypeData = typeData[0];
 			cachedEkiData = ekiData[0];
 			$("#stationList").html(rosen[0]);
 			// 列車アイコンを描画する
-			create_ressha_icon(_param_rosen, nowData[0], typeData[0], ekiData[0]);
+			create_ressha_icon(_param_rosen, nowData, typeData[0], ekiData[0]);
 			// 列車アイコンの表示順を並び替える
 			ressha_pos_sort();
 
@@ -632,6 +854,12 @@ function set_station_list(_param_rosen, _scrollKey, _callback) {
 			start_location_auto_refresh(_param_rosen);
 
 			if (_callback) _callback();
+			})
+			.catch(function() {
+				var errormessage = `<h2 class='msg-bg'>${get_error_message()}</h2>`;
+				$('#message').html(errormessage);
+				$('#message').show();
+			});
 		}
 	})
 	.fail(function() {
@@ -679,11 +907,11 @@ function refresh_location_positions(_param_rosen) {
 	if (!$("#stationList .ressha-icon").length) return;
 
 	const now = Date.now() >>> 10;
-	$.getJSON("https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/trainlocation/json/location/now/location_" + _param_rosen + "_now.json?" + now)
-	.done(function(nowData) {
+	load_location_now_data(_param_rosen, now)
+	.then(function(nowData) {
 		redraw_location_positions(_param_rosen, nowData);
 	})
-	.fail(function() {
+	.catch(function() {
 		// 自動更新失敗時は次回更新を待つ
 	});
 }
@@ -696,7 +924,8 @@ function redraw_location_positions(_param_rosen, _nowData) {
 	create_ressha_icon(_param_rosen, _nowData, cachedResshaTypeData, cachedEkiData);
 	ressha_pos_sort();
 	update_location_timestamp();
-	restore_selected_train_marker();
+	restore_selected_train_marker(trackingScrollEnabled);
+	update_tracking_footer_controls();
 }
 
 /*
@@ -711,7 +940,7 @@ function clear_location_positions(_param_rosen) {
 	$("#stationList .ressha-icon").removeClass("up");
 	$("#stationList .ressha-icon .ressha, #stationList .ressha-icon .dummy").remove();
 
-	if (_param_rosen == "09") {
+	if (["09", "52"].includes(_param_rosen)) {
 		$("#fujishiro1").show();
 		$("#fujishiro2").show();
 		$("#fujishiro1Long").hide();
@@ -741,13 +970,32 @@ function update_location_timestamp() {
 /*
  * 選択中の列車がある場合、再描画後に赤枠を付け直す
  */
-function restore_selected_train_marker() {
+function restore_selected_train_marker(_follow = false) {
 	const param_cbango = get_param_cbango();
 	if (!param_cbango) return;
 	const ressha = $("div[data-cbango='" + param_cbango + "']");
-	if (!ressha.length) return;
+	if (!ressha.length) {
+		clear_tracked_train_selection(true);
+		return;
+	}
 	ressha.append("<img class='ressha-animation' src='./images/home/ressha_mark.svg' alt>");
 	set_ressha_icon_animation();
+	if (_follow) {
+		scroll_selected_train_into_view(ressha);
+	}
+}
+
+function scroll_selected_train_into_view(_ressha) {
+	if (!_ressha || !_ressha.length) return;
+	if ($("#guideDetail").is(":visible") || $("#searchDetail").is(":visible") || $("#trainSearchDetail").is(":visible") || $("#popupDetail").is(":visible") || $("#refreshSettingDetail").is(":visible") || $("#resshaDetail").is(":visible") || $(".trainDetailDialog").is(":visible") || $("#oshiraseDetail").is(":visible")) {
+		return;
+	}
+	const currentScroll = $(window).scrollTop();
+	const viewportHeight = window.innerHeight || $(window).height();
+	const targetScroll = Math.max(0, _ressha.offset().top - (viewportHeight / 2) + (_ressha.outerHeight() / 2));
+	if (Math.abs(currentScroll - targetScroll) < 4) return;
+	$("html, body").stop(true).animate({ scrollTop: targetScroll }, 250);
+	window.sessionStorage.setItem("scrollY", Math.max(0, targetScroll - 50));
 }
 
 /*
@@ -868,7 +1116,7 @@ function handle_page_visibility_change() {
  * 駅・駅間描画後の後処理
  */
 function set_post_station_list(_param_rosen, _scrollKey) {
-	if (_param_rosen == "09") {
+	if (["09", "52"].includes(_param_rosen)) {
 		// 函館線[長万部～函館間]の場合
 		if ($(".fujishiro-panel").height() > 800){
 			$("#fujishiro1").hide();
@@ -917,6 +1165,10 @@ function set_post_station_list(_param_rosen, _scrollKey) {
 		if (param_cbango) {
 			// ハッシュにcbangoが存在した場合処理を実行
 			ressha_run_check();
+		} else if (preserveScrollAfterHashChange) {
+			$("body,html").scrollTop(preservedScrollTop);
+			scrollY = preservedScrollTop;
+			preserveScrollAfterHashChange = false;
 		} else {
 			// 画面スクロール位置設定
 			set_disp_scroll(_param_rosen, _scrollKey);
@@ -925,6 +1177,7 @@ function set_post_station_list(_param_rosen, _scrollKey) {
 
 	scrollKey = "";
 	isSideMenuClick = false;
+	update_tracking_footer_controls();
 
 	// ローディングアニメーションを非表示にする
 	loading_animation_hidden();
@@ -993,7 +1246,7 @@ function set_responsive() {
 	let margin = 0;
 	let lang = document.documentElement.dataset.lang;
 	if (!(userAgent.indexOf('iPhone') > 0 || userAgent.indexOf('iPad') > 0 || userAgent.indexOf('Android') > 0 || userAgent.indexOf('Mobile') > 0 )) {
-		if ($("#guideDetail").is(":visible") || $("#searchDetail").is(":visible") || $("#popupDetail").is(":visible") || $("#refreshSettingDetail").is(":visible") || $("#resshaDetail").is(":visible") || $("#oshiraseDetail").is(":visible")) {
+		if ($("#guideDetail").is(":visible") || $("#searchDetail").is(":visible") || $("#trainSearchDetail").is(":visible") || $("#popupDetail").is(":visible") || $("#refreshSettingDetail").is(":visible") || $("#resshaDetail").is(":visible") || $("#oshiraseDetail").is(":visible")) {
 			// いずれかのダイアログが表示されていた場合
 			margin = scrollbarWidth;
 		}
@@ -1002,6 +1255,7 @@ function set_responsive() {
 		if (windowWidth <= 550) {
 			$("#guideDetail .dialog").css("margin", "0px " + scrollbarWidth + "px 0px 0px");
 			$("#searchDetail .dialog").css("margin", "0px " + scrollbarWidth + "px 0px 0px");
+			$("#trainSearchDetail .dialog").css("margin", "0px " + scrollbarWidth + "px 0px 0px");
 			$("#popupDetail .dialog").css("margin", "0px " + scrollbarWidth + "px 0px 0px");
 			$("#refreshSettingDetail .dialog").css("margin", "0px " + scrollbarWidth + "px 0px 0px");
 			$("#resshaDetail .dialog").css("margin", "0px " + scrollbarWidth + "px 0px 0px");
@@ -1013,6 +1267,7 @@ function set_responsive() {
 				$("#guideDetail .dialog").css("marginLeft", scrollbarWidth + "px");
 			}
 			$("#searchDetail .dialog").css("marginLeft", scrollbarWidth + "px");
+			$("#trainSearchDetail .dialog").css("marginLeft", scrollbarWidth + "px");
 			$("#popupDetail .dialog").css("marginLeft", scrollbarWidth + "px");
 			$("#refreshSettingDetail .dialog").css("marginLeft", scrollbarWidth + "px");
 			$("#resshaDetail .dialog").css("marginLeft", scrollbarWidth + "px");
@@ -1031,6 +1286,7 @@ function set_responsive() {
 	} else {
 		$("#guideDetail .dialog").css("margin", "0px");
 		$("#searchDetail .dialog").css("margin", "0px");
+		$("#trainSearchDetail .dialog").css("margin", "0px");
 		$("#popupDetail .dialog").css("margin", "0px");
 		$("#refreshSettingDetail .dialog").css("margin", "0px");
 		$("#resshaDetail .dialog").css("margin", "0px");
@@ -1057,7 +1313,7 @@ function set_responsive() {
 		if (lang == "ja") $(".sub-footer .sub-footer-contents.popup .sub-footer-unkou-msg").html("重要な<br>お知らせ");
 		// サイドメニュー内の折り畳みを閉じる。
 		toggle_close();
-		if (!($("#guideDetail").is(":visible") || $("#searchDetail").is(":visible") || $("#popupDetail").is(":visible") || $("#refreshSettingDetail").is(":visible") || $("#resshaDetail").is(":visible") || $(".trainDetailDialog").is(":visible") || $("#oshiraseDetail").is(":visible"))) {
+		if (!($("#guideDetail").is(":visible") || $("#searchDetail").is(":visible") || $("#trainSearchDetail").is(":visible") || $("#popupDetail").is(":visible") || $("#refreshSettingDetail").is(":visible") || $("#resshaDetail").is(":visible") || $(".trainDetailDialog").is(":visible") || $("#oshiraseDetail").is(":visible"))) {
 			// ダイアログが表示されていない場合
 			// bodyのスクロールを有効にする。
 			set_scroll_show_side_menu();
@@ -1084,7 +1340,7 @@ function set_responsive() {
 		$(".sub-header").css("width", "calc(100% - " + margin + "px)");
 		$(".sub-footer .homen-footer-contents").css("width", "calc(100% - " + margin + "px)");
 		if (lang == "ja") $(".sub-footer .sub-footer-contents.popup .sub-footer-unkou-msg").html("重要なお知らせ");
-		if (!($("#guideDetail").is(":visible") || $("#searchDetail").is(":visible") || $("#popupDetail").is(":visible") || $("#refreshSettingDetail").is(":visible") || $("#resshaDetail").is(":visible") || $(".trainDetailDialog").is(":visible") || $("#oshiraseDetail").is(":visible"))) {
+		if (!($("#guideDetail").is(":visible") || $("#searchDetail").is(":visible") || $("#trainSearchDetail").is(":visible") || $("#popupDetail").is(":visible") || $("#refreshSettingDetail").is(":visible") || $("#resshaDetail").is(":visible") || $(".trainDetailDialog").is(":visible") || $("#oshiraseDetail").is(":visible"))) {
 			// ダイアログが表示されていない場合
 			// bodyのスクロールを有効にする。
 			set_scroll_show_side_menu();
@@ -1177,7 +1433,7 @@ function create_ressha_icon(_param_rosen, _nowData, _typeData, _ekiData) {
 	set_hirendo_height();
 
 	// 函館駅周辺の高さを設定
-	if (_param_rosen == "09") set_hakodate_height();
+	if (["09", "52"].includes(_param_rosen)) set_hakodate_height();
 }
 
 /*
@@ -1502,7 +1758,12 @@ function create_html_up_ressha_icon(_nowRow, _typeData, _ekiData) {
 		}
 		iconArea.appendChild(objSbt);
 	}
-	objItem.appendChild(iconArea);
+		objItem.appendChild(iconArea);
+
+	let objCbango = document.createElement("span");
+	objCbango.classList.add("cbango-label");
+	objCbango.textContent = _nowRow.cbango;
+	iconArea.appendChild(objCbango);
 
 	// 遅延を設定
 	let chienText = "";
@@ -1593,7 +1854,12 @@ function create_html_down_ressha_icon(_nowRow, _typeData, _ekiData) {
 		}
 		iconArea.appendChild(objSbt);
 	}
-	objItem.appendChild(iconArea);
+		objItem.appendChild(iconArea);
+
+	let objCbango = document.createElement("span");
+	objCbango.classList.add("cbango-label");
+	objCbango.textContent = _nowRow.cbango;
+	iconArea.appendChild(objCbango);
 
 	// 列車アイコンの矢印を設定
 	let objArrow = document.createElement("img");
@@ -1986,14 +2252,17 @@ function toggle_close() {
 function ressha_run_check() {
 	// ローディングアニメーションを表示
 	loading_animation_display();
-	$("body,html").scrollTop(0);
+	if (!suppressTrackScrollOnce) $("body,html").scrollTop(0);
 
 	let param_cbango = get_param_cbango();
 	let ressha = $("div[data-cbango='" + param_cbango + "']");
 	if (ressha.length > 0) {
 		let pos = ressha.offset().top - 260;
 		// リロードされた場合アニメーションを行わない
-		if (!is_reload()) {
+		if (suppressTrackScrollOnce) {
+			$("body,html").scrollTop(preservedScrollTop);
+			suppressTrackScrollOnce = false;
+		} else if (!is_reload()) {
 			$("body,html").animate({scrollTop: pos});
 		} else {
 			$("body,html").scrollTop(pos);
@@ -2068,6 +2337,534 @@ function get_param_cbango() {
 		if (params[1].indexOf("cbango=") >= 0) return params[1].substring(7);
 		else return "";
 	}
+}
+
+/*
+ * 列車検索ダイアログを初期状態に戻す
+ */
+function reset_train_search_dialog() {
+	$("#trainSearchNumberInput").val("");
+	$("#trainSearchNameNumberInput").val("");
+	$("#trainSearchResultInfo").empty();
+	$("#trainSearchResult").empty();
+}
+
+/*
+ * 列車検索ダイアログを閉じる
+ */
+function close_train_search_dialog() {
+	$("#trainSearchDetail").fadeOut("fast");
+	set_scroll_show($("#trainSearchDetail .dialog"));
+}
+
+/*
+ * 現在走行していない列車を選択した際のメッセージを表示する
+ */
+function show_train_not_running_message() {
+	$("#oshiraseDetail").fadeIn("fast");
+	let lang = document.documentElement.dataset.lang;
+	if (lang == "ja") $("#oshiraseDetailMain .text").text("この列車は現在走行していません。");
+	if (lang == "en") $("#oshiraseDetailMain .text").text("This train is not currently running.");
+	if (lang == "tc") $("#oshiraseDetailMain .text").text("本列車目前未行駛。");
+	if (lang == "sc") $("#oshiraseDetailMain .text").text("本列车目前未运行。");
+	if (lang == "kr") $("#oshiraseDetailMain .text").text("이 열차는 현재 주행하고 있지 않습니다.");
+	set_scroll_hide($("#oshiraseDetail .dialog"));
+}
+
+/*
+ * 列車検索データを読み込む
+ */
+function find_train_search_result(cbango) {
+	if (!cachedTrainSearchData || !Array.isArray(cachedTrainSearchData.trains)) return undefined;
+	const normalizedCbango = normalize_train_search_cbango(cbango);
+	return cachedTrainSearchData.trains.find((train) => normalize_train_search_cbango(train.cbango) === normalizedCbango);
+}
+
+function load_train_search_data() {
+	if (cachedTrainSearchData && (Date.now() - cachedTrainSearchLoadedAt) < TRAIN_SEARCH_CACHE_TTL) {
+		return Promise.resolve(cachedTrainSearchData);
+	}
+	if (trainSearchDataPromise) return trainSearchDataPromise;
+
+	const lang = document.documentElement.dataset.lang;
+	const mstNow = Date.now() >>> 16;
+	const trnNow = Date.now() >>> 10;
+	const searchSourceRosens = ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15"];
+	const daiyaSourceSenkus = ["00"].concat(searchSourceRosens, ["19"]);
+	const expressMasterPromise = jqxhr_to_promise($.getJSON("https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/webunkou/json/master/express_master.json?" + mstNow));
+	const expressCorePromise = jqxhr_to_promise(get_express_core_request(mstNow));
+	const expressNowPromise = jqxhr_to_promise(get_express_now_request(trnNow))
+		.catch(() => ({ "trains": [] }));
+	const typePromise = cachedResshaTypeData ? Promise.resolve(cachedResshaTypeData) : jqxhr_to_promise($.getJSON("https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/webunkou/json/master/ressha_type_master.json?" + mstNow));
+	const ekiPromise = cachedEkiData ? Promise.resolve(cachedEkiData) : jqxhr_to_promise($.getJSON("https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/webunkou/json/master/eki_master.json?" + mstNow));
+	const locationMasterPromise = cachedLocationMasterData ? Promise.resolve(cachedLocationMasterData) : jqxhr_to_promise($.getJSON("./original/location_master.json")).catch(() => ({}));
+	const locationPromises = searchSourceRosens.map((rosen) =>
+		jqxhr_to_promise(get_location_now_request(rosen, trnNow))
+			.then((data) => ({ "rosen": rosen, "data": data }))
+			.catch(() => null)
+	);
+	const daiyaPromises = daiyaSourceSenkus.map((senku) =>
+		jqxhr_to_promise(get_daiya_request(senku, lang, mstNow))
+			.then((data) => ({ "senku": senku, "data": data }))
+			.catch(() => null)
+	);
+
+	trainSearchDataPromise = Promise.all([
+		expressMasterPromise,
+		expressCorePromise,
+		expressNowPromise,
+		typePromise,
+		ekiPromise,
+		locationMasterPromise,
+		Promise.all(daiyaPromises),
+		Promise.all(locationPromises)
+	]).then(([expressMaster, expressCore, expressNowData, typeData, ekiData, locationMasterData, daiyaDataList, locationDataList]) => {
+		cachedResshaTypeData = typeData;
+		cachedEkiData = ekiData;
+		cachedLocationMasterData = locationMasterData || {};
+		const daiyaMap = new Map();
+		const expressNowMap = new Map();
+		const expressCoreTrainMap = new Map();
+		daiyaDataList.filter(Boolean).forEach((entry) => {
+			if (!entry.data || !Array.isArray(entry.data.today)) return;
+			entry.data.today.forEach((row) => {
+				if (!row || !row.cbango) return;
+				const cbango = String(row.cbango);
+				const current = daiyaMap.get(cbango);
+				const candidate = Object.assign({ "senku": entry.senku }, row);
+				if (!current) {
+					daiyaMap.set(cbango, candidate);
+					return;
+				}
+				const merged = Object.assign({}, current);
+				Object.keys(candidate).forEach((key) => {
+					const value = candidate[key];
+					if (value === "" || value === null || typeof value === "undefined") return;
+					if (key === "senku") {
+						if (!merged.senku || (merged.senku !== "00" && value === "00")) merged.senku = value;
+						return;
+					}
+					if (key === "stations") {
+						if (!Array.isArray(merged.stations) || merged.stations.length === 0 || (Array.isArray(value) && value.length > merged.stations.length)) {
+							merged.stations = value;
+						}
+						return;
+					}
+					if (merged[key] === "" || merged[key] === null || typeof merged[key] === "undefined") {
+						merged[key] = value;
+					}
+				});
+				daiyaMap.set(cbango, merged);
+			});
+		});
+		if (expressNowData && Array.isArray(expressNowData.trains)) {
+			expressNowData.trains.forEach((train) => {
+				if (!train || !train.cbango) return;
+				expressNowMap.set(String(train.cbango).toUpperCase(), train);
+			});
+		}
+		if (expressCore && Array.isArray(expressCore.expresses)) {
+			expressCore.expresses.forEach((express) => {
+				if (!express || !Array.isArray(express.trains)) return;
+				express.trains.forEach((train) => {
+					if (!train || !train.cbango) return;
+					expressCoreTrainMap.set(String(train.cbango).toUpperCase(), train);
+				});
+			});
+		}
+
+		const trainMap = new Map();
+		locationDataList.filter(Boolean).forEach((entry) => {
+			if (!entry.data || !Array.isArray(entry.data.trains)) return;
+			entry.data.trains.forEach((train) => {
+				if (!train || !train.cbango) return;
+				const cbango = String(train.cbango).toUpperCase();
+				const daiya = daiyaMap.get(String(train.cbango));
+				const nameInfo = parse_train_name(daiya && daiya.name ? daiya.name : "");
+				const displayName = build_train_search_display_name(train, daiya, typeData, ekiData);
+				const targetRosen = normalizeMergedRosen(entry.rosen, nameInfo.baseName || displayName);
+				const candidate = {
+					"cbango": cbango,
+					"type": String(train.type || ""),
+					"value": targetRosen,
+					"name": displayName,
+					"status": getTrainChienText(train),
+					"currentSection": get_train_search_current_section(train, locationMasterData),
+					"baseName": nameInfo.baseName,
+					"goNumber": nameInfo.goNumber,
+					"hasCustomName": !!nameInfo.baseName,
+					"isRunning": true
+				};
+				const current = trainMap.get(cbango);
+				if (!current || (!current.hasCustomName && candidate.hasCustomName)) {
+					trainMap.set(cbango, candidate);
+				}
+			});
+		});
+		daiyaMap.forEach((daiya, cbangoKey) => {
+			const cbango = String(cbangoKey).toUpperCase();
+			if (trainMap.has(cbango)) return;
+			const nameInfo = parse_train_name(daiya && daiya.name ? daiya.name : "");
+			const expressNow = expressNowMap.get(cbango);
+			const expressCoreTrain = expressCoreTrainMap.get(cbango);
+			const statusDetail = expressNow ? (
+				lang === "ja" ? expressNow.statusDetail :
+				lang === "en" ? expressNow.statusDetailEn :
+				lang === "tc" ? expressNow.statusDetailTc :
+				lang === "sc" ? expressNow.statusDetailSc :
+				lang === "kr" ? expressNow.statusDetailKr : ""
+			) : "";
+			const resolvedType = resolve_train_search_type(
+				expressCoreTrain && typeof expressCoreTrain.type !== "undefined" ? String(expressCoreTrain.type) : (daiya && typeof daiya.type !== "undefined" ? String(daiya.type) : ""),
+				daiya ? daiya.name : "",
+				typeData,
+				cbango,
+				daiya ? daiya.senku : ""
+			);
+			const displayName = build_train_search_display_name({
+				"type": resolvedType,
+				"shuEkiKey": daiya ? daiya.shuEkiKey : "",
+				"cbango": cbango
+			}, daiya, typeData, ekiData);
+			const detailTrain = daiya ? {
+				"cbango": cbango,
+				"name": daiya.name || "",
+				"type": resolvedType,
+				"shuEki": daiya.shuEkiKey || "",
+				"ryosu": daiya.ryosu || "",
+				"senku": daiya.senku || "00"
+			} : null;
+			if (detailTrain && expressNow) {
+				detailTrain.runStatus = expressNow.runStatus;
+				detailTrain.yokuStatus = expressNow.yokuStatus;
+				detailTrain.yokuDetail = expressNow.yokuDetail;
+				detailTrain.status = expressNow.status;
+				detailTrain.statusDetail = statusDetail;
+				detailTrain.chien = expressNow.chien;
+			}
+			trainMap.set(cbango, {
+				"cbango": cbango,
+				"type": resolvedType,
+				"value": "",
+				"name": displayName,
+				"status": "この列車は現在走行していません。",
+				"currentSection": "",
+				"baseName": nameInfo.baseName,
+				"goNumber": nameInfo.goNumber,
+				"hasCustomName": !!nameInfo.baseName,
+				"isRunning": false,
+				"detailTrain": detailTrain
+			});
+		});
+		const trains = Array.from(trainMap.values()).sort((a, b) => a.cbango.localeCompare(b.cbango, "ja"));
+		const activeExpressKeys = new Set(
+			(expressCore && Array.isArray(expressCore.expresses) ? expressCore.expresses : [])
+				.filter((row) => row && Array.isArray(row.trains) && row.trains.length > 0)
+				.map((row) => row.key)
+		);
+		const expressNames = Array.from(new Set(
+			(expressMaster && Array.isArray(expressMaster) ? expressMaster : [])
+				.filter((row) => activeExpressKeys.has(row.key))
+				.map((row) => row.name && row.name[lang] ? row.name[lang] : "")
+				.filter(Boolean)
+		));
+		const shinkansenNames = Array.from(new Set(
+			Array.from(daiyaMap.values())
+				.filter((row) => row && String(row.senku || "") === "19")
+				.map((row) => parse_train_name(row.name).baseName)
+				.filter(Boolean)
+		));
+		const names = Array.from(new Set(expressNames.concat(shinkansenNames))).sort((a, b) => a.localeCompare(b, "ja"));
+		cachedTrainSearchData = { "trains": trains, "names": names };
+		cachedTrainSearchLoadedAt = Date.now();
+		trainSearchDataPromise = null;
+		return cachedTrainSearchData;
+	}).catch((error) => {
+		trainSearchDataPromise = null;
+		throw error;
+	});
+
+	return trainSearchDataPromise;
+}
+
+/*
+ * 列車名プルダウンを構築する
+ */
+function populate_train_search_name_select(searchData) {
+	const select = $("#trainSearchNameSelect");
+	select.empty();
+	select.append($("<option>").val("").text("列車名を選択"));
+	if (searchData && Array.isArray(searchData.names)) {
+		searchData.names.forEach((name) => {
+			select.append($("<option>").val(name).text(name));
+		});
+	}
+}
+
+/*
+ * 列車名と号数を分解する
+ */
+function parse_train_name(name) {
+	const text = String(name || "")
+		.replace(/[０-９]/g, (char) => String.fromCharCode(char.charCodeAt(0) - 0xFEE0))
+		.replace(/\u3000/g, " ")
+		.trim();
+	if (!text) return { "baseName": "", "goNumber": "" };
+	const match = text.match(/^(.*?)(\d+)号?$/);
+	if (!match) return { "baseName": text, "goNumber": "" };
+	return {
+		"baseName": match[1].trim(),
+		"goNumber": match[2]
+	};
+}
+
+/*
+ * 列車検索用の表示名を作成する
+ */
+function build_train_search_display_name(train, daiya, typeData, ekiData) {
+	const lang = document.documentElement.dataset.lang;
+	const destKey = train.shuEkiKey || (daiya ? daiya.shuEkiKey : "");
+	const dest = ekiData.find((row) => row.key == destKey);
+	const destName = dest ? (dest[lang] || dest.ja || "") : "";
+	const destText = destName ? " " + destName + "行" : "";
+	const nameInfo = parse_train_name(daiya && daiya.name ? daiya.name : "");
+	if (nameInfo.baseName) return (daiya.name + destText).trim();
+	const resolvedType = resolve_train_search_type(train.type, daiya ? daiya.name : "", typeData, train.cbango, daiya ? daiya.senku : "");
+	const type = typeData.find((row) => String(row.type) == String(resolvedType));
+	let typeName = "";
+	if (type) {
+		typeName = type.type === 8 ? "快速" : (type.typeText[lang] || type.typeText.ja || "");
+	}
+	const displayName = (typeName + destText).trim();
+	if (displayName) return displayName;
+	if (daiya && daiya.name) return (daiya.name + destText).trim();
+	return String(train.cbango || "");
+}
+
+function get_train_search_current_section(train, locationMasterData) {
+	const pos = String((train && train.pos) || "");
+	if (!pos || !locationMasterData || typeof locationMasterData !== "object") return "";
+	const section = locationMasterData[pos];
+	return typeof section === "string" ? section.trim() : "";
+}
+
+/*
+ * HTMLエスケープ
+ */
+function resolve_train_search_type(type, name, typeData, cbango, senku) {
+	if (String(senku || "") === "19") return "4";
+	const resolvedType = String(type || "");
+	if (resolvedType) return resolvedType;
+	const normalizedCbango = normalize_train_search_cbango(cbango);
+	if (normalizedCbango.endsWith("B")) return "4";
+	const trainName = String(name || "");
+	if (trainName && Array.isArray(typeData)) {
+		let matchedType = "";
+		let matchedLength = 0;
+		typeData.forEach((row) => {
+			if (!row) return;
+			const labels = [];
+			if (row.labelText) {
+				if (row.labelText.ja) labels.push(String(row.labelText.ja));
+				if (row.labelText[document.documentElement.dataset.lang]) labels.push(String(row.labelText[document.documentElement.dataset.lang]));
+			}
+			if (row.typeText) {
+				if (row.typeText.ja) labels.push(String(row.typeText.ja));
+				if (row.typeText[document.documentElement.dataset.lang]) labels.push(String(row.typeText[document.documentElement.dataset.lang]));
+			}
+			labels.forEach((label) => {
+				if (!label || trainName.indexOf(label) < 0) return;
+				if (label.length > matchedLength) {
+					matchedType = String(row.type || "");
+					matchedLength = label.length;
+				}
+			});
+		});
+		if (matchedType) return matchedType;
+	}
+	if (trainName.indexOf("特別快速") >= 0) return "5";
+	if (trainName.indexOf("快速") >= 0) return "8";
+	if (trainName.indexOf("普通") >= 0) return "3";
+	return "";
+}
+
+function normalize_train_search_cbango(cbango) {
+	const text = String(cbango || "").trim().toUpperCase();
+	const match = text.match(/^0*(\d+)([A-Z]+)$/);
+	if (!match) return text;
+	return String(Number(match[1])) + match[2];
+}
+
+function escape_train_search_html(text) {
+	return String(text || "")
+		.replace(/&/g, "&amp;")
+		.replace(/</g, "&lt;")
+		.replace(/>/g, "&gt;")
+		.replace(/\"/g, "&quot;")
+		.replace(/'/g, "&#39;");
+}
+
+/*
+ * 列番検索を行う
+ */
+function run_train_number_search() {
+	const digits = $("#trainSearchNumberInput").val().replace(/[^\d]/g, "");
+	const suffix = ($("#trainSearchSuffixSelect").val() || "D").toUpperCase();
+	if (!digits) {
+		render_train_search_results([], "列番を入力してください。", "列番を入力してください。");
+		return;
+	}
+	const keyword = normalize_train_search_cbango(digits + suffix);
+	load_train_search_data()
+		.then((searchData) => {
+			const results = searchData.trains.filter((train) => normalize_train_search_cbango(train.cbango) === keyword);
+			render_train_search_results(results, "検索結果");
+		})
+		.catch(() => {
+			render_train_search_results([], "検索データを取得できませんでした。", "検索データを取得できませんでした。");
+		});
+}
+
+/*
+ * 列車名検索を行う
+ */
+function run_train_name_search() {
+	const selectedName = $("#trainSearchNameSelect").val();
+	const goNumber = $("#trainSearchNameNumberInput").val().replace(/[^\d]/g, "");
+	if (!selectedName) {
+		render_train_search_results([], "列車名を選択してください。", "列車名を選択してください。");
+		return;
+	}
+	load_train_search_data()
+		.then((searchData) => {
+			const results = searchData.trains.filter((train) => {
+				if (train.baseName !== selectedName) return false;
+				if (!goNumber) return true;
+				return train.goNumber === goNumber;
+			});
+			if (!goNumber) {
+				const groupedResults = {
+					"\u4e0a\u308a\u5217\u8eca": [],
+					"\u4e0b\u308a\u5217\u8eca": [],
+					"\u305d\u306e\u4ed6": []
+				};
+				results.forEach((train) => {
+					const goNumberValue = Number(train.goNumber || "");
+					const cbangoNumber = Number(String(train.cbango || "").replace(/[^\d]/g, ""));
+					const groupNumber = (!Number.isNaN(goNumberValue) && train.goNumber) ? goNumberValue : cbangoNumber;
+					if (!Number.isNaN(groupNumber) && groupNumber > 0) {
+						if (groupNumber % 2 === 0) groupedResults["\u4e0a\u308a\u5217\u8eca"].push(train);
+						else groupedResults["\u4e0b\u308a\u5217\u8eca"].push(train);
+						return;
+					}
+					groupedResults["\u305d\u306e\u4ed6"].push(train);
+				});
+				Object.keys(groupedResults).forEach((key) => {
+					groupedResults[key].sort((a, b) => {
+						const numA = Number(a.goNumber || String(a.cbango || "").replace(/[^\d]/g, "") || "9999");
+						const numB = Number(b.goNumber || String(b.cbango || "").replace(/[^\d]/g, "") || "9999");
+						return numA - numB;
+					});
+				});
+				render_train_search_grouped_results(groupedResults, "\u691c\u7d22\u7d50\u679c");
+				return;
+			}
+            render_train_search_results(results, "\u691c\u7d22\u7d50\u679c");
+		})
+		.catch(() => {
+			render_train_search_results([], "検索データを取得できませんでした。", "検索データを取得できませんでした。");
+		});
+}
+
+/*
+ * 検索用文字列を正規化
+ */
+function normalize_train_search_text(text) {
+	return String(text || "").toLowerCase().replace(/[\s\u3000]+/g, "");
+}
+
+/*
+ * 列車検索結果を描画
+ */
+function split_train_search_result_name(name) {
+	const text = String(name || "").trim();
+	if (!text) return { "title": "", "destination": "" };
+	const splitIndex = text.lastIndexOf(" ");
+	if (splitIndex < 0) return { "title": text, "destination": "" };
+	return {
+		"title": text.slice(0, splitIndex).trim(),
+		"destination": text.slice(splitIndex + 1).trim()
+	};
+}
+
+function update_train_search_result_title_layout() {
+	$("#trainSearchResult .search-result-title.has-number").each(function(_, row) {
+		const title = $(row);
+		title.removeClass("stacked");
+		if (window.innerWidth > 480) return;
+		const name = row.querySelector(".search-result-name");
+		const number = row.querySelector(".search-result-number");
+		if (!name || !number) return;
+		const totalWidth = name.scrollWidth + number.offsetWidth + 6;
+		if (totalWidth > row.clientWidth) {
+			title.addClass("stacked");
+		}
+	});
+}
+
+function build_train_search_result_items(results) {
+	let html = "";
+	results.forEach(train => {
+		const nameParts = split_train_search_result_name(train.name);
+		const titleText = train.baseName || nameParts.title || train.name;
+		const numberText = train.baseName && train.goNumber ? train.goNumber + "号" : "";
+		const currentSection = train.isRunning && train.currentSection ? train.currentSection : "";
+		html += "<div class='express-train-contents train-search-result-item' cbango='" + escape_train_search_html(train.cbango) + "' type='" + escape_train_search_html(train.type) + "' value='" + escape_train_search_html(train.value) + "' data-running='" + (train.isRunning === false ? "0" : "1") + "'>";
+		html += "<div class='search-result-main'>";
+		html += "<span class='search-result-cbango'>" + escape_train_search_html(train.cbango) + "</span>";
+		html += "<span class='search-result-title" + (numberText ? " has-number" : "") + "'>";
+		html += "<span class='search-result-name'>" + escape_train_search_html(titleText) + "</span>";
+		if (numberText) {
+			html += "<span class='search-result-number'>" + escape_train_search_html(numberText) + "</span>";
+		}
+		html += "</span>";
+		html += "<span class='search-result-destination'>" + escape_train_search_html(nameParts.destination) + "</span>";
+		html += "</div>";
+		html += "<span class='unkou-label" + (train.status && train.status.indexOf("遅れ") >= 0 ? " chien" : "") + "'>";
+		html += "<span class='search-status-text'>" + escape_train_search_html(train.status || "") + "</span>";
+		if (currentSection) {
+			html += "<span class='search-status-section'>" + escape_train_search_html(currentSection) + "</span>";
+		}
+		html += "</span>";
+		html += "</div>";
+	});
+	return html;
+}
+
+function render_train_search_results(results, headerText, emptyMessage) {
+	$("#trainSearchResultInfo").text(headerText || "");
+	if (!results.length) {
+		$("#trainSearchResult").html("<div class='train-search-empty'>" + (emptyMessage || "該当する列車はありません。") + "</div>");
+		return;
+	}
+	$(`#trainSearchResult`).html(build_train_search_result_items(results));
+	update_train_search_result_title_layout();
+}
+
+function render_train_search_grouped_results(groupMap, headerText, emptyMessage) {
+	$(`#trainSearchResultInfo`).text(headerText || "");
+	const groupEntries = Object.entries(groupMap).filter(([, rows]) => rows && rows.length);
+	if (!groupEntries.length) {
+		$(`#trainSearchResult`).html("<div class='train-search-empty'>" + (emptyMessage || "該当する列車はありません。") + "</div>");
+		return;
+	}
+	let html = "";
+	groupEntries.forEach(([label, rows]) => {
+		html += "<div class='train-search-group-label'>" + escape_train_search_html(label) + "</div>";
+		html += build_train_search_result_items(rows);
+	});
+	$(`#trainSearchResult`).html(html);
+	update_train_search_result_title_layout();
 }
 
 /*

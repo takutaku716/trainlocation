@@ -1,0 +1,48 @@
+{
+  "today": [
+    {
+      "cbango": "11B",
+      "name": "\u306f\u3084\u3076\u305511\u53f7",
+      "type": "4",
+      "shuEkiKey": "034",
+      "ryosu": "10",
+      "stations": [
+        { "key": "028", "time": "10:24" },
+        { "key": "034", "time": "10:43" }
+      ]
+    },
+    {
+      "cbango": "17B",
+      "name": "\u306f\u3084\u3076\u305517\u53f7",
+      "type": "4",
+      "shuEkiKey": "034",
+      "ryosu": "10",
+      "stations": [
+        { "key": "028", "time": "13:24" },
+        { "key": "034", "time": "13:43" }
+      ]
+    },
+    {
+      "cbango": "3001B",
+      "name": "\u306f\u3084\u3076\u30551\u53f7",
+      "type": "4",
+      "shuEkiKey": "091",
+      "ryosu": "10",
+      "stations": [
+        { "key": "034", "time": "06:39" },
+        { "key": "091", "time": "10:12" }
+      ]
+    },
+    {
+      "cbango": "3010B",
+      "name": "\u306f\u3084\u3076\u305510\u53f7",
+      "type": "4",
+      "shuEkiKey": "034",
+      "ryosu": "10",
+      "stations": [
+        { "key": "091", "time": "14:44" },
+        { "key": "034", "time": "18:18" }
+      ]
+    }
+  ]
+}

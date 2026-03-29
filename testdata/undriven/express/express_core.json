@@ -1,0 +1,58 @@
+{
+  "expresses": [
+    {
+      "key": "suzuran",
+      "trains": [
+        {
+          "cbango": "1001M",
+          "type": "1",
+          "name": {
+            "ja": "\u3059\u305a\u3089\u30931\u53f7",
+            "en": "Suzuran 1",
+            "tc": "Suzuran 1",
+            "sc": "Suzuran 1",
+            "kr": "Suzuran 1"
+          }
+        },
+        {
+          "cbango": "1002M",
+          "type": "1",
+          "name": {
+            "ja": "\u3059\u305a\u3089\u30932\u53f7",
+            "en": "Suzuran 2",
+            "tc": "Suzuran 2",
+            "sc": "Suzuran 2",
+            "kr": "Suzuran 2"
+          }
+        }
+      ]
+    },
+    {
+      "key": "oozora",
+      "trains": [
+        {
+          "cbango": "4001D",
+          "type": "1",
+          "name": {
+            "ja": "\u304a\u304a\u305e\u30891\u53f7",
+            "en": "Ozora 1",
+            "tc": "Ozora 1",
+            "sc": "Ozora 1",
+            "kr": "Ozora 1"
+          }
+        },
+        {
+          "cbango": "4002D",
+          "type": "1",
+          "name": {
+            "ja": "\u304a\u304a\u305e\u30892\u53f7",
+            "en": "Ozora 2",
+            "tc": "Ozora 2",
+            "sc": "Ozora 2",
+            "kr": "Ozora 2"
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,28 @@
+﻿{
+  "trains": [
+    {
+      "cbango": "121D",
+      "type": "3",
+      "pos": "R10P1U",
+      "chien": 8,
+      "shuEkiSimple": "Hakodate",
+      "shuEkiKey": "",
+      "status": "2",
+      "statusDetail": "",
+      "statusDetailEn": "",
+      "statusDetailTc": "",
+      "statusDetailSc": "",
+      "statusDetailKr": "",
+      "senku": "09",
+      "ryosu": "1",
+      "yokuStatus": 0,
+      "yokuDetail": {
+        "ja": "",
+        "en": "",
+        "tc": "",
+        "sc": "",
+        "kr": ""
+      }
+    }
+  ]
+}

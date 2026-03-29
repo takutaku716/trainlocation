@@ -65,7 +65,7 @@ function showTrainDetailDialog(target, train, isError) {
 		$.when(
 			$.getJSON("https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/webunkou/json/master/eki_master.json?" + mstNow),
 			$.getJSON("https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/webunkou/json/master/ressha_type_master.json?" + mstNow),
-			$.getJSON("./ORIGINAL/location_master" + (lang === "ja" ? "" : "_" + lang) + ".json?" + mstNow),
+			$.getJSON("./original/location_master" + (lang === "ja" ? "" : "_" + lang) + ".json?" + mstNow),
 			$.getJSON("https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/webunkou/json/daiya/daiya_" + train.senku + (lang === "ja" ? "" : "_" + lang) + ".json?" + mstNow)
 		)
 		.done(function(ekiMasterBase, resshaTypeMasterBase, posNameMasterBase, daiyaBase) {
@@ -101,17 +101,34 @@ function showTrainDetailDialog(target, train, isError) {
 		function drawResshaType(dialog, type, resshaTypeMaster) {
 			const lang = document.documentElement.dataset.lang;
 			// 列車種別名を取得する。
-			resshaTypeInfo = resshaTypeMaster.find(ressha => ressha.type == type);
-			// 列車種別名を画面に表示する。
-			if (resshaTypeInfo && resshaTypeInfo.labelText[lang]) {
-				// 列車種別名を取得できた場合は、画面に表示する。
-				const resshaTypeName = resshaTypeInfo.labelText[lang];
-				if (resshaTypeName) {
-					$(dialog).find(".type-label").attr("data-type", type);
-					$(dialog).find(".type-label").text(resshaTypeName);
-					$(dialog).find(".type-label").removeClass("hide");
-				}
+			const resshaTypeInfo = resshaTypeMaster.find(ressha => ressha.type == type);
+			const typeLabel = $(dialog).find(".type-label");
+			// 未走行列車の検索結果から開く詳細ダイアログでは、種別は主要なものだけ文字表示する。
+			if (!resshaTypeInfo) {
+				typeLabel.attr("data-type", "0");
+				typeLabel.text("");
+				typeLabel.removeClass("hide");
+				return;
 			}
+			if (String(type) !== "1" && String(type) !== "3" && String(type) !== "4") {
+				typeLabel.attr("data-type", "0");
+				typeLabel.text("");
+				typeLabel.removeClass("hide");
+				return;
+			}
+			const resshaTypeName =
+				(resshaTypeInfo.typeText && (resshaTypeInfo.typeText[lang] || resshaTypeInfo.typeText.ja)) ||
+				(resshaTypeInfo.labelText && (resshaTypeInfo.labelText[lang] || resshaTypeInfo.labelText.ja)) ||
+				"";
+			if (!resshaTypeName) {
+				typeLabel.attr("data-type", "0");
+				typeLabel.text("");
+				typeLabel.removeClass("hide");
+				return;
+			}
+			typeLabel.attr("data-type", type);
+			typeLabel.text(resshaTypeName);
+			typeLabel.removeClass("hide");
 		}
 		/**
 		 * ダイアログに｢列車情報｣を描画する。

@@ -281,5 +281,62 @@
             "kr": "[신하코다테호쿠토～오쿠쓰가루이마베쓰]"
         },
         "area": "6"
+    },
+    {
+        "rosen": "51",
+        "rosenName": {
+            "ja": "函館線",
+            "en": "Hakodate Line",
+            "tc": "函館線",
+            "sc": "函馆线",
+            "kr": "하코다테선"
+        },
+        "kukanName": {
+            "ja": "[旭川～小樽間]",
+            "en": "[Asahikawa～Otaru]",
+            "tc": "[旭川～小樽間]",
+            "sc": "[旭川～小樽间]",
+            "kr": "[아사히카와～오타루]"
+        },
+        "kigo": "A",
+        "area": "2"
+    },
+    {
+        "rosen": "52",
+        "rosenName": {
+            "ja": "千歳・室蘭・函館線",
+            "en": "ChitoseLine/Muroran Line/Hakodate Line",
+            "tc": "千歲線・室蘭線・函館線",
+            "sc": "千岁线・室兰线・函馆线",
+            "kr": "치토세선・무로란선・하코다테선"
+        },
+        "kukanName": {
+            "ja": "[札幌～函館間]",
+            "en": "[Sapporo～Hakodate]",
+            "tc": "[札幌～函館間]",
+            "sc": "[札幌～函馆间]",
+            "kr": "[삿포로～하코다테]"
+        },
+        "kigo": "H",
+        "area": "3"
+    },
+    {
+        "rosen": "53",
+        "rosenName": {
+            "ja": "千歳・石勝・根室線",
+            "en": "Chitose Line/Sekisho Line/Nemuro Line",
+            "tc": "千歲線・石勝線・根室線",
+            "sc": "千岁线・石胜线・根室线",
+            "kr": "치토세선・세키쇼선・네무로선"
+        },
+        "kukanName": {
+            "ja": "[札幌～釧路間]",
+            "en": "[Sapporo～Kushiro]",
+            "tc": "[札幌～釧路間]",
+            "sc": "[札幌～钏路间]",
+            "kr": "[삿포로～구시로]"
+        },
+        "kigo": "K",
+        "area": "5"
     }
 ]
