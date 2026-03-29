@@ -819,6 +819,13 @@ header {
 							pointer-events: none;
 		}
 
+						/* 例外レイアウトの列番位置 */
+						#stationList .eki-panel.hirendo .ressha-contents .ressha-icon .cbango-label,
+						#stationList .hoka-line-area .honsen .eki-panel .eki-contents .ressha-contents .ressha-icon .cbango-label,
+						#stationList .hoka-line-area .fujishiro-panel .ressha-icon.up .cbango-label,
+						#stationList .hakodate-goryokaku-panel .ressha-icon .cbango-label {
+							top: 25px;
+						}
 						/* 蛻苓ｻ翫い繧､繧ｳ繝ｳ蜀・・驕・ｌ */
 						#stationList .eki-panel .ressha-contents .ressha-icon .okure-label {
 							color: red;
