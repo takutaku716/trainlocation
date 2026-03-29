@@ -803,7 +803,7 @@ header {
 									margin-bottom: 18.5px;
 								}
 
-						/* 列車アイコン内の遅れ */
+						/* 列車アイコン内の列番 */
 						#stationList .eki-panel .ressha-contents .ressha-icon .cbango-label {
 			color: #fff;
 			font-size: 10px;
@@ -813,7 +813,15 @@ header {
 			text-shadow: 0 0 2px rgb(0 0 0 / 80%);
 			white-space: nowrap;
 		}
-
+							/* 列車アイコン 下り列車用の列番 */
+							#stationList .eki-panel .ressha-contents .ressha-icon:not(.up) .cbango-label {
+								position: absolute;
+								top: 12px;
+								left: 0;
+								width: 52px;
+								z-index: 1;
+								pointer-events: none;
+							}
 						/* 蛻苓ｻ翫い繧､繧ｳ繝ｳ蜀・・驕・ｌ */
 						#stationList .eki-panel .ressha-contents .ressha-icon .okure-label {
 							color: red;
