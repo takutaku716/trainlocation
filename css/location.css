@@ -806,7 +806,7 @@ header {
 						/* 列車アイコン内の列番 */
 						#stationList .eki-panel .ressha-contents .ressha-icon .cbango-label {
 			color: #fff;
-			font-size: 10px;
+			font-size: 9px;
 			font-weight: bold;
 			line-height: 1;
 			text-align: center;
@@ -1721,7 +1721,7 @@ header {
 							/* 藤城線の列車アイコン内の列番 */
 							#stationList .hoka-line-area .fujishiro-panel .ressha-icon.up .cbango-label {
 			color: #fff;
-			font-size: 10px;
+			font-size: 9px;
 			font-weight: bold;
 			line-height: 1;
 			text-align: center;
