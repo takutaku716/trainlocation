@@ -421,3 +421,22 @@ img.unkou-icon {
 		width: 68px;
 	}
 }
+#guideTestModeEntry {
+	margin-top: 18px;
+	text-align: center;
+}
+
+#guideTestModeBtn {
+	background-color: #f5f8f2;
+	border: 1px solid #8c5;
+	border-radius: 6px;
+	color: #486b29;
+	cursor: pointer;
+	font-size: 12px;
+	font-weight: bold;
+	padding: 6px 12px;
+}
+
+#guideTestModeBtn:hover {
+	background-color: #ffc;
+}
