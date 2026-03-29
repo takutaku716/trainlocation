@@ -1762,7 +1762,7 @@ function create_html_up_ressha_icon(_nowRow, _typeData, _ekiData) {
 	let objCbango = document.createElement("span");
 	objCbango.classList.add("cbango-label");
 	objCbango.textContent = _nowRow.cbango;
-	objItem.appendChild(objCbango);
+	iconArea.appendChild(objCbango);
 
 	// 遅延を設定
 	let chienText = "";
@@ -1858,7 +1858,7 @@ function create_html_down_ressha_icon(_nowRow, _typeData, _ekiData) {
 	let objCbango = document.createElement("span");
 	objCbango.classList.add("cbango-label");
 	objCbango.textContent = _nowRow.cbango;
-	objItem.appendChild(objCbango);
+	iconArea.appendChild(objCbango);
 
 	// 列車アイコンの矢印を設定
 	let objArrow = document.createElement("img");
