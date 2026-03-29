@@ -154,7 +154,7 @@ header {
 		.sub-header .sub-header-contents .maintitle {
 			font-weight: bold;
 			font-size: 16px;
-			color: #fff;
+			color: #444;
 		}
 
 			.sub-header .sub-header-contents .maintitle span {
@@ -222,7 +222,7 @@ header {
 	/* サブヘッダー内のボタン */
 	.sub-header .header-btn {
 		border-radius: 5px;
-		background-color: #fff;
+		background-color: #444;
 		color: #fff;
 		cursor: pointer;
 		font-size: 12px;
@@ -2133,7 +2133,7 @@ section#resshaDetail {
 			justify-content: center;
 			background-color: #5b3;
 			border-width: 0px;
-			color: #fff;
+			color: #444;
 		}
 			/* 列車詳細ダイアログのヘッダーの｢×｣ボタン */
 			section#resshaDetail .dialog .header .close {
