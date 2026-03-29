@@ -805,23 +805,20 @@ header {
 
 						/* 列車アイコン内の列番 */
 						#stationList .eki-panel .ressha-contents .ressha-icon .cbango-label {
+							position: absolute;
+							top: 33px;
+							left: 0;
+							width: 52px;
 			color: #fff;
 			font-size: 10px;
 			font-weight: bold;
 			line-height: 1.1;
 			text-align: center;
-			text-shadow: 0 0 2px rgb(0 0 0 / 80%);
 			white-space: nowrap;
+							z-index: 1;
+							pointer-events: none;
 		}
-							/* 列車アイコン 下り列車用の列番 */
-							#stationList .eki-panel .ressha-contents .ressha-icon:not(.up) .cbango-label {
-								position: absolute;
-								top: 12px;
-								left: 0;
-								width: 52px;
-								z-index: 1;
-								pointer-events: none;
-							}
+
 						/* 蛻苓ｻ翫い繧､繧ｳ繝ｳ蜀・・驕・ｌ */
 						#stationList .eki-panel .ressha-contents .ressha-icon .okure-label {
 							color: red;
@@ -1724,221 +1721,22 @@ header {
 								margin-bottom: 19px;
 							}
 
-							/* 藤城線の列車アイコン内の遅れ */
+							/* 藤城線の列車アイコン内の列番 */
 							#stationList .hoka-line-area .fujishiro-panel .ressha-icon.up .cbango-label {
-							color: #fff;
-							font-size: 10px;
-							font-weight: bold;
-							line-height: 1.1;
-							text-align: center;
-							text-shadow: 0 0 2px rgb(0 0 0 / 80%);
-							white-space: nowrap;
-						}
-
-							/* 阯､蝓守ｷ壹・蛻苓ｻ翫い繧､繧ｳ繝ｳ蜀・・驕・ｌ */
-							#stationList .hoka-line-area .fujishiro-panel .ressha-icon.up .okure-label {
-								color: red;
-								font-size: 10.5px;
-								text-align: center;
-								margin-top: 2px;
-								direction: ltr;
-							}
-
-							/* 藤城線の列車アイコン内の表示エリア */
-							#stationList .hoka-line-area .fujishiro-panel .ressha-icon .icon-img {
-								background-image: url(../images/home/train_icon.svg);
-								background-position: center center;
-								background-repeat: no-repeat;
-								background-size: 52px;
-								display: flex;
-								height: 52px;
-								justify-content: center;
+								position: absolute;
+								top: 33px;
+								left: 0;
 								width: 52px;
-							}
-								/* 列車アイコン（赤） 特急・ライナー*/
-								#stationList .hoka-line-area .fujishiro-panel .ressha-icon .ressha[data-ressha_type='1'] .icon-img {
-									background-image: url(../images/home/train_icon_red.svg);
-								}
-								/* 列車アイコン（橙） 快速・特別快速*/
-								#stationList .hoka-line-area .fujishiro-panel .ressha-icon .ressha[data-ressha_type='2'] .icon-img{
-									background-image: url(../images/home/train_icon_orange.svg);
-								}
-								/* 列車アイコン（青） 快速（普通区間あり）*/
-								#stationList .hoka-line-area .fujishiro-panel .ressha-icon .ressha[data-ressha_type='3'] .icon-img {
-									background-image: url(../images/home/train_icon_blue.svg);
-								}
-								/* 列車アイコン（緑） 北海道新幹線*/
-								#stationList .hoka-line-area .fujishiro-panel .ressha-icon .ressha[data-ressha_type='5'] .icon-img {
-									background-image: url(../images/home/train_icon_green.svg);
-								}
-								/* 列車アイコン（白） 臨時列車*/
-								#stationList .hoka-line-area .fujishiro-panel .ressha-icon .ressha[data-ressha_type='6'] .icon-img {
-									background-image: url(../images/home/train_icon_white.svg);
-								}
-								/* 列車アイコン（緑） 区間快速*/
-								#stationList .hoka-line-area .fujishiro-panel .ressha-icon .ressha[data-ressha_type='7'] .icon-img {
-									background-image: url(../images/home/train_icon_green.svg);
-								}
-
-								/* 列車アイコン内の列車種別 */
-								#stationList .hoka-line-area .fujishiro-panel .ressha-icon .icon-img .ressha-sbt {
-									color: #fff;
-									font-size: 17px;
-									font-weight: bold;
-									margin-top: 6px;
-								}
-									/* 列車アイコン内の列車種別 (臨時列車)*/
-									#stationList .hoka-line-area .fujishiro-panel .ressha-icon .ressha[data-ressha_type='6'] .ressha-sbt {
-										color: #444;
-									}
-									/* 英字の場合 */
-									[data-lang='en'] #stationList .hoka-line-area .fujishiro-panel .ressha-icon .ressha-sbt {
-										margin-top: 8px;
-									}
-									/* 簡体字の場合 */
-									[data-lang='sc'] #stationList .hoka-line-area .fujishiro-panel .ressha-icon .ressha-sbt[sbt="HL"] {
-										margin-top: 8px;
-									}
-									/* 韓国語版 */
-									[data-lang='kr'] #stationList .hoka-line-area .fujishiro-panel .ressha-icon .ressha-sbt {
-										font-size: 18px;
-										right: 18.4px;
-									}
-
-							/* 藤城線の列車アイコン内の行先 */
-							#stationList .hoka-line-area .fujishiro-panel .ressha-icon.up .yukisaki-label {
-								position: absolute;
-								font-size: 13px;
-								top: -13px;
-								right: 30px;
-							}
-
-							/* 藤城線の列車アイコン内の矢印 */
-							#stationList .hoka-line-area .fujishiro-panel .ressha-icon.up .arrow {
-								position: absolute;
-								width: 52px;
-								top: -26px;
-								right: -7px;
-							}
-
-							/* 列車アイコン内の！マーク */
-							#stationList .hoka-line-area .fujishiro-panel .ressha-icon .exclamation {
-								position: absolute;
-								width: 28px;
-								top: -8px;
-								right: 38px;
+			color: #fff;
+			font-size: 10px;
+			font-weight: bold;
+			line-height: 1.1;
+			text-align: center;
+			white-space: nowrap;
 								z-index: 1;
-							}
-
-					/* 藤城線の線路 上部 */
-					#stationList .hoka-line-area .fujishiro-panel .senro-img {
-						right: 80px;
-						top: 141px;
-						margin: auto;
-						z-index: 17;
-						position: absolute;
-						width: 70px;
-						height: 276px;
-						transform: scale(2.35);
-					}
-						/* 藤城線の線路 下部 */
-						#stationList .hoka-line-area .fujishiro-panel .senro-img.fujishiro2 {
-							top: auto;
-							bottom: 101px;
-						}
-
-					/* 南千歳～新千歳空港の駅間 */
-					#stationList .hoka-line-area.airport .hoka-line-panel .eki-panel.hoka-rosen {
-						min-height: 100px;
-						padding-top: 25px;
-					}
-
-						/* 南千歳～新千歳空港の列車アイコンの表示領域 */
-						#stationList .hoka-line-area.airport .hoka-line-panel .ressha-contents {
-							justify-content: flex-end;
-							margin-left: 2px;
-							max-height: 265px;
-							overflow: hidden;
-						}
-
-							/* 南千歳～新千歳空港の列車アイコンの表示領域 */
-							#stationList .hoka-line-area.airport .hoka-line-panel .ressha-contents .ressha-icon {
-								width: 52px;
-								top: -5px;
-								margin: 0 0 0 20px;
-								left: -8px;
-							}
-								/* 南千歳～新千歳空港の列車アイコンの表示領域 上向きの列車用 */
-								#stationList .hoka-line-area.airport .hoka-line-panel .ressha-contents .ressha-icon.up {
-									top: 3px;
-									left: -5px;
-									margin: 0 20px 0 0;
-								}
-
-						/* 南千歳～新千歳空港の線路 */
-						#stationList .hoka-line-area.airport .hoka-line-panel .senro-img {
-							right: 50px;
-							left: 50px;
-						}
-							/* 新千歳空港の線路 */
-							#stationList .hoka-line-area.airport .hoka-line-panel .senro-img.start {
-								top: 263px;
-							}
-							/* 南千歳～新千歳空港間の線路 */
-							#stationList .hoka-line-area.airport .hoka-line-panel .senro-img.airport-line {
-								left: auto;
-								top: 205px;
-								transform: scale(2.96);
-							}
-
-						/* 新千歳空港駅のリンク */
-						#stationList .hoka-line-area.airport .eki-panel .eki-contents a {
-							text-decoration: none;
-							color: #111;
-							display: flex;
-							padding: 3px 5px 3px 5px;
-							align-items: center;
-						}
-
-							/* 新千歳空港駅のリンク領域 */
-							#stationList .hoka-line-area.airport .eki-panel .eki-contents .stalist-eki-link {
-								width: 140px;
-								min-width: auto;
-								max-width: none;
-								display: flex;
-								align-items: center;
-								padding: 3px 5px 3px 0px;
-							}
-
-								/* 新千歳空港駅の駅名 */
-								#stationList .hoka-line-area.airport .eki-panel .eki-contents .stalist-eki-link div {
-									font-weight: bold;
-								}
-
-								/* 新千歳空港駅の駅アイコン */
-								#stationList .hoka-line-area.airport .eki-panel .eki-contents .stalist-eki-link span.eki-icon {
-									margin: 1px 5px 1px 8px;
-								}
-									/* 新千歳空港駅の駅アイコン 英語版 */
-									[data-lang='en'] #stationList .hoka-line-area.airport .eki-panel .eki-contents .stalist-eki-link span.eki-icon {
-										margin: 1px 1px 1px 4px;
-									}
-
-#fujishiro1Long, #fujishiro2Long, #goryokakuLong {
-	display: none;
-}
-
-	/* 列車の赤枠の強調 */
-	#stationList .ressha-icon .ressha-animation {
-		position: absolute;
-		left: -16px;
-		width: 86px;
-		top: -6.5px;
-	}
-		/* 列車の赤枠の強調 上向きの列車用 */
-		#stationList .ressha-icon.up .ressha-animation {
-			top: -21px;
+								pointer-events: none;
 		}
+
 		/* 列車の赤枠の強調 点滅用 */
 		#stationList .ressha-icon .ressha-animation.hidden {
 			display: none;
