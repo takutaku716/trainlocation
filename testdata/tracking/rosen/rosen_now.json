@@ -1,0 +1,11 @@
+{
+  "lines": [
+    { "rosen": "01", "maxChien": 0 },
+    { "rosen": "02", "maxChien": 12 },
+    { "rosen": "05", "maxChien": 0 },
+    { "rosen": "07", "maxChien": 0 },
+    { "rosen": "09", "maxChien": 0 },
+    { "rosen": "13", "maxChien": 16 },
+    { "rosen": "15", "maxChien": 0 }
+  ]
+}

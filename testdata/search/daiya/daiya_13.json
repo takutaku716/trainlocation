@@ -1,0 +1,95 @@
+{
+  "today": [
+    {
+      "cbango": "4001D",
+      "name": "\u304a\u304a\u305e\u30891\u53f7",
+      "type": "1",
+      "shuEkiKey": "360",
+      "ryosu": "5",
+      "stations": [
+        { "key": "091", "time": "06:48" },
+        { "key": "235", "time": "06:57" },
+        { "key": "245", "time": "07:12" },
+        { "key": "325", "time": "08:41" },
+        { "key": "335", "time": "09:27" },
+        { "key": "360", "time": "10:53" }
+      ]
+    },
+    {
+      "cbango": "4002D",
+      "name": "\u304a\u304a\u305e\u30892\u53f7",
+      "type": "1",
+      "shuEkiKey": "091",
+      "ryosu": "5",
+      "stations": [
+        { "key": "360", "time": "11:13" },
+        { "key": "335", "time": "12:39" },
+        { "key": "325", "time": "13:21" },
+        { "key": "245", "time": "14:44" },
+        { "key": "235", "time": "15:00" },
+        { "key": "091", "time": "15:12" }
+      ]
+    },
+    {
+      "cbango": "4003D",
+      "name": "\u304a\u304a\u305e\u30893\u53f7",
+      "type": "1",
+      "shuEkiKey": "360",
+      "ryosu": "5",
+      "stations": [
+        { "key": "091", "time": "08:22" },
+        { "key": "245", "time": "08:46" },
+        { "key": "325", "time": "10:15" },
+        { "key": "335", "time": "11:02" },
+        { "key": "360", "time": "12:28" }
+      ]
+    },
+    {
+      "cbango": "4004D",
+      "name": "\u304a\u304a\u305e\u30894\u53f7",
+      "type": "1",
+      "shuEkiKey": "091",
+      "ryosu": "5",
+      "stations": [
+        { "key": "360", "time": "13:32" },
+        { "key": "335", "time": "14:58" },
+        { "key": "325", "time": "15:40" },
+        { "key": "245", "time": "17:01" },
+        { "key": "091", "time": "17:30" }
+      ]
+    },
+    {
+      "cbango": "51D",
+      "name": "\u5b97\u8c37",
+      "type": "1",
+      "shuEkiKey": "118",
+      "ryosu": "4",
+      "stations": [
+        { "key": "091", "time": "07:30" },
+        { "key": "118", "time": "09:05" }
+      ]
+    },
+    {
+      "cbango": "52D",
+      "name": "\u5b97\u8c37",
+      "type": "1",
+      "shuEkiKey": "091",
+      "ryosu": "4",
+      "stations": [
+        { "key": "118", "time": "18:30" },
+        { "key": "091", "time": "20:10" }
+      ]
+    },
+    {
+      "cbango": "2523D",
+      "name": "\u666e\u901a\u5217\u8eca",
+      "type": "3",
+      "shuEkiKey": "360",
+      "ryosu": "2",
+      "stations": [
+        { "key": "335", "time": "10:26" },
+        { "key": "360", "time": "13:12" }
+      ]
+    }
+  ]
+}
