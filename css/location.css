@@ -154,7 +154,7 @@ header {
 		.sub-header .sub-header-contents .maintitle {
 			font-weight: bold;
 			font-size: 16px;
-			color: #444;
+			color: #fff;
 		}
 
 			.sub-header .sub-header-contents .maintitle span {
@@ -222,7 +222,7 @@ header {
 	/* サブヘッダー内のボタン */
 	.sub-header .header-btn {
 		border-radius: 5px;
-		background-color: #444;
+		background-color: #fff;
 		color: #fff;
 		cursor: pointer;
 		font-size: 12px;
@@ -805,13 +805,13 @@ header {
 
 						/* 列車アイコン内の列番 */
 						#stationList .eki-panel .ressha-contents .ressha-icon .cbango-label {
-			color: #444;
-			font-size: 9px;
+			color: #fff;
+			font-size: 8px;
 			font-weight: bold;
 			line-height: 1;
 			text-align: center;
 			white-space: nowrap;
-			margin-top: -4px;
+			margin-top: -5px;
 			pointer-events: none;
 		}
 						/* 蛻苓ｻ翫い繧､繧ｳ繝ｳ蜀・・驕・ｌ */
@@ -884,7 +884,7 @@ header {
 							}
 							/* 列車アイコン内の列車種別 (臨時列車)*/
 							#stationList .eki-panel .ressha-contents .ressha-icon .ressha[data-ressha_type='6'] .ressha-sbt {
-								color: #444;
+								color: #fff;
 							}
 							/* 英字の場合 */
 							[data-lang='en'] #stationList .eki-panel .ressha-contents .ressha-icon .ressha-sbt {
@@ -1720,13 +1720,13 @@ header {
 
 							/* 藤城線の列車アイコン内の列番 */
 							#stationList .hoka-line-area .fujishiro-panel .ressha-icon.up .cbango-label {
-			color: #444;
-			font-size: 9px;
+			color: #fff;
+			font-size: 8px;
 			font-weight: bold;
 			line-height: 1;
 			text-align: center;
 			white-space: nowrap;
-			margin-top: -4px;
+			margin-top: -5px;
 			pointer-events: none;
 		}
 
@@ -1786,7 +1786,7 @@ header {
 								}
 									/* 列車アイコン内の列車種別 (臨時列車)*/
 									#stationList .hoka-line-area .fujishiro-panel .ressha-icon .ressha[data-ressha_type='6'] .ressha-sbt {
-										color: #444;
+										color: #fff;
 									}
 									/* 英字の場合 */
 									[data-lang='en'] #stationList .hoka-line-area .fujishiro-panel .ressha-icon .ressha-sbt {
@@ -2220,7 +2220,7 @@ section#resshaDetail {
 		section#resshaDetail[dataResshaTypeColor='6'] .dialog #resshaTypeName {
 			background-color: #fff;
 			border: #444 solid 2px;
-			color: #444;
+			color: #fff;
 			min-width: 88px;
 			width: 88px;
 		}
@@ -2714,7 +2714,7 @@ section#trainSearchDetail {
 			}
 			section#trainSearchDetail .dialog .train-search-empty {
 				border: 1px solid #ccc;
-				color: #444;
+				color: #fff;
 				padding: 12px;
 			}
 			section#trainSearchDetail .dialog .express-train-contents {
@@ -3067,6 +3067,12 @@ section#refreshSettingDetail {
 	}
 }
 @media (max-width:550px) {
+	#stationList .eki-panel .ressha-contents .ressha-icon .cbango-label,
+	#stationList .hoka-line-area .fujishiro-panel .ressha-icon.up .cbango-label {
+		font-size: 8px;
+		margin-top: -1px;
+	}
+
 	/* 別路線のリンク 追分駅 */
 	#stationList .eki-panel.oiwake .hoka-rosen-link {
 		top: 18px;
