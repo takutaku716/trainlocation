@@ -70,6 +70,7 @@ $(function ($) {
 						});
 						// ｢使い方｣ボックスを開く。
 						showGuideDetail();
+                        update_guide_test_mode_button();
 						// ｢ご利用上の注意｣を埋め込み表示する。
 						if ($("#guideDetailAttention").length) {
 							// ｢ご利用上の注意｣HTMLのURLを算出する。
@@ -85,6 +86,7 @@ $(function ($) {
 				} else {
 					// ｢使い方｣ボックスを開く。
 					showGuideDetail();
+                        update_guide_test_mode_button();
 				}
 				// ｢使い方｣ボックスを開く。
 				function showGuideDetail() {
@@ -187,6 +189,7 @@ $(document).on("click", "#commonOshirase div .toggle", function() {
     });
 
     ensure_test_mode_ui();
+    update_guide_test_mode_button();
     start_test_mode_layout_observer();
     $(window).on("resize", update_test_mode_exit_button_position);
 });
@@ -219,6 +222,18 @@ function get_test_mode_labels() {
 			"kr": "EXIT"
 		})[lang] || "EXIT"
 	};
+}
+
+function enable_test_mode() {
+	const url = new URL(location.href);
+	url.searchParams.set("test", "1");
+	location.href = url.pathname + "?" + url.searchParams.toString() + url.hash;
+}
+
+function update_guide_test_mode_button() {
+	const button = $("#guideTestModeEntry");
+	if (!button.length) return;
+	button.toggle(!is_test_mode());
 }
 
 function end_test_mode() {
@@ -274,7 +289,11 @@ function start_test_mode_layout_observer() {
 }
 
 $(document).on("click", "#commonTestModeExitBtn", function() {
-	end_test_mode();
+    end_test_mode();
+});
+
+$(document).on("click", "#guideTestModeBtn", function() {
+    enable_test_mode();
 });
 function get_error_message() {
 	let lang = document.documentElement.dataset.lang;
