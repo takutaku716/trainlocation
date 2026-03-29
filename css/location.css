@@ -804,6 +804,17 @@ header {
 								}
 
 						/* 列車アイコン内の遅れ */
+						#stationList .eki-panel .ressha-contents .ressha-icon .cbango-label {
+			color: #fff;
+			font-size: 10px;
+			font-weight: bold;
+			line-height: 1.1;
+			text-align: center;
+			text-shadow: 0 0 2px rgb(0 0 0 / 80%);
+			white-space: nowrap;
+		}
+
+						/* 蛻苓ｻ翫い繧､繧ｳ繝ｳ蜀・・驕・ｌ */
 						#stationList .eki-panel .ressha-contents .ressha-icon .okure-label {
 							color: red;
 							font-size: 11px;
@@ -1706,6 +1717,17 @@ header {
 							}
 
 							/* 藤城線の列車アイコン内の遅れ */
+							#stationList .hoka-line-area .fujishiro-panel .ressha-icon.up .cbango-label {
+							color: #fff;
+							font-size: 10px;
+							font-weight: bold;
+							line-height: 1.1;
+							text-align: center;
+							text-shadow: 0 0 2px rgb(0 0 0 / 80%);
+							white-space: nowrap;
+						}
+
+							/* 阯､蝓守ｷ壹・蛻苓ｻ翫い繧､繧ｳ繝ｳ蜀・・驕・ｌ */
 							#stationList .hoka-line-area .fujishiro-panel .ressha-icon.up .okure-label {
 								color: red;
 								font-size: 10.5px;
