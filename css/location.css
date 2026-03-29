@@ -808,20 +808,12 @@ header {
 			color: #fff;
 			font-size: 10px;
 			font-weight: bold;
-			line-height: 1.1;
+			line-height: 1;
 			text-align: center;
-			text-shadow: 0 0 2px rgb(0 0 0 / 80%);
 			white-space: nowrap;
+			margin-top: -2px;
+			pointer-events: none;
 		}
-							/* 列車アイコン 下り列車用の列番 */
-							#stationList .eki-panel .ressha-contents .ressha-icon:not(.up) .cbango-label {
-								position: absolute;
-								top: 12px;
-								left: 0;
-								width: 52px;
-								z-index: 1;
-								pointer-events: none;
-							}
 						/* 蛻苓ｻ翫い繧､繧ｳ繝ｳ蜀・・驕・ｌ */
 						#stationList .eki-panel .ressha-contents .ressha-icon .okure-label {
 							color: red;
@@ -852,8 +844,10 @@ header {
 							background-repeat: no-repeat;
 							background-size: 52px;
 							display: flex;
+							flex-direction: column;
+							align-items: center;
 							height: 52px;
-							justify-content: center;
+							justify-content: flex-start;
 							width: 52px;
 						}
 						/* 列車アイコン（赤） 特急・ライナー*/
@@ -1724,16 +1718,17 @@ header {
 								margin-bottom: 19px;
 							}
 
-							/* 藤城線の列車アイコン内の遅れ */
+							/* 藤城線の列車アイコン内の列番 */
 							#stationList .hoka-line-area .fujishiro-panel .ressha-icon.up .cbango-label {
-							color: #fff;
-							font-size: 10px;
-							font-weight: bold;
-							line-height: 1.1;
-							text-align: center;
-							text-shadow: 0 0 2px rgb(0 0 0 / 80%);
-							white-space: nowrap;
-						}
+			color: #fff;
+			font-size: 10px;
+			font-weight: bold;
+			line-height: 1;
+			text-align: center;
+			white-space: nowrap;
+			margin-top: -2px;
+			pointer-events: none;
+		}
 
 							/* 阯､蝓守ｷ壹・蛻苓ｻ翫い繧､繧ｳ繝ｳ蜀・・驕・ｌ */
 							#stationList .hoka-line-area .fujishiro-panel .ressha-icon.up .okure-label {
@@ -1751,8 +1746,10 @@ header {
 								background-repeat: no-repeat;
 								background-size: 52px;
 								display: flex;
+								flex-direction: column;
+								align-items: center;
 								height: 52px;
-								justify-content: center;
+								justify-content: flex-start;
 								width: 52px;
 							}
 								/* 列車アイコン（赤） 特急・ライナー*/
