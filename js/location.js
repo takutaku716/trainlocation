@@ -36,6 +36,7 @@ let autoRefreshRosen = "";
 // 列車再描画用マスタのキャッシュ
 let cachedResshaTypeData = null;
 let cachedEkiData = null;
+let cachedLocationMasterData = null;
 // 自動更新設定
 let locationAutoRefreshEnabled = false;
 let locationAutoRefreshInterval = LOCATION_AUTO_REFRESH_DEFAULT_INTERVAL;
@@ -2396,6 +2397,7 @@ function load_train_search_data() {
 		.catch(() => ({ "trains": [] }));
 	const typePromise = cachedResshaTypeData ? Promise.resolve(cachedResshaTypeData) : jqxhr_to_promise($.getJSON("https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/webunkou/json/master/ressha_type_master.json?" + mstNow));
 	const ekiPromise = cachedEkiData ? Promise.resolve(cachedEkiData) : jqxhr_to_promise($.getJSON("https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/webunkou/json/master/eki_master.json?" + mstNow));
+	const locationMasterPromise = cachedLocationMasterData ? Promise.resolve(cachedLocationMasterData) : jqxhr_to_promise($.getJSON("./original/location_master.json")).catch(() => ({}));
 	const locationPromises = searchSourceRosens.map((rosen) =>
 		jqxhr_to_promise(get_location_now_request(rosen, trnNow))
 			.then((data) => ({ "rosen": rosen, "data": data }))
@@ -2413,11 +2415,13 @@ function load_train_search_data() {
 		expressNowPromise,
 		typePromise,
 		ekiPromise,
+		locationMasterPromise,
 		Promise.all(daiyaPromises),
 		Promise.all(locationPromises)
-	]).then(([expressMaster, expressCore, expressNowData, typeData, ekiData, daiyaDataList, locationDataList]) => {
+	]).then(([expressMaster, expressCore, expressNowData, typeData, ekiData, locationMasterData, daiyaDataList, locationDataList]) => {
 		cachedResshaTypeData = typeData;
 		cachedEkiData = ekiData;
+		cachedLocationMasterData = locationMasterData || {};
 		const daiyaMap = new Map();
 		const expressNowMap = new Map();
 		const expressCoreTrainMap = new Map();
@@ -2485,6 +2489,7 @@ function load_train_search_data() {
 					"value": targetRosen,
 					"name": displayName,
 					"status": getTrainChienText(train),
+					"currentSection": get_train_search_current_section(train, locationMasterData),
 					"baseName": nameInfo.baseName,
 					"goNumber": nameInfo.goNumber,
 					"hasCustomName": !!nameInfo.baseName,
@@ -2543,6 +2548,7 @@ function load_train_search_data() {
 				"value": "",
 				"name": displayName,
 				"status": "この列車は現在走行していません。",
+				"currentSection": "",
 				"baseName": nameInfo.baseName,
 				"goNumber": nameInfo.goNumber,
 				"hasCustomName": !!nameInfo.baseName,
@@ -2633,6 +2639,13 @@ function build_train_search_display_name(train, daiya, typeData, ekiData) {
 	if (displayName) return displayName;
 	if (daiya && daiya.name) return (daiya.name + destText).trim();
 	return String(train.cbango || "");
+}
+
+function get_train_search_current_section(train, locationMasterData) {
+	const pos = String((train && train.pos) || "");
+	if (!pos || !locationMasterData || typeof locationMasterData !== "object") return "";
+	const section = locationMasterData[pos];
+	return typeof section === "string" ? section.trim() : "";
 }
 
 /*
@@ -2805,6 +2818,7 @@ function build_train_search_result_items(results) {
 		const nameParts = split_train_search_result_name(train.name);
 		const titleText = train.baseName || nameParts.title || train.name;
 		const numberText = train.baseName && train.goNumber ? train.goNumber + "号" : "";
+		const currentSection = train.isRunning && train.currentSection ? train.currentSection : "";
 		html += "<div class='express-train-contents train-search-result-item' cbango='" + escape_train_search_html(train.cbango) + "' type='" + escape_train_search_html(train.type) + "' value='" + escape_train_search_html(train.value) + "' data-running='" + (train.isRunning === false ? "0" : "1") + "'>";
 		html += "<div class='search-result-main'>";
 		html += "<span class='search-result-cbango'>" + escape_train_search_html(train.cbango) + "</span>";
@@ -2816,7 +2830,12 @@ function build_train_search_result_items(results) {
 		html += "</span>";
 		html += "<span class='search-result-destination'>" + escape_train_search_html(nameParts.destination) + "</span>";
 		html += "</div>";
-		html += "<span class='unkou-label" + (train.status && train.status.indexOf("遅れ") >= 0 ? " chien" : "") + "'>" + escape_train_search_html(train.status || "") + "</span>";
+		html += "<span class='unkou-label" + (train.status && train.status.indexOf("遅れ") >= 0 ? " chien" : "") + "'>";
+		html += "<span class='search-status-text'>" + escape_train_search_html(train.status || "") + "</span>";
+		if (currentSection) {
+			html += "<span class='search-status-section'>" + escape_train_search_html(currentSection) + "</span>";
+		}
+		html += "</span>";
 		html += "</div>";
 	});
 	return html;
