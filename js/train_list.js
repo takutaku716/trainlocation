@@ -57,6 +57,14 @@ function initialize_train_list_selector() {
 		const rosen = $(this).val() || TRAIN_LIST_DEFAULT_ROSEN;
 		location.hash = "rosen=" + rosen;
 	});
+
+	render_train_list_rosen_buttons();
+	$("#trainListPrevBtn").off("click").on("click", function() {
+		move_train_list_rosen(-1);
+	});
+	$("#trainListNextBtn").off("click").on("click", function() {
+		move_train_list_rosen(1);
+	});
 }
 
 function render_train_list_page() {
@@ -69,6 +77,7 @@ function render_train_list_page() {
 
 	update_train_list_header(rosen);
 	$("#trainListRosenSelect").val(rosen);
+	update_train_list_rosen_buttons(rosen);
 	$("#trainListUpBody").empty();
 	$("#trainListDownBody").empty();
 	$("#message").hide().empty();
@@ -189,6 +198,44 @@ function render_train_list_tables(rows, rosen) {
 
 	render_train_list_table("#trainListUpBody", upRows, rosen);
 	render_train_list_table("#trainListDownBody", downRows, rosen);
+}
+
+function render_train_list_rosen_buttons() {
+	const wrap = $("#trainListRosenButtons");
+	if (!wrap.length) return;
+	wrap.empty();
+
+	TRAIN_LIST_DISPLAY_ROSENS.forEach(function(rosen) {
+		const master = find_train_list_rosen_master(rosen);
+		if (!master) return;
+		const button = $("<button type='button' class='train-list-rosen-btn'></button>");
+		button.attr("data-rosen", rosen);
+		button.append($("<span class='name'></span>").text(master.rosenName.ja));
+		button.append($("<span class='range'></span>").text(strip_train_list_kukan_brackets(master.kukanName.ja)));
+		button.on("click", function() {
+			location.hash = "rosen=" + rosen;
+		});
+		wrap.append(button);
+	});
+}
+
+function update_train_list_rosen_buttons(currentRosen) {
+	$("#trainListRosenButtons .train-list-rosen-btn").each(function() {
+		$(this).toggleClass("active", $(this).attr("data-rosen") === currentRosen);
+	});
+}
+
+function strip_train_list_kukan_brackets(text) {
+	return String(text || "").replace(/^\[/, "").replace(/\]$/, "");
+}
+
+function move_train_list_rosen(step) {
+	const current = get_train_list_param_rosen();
+	const index = TRAIN_LIST_DISPLAY_ROSENS.indexOf(current);
+	const nextIndex = index < 0
+		? 0
+		: (index + step + TRAIN_LIST_DISPLAY_ROSENS.length) % TRAIN_LIST_DISPLAY_ROSENS.length;
+	location.hash = "rosen=" + TRAIN_LIST_DISPLAY_ROSENS[nextIndex];
 }
 
 function render_train_list_table(selector, rows, rosen) {
