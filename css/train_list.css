@@ -103,6 +103,7 @@
 	background: linear-gradient(#a7a7a7, #646464);
 	border: 1px solid #3d3d3d;
 	color: #111;
+	cursor: pointer;
 	font-size: 18px;
 	font-weight: bold;
 }
@@ -121,7 +122,6 @@
 }
 
 .train-list-lineboard-nav button {
-	cursor: pointer;
 	height: 42px;
 }
 
