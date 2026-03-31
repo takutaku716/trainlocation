@@ -5,12 +5,22 @@ const TRAIN_LIST_SOURCE_MAP = {
 	"53": ["02", "13"]
 };
 const TRAIN_LIST_DEFAULT_ROSEN = "51";
+const TRAIN_LIST_AUTO_REFRESH_INTERVAL = 15000;
 
 let trainListRosenMaster = [];
 let trainListLocationMaster = {};
+let trainListAutoRefreshTimer = null;
+let trainListCommMarkTimer = null;
 
 window.onload = function() {
 	load_train_list_page();
+	document.addEventListener("visibilitychange", function() {
+		if (document.hidden) {
+			stop_train_list_auto_refresh();
+		} else {
+			render_train_list_page();
+		}
+	});
 };
 
 window.onhashchange = function() {
@@ -85,6 +95,7 @@ function render_train_list_page() {
 	$("#trainListDownBody").empty();
 	$("#message").hide().empty();
 
+	show_train_list_comm_mark();
 	$("#loaderBg").fadeIn("fast").css("display", "flex");
 
 	$.when.apply($, requests)
@@ -99,7 +110,32 @@ function render_train_list_page() {
 		})
 		.always(function() {
 			$("#loaderBg").fadeOut("fast");
+			start_train_list_auto_refresh();
 		});
+}
+
+function start_train_list_auto_refresh() {
+	stop_train_list_auto_refresh();
+	if (document.hidden) return;
+	trainListAutoRefreshTimer = window.setTimeout(function() {
+		render_train_list_page();
+	}, TRAIN_LIST_AUTO_REFRESH_INTERVAL);
+}
+
+function stop_train_list_auto_refresh() {
+	if (!trainListAutoRefreshTimer) return;
+	window.clearTimeout(trainListAutoRefreshTimer);
+	trainListAutoRefreshTimer = null;
+}
+
+function show_train_list_comm_mark() {
+	const mark = $("#trainListCommMark");
+	if (!mark.length) return;
+	mark.addClass("active");
+	if (trainListCommMarkTimer) window.clearTimeout(trainListCommMarkTimer);
+	trainListCommMarkTimer = window.setTimeout(function() {
+		mark.removeClass("active");
+	}, 900);
 }
 
 function normalize_train_list_request_args(doneArguments, requestCount) {
