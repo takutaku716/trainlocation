@@ -65,6 +65,9 @@ function initialize_train_list_selector() {
 	$("#trainListNextBtn").off("click").on("click", function() {
 		move_train_list_rosen(1);
 	});
+	$("#trainListLineViewBtn").off("click").on("click", function() {
+		location.href = build_page_url("./location.html", "rosen=" + get_train_list_param_rosen());
+	});
 }
 
 function render_train_list_page() {
