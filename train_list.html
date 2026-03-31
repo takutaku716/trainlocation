@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ja" data-lang="ja">
+<head>
+	<meta http-equiv="Pragma" content="no-cache">
+	<meta http-equiv="Cache-Control" content="no-cache">
+	<meta http-equiv="Expires" content="0">
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title>列車走行位置 | 在線一覧</title>
+	<meta name="description" content="JR北海道 列車走行位置の在線一覧ページです。">
+	<script>
+		fetch("./mainte/location_maintenance.json?" + (Date.now() >>> 16)).then(response => response.json()).then(json => {
+			if (json.status) window.location.replace("./mainte/location_maintenance.html");
+		});
+	</script>
+	<link rel="stylesheet" href="./css/common_header.css" type="text/css" media="screen,print">
+	<link rel="apple-touch-icon" href="https://www3.jrhokkaido.co.jp/apple-touch-icon.png">
+	<link rel="icon" href="https://www3.jrhokkaido.co.jp/favicon.ico" sizes="any">
+	<link rel="icon" type="image/png" href="https://www3.jrhokkaido.co.jp/favicon.png">
+	<link rel="icon" type="image/svg+xml" href="https://www3.jrhokkaido.co.jp/favicon.svg">
+	<link rel="stylesheet" href="./css/common.css" type="text/css" media="screen,print">
+	<link rel="stylesheet" href="./css/common_guide.css" type="text/css" media="screen,print">
+	<link rel="stylesheet" href="./css/train_list.css" type="text/css" media="screen,print">
+	<script src="./js/jquery-3.6.4.min.js"></script>
+	<script src="./js/common.js"></script>
+	<script src="./js/common_location.js"></script>
+	<script src="./js/train_list.js"></script>
+	<script type="text/javascript" src="./common/js/ga.js"></script>
+</head>
+<body>
+	<header></header>
+
+	<div id="commonMainDiv" class="train-list-page">
+		<noscript>
+			<div>
+				<div>
+					このページではJavaScriptを使用しています。<br>
+					JavaScriptを有効にしてご利用ください。<br>
+				</div>
+			</div>
+		</noscript>
+
+		<h1 class="common-maintitle">
+			<span class="sub">現在走行中の列車</span>
+			<span class="main">在線一覧</span>
+		</h1>
+
+		<div id="message" hidden></div>
+
+		<section id="trainListSection">
+			<div class="train-list-controls">
+				<span class="label">線区</span>
+				<select id="trainListRosenSelect"></select>
+			</div>
+			<div class="train-list-lineboard">
+				<div id="trainListCommMark" class="train-list-lineboard-mark">＊</div>
+				<div id="trainListRosenButtons" class="train-list-rosen-grid"></div>
+				<div class="train-list-lineboard-side">
+					<button id="trainListLineViewBtn" type="button" class="train-list-lineboard-mode">線形</button>
+					<div class="train-list-lineboard-nav">
+						<button id="trainListPrevBtn" type="button" aria-label="前の線区">◀</button>
+						<button id="trainListNextBtn" type="button" aria-label="次の線区">▶</button>
+					</div>
+				</div>
+			</div>
+			<div id="trainListTitle" class="train-list-title"></div>
+			<div class="train-list-panels">
+				<section class="train-list-panel">
+					<h2 id="trainListUpCount" class="train-list-panel-title">上り(0本)</h2>
+					<table class="train-list-table">
+						<thead>
+							<tr>
+								<th style="width: 24%;">列番</th>
+								<th style="width: 14%;">遅延</th>
+								<th>在線位置</th>
+							</tr>
+						</thead>
+						<tbody id="trainListUpBody"></tbody>
+					</table>
+				</section>
+				<section class="train-list-panel">
+					<h2 id="trainListDownCount" class="train-list-panel-title">下り(0本)</h2>
+					<table class="train-list-table">
+						<thead>
+							<tr>
+								<th style="width: 24%;">列番</th>
+								<th style="width: 14%;">遅延</th>
+								<th>在線位置</th>
+							</tr>
+						</thead>
+						<tbody id="trainListDownBody"></tbody>
+					</table>
+				</section>
+			</div>
+		</section>
+	</div>
+
+	<section id="guideDetail"></section>
+
+	<div id="loaderBg">
+		<div class="loader"></div>
+	</div>
+
+	<p id="commonPageTop"><span class="common-arrow common-up"></span></p>
+</body>
+</html>

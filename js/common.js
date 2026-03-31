@@ -21,6 +21,11 @@ $(function ($) {
 			// ヘッダーに「現在日時」を表示する。
 			const timestamp = $("header").data("timestamp");
 			if (timestamp) $("#timestamp").text(timestamp);
+			if ($("#headerTrainListLink").length) {
+				const currentRosen = get_current_hash_rosen();
+				const targetHash = currentRosen ? "rosen=" + currentRosen : "";
+				$("#headerTrainListLink").attr("href", build_page_url("./train_list.html", targetHash));
+			}
 			ensure_test_mode_ui();
 			start_test_mode_layout_observer();
 
@@ -228,6 +233,14 @@ function enable_test_mode() {
 	const url = new URL(location.href);
 	url.searchParams.set("test", "1");
 	location.href = url.pathname + "?" + url.searchParams.toString() + url.hash;
+}
+
+function get_current_hash_rosen() {
+	const params = location.hash.slice(1).split("&");
+	if (params.length > 0 && params[0].indexOf("rosen=") >= 0) {
+		return params[0].slice(-2);
+	}
+	return "";
 }
 
 function update_guide_test_mode_button() {
