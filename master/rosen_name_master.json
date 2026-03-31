@@ -255,11 +255,11 @@
             "kr": "네무로선"
         },
         "kukanName": {
-            "ja": "[滝川～新得間]",
-            "en": "[Takikawa～Shintoku]",
-            "tc": "[瀧川～新得]",
-            "sc": "[泷川～新得]",
-            "kr": "[다키카와～신토쿠]"
+            "ja": "[滝川～富良野間]",
+            "en": "[Takikawa～Furano]",
+            "tc": "[瀧川～富良野]",
+            "sc": "[泷川～富良野]",
+            "kr": "[다키카와～후라노]"
         },
         "kigo": "T",
         "area": "5"
@@ -304,7 +304,7 @@
     {
         "rosen": "52",
         "rosenName": {
-            "ja": "千歳・室蘭・函館線",
+            "ja": "千歳線・室蘭線・函館線",
             "en": "ChitoseLine/Muroran Line/Hakodate Line",
             "tc": "千歲線・室蘭線・函館線",
             "sc": "千岁线・室兰线・函馆线",
@@ -323,7 +323,7 @@
     {
         "rosen": "53",
         "rosenName": {
-            "ja": "千歳・石勝・根室線",
+            "ja": "千歳線・石勝線・根室線",
             "en": "Chitose Line/Sekisho Line/Nemuro Line",
             "tc": "千歲線・石勝線・根室線",
             "sc": "千岁线・石胜线・根室线",
