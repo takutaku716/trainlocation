@@ -50,6 +50,12 @@
 	display: flex;
 	font-size: 34px;
 	justify-content: center;
+	opacity: 0;
+	transition: opacity 0.15s ease;
+}
+
+.train-list-lineboard-mark.active {
+	opacity: 1;
 }
 
 .train-list-rosen-grid {
