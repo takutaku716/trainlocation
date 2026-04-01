@@ -92,8 +92,6 @@ function render_train_list_page() {
 	update_train_list_header(rosen);
 	$("#trainListRosenSelect").val(rosen);
 	update_train_list_rosen_buttons(rosen);
-	$("#trainListUpBody").empty();
-	$("#trainListDownBody").empty();
 	$("#message").hide().empty();
 	trainListPreservedScrollTop = $(window).scrollTop();
 
@@ -120,8 +118,14 @@ function render_train_list_page() {
 
 function restore_train_list_scroll() {
 	if (trainListPreservedScrollTop === null) return;
-	$(window).scrollTop(trainListPreservedScrollTop);
+	const scrollTop = trainListPreservedScrollTop;
 	trainListPreservedScrollTop = null;
+	window.requestAnimationFrame(function() {
+		window.scrollTo(0, scrollTop);
+		window.requestAnimationFrame(function() {
+			window.scrollTo(0, scrollTop);
+		});
+	});
 }
 
 function start_train_list_auto_refresh() {
