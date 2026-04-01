@@ -192,6 +192,8 @@
 		<path data-key="48" d="M420 195 L385 160" data-nonService="1"/>
 		<!-- 日高線：苫小牧～鵡川 -->
 		<path data-key="49" d="M180 370 L180 395" data-nonService="1"/>
+		<!-- 留萌線：深川～石狩沼田 -->
+		<path data-key="50" d="M230 205 L205 192.5" data-nonService="1"/>
 		<!-- 石北線：新旭川～上川 -->
 		<path data-key="51" d="M230 160 L265 160"/>
 		<!-- 石北線：上川～遠軽 -->
@@ -500,6 +502,11 @@
 		<g data-key="411">
 			<circle class="non-service" cx="180" cy="395"/>
 			<text class="left middle non-service" x="187" y="395">鵡川</text>
+		</g>
+		<!-- 石狩沼田 -->
+		<g data-key="439">
+			<circle class="non-service" cx="205" cy="192.5"/>
+			<text class="right middle non-service" x="198" y="192.5">石狩沼田</text>
 		</g>
 		<!-- 上川 -->
 		<a xlink:href="../location.html#rosen=12&amp;id=469" target="_top">

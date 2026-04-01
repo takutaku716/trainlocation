@@ -11,6 +11,7 @@ let trainListRosenMaster = [];
 let trainListLocationMaster = {};
 let trainListAutoRefreshTimer = null;
 let trainListCommMarkTimer = null;
+let trainListPreservedScrollTop = null;
 
 window.onload = function() {
 	load_train_list_page();
@@ -91,9 +92,8 @@ function render_train_list_page() {
 	update_train_list_header(rosen);
 	$("#trainListRosenSelect").val(rosen);
 	update_train_list_rosen_buttons(rosen);
-	$("#trainListUpBody").empty();
-	$("#trainListDownBody").empty();
 	$("#message").hide().empty();
+	trainListPreservedScrollTop = $(window).scrollTop();
 
 	show_train_list_comm_mark();
 	$("#loaderBg").fadeIn("fast").css("display", "flex");
@@ -103,15 +103,29 @@ function render_train_list_page() {
 			const args = normalize_train_list_request_args(arguments, requests.length);
 			const rows = merge_train_list_rows(args, sourceRosens);
 			render_train_list_tables(rows, rosen);
+			restore_train_list_scroll();
 		})
 		.fail(function() {
 			const errormessage = "<h2 class='msg-bg'>" + get_error_message() + "</h2>";
 			$("#message").html(errormessage).show();
+			restore_train_list_scroll();
 		})
 		.always(function() {
 			$("#loaderBg").fadeOut("fast");
 			start_train_list_auto_refresh();
 		});
+}
+
+function restore_train_list_scroll() {
+	if (trainListPreservedScrollTop === null) return;
+	const scrollTop = trainListPreservedScrollTop;
+	trainListPreservedScrollTop = null;
+	window.requestAnimationFrame(function() {
+		window.scrollTo(0, scrollTop);
+		window.requestAnimationFrame(function() {
+			window.scrollTo(0, scrollTop);
+		});
+	});
 }
 
 function start_train_list_auto_refresh() {
