@@ -1712,6 +1712,7 @@ header {
 							z-index: 18;
 							position: relative;
 							margin-top: 19px;
+							margin: 0 20px 0 34px;
 						}
 
 						/* 藤城線・本線（新函館北斗～仁山） 5つ目以降の列車アイコンを非表示　*/
@@ -1743,7 +1744,7 @@ header {
 			line-height: 1;
 			text-align: center;
 			white-space: nowrap;
-			margin-top: -5px;
+			margin-top: -1px;
 			pointer-events: none;
 		}
 							#stationList .hoka-line-area .fujishiro-panel .ressha-icon .icon-img.cbango-only .cbango-label {
