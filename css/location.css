@@ -814,6 +814,10 @@ header {
 			margin-top: -5px;
 			pointer-events: none;
 		}
+						#stationList .eki-panel .ressha-contents .ressha-icon .icon-img.cbango-only .cbango-label {
+							font-size: 9px;
+							margin-top: 20px;
+						}
 						/* 蛻苓ｻ翫い繧､繧ｳ繝ｳ蜀・・驕・ｌ */
 						#stationList .eki-panel .ressha-contents .ressha-icon .okure-label {
 							color: red;
@@ -1739,9 +1743,13 @@ header {
 			line-height: 1;
 			text-align: center;
 			white-space: nowrap;
-			margin-top: -5px;
+			margin-top: -1px;
 			pointer-events: none;
 		}
+							#stationList .hoka-line-area .fujishiro-panel .ressha-icon .icon-img.cbango-only .cbango-label {
+								font-size: 9px;
+								margin-top: 20px;
+							}
 
 							/* 阯､蝓守ｷ壹・蛻苓ｻ翫い繧､繧ｳ繝ｳ蜀・・驕・ｌ */
 							#stationList .hoka-line-area .fujishiro-panel .ressha-icon.up .okure-label {
@@ -3105,6 +3113,11 @@ section#refreshSettingDetail {
 	#stationList .hoka-line-area .fujishiro-panel .ressha-icon.up .cbango-label {
 		font-size: 8px;
 		margin-top: -1px;
+	}
+	#stationList .eki-panel .ressha-contents .ressha-icon .icon-img.cbango-only .cbango-label,
+	#stationList .hoka-line-area .fujishiro-panel .ressha-icon .icon-img.cbango-only .cbango-label {
+		font-size: 9px;
+		margin-top: 18px;
 	}
 
 	/* 別路線のリンク 追分駅 */
