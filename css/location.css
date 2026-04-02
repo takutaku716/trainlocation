@@ -811,7 +811,7 @@ header {
 			line-height: 1;
 			text-align: center;
 			white-space: nowrap;
-			margin-top: -1px;
+			margin-top: -5px;
 			pointer-events: none;
 		}
 						#stationList .eki-panel .ressha-contents .ressha-icon .icon-img.cbango-only .cbango-label {
@@ -1745,6 +1745,7 @@ header {
 			text-align: center;
 			white-space: nowrap;
 			margin-top: -5px;
+			width: 100%;
 			pointer-events: none;
 		}
 							#stationList .hoka-line-area .fujishiro-panel .ressha-icon .icon-img.cbango-only .cbango-label {
@@ -1806,6 +1807,8 @@ header {
 									font-size: 17px;
 									font-weight: bold;
 									margin-top: 6px;
+									width: 100%;
+									text-align: center;
 								}
 									/* 列車アイコン内の列車種別 (臨時列車)*/
 									#stationList .hoka-line-area .fujishiro-panel .ressha-icon .ressha[data-ressha_type='6'] .ressha-sbt {
@@ -3114,7 +3117,7 @@ section#refreshSettingDetail {
 	#stationList .eki-panel .ressha-contents .ressha-icon .cbango-label,
 	#stationList .hoka-line-area .fujishiro-panel .ressha-icon.up .cbango-label {
 		font-size: 8px;
-		margin-top: -1px;
+		margin-top: -5px;
 	}
 	#stationList .eki-panel .ressha-contents .ressha-icon .icon-img.cbango-only .cbango-label,
 	#stationList .hoka-line-area .fujishiro-panel .ressha-icon .icon-img.cbango-only .cbango-label {
