@@ -1806,6 +1806,14 @@ function create_html_up_ressha_icon(_nowRow, _typeData, _ekiData) {
 		objExclamation.setAttribute("alt", "");
 		objItem.appendChild(objExclamation);
 	}
+	// 抑止中のアイコンを設定
+	if (_nowRow.yokuStatus == 1 || _nowRow.yokuStatus == 2) {
+		let objSuppression = document.createElement("img");
+		objSuppression.classList.add("suppression");
+		objSuppression.setAttribute("src", "./images/home/suppression.svg");
+		objSuppression.setAttribute("alt", "");
+		objItem.appendChild(objSuppression);
+	}
 
 	// 列車詳細に表示する内容の設定
 	create_ressha_detail(objItem, _nowRow, _typeData, _ekiData);
@@ -1883,6 +1891,14 @@ function create_html_down_ressha_icon(_nowRow, _typeData, _ekiData) {
 		objExclamation.setAttribute("src", "./images/home/exclamation.svg");
 		objExclamation.setAttribute("alt", "");
 		objItem.appendChild(objExclamation);
+	}
+	// 抑止中のアイコンを設定
+	if (_nowRow.yokuStatus == 1 || _nowRow.yokuStatus == 2) {
+		let objSuppression = document.createElement("img");
+		objSuppression.classList.add("suppression");
+		objSuppression.setAttribute("src", "./images/home/suppression.svg");
+		objSuppression.setAttribute("alt", "");
+		objItem.appendChild(objSuppression);
 	}
 
 	// 列車詳細に表示する内容の設定
