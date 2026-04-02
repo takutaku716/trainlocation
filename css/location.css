@@ -1747,7 +1747,7 @@ header {
 			margin-top: -14px;
 			width: 100%;
 			position: relative;
-			left: 11px;
+			transform: translateX(11px);
 			pointer-events: none;
 		}
 							#stationList .hoka-line-area .fujishiro-panel .ressha-icon .icon-img.cbango-only .cbango-label {
@@ -1811,7 +1811,7 @@ header {
 									margin-top: 6px;
 									width: 100%;
 									position: relative;
-									left: 11px;
+									transform: translateX(11px);
 									text-align: center;
 								}
 									/* 列車アイコン内の列車種別 (臨時列車)*/
