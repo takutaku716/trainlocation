@@ -1772,6 +1772,7 @@ header {
 								align-items: center;
 								height: 52px;
 								justify-content: flex-start;
+								direction: ltr;
 								width: 52px;
 							}
 								/* 列車アイコン（赤） 特急・ライナー*/
