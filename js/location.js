@@ -1757,6 +1757,8 @@ function create_html_up_ressha_icon(_nowRow, _typeData, _ekiData) {
 			objSbt.setAttribute("sbt", type.typeSimple[lang]);
 		}
 		iconArea.appendChild(objSbt);
+	} else {
+		iconArea.classList.add("cbango-only");
 	}
 		objItem.appendChild(iconArea);
 
@@ -1861,6 +1863,8 @@ function create_html_down_ressha_icon(_nowRow, _typeData, _ekiData) {
 			objSbt.setAttribute("sbt", type.typeSimple[lang]);
 		}
 		iconArea.appendChild(objSbt);
+	} else {
+		iconArea.classList.add("cbango-only");
 	}
 		objItem.appendChild(iconArea);
 
