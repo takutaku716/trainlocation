@@ -1746,6 +1746,8 @@ header {
 			white-space: nowrap;
 			margin-top: -5px;
 			width: 100%;
+			position: relative;
+			left: 4px;
 			pointer-events: none;
 		}
 							#stationList .hoka-line-area .fujishiro-panel .ressha-icon .icon-img.cbango-only .cbango-label {
@@ -1808,6 +1810,8 @@ header {
 									font-weight: bold;
 									margin-top: 6px;
 									width: 100%;
+									position: relative;
+									left: 4px;
 									text-align: center;
 								}
 									/* 列車アイコン内の列車種別 (臨時列車)*/
