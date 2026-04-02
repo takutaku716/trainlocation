@@ -1711,6 +1711,7 @@ header {
 							width: 54px;
 							z-index: 18;
 							position: relative;
+							direction: rtl;
 							margin-top: 19px;
 						}
 
