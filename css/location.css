@@ -951,6 +951,19 @@ header {
 								top: -8px;
 							}
 
+						/* 列車アイコン内の抑止マーク */
+						#stationList .eki-panel .ressha-contents .ressha-icon .suppression {
+							position: absolute;
+							width: 28px;
+							top: 3px;
+							left: 38px;
+							z-index: 1;
+						}
+							/* 列車アイコン内の抑止マーク 上向きの列車用 */
+							#stationList .eki-panel .ressha-contents .ressha-icon.up .suppression {
+								top: -8px;
+							}
+
 		/* 縦の線路 */
 		#stationList .eki-panel .senro-img {
 			left: 0;
@@ -1824,6 +1837,15 @@ header {
 								width: 28px;
 								top: -8px;
 								right: 38px;
+								z-index: 1;
+							}
+
+							/* 列車アイコン内の抑止マーク */
+							#stationList .hoka-line-area .fujishiro-panel .ressha-icon .suppression {
+								position: absolute;
+								width: 28px;
+								top: -8px;
+								left: 38px;
 								z-index: 1;
 							}
 
