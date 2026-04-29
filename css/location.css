@@ -2886,6 +2886,31 @@ section#trainNumberListDetail {
 			overflow-y: auto;
 			padding: 15px;
 		}
+			section#trainNumberListDetail .dialog .train-number-list-filter {
+				display: flex;
+				gap: 8px;
+				margin: 0 10px 10px 10px;
+			}
+			section#trainNumberListDetail .dialog .train-number-list-filter-btn {
+				background: #fff;
+				border: 1px solid #8c5;
+				color: #333;
+				cursor: pointer;
+				font-size: 14px;
+				font-weight: bold;
+				min-width: 86px;
+				padding: 7px 12px;
+			}
+			section#trainNumberListDetail .dialog .train-number-list-filter-btn.active {
+				background: #5b3;
+				color: #fff;
+			}
+			section#trainNumberListDetail .dialog .train-number-list-filter-btn:hover {
+				background: #ffc;
+			}
+			section#trainNumberListDetail .dialog .train-number-list-filter-btn.active:hover {
+				background: #6c4;
+			}
 			section#trainNumberListDetail .dialog .train-number-list-info {
 				font-size: 14px;
 				margin: 0 10px 10px 10px;
@@ -3295,6 +3320,7 @@ section#refreshSettingDetail {
 	section#trainSearchDetail .dialog .train-search-form,
 	section#trainSearchDetail .dialog .train-search-result-info,
 	section#trainSearchDetail .dialog .train-search-result,
+	section#trainNumberListDetail .dialog .train-number-list-filter,
 	section#trainNumberListDetail .dialog .train-number-list-info,
 	section#trainNumberListDetail .dialog .train-number-list-body {
 		margin-left: 0;
