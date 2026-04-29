@@ -47,6 +47,8 @@ let cachedTrainSearchData = null;
 let trainSearchDataPromise = null;
 let cachedTrainSearchLoadedAt = 0;
 const TRAIN_SEARCH_CACHE_TTL = 30000;
+let trainNumberListRows = [];
+let trainNumberListFilter = "all";
 let preserveScrollAfterHashChange = false;
 let preservedScrollTop = 0;
 let suppressTrackScrollOnce = false;
@@ -376,6 +378,21 @@ $(function ($) {
 		close_train_search_dialog();
 	});
 
+	// 取得した列番一覧を表示
+	$(document).on("click", "#trainNumberListBtn", function() {
+		open_train_number_list_dialog();
+	});
+
+	$(document).on("click", "#trainNumberListDetail .train-number-list-filter-btn", function() {
+		trainNumberListFilter = $(this).attr("data-filter") || "all";
+		render_train_number_list_filtered();
+	});
+
+	// 取得列番一覧ダイアログを閉じる
+	$(document).on("click", "#trainNumberListDetail, #trainNumberListDetail .common-subtitle.header", function() {
+		close_train_number_list_dialog();
+	});
+
 	// 自動更新設定ダイアログを閉じる
 	$(document).on("click", "#refreshSettingDetail, #refreshSettingDetail .close", function() {
 		$("#refreshSettingDetail").fadeOut("fast");
@@ -421,13 +438,14 @@ $(function ($) {
 	$(window).on("resize", function() {
 		update_train_search_result_title_layout();
 	});
-	$(document).on("click", "#trainSearchResult .train-search-result-item", function(event) {
+	$(document).on("click", "#trainSearchResult .train-search-result-item, #trainNumberListBody .train-search-result-item", function(event) {
 		event.preventDefault();
 		event.stopImmediatePropagation();
 		const targetRosen = $(this).attr("value");
 		const cbango = $(this).attr("cbango");
 		const isRunning = $(this).attr("data-running") !== "0";
 		close_train_search_dialog();
+		close_train_number_list_dialog();
 		if (!isRunning) {
 			const searchTrain = find_train_search_result(cbango);
 			if (searchTrain && searchTrain.detailTrain) {
@@ -485,7 +503,7 @@ $(function ($) {
 		}
 	});
 
-	$(document).on("click", "#guideDetail .dialog, #searchDetail .dialog, #trainSearchDetail .dialog, #popupDetail .dialog, #refreshSettingDetail .dialog", function(event) {
+	$(document).on("click", "#guideDetail .dialog, #searchDetail .dialog, #trainSearchDetail .dialog, #trainNumberListDetail .dialog, #popupDetail .dialog, #refreshSettingDetail .dialog", function(event) {
 		event.stopPropagation();
 	});
 
@@ -987,7 +1005,7 @@ function restore_selected_train_marker(_follow = false) {
 
 function scroll_selected_train_into_view(_ressha) {
 	if (!_ressha || !_ressha.length) return;
-	if ($("#guideDetail").is(":visible") || $("#searchDetail").is(":visible") || $("#trainSearchDetail").is(":visible") || $("#popupDetail").is(":visible") || $("#refreshSettingDetail").is(":visible") || $("#resshaDetail").is(":visible") || $(".trainDetailDialog").is(":visible") || $("#oshiraseDetail").is(":visible")) {
+	if ($("#guideDetail").is(":visible") || $("#searchDetail").is(":visible") || $("#trainSearchDetail").is(":visible") || $("#trainNumberListDetail").is(":visible") || $("#popupDetail").is(":visible") || $("#refreshSettingDetail").is(":visible") || $("#resshaDetail").is(":visible") || $(".trainDetailDialog").is(":visible") || $("#oshiraseDetail").is(":visible")) {
 		return;
 	}
 	const currentScroll = $(window).scrollTop();
@@ -1246,7 +1264,7 @@ function set_responsive() {
 	let margin = 0;
 	let lang = document.documentElement.dataset.lang;
 	if (!(userAgent.indexOf('iPhone') > 0 || userAgent.indexOf('iPad') > 0 || userAgent.indexOf('Android') > 0 || userAgent.indexOf('Mobile') > 0 )) {
-		if ($("#guideDetail").is(":visible") || $("#searchDetail").is(":visible") || $("#trainSearchDetail").is(":visible") || $("#popupDetail").is(":visible") || $("#refreshSettingDetail").is(":visible") || $("#resshaDetail").is(":visible") || $("#oshiraseDetail").is(":visible")) {
+		if ($("#guideDetail").is(":visible") || $("#searchDetail").is(":visible") || $("#trainSearchDetail").is(":visible") || $("#trainNumberListDetail").is(":visible") || $("#popupDetail").is(":visible") || $("#refreshSettingDetail").is(":visible") || $("#resshaDetail").is(":visible") || $("#oshiraseDetail").is(":visible")) {
 			// いずれかのダイアログが表示されていた場合
 			margin = scrollbarWidth;
 		}
@@ -1256,6 +1274,7 @@ function set_responsive() {
 			$("#guideDetail .dialog").css("margin", "0px " + scrollbarWidth + "px 0px 0px");
 			$("#searchDetail .dialog").css("margin", "0px " + scrollbarWidth + "px 0px 0px");
 			$("#trainSearchDetail .dialog").css("margin", "0px " + scrollbarWidth + "px 0px 0px");
+			$("#trainNumberListDetail .dialog").css("margin", "0px " + scrollbarWidth + "px 0px 0px");
 			$("#popupDetail .dialog").css("margin", "0px " + scrollbarWidth + "px 0px 0px");
 			$("#refreshSettingDetail .dialog").css("margin", "0px " + scrollbarWidth + "px 0px 0px");
 			$("#resshaDetail .dialog").css("margin", "0px " + scrollbarWidth + "px 0px 0px");
@@ -1268,6 +1287,7 @@ function set_responsive() {
 			}
 			$("#searchDetail .dialog").css("marginLeft", scrollbarWidth + "px");
 			$("#trainSearchDetail .dialog").css("marginLeft", scrollbarWidth + "px");
+			$("#trainNumberListDetail .dialog").css("marginLeft", scrollbarWidth + "px");
 			$("#popupDetail .dialog").css("marginLeft", scrollbarWidth + "px");
 			$("#refreshSettingDetail .dialog").css("marginLeft", scrollbarWidth + "px");
 			$("#resshaDetail .dialog").css("marginLeft", scrollbarWidth + "px");
@@ -1287,6 +1307,7 @@ function set_responsive() {
 		$("#guideDetail .dialog").css("margin", "0px");
 		$("#searchDetail .dialog").css("margin", "0px");
 		$("#trainSearchDetail .dialog").css("margin", "0px");
+		$("#trainNumberListDetail .dialog").css("margin", "0px");
 		$("#popupDetail .dialog").css("margin", "0px");
 		$("#refreshSettingDetail .dialog").css("margin", "0px");
 		$("#resshaDetail .dialog").css("margin", "0px");
@@ -1313,7 +1334,7 @@ function set_responsive() {
 		if (lang == "ja") $(".sub-footer .sub-footer-contents.popup .sub-footer-unkou-msg").html("重要な<br>お知らせ");
 		// サイドメニュー内の折り畳みを閉じる。
 		toggle_close();
-		if (!($("#guideDetail").is(":visible") || $("#searchDetail").is(":visible") || $("#trainSearchDetail").is(":visible") || $("#popupDetail").is(":visible") || $("#refreshSettingDetail").is(":visible") || $("#resshaDetail").is(":visible") || $(".trainDetailDialog").is(":visible") || $("#oshiraseDetail").is(":visible"))) {
+		if (!($("#guideDetail").is(":visible") || $("#searchDetail").is(":visible") || $("#trainSearchDetail").is(":visible") || $("#trainNumberListDetail").is(":visible") || $("#popupDetail").is(":visible") || $("#refreshSettingDetail").is(":visible") || $("#resshaDetail").is(":visible") || $(".trainDetailDialog").is(":visible") || $("#oshiraseDetail").is(":visible"))) {
 			// ダイアログが表示されていない場合
 			// bodyのスクロールを有効にする。
 			set_scroll_show_side_menu();
@@ -1340,7 +1361,7 @@ function set_responsive() {
 		$(".sub-header").css("width", "calc(100% - " + margin + "px)");
 		$(".sub-footer .homen-footer-contents").css("width", "calc(100% - " + margin + "px)");
 		if (lang == "ja") $(".sub-footer .sub-footer-contents.popup .sub-footer-unkou-msg").html("重要なお知らせ");
-		if (!($("#guideDetail").is(":visible") || $("#searchDetail").is(":visible") || $("#trainSearchDetail").is(":visible") || $("#popupDetail").is(":visible") || $("#refreshSettingDetail").is(":visible") || $("#resshaDetail").is(":visible") || $(".trainDetailDialog").is(":visible") || $("#oshiraseDetail").is(":visible"))) {
+		if (!($("#guideDetail").is(":visible") || $("#searchDetail").is(":visible") || $("#trainSearchDetail").is(":visible") || $("#trainNumberListDetail").is(":visible") || $("#popupDetail").is(":visible") || $("#refreshSettingDetail").is(":visible") || $("#resshaDetail").is(":visible") || $(".trainDetailDialog").is(":visible") || $("#oshiraseDetail").is(":visible"))) {
 			// ダイアログが表示されていない場合
 			// bodyのスクロールを有効にする。
 			set_scroll_show_side_menu();
@@ -1757,6 +1778,8 @@ function create_html_up_ressha_icon(_nowRow, _typeData, _ekiData) {
 			objSbt.setAttribute("sbt", type.typeSimple[lang]);
 		}
 		iconArea.appendChild(objSbt);
+	} else {
+		iconArea.classList.add("cbango-only");
 	}
 		objItem.appendChild(iconArea);
 
@@ -1806,6 +1829,14 @@ function create_html_up_ressha_icon(_nowRow, _typeData, _ekiData) {
 		objExclamation.setAttribute("alt", "");
 		objItem.appendChild(objExclamation);
 	}
+	// 抑止中のアイコンを設定
+	if (_nowRow.yokuStatus == 1 || _nowRow.yokuStatus == 2) {
+		let objSuppression = document.createElement("img");
+		objSuppression.classList.add("suppression");
+		objSuppression.setAttribute("src", "./images/home/suppression.svg");
+		objSuppression.setAttribute("alt", "");
+		objItem.appendChild(objSuppression);
+	}
 
 	// 列車詳細に表示する内容の設定
 	create_ressha_detail(objItem, _nowRow, _typeData, _ekiData);
@@ -1853,6 +1884,8 @@ function create_html_down_ressha_icon(_nowRow, _typeData, _ekiData) {
 			objSbt.setAttribute("sbt", type.typeSimple[lang]);
 		}
 		iconArea.appendChild(objSbt);
+	} else {
+		iconArea.classList.add("cbango-only");
 	}
 		objItem.appendChild(iconArea);
 
@@ -1883,6 +1916,14 @@ function create_html_down_ressha_icon(_nowRow, _typeData, _ekiData) {
 		objExclamation.setAttribute("src", "./images/home/exclamation.svg");
 		objExclamation.setAttribute("alt", "");
 		objItem.appendChild(objExclamation);
+	}
+	// 抑止中のアイコンを設定
+	if (_nowRow.yokuStatus == 1 || _nowRow.yokuStatus == 2) {
+		let objSuppression = document.createElement("img");
+		objSuppression.classList.add("suppression");
+		objSuppression.setAttribute("src", "./images/home/suppression.svg");
+		objSuppression.setAttribute("alt", "");
+		objItem.appendChild(objSuppression);
 	}
 
 	// 列車詳細に表示する内容の設定
@@ -2358,6 +2399,42 @@ function close_train_search_dialog() {
 }
 
 /*
+ * 取得列番一覧ダイアログを開く
+ */
+function open_train_number_list_dialog() {
+	trainNumberListFilter = "all";
+	trainNumberListRows = [];
+	$("#trainNumberListDetail .train-number-list-filter-btn").removeClass("active");
+	$("#trainNumberListDetail .train-number-list-filter-btn[data-filter='all']").addClass("active");
+	$("#trainNumberListInfo").text("読み込み中...");
+	$("#trainNumberListBody").empty();
+	$("#trainNumberListDetail").fadeIn("fast");
+	if (!$("#trainSearchDetail").is(":visible")) {
+		set_scroll_hide($("#trainNumberListDetail .dialog"));
+	}
+
+	load_train_search_data()
+		.then((searchData) => {
+			trainNumberListRows = searchData && Array.isArray(searchData.trains) ? searchData.trains : [];
+			render_train_number_list_filtered();
+		})
+		.catch(() => {
+			$("#trainNumberListInfo").text("列番一覧を取得できませんでした。");
+			$("#trainNumberListBody").empty();
+		});
+}
+
+/*
+ * 取得列番一覧ダイアログを閉じる
+ */
+function close_train_number_list_dialog() {
+	if (!$("#trainNumberListDetail").is(":visible")) return;
+	$("#trainNumberListDetail").fadeOut("fast");
+	if ($("#trainSearchDetail").is(":visible")) return;
+	set_scroll_show($("#trainNumberListDetail .dialog"));
+}
+
+/*
  * 現在走行していない列車を選択した際のメッセージを表示する
  */
 function show_train_not_running_message() {
@@ -2709,7 +2786,7 @@ function escape_train_search_html(text) {
  */
 function run_train_number_search() {
 	const digits = $("#trainSearchNumberInput").val().replace(/[^\d]/g, "");
-	const suffix = ($("#trainSearchSuffixSelect").val() || "D").toUpperCase();
+	const suffix = String($("#trainSearchSuffixSelect").val() ?? "").toUpperCase();
 	if (!digits) {
 		render_train_search_results([], "列番を入力してください。", "列番を入力してください。");
 		return;
@@ -2798,7 +2875,7 @@ function split_train_search_result_name(name) {
 }
 
 function update_train_search_result_title_layout() {
-	$("#trainSearchResult .search-result-title.has-number").each(function(_, row) {
+	$("#trainSearchResult .search-result-title.has-number, #trainNumberListBody .search-result-title.has-number").each(function(_, row) {
 		const title = $(row);
 		title.removeClass("stacked");
 		if (window.innerWidth > 480) return;
@@ -2839,6 +2916,29 @@ function build_train_search_result_items(results) {
 		html += "</div>";
 	});
 	return html;
+}
+
+function render_train_number_list(trains) {
+	const rows = (Array.isArray(trains) ? trains : [])
+		.slice()
+		.sort((a, b) => normalize_train_search_cbango(a.cbango).localeCompare(normalize_train_search_cbango(b.cbango), "ja", { numeric: true }));
+
+	const totalCount = trainNumberListRows.length;
+	const countText = trainNumberListFilter === "running" ? "走行中：" + rows.length + "件 / 全" + totalCount + "件" : "取得件数：" + rows.length + "件";
+	$("#trainNumberListInfo").text(countText);
+	if (!rows.length) {
+		$("#trainNumberListBody").html("<div class='train-search-empty'>取得した列番はありません。</div>");
+		return;
+	}
+	$("#trainNumberListBody").html(build_train_search_result_items(rows));
+	update_train_search_result_title_layout();
+}
+
+function render_train_number_list_filtered() {
+	$("#trainNumberListDetail .train-number-list-filter-btn").removeClass("active");
+	$("#trainNumberListDetail .train-number-list-filter-btn[data-filter='" + trainNumberListFilter + "']").addClass("active");
+	const rows = trainNumberListFilter === "running" ? trainNumberListRows.filter((train) => train && train.isRunning !== false) : trainNumberListRows;
+	render_train_number_list(rows);
 }
 
 function render_train_search_results(results, headerText, emptyMessage) {

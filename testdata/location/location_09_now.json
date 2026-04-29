@@ -15,14 +15,40 @@
       "statusDetailKr": "",
       "senku": "09",
       "ryosu": "1",
-      "yokuStatus": 0,
+      "yokuStatus": 2,
       "yokuDetail": {
-        "ja": "",
+        "ja": "五稜郭駅停車中",
         "en": "",
         "tc": "",
         "sc": "",
         "kr": ""
       }
+    },
+    {
+      "cbango": "5887D",
+      "type": 3,
+      "shuEkiSimple": "森",
+      "senku": "06",
+      "runStatus": 1,
+      "yokuStatus": 2,
+      "yokuDetail": {
+        "ja": "─",
+        "en": "─",
+        "tc": "─",
+        "sc": "─",
+        "kr": "─"
+      },
+      "status": 2,
+      "statusDetail": "─",
+      "statusDetailEn": "─",
+      "statusDetailSc": "─",
+      "statusDetailTc": "─",
+      "statusDetailKr": "─",
+      "chien": 13,
+      "pos": "R9P26U",
+      "shuEkiKey": "043",
+      "ryosu": 10,
+      "rinji": 0
     }
   ]
 }
