@@ -47,6 +47,8 @@ let cachedTrainSearchData = null;
 let trainSearchDataPromise = null;
 let cachedTrainSearchLoadedAt = 0;
 const TRAIN_SEARCH_CACHE_TTL = 30000;
+let trainNumberListRows = [];
+let trainNumberListFilter = "all";
 let preserveScrollAfterHashChange = false;
 let preservedScrollTop = 0;
 let suppressTrackScrollOnce = false;
@@ -379,6 +381,11 @@ $(function ($) {
 	// 取得した列番一覧を表示
 	$(document).on("click", "#trainNumberListBtn", function() {
 		open_train_number_list_dialog();
+	});
+
+	$(document).on("click", "#trainNumberListDetail .train-number-list-filter-btn", function() {
+		trainNumberListFilter = $(this).attr("data-filter") || "all";
+		render_train_number_list_filtered();
 	});
 
 	// 取得列番一覧ダイアログを閉じる
@@ -2395,6 +2402,10 @@ function close_train_search_dialog() {
  * 取得列番一覧ダイアログを開く
  */
 function open_train_number_list_dialog() {
+	trainNumberListFilter = "all";
+	trainNumberListRows = [];
+	$("#trainNumberListDetail .train-number-list-filter-btn").removeClass("active");
+	$("#trainNumberListDetail .train-number-list-filter-btn[data-filter='all']").addClass("active");
 	$("#trainNumberListInfo").text("読み込み中...");
 	$("#trainNumberListBody").empty();
 	$("#trainNumberListDetail").fadeIn("fast");
@@ -2404,7 +2415,8 @@ function open_train_number_list_dialog() {
 
 	load_train_search_data()
 		.then((searchData) => {
-			render_train_number_list(searchData && Array.isArray(searchData.trains) ? searchData.trains : []);
+			trainNumberListRows = searchData && Array.isArray(searchData.trains) ? searchData.trains : [];
+			render_train_number_list_filtered();
 		})
 		.catch(() => {
 			$("#trainNumberListInfo").text("列番一覧を取得できませんでした。");
@@ -2911,13 +2923,22 @@ function render_train_number_list(trains) {
 		.slice()
 		.sort((a, b) => normalize_train_search_cbango(a.cbango).localeCompare(normalize_train_search_cbango(b.cbango), "ja", { numeric: true }));
 
-	$("#trainNumberListInfo").text("取得件数：" + rows.length + "件");
+	const totalCount = trainNumberListRows.length;
+	const countText = trainNumberListFilter === "running" ? "走行中：" + rows.length + "件 / 全" + totalCount + "件" : "取得件数：" + rows.length + "件";
+	$("#trainNumberListInfo").text(countText);
 	if (!rows.length) {
 		$("#trainNumberListBody").html("<div class='train-search-empty'>取得した列番はありません。</div>");
 		return;
 	}
 	$("#trainNumberListBody").html(build_train_search_result_items(rows));
 	update_train_search_result_title_layout();
+}
+
+function render_train_number_list_filtered() {
+	$("#trainNumberListDetail .train-number-list-filter-btn").removeClass("active");
+	$("#trainNumberListDetail .train-number-list-filter-btn[data-filter='" + trainNumberListFilter + "']").addClass("active");
+	const rows = trainNumberListFilter === "running" ? trainNumberListRows.filter((train) => train && train.isRunning !== false) : trainNumberListRows;
+	render_train_number_list(rows);
 }
 
 function render_train_search_results(results, headerText, emptyMessage) {
