@@ -2700,6 +2700,14 @@ section#trainSearchDetail {
 			section#trainSearchDetail .dialog .train-search-row {
 				margin-bottom: 16px;
 			}
+			section#trainSearchDetail .dialog .train-search-list-action {
+				margin-top: -4px;
+				text-align: right;
+			}
+			section#trainSearchDetail .dialog .train-search-list-action .common-button {
+				min-width: 160px;
+				padding: 8px 14px;
+			}
 			section#trainSearchDetail .dialog .train-search-row label {
 				display: block;
 				font-size: 15px;
@@ -2833,6 +2841,142 @@ section#trainSearchDetail {
 				margin-top: 2px;
 			}
 /* 列車検索ダイアログ（終了） */
+/* 取得列番一覧ダイアログ（開始） */
+section#trainNumberListDetail {
+	background-color: rgba(0, 0, 0, 0.5);
+	display: none;
+	height: 100%;
+	left: 0;
+	position: fixed;
+	top: 0;
+	width: 100%;
+	z-index: 20001;
+}
+	section#trainNumberListDetail .dialog-outer {
+		align-items: center;
+		display: flex;
+		height: 100%;
+		justify-content: center;
+		width: 100%;
+	}
+	section#trainNumberListDetail .dialog {
+		background-color: #fff;
+		width: 560px;
+	}
+		section#trainNumberListDetail .dialog .header {
+			background-color: #5b3;
+			border-width: 0px;
+			color: #fff;
+			cursor: pointer;
+		}
+			section#trainNumberListDetail .dialog .header .close {
+				line-height: 10px;
+				padding: 7px 6px;
+				position: absolute;
+				right: 0;
+				top: 0px;
+				width: 32px;
+			}
+				section#trainNumberListDetail .dialog .header .close:hover {
+					background-color: #6c4;
+					cursor: pointer;
+				}
+		section#trainNumberListDetail .dialog #trainNumberListMain {
+			max-height: 65vh;
+			overflow-y: auto;
+			padding: 15px;
+		}
+			section#trainNumberListDetail .dialog .train-number-list-info {
+				font-size: 14px;
+				margin: 0 10px 10px 10px;
+			}
+			section#trainNumberListDetail .dialog .train-number-list-body {
+				margin: 0 10px;
+			}
+			section#trainNumberListDetail .dialog .train-search-empty {
+				border: 1px solid #ccc;
+				color: #444;
+				padding: 12px;
+			}
+			section#trainNumberListDetail .dialog .express-train-contents {
+				align-items: center;
+				background-image: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath fill='none' stroke='%233a4' stroke-width='2.5' d='m3 1 5 5-5 5'/%3E%3C/svg%3E");
+				background-position: right 12px center;
+				background-repeat: no-repeat;
+				background-size: 24px;
+				border: 1px solid #8c5;
+				border-bottom: 3px solid #8c5;
+				cursor: pointer;
+				display: flex;
+				justify-content: space-between;
+				margin-bottom: 10px;
+				padding: 8px 42px 8px 12px;
+			}
+				section#trainNumberListDetail .dialog .express-train-contents:hover {
+					background-color: #ffc;
+				}
+			section#trainNumberListDetail .dialog .search-result-main {
+				align-items: center;
+				column-gap: 10px;
+				display: grid;
+				grid-template-columns: 62px minmax(0, 1fr);
+				grid-template-rows: auto auto;
+				min-width: 0;
+				row-gap: 2px;
+			}
+			section#trainNumberListDetail .dialog .search-result-cbango {
+				color: #333;
+				font-size: 14px;
+				font-weight: bold;
+				grid-row: 1 / 3;
+				line-height: 1.2;
+			}
+			section#trainNumberListDetail .dialog .search-result-title {
+				align-items: baseline;
+				column-gap: 4px;
+				display: flex;
+				font-size: 15px;
+				font-weight: bold;
+				line-height: 1.15;
+				min-width: 0;
+				overflow: hidden;
+			}
+			section#trainNumberListDetail .dialog .search-result-name {
+				min-width: 0;
+				overflow: hidden;
+				text-overflow: ellipsis;
+				white-space: nowrap;
+			}
+			section#trainNumberListDetail .dialog .search-result-number {
+				flex: none;
+				white-space: nowrap;
+			}
+			section#trainNumberListDetail .dialog .search-result-destination {
+				color: #333;
+				font-size: 14px;
+				line-height: 1.15;
+				min-width: 0;
+				word-break: break-word;
+			}
+			section#trainNumberListDetail .dialog .unkou-label {
+				align-items: flex-end;
+				display: flex;
+				flex-direction: column;
+				font-size: 13px;
+				line-height: 1.35;
+				margin-right: 6px;
+				text-align: right;
+			}
+			section#trainNumberListDetail .dialog .search-status-text {
+				line-height: 1.25;
+			}
+			section#trainNumberListDetail .dialog .search-status-section {
+				color: #555;
+				font-size: 11px;
+				line-height: 1.2;
+				margin-top: 2px;
+			}
+/* 取得列番一覧ダイアログ（終了） */
 /* 自動更新設定ダイアログ（開始） */
 section#refreshSettingDetail {
 	background-color: rgba(0, 0, 0, 0.5);
@@ -3133,21 +3277,26 @@ section#refreshSettingDetail {
 	}
 }
 @media (max-width:480px) {
-	section#trainSearchDetail .dialog-outer {
+	section#trainSearchDetail .dialog-outer,
+	section#trainNumberListDetail .dialog-outer {
 		box-sizing: border-box;
 		padding: 8px;
 	}
-	section#trainSearchDetail .dialog {
+	section#trainSearchDetail .dialog,
+	section#trainNumberListDetail .dialog {
 		max-width: 100%;
 		width: 100%;
 	}
-	section#trainSearchDetail .dialog #trainSearchDetailMain {
+	section#trainSearchDetail .dialog #trainSearchDetailMain,
+	section#trainNumberListDetail .dialog #trainNumberListMain {
 		padding: 12px 10px;
 	}
 	section#trainSearchDetail .dialog .train-search-message,
 	section#trainSearchDetail .dialog .train-search-form,
 	section#trainSearchDetail .dialog .train-search-result-info,
-	section#trainSearchDetail .dialog .train-search-result {
+	section#trainSearchDetail .dialog .train-search-result,
+	section#trainNumberListDetail .dialog .train-number-list-info,
+	section#trainNumberListDetail .dialog .train-number-list-body {
 		margin-left: 0;
 		margin-right: 0;
 	}
@@ -3179,43 +3328,60 @@ section#refreshSettingDetail {
 		padding-left: 0;
 		padding-right: 0;
 	}
+	section#trainSearchDetail .dialog .train-search-list-action {
+		text-align: left;
+	}
+	section#trainSearchDetail .dialog .train-search-list-action .common-button {
+		box-sizing: border-box;
+		width: 100%;
+	}
 
 	/* 北海道新幹線への路線のリンク */
-	section#trainSearchDetail .dialog .express-train-contents {
+	section#trainSearchDetail .dialog .express-train-contents,
+	section#trainNumberListDetail .dialog .express-train-contents {
 		align-items: center;
 		column-gap: 8px;
 		display: grid;
 		grid-template-columns: minmax(0, 1fr) 104px;
 		padding: 8px 36px 8px 10px;
 	}
-	section#trainSearchDetail .dialog .search-result-main {
+	section#trainSearchDetail .dialog .search-result-main,
+	section#trainNumberListDetail .dialog .search-result-main {
 		column-gap: 8px;
 		grid-template-columns: 54px minmax(0, 1fr);
 	}
-	section#trainSearchDetail .dialog .search-result-cbango {
+	section#trainSearchDetail .dialog .search-result-cbango,
+	section#trainNumberListDetail .dialog .search-result-cbango {
 		font-size: 13px;
 	}
-	section#trainSearchDetail .dialog .search-result-title {
+	section#trainSearchDetail .dialog .search-result-title,
+	section#trainNumberListDetail .dialog .search-result-title {
 		font-size: 14px;
 		overflow: hidden;
 	}
-	section#trainSearchDetail .dialog .search-result-title.has-number.stacked {
+	section#trainSearchDetail .dialog .search-result-title.has-number.stacked,
+	section#trainNumberListDetail .dialog .search-result-title.has-number.stacked {
 		align-items: flex-start;
 		flex-direction: column;
 		gap: 1px;
 	}
-	section#trainSearchDetail .dialog .search-result-title.has-number.stacked .search-result-name {
+	section#trainSearchDetail .dialog .search-result-title.has-number.stacked .search-result-name,
+	section#trainNumberListDetail .dialog .search-result-title.has-number.stacked .search-result-name {
 		max-width: 100%;
 	}
-	section#trainSearchDetail .dialog .search-result-number {
+	section#trainSearchDetail .dialog .search-result-number,
+	section#trainNumberListDetail .dialog .search-result-number {
 		font-size: inherit;
 		line-height: 1.15;
 	}
 	section#trainSearchDetail .dialog .search-result-destination,
-	section#trainSearchDetail .dialog .unkou-label {
+	section#trainSearchDetail .dialog .unkou-label,
+	section#trainNumberListDetail .dialog .search-result-destination,
+	section#trainNumberListDetail .dialog .unkou-label {
 		font-size: 12px;
 	}
-	section#trainSearchDetail .dialog .unkou-label {
+	section#trainSearchDetail .dialog .unkou-label,
+	section#trainNumberListDetail .dialog .unkou-label {
 		font-size: 11px;
 		line-height: 1.15;
 		margin-right: 0;
