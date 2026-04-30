@@ -10,9 +10,18 @@
 	<title>列車走行位置 | 在線一覧</title>
 	<meta name="description" content="JR北海道 列車走行位置の在線一覧ページです。">
 	<script>
-		fetch("./mainte/location_maintenance.json?" + (Date.now() >>> 16)).then(response => response.json()).then(json => {
-			if (json.status) window.location.replace("./mainte/location_maintenance.html");
-		});
+		(function() {
+			const cacheKey = Date.now() >>> 16;
+			const localUrl = "./mainte/location_maintenance.json?" + cacheKey;
+			const apiUrl = "./api/mainte/location_maintenance.json?" + cacheKey;
+			const useLocal = location.protocol === "file:" || location.hostname.endsWith("github.io");
+			fetch(useLocal ? localUrl : apiUrl)
+				.then(response => response.ok ? response.json() : Promise.reject())
+				.catch(() => fetch(localUrl).then(response => response.json()))
+				.then(json => {
+					if (json.status) window.location.replace("./mainte/location_maintenance.html");
+				});
+		}());
 	</script>
 	<link rel="stylesheet" href="./css/common_header.css" type="text/css" media="screen,print">
 	<link rel="apple-touch-icon" href="https://www3.jrhokkaido.co.jp/apple-touch-icon.png">

@@ -27,6 +27,30 @@ const LOCATION_JSON_SOURCE_MAP = {
 	"52": ["02", "07", "09"],
 	"53": ["02", "13"]
 };
+
+function get_mainte_json_request(fileName, cacheKey) {
+	const localUrl = "./mainte/" + fileName + "?" + cacheKey;
+	const apiUrl = "./api/mainte/" + fileName + "?" + cacheKey;
+	const useLocal = location.protocol === "file:" || location.hostname.endsWith("github.io");
+	const primaryUrl = useLocal ? localUrl : apiUrl;
+	const deferred = $.Deferred();
+
+	function request(url, canFallback) {
+		$.getJSON(url)
+			.done((data, textStatus, jqxhr) => deferred.resolve(data, textStatus, jqxhr))
+			.fail(() => {
+				if (canFallback) {
+					request(localUrl, false);
+					return;
+				}
+				deferred.reject();
+			});
+	}
+
+	request(primaryUrl, primaryUrl !== localUrl);
+	return deferred.promise();
+}
+
 // 走行位置自動更新タイマー
 let locationAutoRefreshTimer = null;
 // 列車選択アニメーションタイマー
@@ -793,7 +817,7 @@ function set_station_list(_param_rosen, _scrollKey, _callback) {
 
 	$.when(
 		$.getJSON("./master/rosen_name_master.json?" + mstNow),
-		$.getJSON("./mainte/rosen_maintenance.json?" + mstNow),
+		get_mainte_json_request("rosen_maintenance.json", mstNow),
 		$.getJSON("https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/webunkou/json/master/ressha_type_master.json?" + mstNow),
 		$.getJSON("https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/webunkou/json/master/eki_master.json?" + mstNow),
 		$.get(rosen_html),

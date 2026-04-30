@@ -1,0 +1,594 @@
+:root {
+	--bg: #17191f;
+	--panel: #23262e;
+	--panel-strong: #2d313a;
+	--line: #56d6aa;
+	--line-glow: rgba(86, 214, 170, 0.28);
+	--line-x: 56%;
+	--train-card-width: 70px;
+	--text: #f5f7fb;
+	--muted: #aab2c0;
+	--accent: #52c99f;
+	--danger: #ef3f5d;
+}
+
+* {
+	box-sizing: border-box;
+}
+
+body {
+	background:
+		radial-gradient(circle at 18% 10%, rgba(82, 201, 159, 0.16), transparent 28rem),
+		linear-gradient(180deg, #20232b 0%, var(--bg) 42%, #111319 100%);
+	color: var(--text);
+	font-family: "Yu Gothic", "Hiragino Kaku Gothic ProN", Meiryo, sans-serif;
+	margin: 0;
+	min-height: 100vh;
+}
+
+.modern-header {
+	align-items: center;
+	background: rgba(23, 25, 31, 0.92);
+	border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+	display: flex;
+	justify-content: space-between;
+	padding: 18px clamp(16px, 4vw, 44px);
+	position: sticky;
+	top: 0;
+	z-index: 20;
+}
+
+.modern-kicker {
+	color: var(--accent);
+	font-size: 12px;
+	font-weight: 700;
+	letter-spacing: 0.18em;
+	margin: 0 0 4px;
+}
+
+.modern-header h1 {
+	font-size: clamp(20px, 4vw, 34px);
+	line-height: 1.1;
+	margin: 0;
+}
+
+.modern-time {
+	color: var(--muted);
+	font-size: 13px;
+	margin: 8px 0 0;
+}
+
+.modern-actions {
+	display: flex;
+	gap: 10px;
+}
+
+.modern-actions a,
+.modern-actions button {
+	background: rgba(255, 255, 255, 0.08);
+	border: 1px solid rgba(255, 255, 255, 0.18);
+	border-radius: 999px;
+	color: var(--text);
+	cursor: pointer;
+	font: inherit;
+	font-size: 14px;
+	padding: 9px 14px;
+	text-decoration: none;
+	white-space: nowrap;
+}
+
+.modern-actions button {
+	background: var(--accent);
+	border-color: var(--accent);
+	color: #102019;
+	font-weight: 700;
+}
+
+.modern-main {
+	margin: 0 auto;
+	max-width: 760px;
+	padding: 28px clamp(12px, 4vw, 32px) 72px;
+}
+
+.modern-line {
+	min-height: 2200px;
+	position: relative;
+}
+
+.modern-line::before {
+	background: linear-gradient(180deg, transparent, var(--line) 4%, var(--line) 96%, transparent);
+	box-shadow: 0 0 22px var(--line-glow);
+	content: "";
+	height: calc(100% - 28px);
+	left: var(--line-x);
+	position: absolute;
+	top: 14px;
+	transform: translateX(-50%);
+	width: 8px;
+	z-index: 1;
+}
+
+.modern-line::after {
+	background-image: radial-gradient(circle, #fff 0 2px, transparent 2.6px);
+	background-size: 100% 148px;
+	content: "";
+	height: calc(100% - 120px);
+	left: var(--line-x);
+	opacity: 0.9;
+	position: absolute;
+	top: 70px;
+	transform: translateX(-50%);
+	width: 8px;
+	z-index: 2;
+}
+
+.modern-direction {
+	background: rgba(255, 255, 255, 0.08);
+	border-radius: 999px;
+	color: var(--text);
+	font-size: 13px;
+	font-weight: 700;
+	left: var(--line-x);
+	padding: 6px 12px;
+	position: absolute;
+	transform: translateX(-50%);
+	z-index: 5;
+}
+
+.modern-direction-up {
+	top: -8px;
+}
+
+.modern-direction-down {
+	bottom: -22px;
+}
+
+.modern-station-list {
+	inset: 0;
+	position: absolute;
+	z-index: 0;
+}
+
+.modern-section {
+	border-radius: 8px;
+	left: 0;
+	position: absolute;
+	right: 0;
+	transform: translateY(-50%);
+}
+
+.modern-section.station-section {
+	background: rgba(255, 255, 255, 0.105);
+}
+
+.modern-section.between-section {
+	background: rgba(0, 0, 0, 0.18);
+}
+
+.modern-station {
+	align-items: center;
+	display: flex;
+	height: auto;
+	justify-content: space-between;
+	left: 0;
+	padding: 0 16px;
+	position: absolute;
+	right: 0;
+	transform: translateY(-50%);
+	z-index: 2;
+}
+
+.modern-station-name {
+	font-size: clamp(15px, 3.5vw, 20px);
+	font-weight: 800;
+	letter-spacing: 0.03em;
+	text-shadow: 0 2px 4px rgba(0, 0, 0, 0.35);
+	transform: translateY(-58px);
+}
+
+.modern-station-dot {
+	background: #fff;
+	border: 4px solid var(--line);
+	border-radius: 50%;
+	box-shadow: 0 0 0 6px rgba(86, 214, 170, 0.14);
+	height: 18px;
+	left: var(--line-x);
+	position: absolute;
+	top: 50%;
+	transform: translate(-50%, -50%);
+	width: 18px;
+	z-index: 3;
+}
+
+.modern-train-layer {
+	inset: 0;
+	position: absolute;
+	z-index: 8;
+}
+
+.modern-train-card {
+	--train-band: var(--accent);
+	background: transparent;
+	border: 0;
+	border-radius: 0;
+	box-sizing: border-box;
+	box-shadow: none;
+	color: #111;
+	display: flex;
+	flex-direction: column;
+	height: 88px;
+	justify-content: flex-start;
+	inline-size: var(--train-card-width);
+	max-inline-size: none;
+	max-width: none;
+	overflow: visible;
+	padding: 24px 0 0;
+	position: absolute;
+	transform: translateY(-50%);
+	min-width: var(--train-card-width);
+	width: var(--train-card-width);
+	z-index: 1;
+}
+
+.modern-train-card::before {
+	background: #fff;
+	box-shadow: 0 14px 28px rgba(0, 0, 0, 0.36);
+	box-sizing: border-box;
+	content: "";
+	height: 100%;
+	inset: 0;
+	position: absolute;
+	width: 100%;
+	z-index: 0;
+}
+
+.modern-train-card::after {
+	display: none;
+}
+
+.modern-train-card.up {
+	padding-top: 8px;
+}
+
+.modern-train-card.up::before {
+	background: linear-gradient(to bottom, #fff 0, #fff calc(100% - 32px), var(--train-band) calc(100% - 32px), var(--train-band) 100%);
+	clip-path: polygon(50% 0, 96% 20%, 100% 28%, 100% 100%, 0 100%, 0 28%, 4% 20%);
+}
+
+.modern-train-card.up::after {
+	display: none;
+}
+
+.modern-train-card.down {
+	padding-top: 0;
+}
+
+.modern-train-card.down::before {
+	background: linear-gradient(to bottom, var(--train-band) 0, var(--train-band) 32px, #fff 32px, #fff 100%);
+	clip-path: polygon(0 0, 100% 0, 100% 72%, 96% 80%, 50% 100%, 4% 80%, 0 72%);
+}
+
+.modern-train-card.down::after {
+	display: none;
+}
+
+.modern-train-card > * {
+	position: relative;
+	z-index: 1;
+}
+
+.modern-train-card.up {
+	right: calc(100% - var(--line-x) + 24px);
+}
+
+.modern-train-card.down {
+	left: calc(var(--line-x) + 24px);
+}
+
+.modern-train-mark {
+	height: 30px;
+	margin: 0 auto 0;
+	position: relative;
+	width: 34px;
+}
+
+.modern-train-card.down .modern-train-mark {
+	margin: 2px auto 0;
+}
+
+.modern-train-icon {
+	display: block;
+	position: absolute;
+}
+
+.modern-train-icon {
+	height: 30px;
+	left: 50%;
+	top: 0;
+	transform: translateX(-50%);
+	width: 30px;
+}
+
+.modern-train-band {
+	align-items: center;
+	background: transparent;
+	color: #fff;
+	display: flex;
+	flex-direction: column;
+	font-weight: 800;
+	justify-content: center;
+	line-height: 1;
+	margin: 5px 0 0;
+	height: 32px;
+	padding: 1px 3px 1px;
+	text-align: center;
+}
+
+.modern-train-card.up .modern-train-band {
+	border-radius: 0 0 10px 10px;
+	bottom: 0;
+	left: 0;
+	margin: 0;
+	position: absolute;
+	right: 0;
+	width: 100%;
+}
+
+.modern-train-card.down .modern-train-band {
+	border-radius: 10px 10px 0 0;
+	height: 32px;
+	left: 0;
+	margin: 0;
+	padding: 1px 3px 1px;
+	position: absolute;
+	right: 0;
+	top: 0;
+	width: 100%;
+}
+
+.modern-train-card.down .modern-train-no {
+	margin-bottom: 0;
+	margin-top: 34px;
+}
+
+.modern-train-card.type-limited .modern-train-type {
+	background: transparent;
+}
+
+.modern-train-card.type-limited {
+	--train-band: #e94a4a;
+}
+
+.modern-train-card.type-rapid {
+	--train-band: #f08b2f;
+}
+
+.modern-train-card.type-local {
+	--train-band: #7f909c;
+}
+
+.modern-train-no,
+.modern-train-dest,
+.modern-train-pos {
+	text-align: center;
+}
+
+.modern-train-no {
+	color: #111;
+	font-size: 14px;
+	font-weight: 900;
+	line-height: 0.86;
+	margin-bottom: -2px;
+	margin-top: -2px;
+	min-height: 11px;
+}
+
+.modern-train-main {
+	align-items: baseline;
+	display: flex;
+	justify-content: center;
+	min-width: 0;
+}
+
+.modern-train-type {
+	font-size: 12px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.modern-train-separator {
+	font-size: 12px;
+}
+
+.modern-train-dest {
+	font-size: 12px;
+	font-weight: 700;
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.modern-train-cars {
+	font-size: 12px;
+	font-weight: 900;
+	line-height: 0.96;
+	margin-top: 0;
+}
+
+.modern-train-pos {
+	color: #77818c;
+	display: none;
+	font-size: 9px;
+	line-height: 1.1;
+	margin-top: 5px;
+	padding: 0 6px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.modern-delay {
+	background: var(--danger);
+	border: 3px solid #fff;
+	border-radius: 999px;
+	box-shadow: 0 3px 8px rgba(0, 0, 0, 0.28), 0 0 8px rgba(239, 63, 93, 0.5);
+	color: #fff;
+	font-size: 13px;
+	font-weight: 900;
+	left: 50%;
+	line-height: 1;
+	min-width: 48px;
+	padding: 5px 10px;
+	position: absolute;
+	text-align: center;
+	top: -36px;
+	transform: translateX(-50%);
+	white-space: nowrap;
+	z-index: 3;
+}
+
+.modern-train-card.up .modern-delay {
+	bottom: -36px;
+	top: auto;
+}
+
+.modern-train-card.down .modern-delay::before {
+	border-left: 8px solid transparent;
+	border-right: 8px solid transparent;
+	border-top: 8px solid #fff;
+	bottom: -10px;
+	content: "";
+	left: 50%;
+	position: absolute;
+	transform: translateX(-50%);
+}
+
+.modern-train-card.down .modern-delay::after {
+	border-left: 6px solid transparent;
+	border-right: 6px solid transparent;
+	border-top: 6px solid var(--danger);
+	bottom: -6px;
+	content: "";
+	left: 50%;
+	position: absolute;
+	transform: translateX(-50%);
+}
+
+.modern-train-card.up .modern-delay::before {
+	border-bottom: 8px solid #fff;
+	border-left: 8px solid transparent;
+	border-right: 8px solid transparent;
+	content: "";
+	left: 50%;
+	position: absolute;
+	top: -10px;
+	transform: translateX(-50%);
+}
+
+.modern-train-card.up .modern-delay::after {
+	border-bottom: 6px solid var(--danger);
+	border-left: 6px solid transparent;
+	border-right: 6px solid transparent;
+	content: "";
+	left: 50%;
+	position: absolute;
+	top: -6px;
+	transform: translateX(-50%);
+}
+
+.modern-empty,
+.modern-error {
+	background: rgba(255, 255, 255, 0.08);
+	border: 1px solid rgba(255, 255, 255, 0.12);
+	border-radius: 16px;
+	left: 50%;
+	padding: 18px;
+	position: absolute;
+	text-align: center;
+	top: 170px;
+	transform: translateX(-50%);
+	width: min(360px, 88vw);
+	z-index: 10;
+}
+
+.modern-error {
+	border-color: rgba(239, 63, 93, 0.5);
+	color: #ffd3dc;
+}
+
+@media (max-width: 520px) {
+	:root {
+		--line-x: 58%;
+		--train-card-width: 70px;
+	}
+
+	.modern-header {
+		align-items: flex-start;
+		gap: 12px;
+		padding: 14px 12px;
+	}
+
+	.modern-actions {
+		flex-direction: column;
+		gap: 6px;
+	}
+
+	.modern-actions a,
+	.modern-actions button {
+		font-size: 12px;
+		padding: 7px 10px;
+	}
+
+	.modern-main {
+		padding-left: 6px;
+		padding-right: 6px;
+	}
+
+	.modern-station {
+		height: auto;
+		padding: 0 8px;
+	}
+
+	.modern-station-name {
+		transform: translateY(-52px);
+	}
+
+	.modern-train-card {
+		height: 88px;
+		min-width: var(--train-card-width);
+		width: var(--train-card-width);
+	}
+
+	.modern-train-card.up {
+		padding-top: 8px;
+		right: calc(100% - var(--line-x) + 16px);
+	}
+
+	.modern-train-card.down {
+		padding-top: 0;
+		left: calc(var(--line-x) + 16px);
+	}
+
+	.modern-train-card.down .modern-train-no {
+		margin-top: 34px;
+	}
+
+	.modern-train-mark {
+		height: 30px;
+		margin-bottom: 0;
+		width: 34px;
+	}
+
+	.modern-train-icon {
+		height: 30px;
+		width: 30px;
+	}
+
+	.modern-train-band {
+		height: 32px;
+		min-height: 0;
+		padding: 1px 3px 1px;
+	}
+}
