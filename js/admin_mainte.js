@@ -16,6 +16,22 @@ function getApiUrl(file) {
 	return "./api/admin/mainte/" + encodeURIComponent(file);
 }
 
+async function logoutAdmin() {
+	setStatus("ログアウト処理中...");
+	try {
+		await fetch("./api/admin/logout?" + Date.now(), {
+			cache: "no-store",
+			credentials: "omit",
+			headers: {
+				"authorization": "Basic " + btoa("logout:logout")
+			}
+		});
+	} catch {
+		// 401が返る想定のため、通信エラーは無視してログイン画面へ戻す。
+	}
+	location.replace("./admin.html?logout=" + Date.now());
+}
+
 async function requestAdminJson(file) {
 	const response = await fetch(getApiUrl(file), { credentials: "same-origin" });
 	if (response.status === 404) {
@@ -199,6 +215,7 @@ async function saveSelectedFile() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
+	document.getElementById("adminLogoutBtn").addEventListener("click", logoutAdmin);
 	document.getElementById("adminLoadBtn").addEventListener("click", loadSelectedFile);
 	document.getElementById("adminSaveBtn").addEventListener("click", saveSelectedFile);
 	document.getElementById("adminFileSelect").addEventListener("change", () => {
