@@ -4,15 +4,45 @@ const ALLOWED_FILES = new Set([
 ]);
 
 function unauthorized() {
-	return new Response("Unauthorized", { status: 401 });
+	return new Response("Unauthorized", {
+		status: 401,
+		headers: {
+			"www-authenticate": 'Basic realm="Trainlocation Admin", charset="UTF-8"',
+			"cache-control": "no-store"
+		}
+	});
+}
+
+function getBasicAuth(request) {
+	const auth = request.headers.get("authorization") || "";
+	if (!auth.startsWith("Basic ")) return null;
+
+	try {
+		const decoded = atob(auth.slice(6));
+		const separatorIndex = decoded.indexOf(":");
+		if (separatorIndex < 0) return null;
+		return {
+			user: decoded.slice(0, separatorIndex),
+			password: decoded.slice(separatorIndex + 1)
+		};
+	} catch {
+		return null;
+	}
+}
+
+function isBasicAuthorized(request, env) {
+	const expectedUser = env.ADMIN_BASIC_USER;
+	const expectedPassword = env.ADMIN_BASIC_PASSWORD;
+	if (!expectedUser || !expectedPassword) return false;
+
+	const basicAuth = getBasicAuth(request);
+	if (!basicAuth) return false;
+
+	return basicAuth.user === expectedUser && basicAuth.password === expectedPassword;
 }
 
 function isAuthorized(request, env) {
-	const token = env.ADMIN_TOKEN;
-	if (!token) return false;
-	const auth = request.headers.get("authorization") || "";
-	const headerToken = request.headers.get("x-admin-token") || "";
-	return auth === "Bearer " + token || headerToken === token;
+	return isBasicAuthorized(request, env);
 }
 
 function jsonResponse(body, init = {}) {

@@ -1,9 +1,3 @@
-const ADMIN_TOKEN_KEY = "trainlocation_admin_token";
-
-function getAdminToken() {
-	return sessionStorage.getItem(ADMIN_TOKEN_KEY) || "";
-}
-
 function setStatus(message, type = "") {
 	const status = document.getElementById("adminStatus");
 	status.textContent = message;
@@ -23,11 +17,7 @@ function getApiUrl(file) {
 }
 
 async function requestAdminJson(file) {
-	const response = await fetch(getApiUrl(file), {
-		headers: {
-			"authorization": "Bearer " + getAdminToken()
-		}
-	});
+	const response = await fetch(getApiUrl(file), { credentials: "same-origin" });
 	if (response.status === 404) {
 		const fallbackResponse = await fetch("./mainte/" + encodeURIComponent(file) + "?" + Date.now());
 		if (fallbackResponse.ok) return fallbackResponse.json();
@@ -41,8 +31,8 @@ async function requestAdminJson(file) {
 async function saveAdminJson(file, text) {
 	const response = await fetch(getApiUrl(file), {
 		method: "PUT",
+		credentials: "same-origin",
 		headers: {
-			"authorization": "Bearer " + getAdminToken(),
 			"content-type": "application/json; charset=utf-8"
 		},
 		body: text
@@ -162,11 +152,6 @@ function escapeHtml(text) {
 
 async function saveQuickAction(data, message) {
 	const file = getSelectedFile();
-	if (!getAdminToken()) {
-		setStatus("管理トークンを入力してください。", "error");
-		return;
-	}
-
 	setEditorData(data);
 	setStatus("保存中...");
 	try {
@@ -179,10 +164,6 @@ async function saveQuickAction(data, message) {
 
 async function loadSelectedFile() {
 	const file = getSelectedFile();
-	if (!getAdminToken()) {
-		setStatus("管理トークンを入力してください。", "error");
-		return;
-	}
 	setStatus("読み込み中...");
 	try {
 		const data = await requestAdminJson(file);
@@ -196,10 +177,6 @@ async function loadSelectedFile() {
 async function saveSelectedFile() {
 	const file = getSelectedFile();
 	const editor = getEditor();
-	if (!getAdminToken()) {
-		setStatus("管理トークンを入力してください。", "error");
-		return;
-	}
 
 	let formatted;
 	try {
@@ -222,14 +199,6 @@ async function saveSelectedFile() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-	const tokenInput = document.getElementById("adminTokenInput");
-	tokenInput.value = getAdminToken();
-
-	document.getElementById("adminTokenSaveBtn").addEventListener("click", () => {
-		sessionStorage.setItem(ADMIN_TOKEN_KEY, tokenInput.value);
-		setStatus("管理トークンを適用しました。", "success");
-	});
-
 	document.getElementById("adminLoadBtn").addEventListener("click", loadSelectedFile);
 	document.getElementById("adminSaveBtn").addEventListener("click", saveSelectedFile);
 	document.getElementById("adminFileSelect").addEventListener("change", () => {

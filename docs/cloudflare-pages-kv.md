@@ -23,15 +23,16 @@ Pages projectの **Settings** > **Functions** > **KV namespace bindings** で追
 | --- | --- |
 | `MAINTE_KV` | `TRAINLOCATION_MAINTE` |
 
-## 4. 管理トークンを設定
+## 4. 管理ログイン情報を設定
 
 Pages projectの **Settings** > **Environment variables** に追加します。
 
 | Variable name | Value |
 | --- | --- |
-| `ADMIN_TOKEN` | 任意の長い文字列 |
+| `ADMIN_BASIC_USER` | 管理画面のユーザー名 |
+| `ADMIN_BASIC_PASSWORD` | 管理画面のパスワード |
 
-例: `openssl rand -hex 32` などで生成した値を使います。
+`/admin.html` と `/api/admin/*` はBasic認証で保護されます。
 
 ## 5. 初回データ投入
 
@@ -41,7 +42,7 @@ Pages projectの **Settings** > **Environment variables** に追加します。
 https://<your-pages-domain>/admin.html
 ```
 
-1. `ADMIN_TOKEN` を入力して適用
+1. ブラウザのログイン画面で `ADMIN_BASIC_USER` / `ADMIN_BASIC_PASSWORD` を入力
 2. `location_maintenance.json` を読み込み
 3. 内容を確認して保存
 4. `rosen_maintenance.json` も同じように保存
@@ -73,7 +74,7 @@ https://trainlocation.pages.dev/api/mainte/rosen_maintenance.json
 
 ## 7. 注意
 
-- `ADMIN_TOKEN` はHTMLやJSへ直接書かないでください。
-- 管理画面のトークンはブラウザの `sessionStorage` にだけ保存されます。
+- `ADMIN_BASIC_USER` / `ADMIN_BASIC_PASSWORD` はHTMLやJSへ直接書かないでください。
+- Basic認証はブラウザに認証状態が残ることがあります。共有端末では利用後にブラウザを閉じてください。
 - 公開APIは30秒キャッシュします。反映を即時確認したい場合はページを再読み込みしてください。
 - 公開APIはGitHub Pagesから参照できるようにCORSを許可しています。

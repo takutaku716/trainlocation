@@ -50,29 +50,21 @@ body {
 	padding: 16px;
 }
 
-.admin-auth,
 .admin-toolbar {
 	align-items: center;
 	display: flex;
 	gap: 10px;
 }
 
-.admin-auth label,
 .admin-toolbar label {
 	font-weight: bold;
 	white-space: nowrap;
 }
 
-.admin-auth input,
 .admin-toolbar select {
 	border: 1px solid #8c5;
 	font-size: 16px;
 	padding: 8px 10px;
-}
-
-.admin-auth input {
-	flex: 1;
-	min-width: 0;
 }
 
 .admin-toolbar select {
@@ -202,7 +194,6 @@ button:hover {
 	}
 
 	.admin-header,
-	.admin-auth,
 	.admin-toolbar {
 		align-items: stretch;
 		flex-direction: column;
@@ -222,7 +213,6 @@ button:hover {
 	}
 
 	.admin-toolbar select,
-	.admin-auth input,
 	button,
 	.admin-link {
 		width: 100%;
