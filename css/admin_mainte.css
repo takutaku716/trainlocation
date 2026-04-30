@@ -109,6 +109,80 @@ button:hover {
 	font-weight: bold;
 }
 
+.admin-quick-actions {
+	background: #f7fbf4;
+	border: 1px solid #d7e8cc;
+	margin-top: 14px;
+	padding: 12px;
+}
+
+.admin-quick-actions p {
+	color: #555;
+	font-size: 14px;
+	margin: 0;
+}
+
+.admin-quick-header {
+	align-items: center;
+	display: flex;
+	gap: 10px;
+	justify-content: space-between;
+	margin-bottom: 10px;
+}
+
+.admin-quick-title {
+	font-size: 16px;
+	font-weight: bold;
+}
+
+.admin-status-badge {
+	border-radius: 999px;
+	color: #fff;
+	display: inline-block;
+	font-size: 13px;
+	font-weight: bold;
+	padding: 4px 10px;
+	white-space: nowrap;
+}
+
+.admin-status-badge.enabled {
+	background: #d22;
+}
+
+.admin-status-badge.disabled {
+	background: #68757c;
+}
+
+.admin-quick-buttons {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+}
+
+.admin-quick-buttons button.disabled-action {
+	background: #68757c;
+	border-color: #56636a;
+}
+
+.admin-line-list {
+	display: grid;
+	gap: 8px;
+}
+
+.admin-line-item {
+	align-items: center;
+	background: #fff;
+	border: 1px solid #d4dfce;
+	display: grid;
+	gap: 8px;
+	grid-template-columns: 1fr auto auto;
+	padding: 10px;
+}
+
+.admin-line-name {
+	font-weight: bold;
+}
+
 #adminJsonEditor {
 	border: 1px solid #bbb;
 	display: block;
@@ -132,6 +206,19 @@ button:hover {
 	.admin-toolbar {
 		align-items: stretch;
 		flex-direction: column;
+	}
+
+	.admin-quick-header,
+	.admin-line-item {
+		align-items: stretch;
+	}
+
+	.admin-quick-header {
+		flex-direction: column;
+	}
+
+	.admin-line-item {
+		grid-template-columns: 1fr;
 	}
 
 	.admin-toolbar select,
