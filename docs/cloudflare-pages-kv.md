@@ -57,7 +57,14 @@ Cloudflare Pages上では次を優先して読み込みます。
 /api/mainte/rosen_maintenance.json
 ```
 
-ローカル表示やGitHub Pages上では従来通り次へフォールバックします。
+GitHub Pages上ではCloudflare Pagesの公開APIを読み込みます。
+
+```text
+https://trainlocation.pages.dev/api/mainte/location_maintenance.json
+https://trainlocation.pages.dev/api/mainte/rosen_maintenance.json
+```
+
+ローカル表示では従来通り次へフォールバックします。
 
 ```text
 ./mainte/location_maintenance.json
@@ -69,3 +76,4 @@ Cloudflare Pages上では次を優先して読み込みます。
 - `ADMIN_TOKEN` はHTMLやJSへ直接書かないでください。
 - 管理画面のトークンはブラウザの `sessionStorage` にだけ保存されます。
 - 公開APIは30秒キャッシュします。反映を即時確認したい場合はページを再読み込みしてください。
+- 公開APIはGitHub Pagesから参照できるようにCORSを許可しています。

@@ -29,9 +29,11 @@ const LOCATION_JSON_SOURCE_MAP = {
 };
 
 function get_mainte_json_request(fileName, cacheKey) {
+	const cloudflareApiBase = "https://trainlocation.pages.dev";
 	const localUrl = "./mainte/" + fileName + "?" + cacheKey;
-	const apiUrl = "./api/mainte/" + fileName + "?" + cacheKey;
-	const useLocal = location.protocol === "file:" || location.hostname.endsWith("github.io");
+	const apiBase = location.hostname.endsWith("github.io") ? cloudflareApiBase : ".";
+	const apiUrl = apiBase + "/api/mainte/" + fileName + "?" + cacheKey;
+	const useLocal = location.protocol === "file:";
 	const primaryUrl = useLocal ? localUrl : apiUrl;
 	const deferred = $.Deferred();
 
