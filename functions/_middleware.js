@@ -42,7 +42,22 @@ function shouldProtect(pathname) {
 
 export async function onRequest(context) {
 	const url = new URL(context.request.url);
-	if (shouldProtect(url.pathname) && !isBasicAuthorized(context.request, context.env)) {
+	if (!shouldProtect(url.pathname)) {
+		return context.next();
+	}
+
+	const basicAuth = getBasicAuth(context.request);
+	if (basicAuth && basicAuth.user === "logout" && url.searchParams.has("logout")) {
+		return new Response(null, {
+			status: 302,
+			headers: {
+				"location": "/admin_logged_out.html?logout=" + Date.now(),
+				"cache-control": "no-store"
+			}
+		});
+	}
+
+	if (!isBasicAuthorized(context.request, context.env)) {
 		return unauthorized();
 	}
 

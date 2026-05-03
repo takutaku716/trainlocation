@@ -165,6 +165,10 @@ button:hover {
 	gap: 8px;
 }
 
+.admin-logout-actions {
+	margin-top: 14px;
+}
+
 .admin-quick-buttons button.disabled-action {
 	background: #68757c;
 	border-color: #56636a;
