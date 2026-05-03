@@ -20,11 +20,7 @@ async function logoutAdmin() {
 	setStatus("ログアウト処理中...");
 	getEditor().value = "";
 	renderQuickActions(null);
-
-	const logoutUrl = new URL("./admin.html?logout=" + Date.now(), location.href);
-	logoutUrl.username = "logout";
-	logoutUrl.password = String(Date.now());
-	location.replace(logoutUrl.toString());
+	location.replace("./api/admin/logout");
 }
 
 async function requestAdminJson(file) {

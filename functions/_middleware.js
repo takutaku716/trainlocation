@@ -1,13 +1,3 @@
-function unauthorized() {
-	return new Response("Unauthorized", {
-		status: 401,
-		headers: {
-			"www-authenticate": 'Basic realm="Trainlocation Admin", charset="UTF-8"',
-			"cache-control": "no-store"
-		}
-	});
-}
-
 function redirect(location) {
 	return new Response(null, {
 		status: 302,
@@ -18,32 +8,44 @@ function redirect(location) {
 	});
 }
 
-function getBasicAuth(request) {
-	const auth = request.headers.get("authorization") || "";
-	if (!auth.startsWith("Basic ")) return null;
-
-	try {
-		const decoded = atob(auth.slice(6));
-		const separatorIndex = decoded.indexOf(":");
-		if (separatorIndex < 0) return null;
-		return {
-			user: decoded.slice(0, separatorIndex),
-			password: decoded.slice(separatorIndex + 1)
-		};
-	} catch {
-		return null;
-	}
+function unauthorizedJson() {
+	return new Response(JSON.stringify({ ok: false, error: "Unauthorized" }), {
+		status: 401,
+		headers: {
+			"content-type": "application/json; charset=utf-8",
+			"cache-control": "no-store"
+		}
+	});
 }
 
-function isBasicAuthorized(request, env) {
-	const expectedUser = env.ADMIN_BASIC_USER;
-	const expectedPassword = env.ADMIN_BASIC_PASSWORD;
-	if (!expectedUser || !expectedPassword) return false;
+function getCookie(request, name) {
+	const cookie = request.headers.get("cookie") || "";
+	const prefix = name + "=";
+	const parts = cookie.split(";");
+	for (const part of parts) {
+		const value = part.trim();
+		if (value.startsWith(prefix)) return decodeURIComponent(value.slice(prefix.length));
+	}
+	return "";
+}
 
-	const basicAuth = getBasicAuth(request);
-	if (!basicAuth) return false;
+async function sha256(text) {
+	const bytes = new TextEncoder().encode(text);
+	const hashBuffer = await crypto.subtle.digest("SHA-256", bytes);
+	return Array.from(new Uint8Array(hashBuffer)).map((value) => value.toString(16).padStart(2, "0")).join("");
+}
 
-	return basicAuth.user === expectedUser && basicAuth.password === expectedPassword;
+async function createSessionValue(env) {
+	const user = env.ADMIN_BASIC_USER || "";
+	const password = env.ADMIN_BASIC_PASSWORD || "";
+	if (!user || !password) return "";
+	return await sha256(user + ":" + password + ":trainlocation-admin");
+}
+
+async function isCookieAuthorized(request, env) {
+	const expected = await createSessionValue(env);
+	if (!expected) return false;
+	return getCookie(request, "trainlocation_admin_session") === expected;
 }
 
 function shouldProtect(pathname) {
@@ -56,13 +58,15 @@ export async function onRequest(context) {
 		return context.next();
 	}
 
-	const basicAuth = getBasicAuth(context.request);
-	if (basicAuth && basicAuth.user === "logout" && url.searchParams.has("logout")) {
-		return redirect("/admin_logged_out.html?logout=" + Date.now());
+	if (url.pathname === "/api/admin/login" || url.pathname === "/api/admin/logout") {
+		return context.next();
 	}
 
-	if (!isBasicAuthorized(context.request, context.env)) {
-		return unauthorized();
+	if (!(await isCookieAuthorized(context.request, context.env))) {
+		if (url.pathname.startsWith("/api/admin/")) {
+			return unauthorizedJson();
+		}
+		return redirect("/admin_login.html?next=" + encodeURIComponent(url.pathname + url.search));
 	}
 
 	return context.next();

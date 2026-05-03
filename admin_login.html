@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>ログイン | 列車走行位置 管理</title>
+	<link rel="stylesheet" href="./css/admin_mainte.css">
+</head>
+<body>
+	<main class="admin-page admin-login-page">
+		<section class="admin-panel admin-login-panel">
+			<p class="admin-kicker">Maintenance Admin</p>
+			<h1>ログイン</h1>
+			<p id="adminLoginError" class="admin-status error" hidden>ユーザー名またはパスワードが違います。</p>
+			<form action="./api/admin/login" method="post" class="admin-login-form">
+				<input id="adminNextInput" type="hidden" name="next" value="/admin.html">
+				<label>
+					<span>ユーザー名</span>
+					<input name="user" type="text" autocomplete="username" required>
+				</label>
+				<label>
+					<span>パスワード</span>
+					<input name="password" type="password" autocomplete="current-password" required>
+				</label>
+				<button type="submit">ログイン</button>
+			</form>
+		</section>
+	</main>
+	<script>
+		const params = new URLSearchParams(location.search);
+		const next = params.get("next");
+		if (next && next.startsWith("/") && !next.startsWith("//")) {
+			document.getElementById("adminNextInput").value = next;
+		}
+		if (params.has("error")) {
+			document.getElementById("adminLoginError").hidden = false;
+		}
+	</script>
+</body>
+</html>

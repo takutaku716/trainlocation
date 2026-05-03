@@ -32,7 +32,7 @@ Pages projectの **Settings** > **Environment variables** に追加します。
 | `ADMIN_BASIC_USER` | 管理画面のユーザー名 |
 | `ADMIN_BASIC_PASSWORD` | 管理画面のパスワード |
 
-`/admin.html` と `/api/admin/*` はBasic認証で保護されます。
+`/admin.html` と `/api/admin/*` はログインフォームとCookieで保護されます。
 
 ## 5. 初回データ投入
 
@@ -42,7 +42,7 @@ Pages projectの **Settings** > **Environment variables** に追加します。
 https://<your-pages-domain>/admin.html
 ```
 
-1. ブラウザのログイン画面で `ADMIN_BASIC_USER` / `ADMIN_BASIC_PASSWORD` を入力
+1. ログイン画面で `ADMIN_BASIC_USER` / `ADMIN_BASIC_PASSWORD` を入力
 2. `location_maintenance.json` を読み込み
 3. 内容を確認して保存
 4. `rosen_maintenance.json` も同じように保存
@@ -75,6 +75,6 @@ https://trainlocation.pages.dev/api/mainte/rosen_maintenance.json
 ## 7. 注意
 
 - `ADMIN_BASIC_USER` / `ADMIN_BASIC_PASSWORD` はHTMLやJSへ直接書かないでください。
-- Basic認証はブラウザに認証状態が残ることがあります。共有端末では利用後にブラウザを閉じてください。
+- ログイン状態はHttpOnly Cookieで保持されます。共有端末では利用後にログアウトしてください。
 - 公開APIは30秒キャッシュします。反映を即時確認したい場合はページを再読み込みしてください。
 - 公開APIはGitHub Pagesから参照できるようにCORSを許可しています。
