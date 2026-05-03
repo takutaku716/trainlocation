@@ -18,18 +18,13 @@ function getApiUrl(file) {
 
 async function logoutAdmin() {
 	setStatus("ログアウト処理中...");
-	try {
-		await fetch("./api/admin/logout?" + Date.now(), {
-			cache: "no-store",
-			credentials: "omit",
-			headers: {
-				"authorization": "Basic " + btoa("logout:logout")
-			}
-		});
-	} catch {
-		// 401が返る想定のため、通信エラーは無視してログイン画面へ戻す。
-	}
-	location.replace("./admin.html?logout=" + Date.now());
+	getEditor().value = "";
+	renderQuickActions(null);
+
+	const logoutUrl = new URL("./admin.html?logout=" + Date.now(), location.href);
+	logoutUrl.username = "logout";
+	logoutUrl.password = String(Date.now());
+	location.replace(logoutUrl.toString());
 }
 
 async function requestAdminJson(file) {
