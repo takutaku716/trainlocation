@@ -165,15 +165,16 @@ function getRosenChienText(_nowStatus) {
 	const CHIEN_LABEL_DELAYED_MINUTES = { "ja": "最大{0}分遅れ", "en": "Delayed for <br>{0} minutes or less", "tc": "最長延遲{0}分鐘", "sc": "最长延迟{0}分钟", "kr": "최대 {0}분 지연" };
 	const CHIEN_LABEL_VERY_LATE = { "ja": "大幅な遅れあり", "en": "Very late", "tc": "大幅延遲", "sc": "大幅延迟", "kr": "대폭 지연 있음" };
 	const lang = document.documentElement.dataset.lang;
+	const maxChien = Number(_nowStatus.maxChien || 0);
 
-	if (!_nowStatus.maxChien || _nowStatus.maxChien <= 4) { // 平常運転の場合は何も表示しない
+	if (maxChien < 1) { // 平常運転の場合は何も表示しない
 		return "";
-	} else if (_nowStatus.maxChien >= 999) { // 100分以上なら「大幅な遅れあり」
+	} else if (maxChien >= 999) { // 100分以上なら「大幅な遅れあり」
 		return `<span class="unkou-label chien very-late">${CHIEN_LABEL_VERY_LATE[lang]}</span>`;
 	} else {
 		// 遅れ時分表示
-		let chienHour = Math.floor(_nowStatus.maxChien / 60);
-		let chienMin = _nowStatus.maxChien % 60;
+		let chienHour = Math.floor(maxChien / 60);
+		let chienMin = maxChien % 60;
 		if (chienHour > 0){
 			if (chienMin > 0) return `<span class="unkou-label chien">${CHIEN_LABEL_DELAYED_HR_MIN[lang].replace("{0}", chienHour).replace("{1}", chienMin)}</span>`; // 「最大〇時間〇分遅れ」
 			else return `<span class="unkou-label chien">${CHIEN_LABEL_DELAYED_HOUR[lang].replace("{0}",chienHour)}</span>`; // 「最大〇時間遅れ」
