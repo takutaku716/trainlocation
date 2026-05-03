@@ -19,9 +19,15 @@
 		<section class="admin-panel">
 			<p class="admin-status">管理画面からログアウトしました。再度編集する場合は、下のボタンからログインしてください。</p>
 			<div class="admin-quick-buttons admin-logout-actions">
-				<a href="./admin.html" class="admin-link">管理画面へログイン</a>
+				<a id="adminLoginLink" href="./admin.html" class="admin-link">管理画面へログイン</a>
 			</div>
 		</section>
 	</main>
+	<script>
+		document.getElementById("adminLoginLink").addEventListener("click", (event) => {
+			event.preventDefault();
+			location.replace("./admin.html?login=" + Date.now());
+		});
+	</script>
 </body>
 </html>

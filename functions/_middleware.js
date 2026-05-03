@@ -8,6 +8,16 @@ function unauthorized() {
 	});
 }
 
+function redirect(location) {
+	return new Response(null, {
+		status: 302,
+		headers: {
+			"location": location,
+			"cache-control": "no-store"
+		}
+	});
+}
+
 function getBasicAuth(request) {
 	const auth = request.headers.get("authorization") || "";
 	if (!auth.startsWith("Basic ")) return null;
@@ -48,17 +58,15 @@ export async function onRequest(context) {
 
 	const basicAuth = getBasicAuth(context.request);
 	if (basicAuth && basicAuth.user === "logout" && url.searchParams.has("logout")) {
-		return new Response(null, {
-			status: 302,
-			headers: {
-				"location": "/admin_logged_out.html?logout=" + Date.now(),
-				"cache-control": "no-store"
-			}
-		});
+		return redirect("/admin_logged_out.html?logout=" + Date.now());
 	}
 
 	if (!isBasicAuthorized(context.request, context.env)) {
 		return unauthorized();
+	}
+
+	if (url.pathname === "/admin") {
+		return redirect("/admin.html");
 	}
 
 	return context.next();
