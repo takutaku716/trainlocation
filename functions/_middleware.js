@@ -65,9 +65,5 @@ export async function onRequest(context) {
 		return unauthorized();
 	}
 
-	if (url.pathname === "/admin") {
-		return redirect("/admin.html");
-	}
-
 	return context.next();
 }
