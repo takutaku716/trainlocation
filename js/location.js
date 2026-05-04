@@ -954,6 +954,7 @@ function refresh_location_positions(_param_rosen) {
 	load_location_now_data(_param_rosen, now)
 	.then(function(nowData) {
 		redraw_location_positions(_param_rosen, nowData);
+		set_unko_info(_param_rosen);
 	})
 	.catch(function() {
 		// 自動更新失敗時は次回更新を待つ
