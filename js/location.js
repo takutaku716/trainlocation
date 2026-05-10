@@ -2067,13 +2067,19 @@ function create_ressha_detail(_objItem, _nowRow, _typeData, _ekiData) {
 		// 遅れ
 		_objItem.dataset.chien = _nowRow.chien ? _nowRow.chien : "0";
 		if (_nowRow.yokuStatus == 1 || _nowRow.yokuStatus == 2) {
-			_objItem.dataset.chien_text = _nowRow.yokuDetail[lang];
-		} else if (_nowRow.chien >= 1) {
+			_objItem.dataset.yoku_text = _nowRow.yokuDetail && _nowRow.yokuDetail[lang] ? _nowRow.yokuDetail[lang] : "";
+			_objItem.dataset.yoku_status = _nowRow.yokuStatus;
+		} else {
+			_objItem.dataset.yoku_text = "";
+			_objItem.dataset.yoku_status = "0";
+		}
+		if (_nowRow.chien >= 1) {
 			const CHIEN_LABEL_DELAYED_HOUR = { "ja": "{0}時間遅れ", "en": "{0} hour(s) late", "tc": "延遲{0}小時", "sc": "延迟{0}小时", "kr": "{0}시간 지연" };
 			const CHIEN_LABEL_DELAYED_HR_MIN = { "ja": "{0}時間{1}分遅れ", "en": "{0} hr {1} min late", "tc": "延遲{0}小時{1}分", "sc": "延迟{0}小时{1}分", "kr": "{0}시간 {1}분 지연" };
 			const CHIEN_LABEL_DELAYED_MINUTES = { "ja": "{0}分遅れ", "en": "{0} minutes late", "tc": "延遲{0}分", "sc": "延迟{0}分", "kr": "{0}분 지연" };
 			let chienHour = Math.floor(_nowRow.chien / 60);
 			let chienMin = _nowRow.chien % 60;
+			_objItem.dataset.chien_status = "1";
 			if (chienHour > 0){
 				if (chienMin > 0) _objItem.dataset.chien_text = CHIEN_LABEL_DELAYED_HR_MIN[lang].replace("{0}", chienHour).replace("{1}", chienMin); // 「〇時間〇分遅れ」
 				else _objItem.dataset.chien_text = CHIEN_LABEL_DELAYED_HOUR[lang].replace("{0}",chienHour); // 「〇時間遅れ」
@@ -2083,7 +2089,8 @@ function create_ressha_detail(_objItem, _nowRow, _typeData, _ekiData) {
 				else _objItem.dataset.chien_text = CHIEN_LABEL_DELAYED_MINUTES[lang].replace("{0}", chienMin); // 「〇分遅れ」
 			}
 		} else {
-			_objItem.dataset.chien_status = "0"
+			_objItem.dataset.chien_text = "";
+			_objItem.dataset.chien_status = "0";
 		}
 
 		// 線区

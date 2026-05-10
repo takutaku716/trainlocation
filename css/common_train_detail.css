@@ -156,6 +156,10 @@
 		.trainDetailDialog .train-info dl dt.chien-item .chien-label {
 			background-color: #fa2;
 		}
+		/* ｢運行状況｣のアイコン */
+		.trainDetailDialog .train-info dl dt.yoku-item .yoku-label {
+			background-color: #777;
+		}
 		/* ｢運行状態｣のアイコン */
 		.trainDetailDialog .train-info dl dt.status-item .status-label {
 			margin: auto;

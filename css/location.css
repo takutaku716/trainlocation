@@ -2228,6 +2228,10 @@ section#resshaDetail {
 					background-color: #fa2;
 					color: white;
 				}
+				section#resshaDetail .dialog .icon.yoku {
+					background-color: #777;
+					color: white;
+				}
 				section#resshaDetail .dialog .icon.detail {
 					color: white;
 				}
@@ -2519,6 +2523,11 @@ section#unkouDetail {
 	#resshaDetail .text.chien {
 		color: red;
 		font-weight: bold;
+		border-bottom: 1px solid #ccc;
+		padding: 10px 0;
+		margin-bottom: -1px;
+	}
+	#resshaDetail .text.yoku {
 		border-bottom: 1px solid #ccc;
 		padding: 10px 0;
 		margin-bottom: -1px;

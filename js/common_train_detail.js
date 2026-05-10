@@ -83,6 +83,8 @@ function showTrainDetailDialog(target, train, isError) {
 			drawCurrentPos(dialog, train.pos, posNameMaster);
 			// ダイアログに｢遅れ｣を描画する。
 			drawChien(dialog, train.runStatus, train.yokuStatus, train.yokuDetail, train.chien, train.status);
+			// ダイアログに｢運行状況｣を描画する。
+			drawYokuStatus(dialog, train.yokuStatus, train.yokuDetail);
 			// ダイアログに｢運行状態｣を描画する。
 			drawUnkouStatus(dialog, train.status, train.statusDetail);
 			// ダイアログに｢ダイヤデータ｣を描画する。
@@ -218,12 +220,10 @@ function showTrainDetailDialog(target, train, isError) {
 				if(unkouStatus === 1 || unkouStatus === 2){
 					// 走行終了の場合は表示なし。
 					if (!runStatus) return "";
-					// 抑止の状態が「1:始発駅抑止」「2:抑止」なら抑止の詳細文言を表示。
-					if (yokuStatus === 1 || yokuStatus === 2) return yokuDetail[lang];
-					// 遅れが5分未満の場合は表示なし。
-					if (chien < 5) return "";
-					// 遅れが5分以上の場合は時分を表示
-					if (chien >= 5) {
+					// 遅れが1分未満の場合は表示なし。
+					if (chien < 1) return "";
+					// 遅れが1分以上の場合は時分を表示
+					if (chien >= 1) {
 						let chienHour = Math.floor(chien / 60);
 						let chienMin = chien % 60;
 						if (chienHour > 0){
@@ -241,6 +241,20 @@ function showTrainDetailDialog(target, train, isError) {
 			if (chienText) {
 				$(dialog).find(".chien-text").text(chienText);
 				$(dialog).find(".chien-item").removeClass("hide");
+			}
+		}
+		/**
+		 * ダイアログに｢運行状況｣を描画する。
+		 * @param dialog ダイアログ要素。
+		 * @param yokuStatus 抑止の状態。0:なし、1:始発駅抑止、2:抑止。
+		 * @param yokuDetail 各言語での、抑止状態の詳細を表す文言。
+		 */
+		function drawYokuStatus(dialog, yokuStatus, yokuDetail) {
+			const lang = document.documentElement.dataset.lang;
+			const status = Number(yokuStatus);
+			if ((status === 1 || status === 2) && yokuDetail && yokuDetail[lang]) {
+				$(dialog).find(".yoku-text").text(yokuDetail[lang]);
+				$(dialog).find(".yoku-item").removeClass("hide");
 			}
 		}
 		/**
