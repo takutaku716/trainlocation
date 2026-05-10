@@ -2229,7 +2229,7 @@ section#resshaDetail {
 					color: white;
 				}
 				section#resshaDetail .dialog .icon.yoku {
-					background-color: #777;
+					background-color: #f00;
 					color: white;
 				}
 				section#resshaDetail .dialog .icon.detail {
@@ -2529,6 +2529,8 @@ section#unkouDetail {
 	}
 	#resshaDetail .text.yoku {
 		border-bottom: 1px solid #ccc;
+		color: red;
+		font-weight: bold;
 		padding: 10px 0;
 		margin-bottom: -1px;
 	}

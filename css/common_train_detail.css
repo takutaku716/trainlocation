@@ -158,7 +158,7 @@
 		}
 		/* ｢運行状況｣のアイコン */
 		.trainDetailDialog .train-info dl dt.yoku-item .yoku-label {
-			background-color: #777;
+			background-color: #f00;
 		}
 		/* ｢運行状態｣のアイコン */
 		.trainDetailDialog .train-info dl dt.status-item .status-label {
@@ -186,6 +186,11 @@
 		}
 		/* 遅れのラベル */
 		.trainDetailDialog .train-info dl dd.chien-item .chien-text {
+			color: #f00;
+			font-weight: bold;
+		}
+		/* 運行状況のラベル */
+		.trainDetailDialog .train-info dl dd.yoku-item .yoku-text {
 			color: #f00;
 			font-weight: bold;
 		}
