@@ -65,6 +65,21 @@
 			}
 		}
 	};
+	const JREAST_DESTINATION_SIMPLE_MAP = {
+		"新函館北斗": "函",
+		"新青森": "青",
+		"盛岡": "盛",
+		"仙台": "仙",
+		"福島": "福",
+		"郡山": "郡",
+		"那須塩原": "塩",
+		"大宮": "大",
+		"上野": "上",
+		"東京": "東",
+		"山形": "山",
+		"新庄": "庄",
+		"秋田": "秋"
+	};
 
 	function normalizeJrEastLocation(rawData, options) {
 		const settings = options || {};
@@ -144,6 +159,7 @@
 		const typeName = getLanguageText(train && train.type && train.type.fullName);
 		const destinationNames = collectDestinationNames(organizations, "fullName");
 		const destinationAbbreviations = collectDestinationNames(organizations, "abbreviated");
+		const destinationSimpleNames = collectDestinationSimpleNames(organizations);
 		const nicknameText = collectNicknameTexts(organizations);
 		const timetable = collectTimetableRows(train);
 
@@ -154,7 +170,7 @@
 			typeAbbr: getLanguageText(train && train.type && train.type.abbreviated),
 			pos: position,
 			chien: getDelayMinutes(train),
-			shuEkiSimple: destinationAbbreviations || destinationNames,
+			shuEkiSimple: destinationSimpleNames || destinationAbbreviations || destinationNames,
 			shuEkiName: destinationNames,
 			shuEkiKey: "",
 			status: "1",
@@ -301,6 +317,27 @@
 		return uniqueTexts(organizations.map(function(organization) {
 			return getLanguageText(organization.destination && organization.destination[nameType]);
 		})).join("・");
+	}
+
+	function collectDestinationSimpleNames(organizations) {
+		return uniqueTexts(organizations.map(function(organization) {
+			const destinationName = getLanguageText(organization.destination && organization.destination.fullName);
+			const mapped = convertDestinationToSimpleName(destinationName);
+			if (mapped) return mapped;
+			return getLanguageText(organization.destination && organization.destination.abbreviated);
+		})).join("・");
+	}
+
+	function convertDestinationToSimpleName(destinationName) {
+		const name = toText(destinationName);
+		if (!name) return "";
+		const directName = JREAST_DESTINATION_SIMPLE_MAP[name];
+		if (directName) return directName;
+
+		const parts = name.split(/[・･／/]/).map(function(part) {
+			return JREAST_DESTINATION_SIMPLE_MAP[toText(part)] || "";
+		}).filter(Boolean);
+		return parts.length ? parts.join("・") : "";
 	}
 
 	function collectNicknameTexts(organizations) {
