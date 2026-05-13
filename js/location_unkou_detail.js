@@ -108,6 +108,20 @@ $(function ($) {
 			$("#cbangoIcon").removeClass("hide");
 			$("#cbangoDetail").removeClass("hide");
 
+			if (dataset.source === "jreast") {
+				$("#posDetailText").text(dataset.pos_name || dataset.pos || "");
+				$("#aisho").text(dataset.aisho || dataset.ressha_type_name || "");
+				$("#teisyaTableArea div").empty();
+				$("#teisyaTableArea .adjusted-notice").hide();
+				$('#resshaDetailMessage').empty();
+				$('#resshaDetailMessage').hide();
+				$('#resshaDetailMain').show();
+				$("#resshaDetail").fadeIn("fast");
+				$("#teisyaTableArea").scrollTop(0);
+				loading_animation_hidden();
+				return;
+			}
+
 			$.when(
 				$.getJSON("./original/location_master" + (lang === "ja" ? "" : "_" + lang) + ".json?" + now),
 				$.getJSON("https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/webunkou/json/master/eki_master.json?" + now),

@@ -270,6 +270,7 @@ function create_modern_train_card(train) {
 		}));
 	}
 
+	card.append(create_modern_train_card_shape(direction));
 	const trainMark = create_modern_train_mark(train);
 	const trainNumber = $("<div>", {
 		class: "modern-train-no",
@@ -316,6 +317,54 @@ function create_modern_train_card(train) {
 	});
 
 	return card;
+}
+
+function create_modern_train_card_shape(direction) {
+	const svgNs = "http://www.w3.org/2000/svg";
+	const svg = document.createElementNS(svgNs, "svg");
+	svg.setAttribute("class", "modern-train-shape");
+	svg.setAttribute("viewBox", "0 0 100 140");
+	svg.setAttribute("aria-hidden", "true");
+	svg.setAttribute("focusable", "false");
+
+	const defs = document.createElementNS(svgNs, "defs");
+	const clip = document.createElementNS(svgNs, "clipPath");
+	const clipId = "modernTrainClip" + direction + Math.random().toString(36).slice(2);
+	clip.setAttribute("id", clipId);
+	const bodyPath = document.createElementNS(svgNs, "path");
+	bodyPath.setAttribute("d", direction === "up" ? get_modern_card_up_path() : get_modern_card_down_path());
+	clip.appendChild(bodyPath);
+	defs.appendChild(clip);
+	svg.appendChild(defs);
+
+	const shadow = document.createElementNS(svgNs, "path");
+	shadow.setAttribute("class", "modern-train-shape-shadow");
+	shadow.setAttribute("d", direction === "up" ? get_modern_card_up_path() : get_modern_card_down_path());
+	svg.appendChild(shadow);
+
+	const body = document.createElementNS(svgNs, "path");
+	body.setAttribute("class", "modern-train-shape-body");
+	body.setAttribute("d", direction === "up" ? get_modern_card_up_path() : get_modern_card_down_path());
+	svg.appendChild(body);
+
+	const band = document.createElementNS(svgNs, "rect");
+	band.setAttribute("class", "modern-train-shape-band");
+	band.setAttribute("x", "0");
+	band.setAttribute("width", "100");
+	band.setAttribute("height", "64");
+	band.setAttribute("y", direction === "up" ? "76" : "0");
+	band.setAttribute("clip-path", "url(#" + clipId + ")");
+	svg.appendChild(band);
+
+	return svg;
+}
+
+function get_modern_card_up_path() {
+	return "M50 0 C54 0 57 2 61 4 L84 18 C94 24 100 35 100 48 L100 118 Q100 140 78 140 L22 140 Q0 140 0 118 L0 48 C0 35 6 24 16 18 L39 4 C43 2 46 0 50 0 Z";
+}
+
+function get_modern_card_down_path() {
+	return "M22 0 L78 0 Q100 0 100 22 L100 92 C100 105 94 116 84 122 L61 136 C57 138 54 140 50 140 C46 140 43 138 39 136 L16 122 C6 116 0 105 0 92 L0 22 Q0 0 22 0 Z";
 }
 
 function create_modern_train_mark(train) {

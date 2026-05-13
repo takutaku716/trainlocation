@@ -27,6 +27,12 @@ const LOCATION_JSON_SOURCE_MAP = {
 	"52": ["02", "07", "09"],
 	"53": ["02", "13"]
 };
+const JREAST_LOCATION_SOURCE_MAP = {
+	"54": {
+		screenCode: "88",
+		url: "https://jrproxy-926717289220.asia-northeast1.run.app/proxy?name=jrelines/transaction/2.0.0/train_88.json"
+	}
+};
 
 function get_mainte_json_request(fileName, cacheKey) {
 	const cloudflareApiBase = "https://trainlocation.pages.dev";
@@ -764,6 +770,17 @@ function get_location_json_url(_rosen, _now) {
 	return "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/trainlocation/json/location/now/location_" + _rosen + "_now.json?" + _now;
 }
 
+function is_jreast_location_rosen(_rosen) {
+	return Object.prototype.hasOwnProperty.call(JREAST_LOCATION_SOURCE_MAP, String(_rosen || ""));
+}
+
+function get_jreast_location_request(_rosen, _now) {
+	const source = JREAST_LOCATION_SOURCE_MAP[String(_rosen || "")];
+	if (!source) return $.Deferred().reject().promise();
+	const separator = source.url.indexOf("?") >= 0 ? "&" : "?";
+	return $.getJSON(source.url + separator + "cache=" + _now);
+}
+
 function jqxhr_to_promise(_jqxhr) {
 	return new Promise((resolve, reject) => {
 		_jqxhr.done((data) => resolve(data)).fail((error) => reject(error));
@@ -800,6 +817,10 @@ function merge_location_now_data(_nowDataList) {
 }
 
 function load_location_now_data(_param_rosen, _now) {
+	if (is_jreast_location_rosen(_param_rosen)) {
+		return load_jreast_location_now_data(_param_rosen, _now);
+	}
+
 	const sourceRosens = get_location_json_source_list(_param_rosen);
 	return Promise.all(
 		sourceRosens.map((rosen) => {
@@ -812,6 +833,56 @@ function load_location_now_data(_param_rosen, _now) {
 		if (successDataList.length < 1) throw new Error("location now json load failed");
 		return merge_location_now_data(successDataList);
 	});
+}
+
+function load_jreast_location_now_data(_param_rosen, _now) {
+	const source = JREAST_LOCATION_SOURCE_MAP[String(_param_rosen || "")];
+	if (!source || !window.JrEastLocationAdapter) {
+		return Promise.reject(new Error("JRE location adapter is not loaded"));
+	}
+	return jqxhr_to_promise(get_jreast_location_request(_param_rosen, _now))
+		.then((rawData) => convert_jreast_location_now_data(rawData, source));
+}
+
+function convert_jreast_location_now_data(_rawData, _source) {
+	const normalized = window.JrEastLocationAdapter.normalize(_rawData, {
+		screenCode: _source.screenCode
+	});
+	const timeText = format_jreast_datetime_to_location_time(normalized.dateTime);
+	const sourceTime = timeText ? get_location_now_time_info({ time: { ja: timeText } }, normalized.screenCode) : null;
+	const trains = (Array.isArray(normalized.trains) ? normalized.trains : []).map((train) => {
+		const row = Object.assign({}, train);
+		row.source = "jreast";
+		row.senku = "";
+		row.posName = train.jrEast && train.jrEast.positionName ? train.jrEast.positionName : "";
+		row.shuEkiSimple = train.shuEkiSimple || make_jreast_destination_short(train.shuEkiName);
+		row.shuEkiName = train.shuEkiName || train.shuEkiSimple || "";
+		row.shuEkiKey = train.shuEkiKey || "";
+		return row;
+	});
+
+	return {
+		time: timeText ? { ja: timeText } : undefined,
+		trains: trains,
+		sourceTimes: sourceTime ? [sourceTime] : []
+	};
+}
+
+function format_jreast_datetime_to_location_time(_dateTime) {
+	const match = String(_dateTime || "").match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/);
+	if (!match) return "";
+	return Number(match[1]) + "年" +
+		Number(match[2]) + "月" +
+		Number(match[3]) + "日" +
+		Number(match[4]) + "時" +
+		Number(match[5]) + "分現在";
+}
+
+function make_jreast_destination_short(_destination) {
+	const text = String(_destination || "").replace(/\s+/g, "");
+	if (!text) return "";
+	const first = text.split(/[・･／/]/)[0] || text;
+	return first.length > 2 ? first.slice(0, 2) : first;
 }
 
 function get_location_now_time_info(_nowData, _rosen) {
@@ -2030,6 +2101,8 @@ function create_ressha_detail(_objItem, _nowRow, _typeData, _ekiData) {
 		// 列車番号
 		{
 			_objItem.dataset.cbango = _nowRow.cbango;
+			_objItem.dataset.source = _nowRow.source || "";
+			_objItem.dataset.aisho = _nowRow.jrEast && _nowRow.jrEast.nickname ? _nowRow.jrEast.nickname : "";
 		}
 
 		// 列車種別を表す色を設定。
@@ -2156,16 +2229,18 @@ function create_ressha_detail(_objItem, _nowRow, _typeData, _ekiData) {
 
 		// 地点キー
 		_objItem.dataset.pos = _nowRow.pos;
+		_objItem.dataset.pos_name = _nowRow.posName || "";
 
 		// 駅マスタからダイヤデータの終着駅を取得する
 		let findEki = _ekiData.find((v) => v.key == _nowRow.shuEkiKey);
 
 		// 行先
-		if (lang == "ja") _objItem.dataset.shu_eki = typeof findEki !== "undefined" ? findEki.ja + " 行き" : "行き";
-		if (lang == "en") _objItem.dataset.shu_eki = typeof findEki !== "undefined" ? "For " + findEki.en : "For ";
-		if (lang == "tc") _objItem.dataset.shu_eki = typeof findEki !== "undefined" ? "開往" + findEki.tc : "開往";
-		if (lang == "sc") _objItem.dataset.shu_eki = typeof findEki !== "undefined" ? "开往" + findEki.sc : "开往";
-		if (lang == "kr") _objItem.dataset.shu_eki = typeof findEki !== "undefined" ? findEki.kr + "행" : "행";
+		const jreastDestination = _nowRow.shuEkiName || _nowRow.shuEkiSimple || "";
+		if (lang == "ja") _objItem.dataset.shu_eki = typeof findEki !== "undefined" ? findEki.ja + " 行き" : (jreastDestination ? jreastDestination + " 行き" : "行き");
+		if (lang == "en") _objItem.dataset.shu_eki = typeof findEki !== "undefined" ? "For " + findEki.en : (jreastDestination ? "For " + jreastDestination : "For ");
+		if (lang == "tc") _objItem.dataset.shu_eki = typeof findEki !== "undefined" ? "開往" + findEki.tc : (jreastDestination ? "開往" + jreastDestination : "開往");
+		if (lang == "sc") _objItem.dataset.shu_eki = typeof findEki !== "undefined" ? "开往" + findEki.sc : (jreastDestination ? "开往" + jreastDestination : "开往");
+		if (lang == "kr") _objItem.dataset.shu_eki = typeof findEki !== "undefined" ? findEki.kr + "행" : (jreastDestination ? jreastDestination + "행" : "행");
 
 		// 車両数
 		_objItem.dataset.ryosu = _nowRow.ryosu && _nowRow.ryosu != 0 ? _nowRow.ryosu : "";

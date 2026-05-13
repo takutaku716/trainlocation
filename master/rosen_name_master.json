@@ -283,6 +283,24 @@
         "area": "6"
     },
     {
+        "rosen": "54",
+        "rosenName": {
+            "ja": "北海道・東北新幹線",
+            "en": "Hokkaido/Tohoku Shinkansen",
+            "tc": "北海道・東北新幹線",
+            "sc": "北海道・东北新干线",
+            "kr": "홋카이도・도호쿠 신칸센"
+        },
+        "kukanName": {
+            "ja": "[新函館北斗～東京間]",
+            "en": "[Shin-Hakodate-Hokuto～Tokyo]",
+            "tc": "[新函館北斗～東京間]",
+            "sc": "[新函馆北斗～东京间]",
+            "kr": "[신하코다테호쿠토～도쿄]"
+        },
+        "area": "6"
+    },
+    {
         "rosen": "51",
         "rosenName": {
             "ja": "函館線",
