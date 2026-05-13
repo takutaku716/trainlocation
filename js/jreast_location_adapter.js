@@ -325,8 +325,9 @@
 
 	function buildPositionKey(context, direction) {
 		const positionInfo = getPositionInfo(context);
+		const locationDirection = convertJrEastDirectionToLocationDirection(direction);
 		if (positionInfo.number && positionInfo.rosenCode) {
-			return "RE" + positionInfo.rosenCode + "P" + positionInfo.number + (direction === "up" ? "U" : "D");
+			return "RE" + positionInfo.rosenCode + "P" + positionInfo.number + locationDirection;
 		}
 
 		const screen = toText(context.screenCode) || "00";
@@ -334,7 +335,11 @@
 		const side = context.side === "leftSide" ? "L" : "R";
 		const laneMatch = toText(context.lane).match(/\d+/);
 		const lane = laneMatch ? laneMatch[0] : "0";
-		return "JRE" + screen + "T" + tile + side + lane + (direction === "up" ? "U" : "D");
+		return "JRE" + screen + "T" + tile + side + lane + locationDirection;
+	}
+
+	function convertJrEastDirectionToLocationDirection(direction) {
+		return direction === "up" ? "D" : "U";
 	}
 
 	function getPositionInfo(context) {
