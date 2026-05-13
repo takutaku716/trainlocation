@@ -30,6 +30,7 @@ const LOCATION_JSON_SOURCE_MAP = {
 const JREAST_LOCATION_SOURCE_MAP = {
 	"54": {
 		screenCode: "88",
+		hokkaidoRosens: ["15"],
 		url: "https://jrproxy-926717289220.asia-northeast1.run.app/proxy?name=jrelines/transaction/2.0.0/train_88.json"
 	}
 };
@@ -797,6 +798,7 @@ function merge_location_now_data(_nowDataList) {
 	const seenCbangoMap = new Map();
 	const mergedTrains = [];
 	const sourceTimes = [];
+	let displayTime = null;
 
 	_nowDataList.forEach((entry) => {
 		const nowData = entry && entry.nowData ? entry.nowData : entry;
@@ -804,6 +806,7 @@ function merge_location_now_data(_nowDataList) {
 		if (!nowData || !Array.isArray(nowData.trains)) return;
 		const sourceTime = get_location_now_time_info(nowData, sourceRosen);
 		if (sourceTime) sourceTimes.push(sourceTime);
+		if (!displayTime && nowData.time) displayTime = nowData.time;
 
 		nowData.trains.forEach((row) => {
 			if (!row || !row.cbango) {
@@ -817,12 +820,14 @@ function merge_location_now_data(_nowDataList) {
 		});
 	});
 
-	return { trains: mergedTrains, sourceTimes: sourceTimes };
+	const mergedData = { trains: mergedTrains, sourceTimes: sourceTimes };
+	if (displayTime) mergedData.time = displayTime;
+	return mergedData;
 }
 
 function load_location_now_data(_param_rosen, _now) {
 	if (is_jreast_location_rosen(_param_rosen)) {
-		return load_jreast_location_now_data(_param_rosen, _now);
+		return load_combined_jreast_location_now_data(_param_rosen, _now);
 	}
 
 	const sourceRosens = get_location_json_source_list(_param_rosen);
@@ -837,6 +842,29 @@ function load_location_now_data(_param_rosen, _now) {
 		if (successDataList.length < 1) throw new Error("location now json load failed");
 		return merge_location_now_data(successDataList);
 	});
+}
+
+function load_combined_jreast_location_now_data(_param_rosen, _now) {
+	const source = JREAST_LOCATION_SOURCE_MAP[String(_param_rosen || "")];
+	const hokkaidoRosens = source && Array.isArray(source.hokkaidoRosens) ? source.hokkaidoRosens : [];
+	const hokkaidoRequests = hokkaidoRosens.map((rosen) => {
+		return jqxhr_to_promise(get_location_now_request(rosen, _now))
+			.then((nowData) => ({ rosen: rosen, sourceType: "hokkaido", nowData: nowData }))
+			.catch(() => null);
+	});
+	const jreastRequest = load_jreast_location_now_data(_param_rosen, _now)
+		.then((nowData) => ({ rosen: _param_rosen, sourceType: "jreast", nowData: nowData }))
+		.catch(() => null);
+
+	return Promise.all(hokkaidoRequests.concat([jreastRequest]))
+		.then((nowDataResults) => {
+			const successDataList = nowDataResults.filter((entry) => entry && entry.nowData && Array.isArray(entry.nowData.trains));
+			if (successDataList.length < 1) throw new Error("location now json load failed");
+			const mergedData = merge_location_now_data(successDataList);
+			const jreastData = successDataList.find((entry) => entry.sourceType === "jreast" && entry.nowData && entry.nowData.time);
+			if (jreastData) mergedData.time = jreastData.nowData.time;
+			return mergedData;
+		});
 }
 
 function load_jreast_location_now_data(_param_rosen, _now) {
