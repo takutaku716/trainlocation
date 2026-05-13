@@ -2103,6 +2103,7 @@ function create_ressha_detail(_objItem, _nowRow, _typeData, _ekiData) {
 			_objItem.dataset.cbango = _nowRow.cbango;
 			_objItem.dataset.source = _nowRow.source || "";
 			_objItem.dataset.aisho = _nowRow.jrEast && _nowRow.jrEast.nickname ? _nowRow.jrEast.nickname : "";
+			_objItem.dataset.jreast_timetable = _nowRow.jrEast && Array.isArray(_nowRow.jrEast.timetable) ? JSON.stringify(_nowRow.jrEast.timetable) : "[]";
 		}
 
 		// 列車種別を表す色を設定。
