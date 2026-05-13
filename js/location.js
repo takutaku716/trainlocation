@@ -774,6 +774,10 @@ function is_jreast_location_rosen(_rosen) {
 	return Object.prototype.hasOwnProperty.call(JREAST_LOCATION_SOURCE_MAP, String(_rosen || ""));
 }
 
+function is_location_auto_refresh_allowed(_rosen) {
+	return !is_jreast_location_rosen(_rosen);
+}
+
 function get_jreast_location_request(_rosen, _now) {
 	const source = JREAST_LOCATION_SOURCE_MAP[String(_rosen || "")];
 	if (!source) return $.Deferred().reject().promise();
@@ -869,13 +873,14 @@ function convert_jreast_location_now_data(_rawData, _source) {
 }
 
 function format_jreast_datetime_to_location_time(_dateTime) {
-	const match = String(_dateTime || "").match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/);
+	const match = String(_dateTime || "").match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})/);
 	if (!match) return "";
 	return Number(match[1]) + "年" +
 		Number(match[2]) + "月" +
 		Number(match[3]) + "日" +
 		Number(match[4]) + "時" +
-		Number(match[5]) + "分現在";
+		Number(match[5]) + "分" +
+		Number(match[6]) + "秒現在";
 }
 
 function make_jreast_destination_short(_destination) {
@@ -899,15 +904,16 @@ function get_location_now_time_info(_nowData, _rosen) {
 
 function parse_location_now_time(_timeText) {
 	if (!_timeText) return null;
-	const match = String(_timeText).match(/(\d{4})年\s*(\d{1,2})月\s*(\d{1,2})日\s*(\d{1,2})時\s*(\d{1,2})分/);
+	const match = String(_timeText).match(/(\d{4})年\s*(\d{1,2})月\s*(\d{1,2})日\s*(\d{1,2})時\s*(\d{1,2})分(?:(\d{1,2})秒)?/);
 	if (!match) return null;
 	const year = Number(match[1]);
 	const month = Number(match[2]);
 	const day = Number(match[3]);
 	const hour = Number(match[4]);
 	const minute = Number(match[5]);
-	if ([year, month, day, hour, minute].some((value) => Number.isNaN(value))) return null;
-	return Date.UTC(year, month - 1, day, hour - 9, minute, 0);
+	const second = Number(match[6] || 0);
+	if ([year, month, day, hour, minute, second].some((value) => Number.isNaN(value))) return null;
+	return Date.UTC(year, month - 1, day, hour - 9, minute, second);
 }
 
 function get_oldest_location_now_time(_nowData) {
@@ -970,8 +976,9 @@ function set_station_list(_param_rosen, _scrollKey, _callback) {
 	)
 	.done(function(rosenNameData, maintenanceData, typeData, ekiData, rosen, maintenance) {
 
-		// 現在日付を日本時間で設定
-		update_location_timestamp();
+		// 現在日付を設定。JRE変換路線はJSON内部の配信時刻を使用する。
+		if (is_jreast_location_rosen(_param_rosen)) $("#timestamp").text("");
+		else update_location_timestamp();
 
 		// 路線名を設定
 		let findRosenName = rosenNameData[0].find((v) => v.rosen == _param_rosen);
@@ -982,6 +989,8 @@ function set_station_list(_param_rosen, _scrollKey, _callback) {
 			if (lang == "sc") $("#title").html(findRosenName.rosenName.sc + findRosenName.kukanName.sc);
 			if (lang == "kr") $("#title").html(`<span>${findRosenName.rosenName.kr}</span><span>${findRosenName.kukanName.kr}</span>`);
 		}
+		$("#refreshSettingBtn, #refreshSettingBtnSub").toggle(is_location_auto_refresh_allowed(_param_rosen));
+		update_refresh_status_label();
 
 		let result = maintenanceData[0].lines.filter((v) => v.status == "1" && v.rosen == _param_rosen);
 		if (result.length > 0) {
@@ -1010,6 +1019,7 @@ function set_station_list(_param_rosen, _scrollKey, _callback) {
 			cachedResshaTypeData = typeData[0];
 			cachedEkiData = ekiData[0];
 			$("#stationList").html(rosen[0]);
+			if (is_jreast_location_rosen(_param_rosen)) setTimestamp(nowData);
 			update_location_data_stale_warning(nowData);
 			// 列車アイコンを描画する
 			create_ressha_icon(_param_rosen, nowData, typeData[0], ekiData[0]);
@@ -1055,6 +1065,10 @@ function set_station_list(_param_rosen, _scrollKey, _callback) {
 function start_location_auto_refresh(_param_rosen, _delay = locationAutoRefreshInterval) {
 	stop_location_auto_refresh(true);
 	if (!_param_rosen || !locationAutoRefreshEnabled) return;
+	if (!is_location_auto_refresh_allowed(_param_rosen)) {
+		stop_location_auto_refresh();
+		return;
+	}
 	set_next_location_auto_refresh_time(_delay);
 	locationAutoRefreshTimer = setTimeout(() => {
 		if (document.visibilityState === "visible") {
@@ -1104,7 +1118,8 @@ function redraw_location_positions(_param_rosen, _nowData) {
 	clear_location_positions(_param_rosen);
 	create_ressha_icon(_param_rosen, _nowData, cachedResshaTypeData, cachedEkiData);
 	ressha_pos_sort();
-	update_location_timestamp();
+	if (is_jreast_location_rosen(_param_rosen)) setTimestamp(_nowData);
+	else update_location_timestamp();
 	update_location_data_stale_warning(_nowData);
 	restore_selected_train_marker(trackingScrollEnabled);
 	update_tracking_footer_controls();
@@ -1211,7 +1226,7 @@ function update_refresh_status_label() {
 		sc: "下次更新：" + format_refresh_time(nextLocationAutoRefreshAt),
 		kr: "다음 갱신: " + format_refresh_time(nextLocationAutoRefreshAt)
 	};
-	if (locationAutoRefreshEnabled) {
+	if (locationAutoRefreshEnabled && is_location_auto_refresh_allowed(get_param_rosen())) {
 		const message = (messages[lang] || messages.ja) + (nextLocationAutoRefreshAt ? "  " + (nextMessages[lang] || nextMessages.ja) : "");
 		$("#refreshStatusLabel").text(message).removeAttr("hidden");
 	} else {
@@ -1253,6 +1268,10 @@ function apply_location_auto_refresh_settings(_enabled, _interval, _persist = tr
 	update_refresh_status_label();
 	if (locationAutoRefreshEnabled) {
 		const currentRosen = get_param_rosen();
+		if (!is_location_auto_refresh_allowed(currentRosen)) {
+			stop_location_auto_refresh();
+			return;
+		}
 		start_location_auto_refresh(currentRosen);
 		if (currentRosen && document.visibilityState === "visible" && (!wasEnabled || _persist)) {
 			refresh_location_positions(currentRosen);
@@ -1272,6 +1291,10 @@ function handle_page_visibility_change() {
 		return;
 	}
 	if (document.visibilityState === "visible" && locationAutoRefreshEnabled && currentRosen) {
+		if (!is_location_auto_refresh_allowed(currentRosen)) {
+			stop_location_auto_refresh();
+			return;
+		}
 		if (!nextLocationAutoRefreshAt) {
 			start_location_auto_refresh(currentRosen);
 			return;
