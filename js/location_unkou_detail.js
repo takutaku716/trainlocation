@@ -239,6 +239,7 @@ function create_jreast_daiya(_dataset) {
 	} catch (_error) {
 		timetable = [];
 	}
+	timetable = unique_jreast_timetable_rows(timetable);
 
 	let lang = document.documentElement.dataset.lang;
 	const chien = Number(_dataset.chien || 0);
@@ -276,6 +277,18 @@ function create_jreast_daiya(_dataset) {
 	});
 	html += "</table>";
 	$("#teisyaTableArea div").html(html);
+}
+
+function unique_jreast_timetable_rows(_timetable) {
+	const seen = new Set();
+	return (Array.isArray(_timetable) ? _timetable : []).filter(function(row) {
+		const stationName = row && row.stationName ? row.stationName : "";
+		const time = select_jreast_daiya_time(row);
+		const key = stationName + "|" + time;
+		if (!stationName || !time || seen.has(key)) return false;
+		seen.add(key);
+		return true;
+	});
 }
 
 function select_jreast_daiya_time(_row) {
