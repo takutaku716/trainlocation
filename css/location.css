@@ -172,6 +172,19 @@ header {
 			white-space: normal;
 		}
 
+		.sub-header .sub-header-contents .location-data-stale-warning {
+			background-color: #fff3cd;
+			border: 1px solid #f0ad4e;
+			border-radius: 4px;
+			color: #8a4b00;
+			font-size: 12px;
+			font-weight: bold;
+			line-height: 1.35;
+			margin-top: 4px;
+			max-width: min(760px, calc(100% - 16px));
+			padding: 4px 8px;
+		}
+
 	/* サブヘッダー内の方面表示領域 */
 	.sub-header .homen-header-contents {
 		background-color: #fff;
@@ -2228,6 +2241,10 @@ section#resshaDetail {
 					background-color: #fa2;
 					color: white;
 				}
+				section#resshaDetail .dialog .icon.yoku {
+					background-color: #f00;
+					color: white;
+				}
 				section#resshaDetail .dialog .icon.detail {
 					color: white;
 				}
@@ -2520,6 +2537,13 @@ section#unkouDetail {
 		color: red;
 		font-weight: bold;
 		border-bottom: 1px solid #ccc;
+		padding: 10px 0;
+		margin-bottom: -1px;
+	}
+	#resshaDetail .text.yoku {
+		border-bottom: 1px solid #ccc;
+		color: red;
+		font-weight: bold;
 		padding: 10px 0;
 		margin-bottom: -1px;
 	}

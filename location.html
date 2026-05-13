@@ -15,9 +15,20 @@
 		<!-- 基本（終了） -->
 		<!-- メンテ判定処理（開始） -->
 		<script>
-			fetch("./mainte/location_maintenance.json?" + (Date.now() >>> 16)).then(response => response.json()).then(json => {
-			  if (json.status) window.location.replace("./mainte/location_maintenance.html");
-			});
+			(function() {
+				const cacheKey = Date.now() >>> 16;
+				const cloudflareApiBase = "https://trainlocation.pages.dev";
+				const localUrl = "./mainte/location_maintenance.json?" + cacheKey;
+				const apiBase = location.hostname.endsWith("github.io") ? cloudflareApiBase : ".";
+				const apiUrl = apiBase + "/api/mainte/location_maintenance.json?" + cacheKey;
+				const useLocal = location.protocol === "file:";
+				fetch(useLocal ? localUrl : apiUrl)
+					.then(response => response.ok ? response.json() : Promise.reject())
+					.catch(() => fetch(localUrl).then(response => response.json()))
+					.then(json => {
+						if (json.status) window.location.replace("./mainte/location_maintenance.html");
+					});
+			}());
 		</script>
 		<!-- メンテ判定処理（終了） -->
 		<!-- ヘッダ・フッタ（開始） -->
@@ -334,6 +345,7 @@
 					<div class="sub-header-contents">
 						<span id="title" class="maintitle"></span>
 						<span id="refreshStatusLabel" class="refresh-status-label" hidden></span>
+						<div id="locationDataStaleWarning" class="location-data-stale-warning" hidden></div>
 					</div>
 					<!-- お知らせヘッダー ここから -->
 					<div id="commonOshirase" class="oshirase-header-contents"></div>
@@ -446,6 +458,8 @@
 							<span id="posDetail" class="text pos"><span id="posDetailText"></span><button id="trackTrainBtn" type="button">追跡</button></span>
 							<span id="chienIcon" class="icon chien">遅れ</span>
 							<span id="chienDetail" class="text chien"></span>
+							<span id="yokuIcon" class="icon yoku">運行状況</span>
+							<span id="yokuDetail" class="text yoku"></span>
 							<span id="resshaDetailUnkouName" class="icon detail"></span>
 							<span id="resshaDetailUnkouText" class="text detail"></span>
 						</div>

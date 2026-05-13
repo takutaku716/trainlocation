@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>列車走行位置 管理</title>
+	<link rel="stylesheet" href="./css/admin_mainte.css">
+</head>
+<body>
+	<main class="admin-page">
+		<header class="admin-header">
+			<div>
+				<p class="admin-kicker">Maintenance Admin</p>
+				<h1>管理画面</h1>
+			</div>
+			<div class="admin-header-actions">
+				<a href="https://takutaku716.github.io/trainlocation/location.html" class="admin-link">在線ページへ</a>
+				<button id="adminLogoutBtn" class="admin-logout-button" type="button">ログアウト</button>
+			</div>
+		</header>
+
+		<section class="admin-panel">
+			<p id="adminStatus" class="admin-status">編集するJSONを選択してください。</p>
+		</section>
+
+		<section class="admin-panel">
+			<div class="admin-toolbar">
+				<label for="adminFileSelect">対象ファイル</label>
+				<select id="adminFileSelect">
+					<option value="location_maintenance.json">location_maintenance.json</option>
+					<option value="rosen_maintenance.json">rosen_maintenance.json</option>
+				</select>
+				<button id="adminLoadBtn" type="button">読み込み</button>
+				<button id="adminFormatBtn" type="button">整形</button>
+				<button id="adminSaveBtn" type="button">保存</button>
+			</div>
+			<div id="adminQuickActions" class="admin-quick-actions">
+				<p>JSONを読み込むと、ここに有効・無効の切替ボタンが表示されます。</p>
+			</div>
+			<textarea id="adminJsonEditor" spellcheck="false" placeholder="JSONを読み込むとここに表示されます。"></textarea>
+		</section>
+	</main>
+
+	<script src="./js/admin_mainte.js"></script>
+</body>
+</html>

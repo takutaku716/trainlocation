@@ -52,6 +52,8 @@ $(function ($) {
 			$("#resshaDetail").attr("dataUnkou", dataset.unkou);
 			// 遅れ詳細
 			$("#chienDetail").text(dataset.chien_text);
+			// 抑止・停車中などの運行状況
+			$("#yokuDetail").text(dataset.yoku_text || "");
 			$("#trackTrainBtn").attr("data-cbango", dataset.cbango);
 			const isTracking = get_param_cbango() === dataset.cbango;
 			$("#trackTrainBtn").attr("data-tracking", isTracking ? "1" : "0");
@@ -83,6 +85,19 @@ $(function ($) {
 					$("#dialogsSurface .text.chien").css("borderBottomWidth", "1px");
 				}
 			}
+			if (dataset.yoku_text) {
+				$("#yokuIcon").show();
+				$("#yokuDetail").show();
+			} else {
+				$("#yokuIcon").hide();
+				$("#yokuDetail").hide();
+			}
+			const hasChien = dataset.chien_status != "0";
+			const hasYoku = !!dataset.yoku_text;
+			const hasUnkouDetail = dataset.unkou_detail !== "─";
+			$("#dialogsSurface .text.pos").css("borderBottomWidth", hasChien || hasYoku || hasUnkouDetail ? "1px" : "0px");
+			$("#dialogsSurface .text.chien").css("borderBottomWidth", hasYoku || hasUnkouDetail ? "1px" : "0px");
+			$("#dialogsSurface .text.yoku").css("borderBottomWidth", hasUnkouDetail ? "1px" : "0px");
 
 			let pos = dataset.pos;
 			let senku = dataset.senku;
