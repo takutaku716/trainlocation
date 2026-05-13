@@ -770,12 +770,19 @@ function jqxhr_to_promise(_jqxhr) {
 	});
 }
 
+const LOCATION_DATA_STALE_THRESHOLD_MS = 5 * 60 * 1000;
+
 function merge_location_now_data(_nowDataList) {
 	const seenCbangoMap = new Map();
 	const mergedTrains = [];
+	const sourceTimes = [];
 
-	_nowDataList.forEach((nowData) => {
+	_nowDataList.forEach((entry) => {
+		const nowData = entry && entry.nowData ? entry.nowData : entry;
+		const sourceRosen = entry && entry.rosen ? entry.rosen : "";
 		if (!nowData || !Array.isArray(nowData.trains)) return;
+		const sourceTime = get_location_now_time_info(nowData, sourceRosen);
+		if (sourceTime) sourceTimes.push(sourceTime);
 
 		nowData.trains.forEach((row) => {
 			if (!row || !row.cbango) {
@@ -789,18 +796,83 @@ function merge_location_now_data(_nowDataList) {
 		});
 	});
 
-	return { trains: mergedTrains };
+	return { trains: mergedTrains, sourceTimes: sourceTimes };
 }
 
 function load_location_now_data(_param_rosen, _now) {
 	const sourceRosens = get_location_json_source_list(_param_rosen);
 	return Promise.all(
-		sourceRosens.map((rosen) => jqxhr_to_promise(get_location_now_request(rosen, _now)).catch(() => null))
-	).then((nowDataList) => {
-		const successDataList = nowDataList.filter((nowData) => nowData && Array.isArray(nowData.trains));
+		sourceRosens.map((rosen) => {
+			return jqxhr_to_promise(get_location_now_request(rosen, _now))
+				.then((nowData) => ({ rosen: rosen, nowData: nowData }))
+				.catch(() => null);
+		})
+	).then((nowDataResults) => {
+		const successDataList = nowDataResults.filter((entry) => entry && entry.nowData && Array.isArray(entry.nowData.trains));
 		if (successDataList.length < 1) throw new Error("location now json load failed");
 		return merge_location_now_data(successDataList);
 	});
+}
+
+function get_location_now_time_info(_nowData, _rosen) {
+	if (!_nowData) return null;
+	const timeText = typeof _nowData.time === "string" ? _nowData.time : (_nowData.time && _nowData.time.ja ? _nowData.time.ja : "");
+	const timestamp = parse_location_now_time(timeText);
+	if (!timestamp) return null;
+	return {
+		rosen: _rosen,
+		text: timeText,
+		timestamp: timestamp
+	};
+}
+
+function parse_location_now_time(_timeText) {
+	if (!_timeText) return null;
+	const match = String(_timeText).match(/(\d{4})年\s*(\d{1,2})月\s*(\d{1,2})日\s*(\d{1,2})時\s*(\d{1,2})分/);
+	if (!match) return null;
+	const year = Number(match[1]);
+	const month = Number(match[2]);
+	const day = Number(match[3]);
+	const hour = Number(match[4]);
+	const minute = Number(match[5]);
+	if ([year, month, day, hour, minute].some((value) => Number.isNaN(value))) return null;
+	return Date.UTC(year, month - 1, day, hour - 9, minute, 0);
+}
+
+function get_oldest_location_now_time(_nowData) {
+	const sourceTimes = _nowData && Array.isArray(_nowData.sourceTimes) ? _nowData.sourceTimes : [];
+	if (sourceTimes.length < 1) return null;
+	return sourceTimes.reduce((oldest, current) => {
+		return current.timestamp < oldest.timestamp ? current : oldest;
+	}, sourceTimes[0]);
+}
+
+function update_location_data_stale_warning(_nowData) {
+	const oldestTime = get_oldest_location_now_time(_nowData);
+	if (!oldestTime) {
+		$("#locationDataStaleWarning").text("").attr("hidden", "hidden");
+		if (typeof set_header_height === "function") set_header_height();
+		return;
+	}
+	const ageMs = Date.now() - oldestTime.timestamp;
+	if (ageMs < LOCATION_DATA_STALE_THRESHOLD_MS) {
+		$("#locationDataStaleWarning").text("").attr("hidden", "hidden");
+		if (typeof set_header_height === "function") set_header_height();
+		return;
+	}
+	const message = "列車位置データの更新が停止している可能性があります。最終配信時刻：" + oldestTime.text;
+	$("#locationDataStaleWarning").text(message).removeAttr("hidden");
+	if (typeof set_header_height === "function") set_header_height();
+}
+
+function format_location_timestamp_jst() {
+	const now = new Date(Date.now() + 9 * 60 * 60 * 1000);
+	return now.getUTCFullYear() + "年" +
+		(now.getUTCMonth() + 1) + "月" +
+		now.getUTCDate() + "日" +
+		now.getUTCHours() + "時" +
+		now.getUTCMinutes() + "分" +
+		now.getUTCSeconds() + "秒現在";
 }
 
 function set_station_list(_param_rosen, _scrollKey, _callback) {
@@ -827,17 +899,8 @@ function set_station_list(_param_rosen, _scrollKey, _callback) {
 	)
 	.done(function(rosenNameData, maintenanceData, typeData, ekiData, rosen, maintenance) {
 
-		// 現在日付を設定
-		const now = new Date();
-		const formatted =
-			now.getFullYear() + "年" +
-			(now.getMonth() + 1) + "月" +
-			now.getDate() + "日" +
-			now.getHours() + "時" +
-			now.getMinutes() + "分" +
-			now.getSeconds() + "秒現在";
-
-		$("#timestamp").text(formatted);
+		// 現在日付を日本時間で設定
+		update_location_timestamp();
 
 		// 路線名を設定
 		let findRosenName = rosenNameData[0].find((v) => v.rosen == _param_rosen);
@@ -853,6 +916,7 @@ function set_station_list(_param_rosen, _scrollKey, _callback) {
 		if (result.length > 0) {
 			cachedResshaTypeData = null;
 			cachedEkiData = null;
+			update_location_data_stale_warning(null);
 			// 表示対象の路線のステータスが1の場合、メンテナンスページを表示
 			$("#stationList").html(maintenance[0]);
 			// 方面の設定
@@ -875,6 +939,7 @@ function set_station_list(_param_rosen, _scrollKey, _callback) {
 			cachedResshaTypeData = typeData[0];
 			cachedEkiData = ekiData[0];
 			$("#stationList").html(rosen[0]);
+			update_location_data_stale_warning(nowData);
 			// 列車アイコンを描画する
 			create_ressha_icon(_param_rosen, nowData, typeData[0], ekiData[0]);
 			// 列車アイコンの表示順を並び替える
@@ -969,6 +1034,7 @@ function redraw_location_positions(_param_rosen, _nowData) {
 	create_ressha_icon(_param_rosen, _nowData, cachedResshaTypeData, cachedEkiData);
 	ressha_pos_sort();
 	update_location_timestamp();
+	update_location_data_stale_warning(_nowData);
 	restore_selected_train_marker(trackingScrollEnabled);
 	update_tracking_footer_controls();
 }
@@ -1001,15 +1067,7 @@ function clear_location_positions(_param_rosen) {
  * 現在時刻表示を更新する
  */
 function update_location_timestamp() {
-	const now = new Date();
-	const formatted =
-		now.getFullYear() + "年" +
-		(now.getMonth() + 1) + "月" +
-		now.getDate() + "日" +
-		now.getHours() + "時" +
-		now.getMinutes() + "分" +
-		now.getSeconds() + "秒現在";
-	$("#timestamp").text(formatted);
+	$("#timestamp").text(format_location_timestamp_jst());
 }
 
 /*

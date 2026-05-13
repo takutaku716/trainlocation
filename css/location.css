@@ -172,6 +172,19 @@ header {
 			white-space: normal;
 		}
 
+		.sub-header .sub-header-contents .location-data-stale-warning {
+			background-color: #fff3cd;
+			border: 1px solid #f0ad4e;
+			border-radius: 4px;
+			color: #8a4b00;
+			font-size: 12px;
+			font-weight: bold;
+			line-height: 1.35;
+			margin-top: 4px;
+			max-width: min(760px, calc(100% - 16px));
+			padding: 4px 8px;
+		}
+
 	/* サブヘッダー内の方面表示領域 */
 	.sub-header .homen-header-contents {
 		background-color: #fff;
