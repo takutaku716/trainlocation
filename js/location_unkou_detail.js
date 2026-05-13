@@ -109,16 +109,31 @@ $(function ($) {
 			$("#cbangoDetail").removeClass("hide");
 
 			if (dataset.source === "jreast") {
-				$("#posDetailText").text(dataset.pos_name || dataset.pos || "");
-				$("#aisho").text(dataset.aisho || dataset.ressha_type_name || "");
-				$("#teisyaTableArea div").empty();
-				$("#teisyaTableArea .adjusted-notice").hide();
-				$('#resshaDetailMessage').empty();
-				$('#resshaDetailMessage').hide();
-				$('#resshaDetailMain').show();
-				$("#resshaDetail").fadeIn("fast");
-				$("#teisyaTableArea").scrollTop(0);
-				loading_animation_hidden();
+				$.getJSON("./original/location_master" + (lang === "ja" ? "" : "_" + lang) + ".json?" + now)
+					.done(function(posNameMasterBase) {
+						$("#posDetailText").text(posNameMasterBase[dataset.pos] || dataset.pos_name || dataset.pos || "");
+						$("#aisho").text(dataset.aisho || dataset.ressha_type_name || "");
+						$("#teisyaTableArea div").empty();
+						$("#teisyaTableArea .adjusted-notice").hide();
+						$('#resshaDetailMessage').empty();
+						$('#resshaDetailMessage').hide();
+						$('#resshaDetailMain').show();
+						$("#resshaDetail").fadeIn("fast");
+						$("#teisyaTableArea").scrollTop(0);
+						loading_animation_hidden();
+					})
+					.fail(function() {
+						$("#posDetailText").text(dataset.pos_name || dataset.pos || "");
+						$("#aisho").text(dataset.aisho || dataset.ressha_type_name || "");
+						$("#teisyaTableArea div").empty();
+						$("#teisyaTableArea .adjusted-notice").hide();
+						$('#resshaDetailMessage').empty();
+						$('#resshaDetailMessage').hide();
+						$('#resshaDetailMain').show();
+						$("#resshaDetail").fadeIn("fast");
+						$("#teisyaTableArea").scrollTop(0);
+						loading_animation_hidden();
+					});
 				return;
 			}
 
