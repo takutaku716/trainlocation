@@ -161,6 +161,7 @@
 		const destinationAbbreviations = collectDestinationNames(organizations, "abbreviated");
 		const destinationSimpleNames = collectDestinationSimpleNames(organizations);
 		const nicknameText = collectNicknameTexts(organizations);
+		const seriesText = collectSeriesTexts(organizations, train);
 		const timetable = collectTimetableRows(train);
 
 		return {
@@ -209,6 +210,7 @@
 				trainTypeMaterialCode: toText(train && train.type && train.type.trainTypeMaterialCode),
 				nickname: nicknameText,
 				destination: destinationNames,
+				series: seriesText,
 				organizations: normalizeOrganizations(organizations),
 				timetable: timetable
 			}
@@ -347,6 +349,28 @@
 			if (!nickname) return "";
 			return nicknameNo ? nickname + nicknameNo + "号" : nickname;
 		})).join("・");
+	}
+
+	function collectSeriesTexts(organizations, train) {
+		const series = [];
+		organizations.forEach(function(organization) {
+			getLanguageText(organization.series).split(/[+＋]/).forEach(function(text) {
+				const value = toText(text);
+				if (value) series.push(value);
+			});
+		});
+		const timetableInfo = train && train.organizationDetail && train.organizationDetail.timetableInfo;
+		if (timetableInfo && typeof timetableInfo === "object") {
+			Object.keys(timetableInfo).forEach(function(key) {
+				const formation = timetableInfo[key];
+				if (!formation || typeof formation !== "object") return;
+				getLanguageText(formation.series).split(/[+＋]/).forEach(function(text) {
+					const value = toText(text);
+					if (value) series.push(value);
+				});
+			});
+		}
+		return uniqueTexts(series).join("+");
 	}
 
 	function uniqueTexts(values) {

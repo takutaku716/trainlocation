@@ -2103,6 +2103,7 @@ function create_ressha_detail(_objItem, _nowRow, _typeData, _ekiData) {
 			_objItem.dataset.cbango = _nowRow.cbango;
 			_objItem.dataset.source = _nowRow.source || "";
 			_objItem.dataset.aisho = _nowRow.jrEast && _nowRow.jrEast.nickname ? _nowRow.jrEast.nickname : "";
+			_objItem.dataset.jreast_series = _nowRow.jrEast && _nowRow.jrEast.series ? _nowRow.jrEast.series : "";
 			_objItem.dataset.jreast_timetable = _nowRow.jrEast && Array.isArray(_nowRow.jrEast.timetable) ? JSON.stringify(_nowRow.jrEast.timetable) : "[]";
 		}
 
@@ -2244,6 +2245,7 @@ function create_ressha_detail(_objItem, _nowRow, _typeData, _ekiData) {
 		if (lang == "kr") _objItem.dataset.shu_eki = typeof findEki !== "undefined" ? findEki.kr + "행" : (jreastDestination ? jreastDestination + "행" : "행");
 
 		// 車両数
+		const jreastSeries = _nowRow.jrEast && _nowRow.jrEast.series ? _nowRow.jrEast.series : "";
 		_objItem.dataset.ryosu = _nowRow.ryosu && _nowRow.ryosu != 0 ? _nowRow.ryosu : "";
 		if (_objItem.dataset.ryosu != "") {
 			if (lang == "ja") _objItem.dataset.ryosu += "両";
@@ -2251,6 +2253,9 @@ function create_ressha_detail(_objItem, _nowRow, _typeData, _ekiData) {
 			if (lang == "tc") _objItem.dataset.ryosu += "節車廂";
 			if (lang == "sc") _objItem.dataset.ryosu += "节车厢";
 			if (lang == "kr") _objItem.dataset.ryosu += "량 편성";
+			if (_nowRow.source === "jreast" && jreastSeries) {
+				_objItem.dataset.ryosu += "（" + jreastSeries + "）";
+			}
 		}
 	}
 }
