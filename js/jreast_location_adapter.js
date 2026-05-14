@@ -255,7 +255,18 @@
 				});
 			});
 		});
-		return rows;
+		return uniqueTimetableRowsByStation(rows);
+	}
+
+	function uniqueTimetableRowsByStation(rows) {
+		const seen = new Set();
+		return (Array.isArray(rows) ? rows : []).filter(function(row) {
+			const stationName = toText(row && row.stationName);
+			const time = selectDaiyaTime(row);
+			if (!stationName || !time || seen.has(stationName)) return false;
+			seen.add(stationName);
+			return true;
+		});
 	}
 
 	function convertTimetableToDaiyaStations(timetable, stationKeyMap, unmatchedStationSet) {
@@ -271,7 +282,7 @@
 			}
 			const time = selectDaiyaTime(row);
 			if (!time) return;
-			const rowKey = key + "|" + time;
+			const rowKey = key;
 			if (seen.has(rowKey)) return;
 			seen.add(rowKey);
 			stations.push({

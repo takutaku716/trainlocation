@@ -284,7 +284,7 @@ function unique_jreast_timetable_rows(_timetable) {
 	return (Array.isArray(_timetable) ? _timetable : []).filter(function(row) {
 		const stationName = row && row.stationName ? row.stationName : "";
 		const time = select_jreast_daiya_time(row);
-		const key = stationName + "|" + time;
+		const key = stationName;
 		if (!stationName || !time || seen.has(key)) return false;
 		seen.add(key);
 		return true;
