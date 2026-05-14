@@ -381,9 +381,11 @@ $(function ($) {
 		// 取得した駅からボタンをダイアログに表示する内容を作成
 		let html = "<ul>";
 		for(let row of list){
+			const stationNode = row.querySelector("[key]");
+			if (!stationNode) continue;
 			html += "<li>";
 			html += row.children[0].children[0].outerHTML;
-			html += "<div value='" + row.href.slice(-3) + "'>" + row.children[0].children[1].innerText.replace("\n", "") + "</div></li>";
+			html += "<div value='" + stationNode.getAttribute("key") + "'>" + stationNode.innerText.replace("\n", "") + "</div>";
 			html += "</li>";
 		}
 		html += "</ul>";
@@ -451,7 +453,9 @@ $(function ($) {
 		// 駅コードを取得
 		let id = this.children[1].getAttribute("value");
 		// 対象の駅までスクロール
-		let pos = $("div[key='" + id + "']").offset().top - 380;
+		let target = $("div[key='" + id + "']").first();
+		if (target.length == 0) return;
+		let pos = target.offset().top - 380;
 		$("body,html").animate({scrollTop: pos});
 	});
 
