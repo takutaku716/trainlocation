@@ -3195,6 +3195,9 @@ section#refreshSettingDetail {
 					padding: 4px 0;
 					width: 100%;
 				}
+				.sub-header .btn-header-contents ul li#refreshSettingBtn {
+					display: none;
+				}
 					/* サブヘッダー内のボタンにマウスを当てたとき */
 					.sub-header .btn-header-contents ul li:hover {
 						background-color: #888;
@@ -3222,6 +3225,9 @@ section#refreshSettingDetail {
 	/* サブヘッダー内の方面表示領域内のボタン */
 	.sub-header .homen-header-contents .header-btn {
 		display: none;
+	}
+	.sub-header .homen-header-contents #refreshSettingBtnSub.header-btn {
+		display: flex;
 	}
 
 	/* 路線表示部メイン領域 */
