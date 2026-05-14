@@ -1017,7 +1017,10 @@ function set_station_list(_param_rosen, _scrollKey, _callback) {
 			if (lang == "sc") $("#title").html(findRosenName.rosenName.sc + findRosenName.kukanName.sc);
 			if (lang == "kr") $("#title").html(`<span>${findRosenName.rosenName.kr}</span><span>${findRosenName.kukanName.kr}</span>`);
 		}
-		$("#refreshSettingBtn, #refreshSettingBtnSub").toggle(is_location_auto_refresh_allowed(_param_rosen));
+		const canAutoRefresh = is_location_auto_refresh_allowed(_param_rosen);
+		const isMobileLayout = window.innerWidth <= 1000;
+		$("#refreshSettingBtn").toggle(canAutoRefresh && !isMobileLayout);
+		$("#refreshSettingBtnSub").toggle(canAutoRefresh);
 		update_refresh_status_label();
 
 		let result = maintenanceData[0].lines.filter((v) => v.status == "1" && v.rosen == _param_rosen);
