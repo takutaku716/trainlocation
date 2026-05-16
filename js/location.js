@@ -31,14 +31,17 @@ const JREAST_LOCATION_SOURCE_MAP = {
 	"54": {
 		screenCode: "88",
 		hokkaidoRosens: ["15"],
+		relatedJreastRosens: ["54", "55", "56"],
 		url: "https://jrproxy-926717289220.asia-northeast1.run.app/proxy?name=jrelines/transaction/2.0.0/train_88.json"
 	},
 	"55": {
 		screenCode: "87",
+		relatedJreastRosens: ["54", "55", "56"],
 		url: "https://jrproxy-926717289220.asia-northeast1.run.app/proxy?name=jrelines/transaction/2.0.0/train_87.json"
 	},
 	"56": {
 		screenCode: "89",
+		relatedJreastRosens: ["54", "55", "56"],
 		url: "https://jrproxy-926717289220.asia-northeast1.run.app/proxy?name=jrelines/transaction/2.0.0/train_89.json"
 	}
 };
@@ -860,36 +863,41 @@ function load_location_now_data(_param_rosen, _now) {
 function load_combined_jreast_location_now_data(_param_rosen, _now) {
 	const source = JREAST_LOCATION_SOURCE_MAP[String(_param_rosen || "")];
 	const hokkaidoRosens = source && Array.isArray(source.hokkaidoRosens) ? source.hokkaidoRosens : [];
+	const jreastRosens = source && Array.isArray(source.relatedJreastRosens) ? source.relatedJreastRosens : [_param_rosen];
 	const hokkaidoRequests = hokkaidoRosens.map((rosen) => {
 		return jqxhr_to_promise(get_location_now_request(rosen, _now))
 			.then((nowData) => ({ rosen: rosen, sourceType: "hokkaido", nowData: nowData }))
 			.catch(() => null);
 	});
-	const jreastRequest = load_jreast_location_now_data(_param_rosen, _now)
-		.then((nowData) => ({ rosen: _param_rosen, sourceType: "jreast", nowData: nowData }))
-		.catch(() => null);
+	const jreastRequests = jreastRosens.map((rosen) => {
+		return load_jreast_location_now_data(_param_rosen, _now, rosen)
+			.then((nowData) => ({ rosen: rosen, sourceType: "jreast", nowData: nowData }))
+			.catch(() => null);
+	});
 
-	return Promise.all(hokkaidoRequests.concat([jreastRequest]))
+	return Promise.all(hokkaidoRequests.concat(jreastRequests))
 		.then((nowDataResults) => {
 			const successDataList = nowDataResults.filter((entry) => entry && entry.nowData && Array.isArray(entry.nowData.trains));
 			if (successDataList.length < 1) throw new Error("location now json load failed");
 			const mergedData = merge_location_now_data(successDataList);
-			const jreastData = successDataList.find((entry) => entry.sourceType === "jreast" && entry.nowData && entry.nowData.time);
+			const jreastData = successDataList.find((entry) => entry.sourceType === "jreast" && entry.rosen == _param_rosen && entry.nowData && entry.nowData.time)
+				|| successDataList.find((entry) => entry.sourceType === "jreast" && entry.nowData && entry.nowData.time);
 			if (jreastData) mergedData.time = jreastData.nowData.time;
 			return mergedData;
 		});
 }
 
-function load_jreast_location_now_data(_param_rosen, _now) {
-	const source = JREAST_LOCATION_SOURCE_MAP[String(_param_rosen || "")];
+function load_jreast_location_now_data(_param_rosen, _now, _source_rosen) {
+	const sourceRosen = _source_rosen || _param_rosen;
+	const source = JREAST_LOCATION_SOURCE_MAP[String(sourceRosen || "")];
 	if (!source || !window.JrEastLocationAdapter) {
 		return Promise.reject(new Error("JRE location adapter is not loaded"));
 	}
-	return jqxhr_to_promise(get_jreast_location_request(_param_rosen, _now))
-		.then((rawData) => convert_jreast_location_now_data(rawData, source));
+	return jqxhr_to_promise(get_jreast_location_request(sourceRosen, _now))
+		.then((rawData) => convert_jreast_location_now_data(rawData, source, _param_rosen, sourceRosen));
 }
 
-function convert_jreast_location_now_data(_rawData, _source) {
+function convert_jreast_location_now_data(_rawData, _source, _display_rosen, _source_rosen) {
 	const normalized = window.JrEastLocationAdapter.normalize(_rawData, {
 		screenCode: _source.screenCode
 	});
@@ -898,6 +906,7 @@ function convert_jreast_location_now_data(_rawData, _source) {
 	const trains = (Array.isArray(normalized.trains) ? normalized.trains : []).map((train) => {
 		const row = Object.assign({}, train);
 		row.source = "jreast";
+		row.sourceRosen = _source_rosen || "";
 		row.senku = "";
 		row.posName = train.jrEast && train.jrEast.positionName ? train.jrEast.positionName : "";
 		row.shuEkiSimple = train.shuEkiSimple || make_jreast_destination_short(train.shuEkiName);
