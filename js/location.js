@@ -581,18 +581,19 @@ $(function ($) {
 		let rosen = $(this).attr("value");
 		if (!rosen) return;
 		scrollKey = $(this).attr("key");
+		const hash = scrollKey ? "rosen=" + rosen + "&id=" + scrollKey : "rosen=" + rosen;
 
 		if (befRosen == rosen) {
 			// 表示中の路線と遷移先の路線が同じ場合
 			// ハッシュからid（駅キー）、列車番号を取得
 			let param_id = get_param_id();
 			let param_cbango = get_param_cbango();
-			location.hash = "rosen=" + rosen;
+			location.hash = hash;
 			// 駅キー、列車番号が設定されていた場合、画面表示処理を行う
 			if (!param_id && !param_cbango) init_disp(scrollKey);
 		} else {
 			// ハッシュを選択した路線に変更
-			location.hash = "rosen=" + rosen;
+			location.hash = hash;
 		}
 
 		$(function(){
@@ -2599,7 +2600,7 @@ function get_param_rosen() {
 function get_param_id() {
 	let params = location.hash.slice(1).split('&');
 	if (params.length > 1) {
-		if (params[1].indexOf("id=") >= 0) return params[1].slice(-3);
+		if (params[1].indexOf("id=") >= 0) return params[1].substring(3);
 		else return "";
 	}
 }
