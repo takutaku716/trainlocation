@@ -32,6 +32,10 @@ const JREAST_LOCATION_SOURCE_MAP = {
 		screenCode: "88",
 		hokkaidoRosens: ["15"],
 		url: "https://jrproxy-926717289220.asia-northeast1.run.app/proxy?name=jrelines/transaction/2.0.0/train_88.json"
+	},
+	"55": {
+		screenCode: "87",
+		url: "https://jrproxy-926717289220.asia-northeast1.run.app/proxy?name=jrelines/transaction/2.0.0/train_87.json"
 	}
 };
 
