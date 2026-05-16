@@ -2178,6 +2178,7 @@ function create_ressha_detail(_objItem, _nowRow, _typeData, _ekiData) {
 		{
 			_objItem.dataset.cbango = _nowRow.cbango;
 			_objItem.dataset.source = _nowRow.source || "";
+			_objItem.dataset.source_rosen = _nowRow.sourceRosen || "";
 			_objItem.dataset.aisho = _nowRow.jrEast && _nowRow.jrEast.nickname ? _nowRow.jrEast.nickname : "";
 			_objItem.dataset.jreast_series = _nowRow.jrEast && _nowRow.jrEast.series ? _nowRow.jrEast.series : "";
 			_objItem.dataset.jreast_timetable = _nowRow.jrEast && Array.isArray(_nowRow.jrEast.timetable) ? JSON.stringify(_nowRow.jrEast.timetable) : "[]";

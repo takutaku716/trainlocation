@@ -891,6 +891,12 @@ header {
 						#stationList .eki-panel .ressha-contents .ressha-icon .ressha[data-ressha_type='7'] .icon-img {
 							background-image: url(../images/home/train_icon_green.svg);
 						}
+						#stationList .eki-panel .ressha-contents .ressha-icon .ressha[data-source_rosen='55'] .icon-img {
+							background-image: url(../images/home/train_icon_joetsu.svg);
+						}
+						#stationList .eki-panel .ressha-contents .ressha-icon .ressha[data-source_rosen='56'] .icon-img {
+							background-image: url(../images/home/train_icon_hokuriku.svg);
+						}
 
 							/* 列車アイコン内の列車種別 */
 							#stationList .eki-panel .ressha-contents .ressha-icon .icon-img .ressha-sbt {
