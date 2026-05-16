@@ -892,10 +892,96 @@ header {
 							background-image: url(../images/home/train_icon_green.svg);
 						}
 						#stationList .eki-panel .ressha-contents .ressha-icon .ressha[data-source_rosen='55'] .icon-img {
-							background-image: url(../images/home/train_icon_joetsu.svg);
+							background-image: url(../images/home/train_icon_green.svg);
 						}
 						#stationList .eki-panel .ressha-contents .ressha-icon .ressha[data-source_rosen='56'] .icon-img {
-							background-image: url(../images/home/train_icon_hokuriku.svg);
+							background-image: url(../images/home/train_icon_green.svg);
+						}
+						#stationList .eki-panel .ressha-contents .ressha-icon .ressha[data-source_rosen='54'] .icon-img {
+							background-image: url(../images/home/train_icon_green.svg);
+						}
+						#stationList .eki-panel .ressha-contents .ressha-icon .ressha[data-source_rosen='54'][data-jreast_series*='E2'] .icon-img,
+						#stationList .eki-panel .ressha-contents .ressha-icon .ressha[data-source_rosen='55'][data-jreast_series*='E2'] .icon-img,
+						#stationList .eki-panel .ressha-contents .ressha-icon .ressha[data-source_rosen='56'][data-jreast_series*='E2'] .icon-img {
+							background-image: url(../images/home/train_icon_e2.svg);
+						}
+						#stationList .eki-panel .ressha-contents .ressha-icon .ressha[data-source_rosen='54'][data-jreast_series*='E3'] .icon-img,
+						#stationList .eki-panel .ressha-contents .ressha-icon .ressha[data-source_rosen='55'][data-jreast_series*='E3'] .icon-img,
+						#stationList .eki-panel .ressha-contents .ressha-icon .ressha[data-source_rosen='56'][data-jreast_series*='E3'] .icon-img {
+							background-image: url(../images/home/train_icon_e3.svg);
+						}
+						#stationList .eki-panel .ressha-contents .ressha-icon .ressha[data-source_rosen='54'][data-jreast_series*='E5'] .icon-img,
+						#stationList .eki-panel .ressha-contents .ressha-icon .ressha[data-source_rosen='55'][data-jreast_series*='E5'] .icon-img,
+						#stationList .eki-panel .ressha-contents .ressha-icon .ressha[data-source_rosen='56'][data-jreast_series*='E5'] .icon-img {
+							background-image: url(../images/home/train_icon_e5.svg);
+						}
+						#stationList .eki-panel .ressha-contents .ressha-icon .ressha[data-source_rosen='54'][data-jreast_series*='H5'] .icon-img,
+						#stationList .eki-panel .ressha-contents .ressha-icon .ressha[data-source_rosen='55'][data-jreast_series*='H5'] .icon-img,
+						#stationList .eki-panel .ressha-contents .ressha-icon .ressha[data-source_rosen='56'][data-jreast_series*='H5'] .icon-img {
+							background-image: url(../images/home/train_icon_h5.svg);
+						}
+						#stationList .eki-panel .ressha-contents .ressha-icon .ressha[data-source_rosen='54'][data-jreast_series*='E6'] .icon-img,
+						#stationList .eki-panel .ressha-contents .ressha-icon .ressha[data-source_rosen='55'][data-jreast_series*='E6'] .icon-img,
+						#stationList .eki-panel .ressha-contents .ressha-icon .ressha[data-source_rosen='56'][data-jreast_series*='E6'] .icon-img {
+							background-image: url(../images/home/train_icon_e6.svg);
+						}
+						#stationList .eki-panel .ressha-contents .ressha-icon .ressha[data-source_rosen='54'][data-jreast_series*='E7'] .icon-img,
+						#stationList .eki-panel .ressha-contents .ressha-icon .ressha[data-source_rosen='55'][data-jreast_series*='E7'] .icon-img,
+						#stationList .eki-panel .ressha-contents .ressha-icon .ressha[data-source_rosen='56'][data-jreast_series*='E7'] .icon-img,
+						#stationList .eki-panel .ressha-contents .ressha-icon .ressha[data-source_rosen='54'][data-jreast_series*='W7'] .icon-img,
+						#stationList .eki-panel .ressha-contents .ressha-icon .ressha[data-source_rosen='55'][data-jreast_series*='W7'] .icon-img,
+						#stationList .eki-panel .ressha-contents .ressha-icon .ressha[data-source_rosen='56'][data-jreast_series*='W7'] .icon-img {
+							background-image: url(../images/home/train_icon_e7.svg);
+						}
+						#stationList .eki-panel .ressha-contents .ressha-icon .ressha[data-source_rosen='54'][data-jreast_series*='E8'] .icon-img,
+						#stationList .eki-panel .ressha-contents .ressha-icon .ressha[data-source_rosen='55'][data-jreast_series*='E8'] .icon-img,
+						#stationList .eki-panel .ressha-contents .ressha-icon .ressha[data-source_rosen='56'][data-jreast_series*='E8'] .icon-img {
+							background-image: url(../images/home/train_icon_e8.svg);
+						}
+						#stationList .eki-panel .ressha-contents .ressha-icon .ressha[data-source_rosen='54'][data-jreast_series*='E2'][data-jreast_series*='E3'] .icon-img,
+						#stationList .eki-panel .ressha-contents .ressha-icon .ressha[data-source_rosen='55'][data-jreast_series*='E2'][data-jreast_series*='E3'] .icon-img,
+						#stationList .eki-panel .ressha-contents .ressha-icon .ressha[data-source_rosen='56'][data-jreast_series*='E2'][data-jreast_series*='E3'] .icon-img {
+							background-image: url(../images/home/train_icon_e2_e3.svg);
+						}
+						#stationList .eki-panel .ressha-contents .ressha-icon .ressha[data-source_rosen='54'][data-jreast_series*='E2'][data-jreast_series*='E6'] .icon-img,
+						#stationList .eki-panel .ressha-contents .ressha-icon .ressha[data-source_rosen='55'][data-jreast_series*='E2'][data-jreast_series*='E6'] .icon-img,
+						#stationList .eki-panel .ressha-contents .ressha-icon .ressha[data-source_rosen='56'][data-jreast_series*='E2'][data-jreast_series*='E6'] .icon-img {
+							background-image: url(../images/home/train_icon_e2_e6.svg);
+						}
+						#stationList .eki-panel .ressha-contents .ressha-icon .ressha[data-source_rosen='54'][data-jreast_series*='E2'][data-jreast_series*='E8'] .icon-img,
+						#stationList .eki-panel .ressha-contents .ressha-icon .ressha[data-source_rosen='55'][data-jreast_series*='E2'][data-jreast_series*='E8'] .icon-img,
+						#stationList .eki-panel .ressha-contents .ressha-icon .ressha[data-source_rosen='56'][data-jreast_series*='E2'][data-jreast_series*='E8'] .icon-img {
+							background-image: url(../images/home/train_icon_e2_e8.svg);
+						}
+						#stationList .eki-panel .ressha-contents .ressha-icon .ressha[data-source_rosen='54'][data-jreast_series*='E5'][data-jreast_series*='E3'] .icon-img,
+						#stationList .eki-panel .ressha-contents .ressha-icon .ressha[data-source_rosen='55'][data-jreast_series*='E5'][data-jreast_series*='E3'] .icon-img,
+						#stationList .eki-panel .ressha-contents .ressha-icon .ressha[data-source_rosen='56'][data-jreast_series*='E5'][data-jreast_series*='E3'] .icon-img {
+							background-image: url(../images/home/train_icon_e5_e3.svg);
+						}
+						#stationList .eki-panel .ressha-contents .ressha-icon .ressha[data-source_rosen='54'][data-jreast_series*='E5'][data-jreast_series*='E6'] .icon-img,
+						#stationList .eki-panel .ressha-contents .ressha-icon .ressha[data-source_rosen='55'][data-jreast_series*='E5'][data-jreast_series*='E6'] .icon-img,
+						#stationList .eki-panel .ressha-contents .ressha-icon .ressha[data-source_rosen='56'][data-jreast_series*='E5'][data-jreast_series*='E6'] .icon-img {
+							background-image: url(../images/home/train_icon_e5_e6.svg);
+						}
+						#stationList .eki-panel .ressha-contents .ressha-icon .ressha[data-source_rosen='54'][data-jreast_series*='E5'][data-jreast_series*='E8'] .icon-img,
+						#stationList .eki-panel .ressha-contents .ressha-icon .ressha[data-source_rosen='55'][data-jreast_series*='E5'][data-jreast_series*='E8'] .icon-img,
+						#stationList .eki-panel .ressha-contents .ressha-icon .ressha[data-source_rosen='56'][data-jreast_series*='E5'][data-jreast_series*='E8'] .icon-img {
+							background-image: url(../images/home/train_icon_e5_e8.svg);
+						}
+						#stationList .eki-panel .ressha-contents .ressha-icon .ressha[data-source_rosen='54'][data-jreast_series*='H5'][data-jreast_series*='E3'] .icon-img,
+						#stationList .eki-panel .ressha-contents .ressha-icon .ressha[data-source_rosen='55'][data-jreast_series*='H5'][data-jreast_series*='E3'] .icon-img,
+						#stationList .eki-panel .ressha-contents .ressha-icon .ressha[data-source_rosen='56'][data-jreast_series*='H5'][data-jreast_series*='E3'] .icon-img {
+							background-image: url(../images/home/train_icon_h5_e3.svg);
+						}
+						#stationList .eki-panel .ressha-contents .ressha-icon .ressha[data-source_rosen='54'][data-jreast_series*='H5'][data-jreast_series*='E6'] .icon-img,
+						#stationList .eki-panel .ressha-contents .ressha-icon .ressha[data-source_rosen='55'][data-jreast_series*='H5'][data-jreast_series*='E6'] .icon-img,
+						#stationList .eki-panel .ressha-contents .ressha-icon .ressha[data-source_rosen='56'][data-jreast_series*='H5'][data-jreast_series*='E6'] .icon-img {
+							background-image: url(../images/home/train_icon_h5_e6.svg);
+						}
+						#stationList .eki-panel .ressha-contents .ressha-icon .ressha[data-source_rosen='54'][data-jreast_series*='H5'][data-jreast_series*='E8'] .icon-img,
+						#stationList .eki-panel .ressha-contents .ressha-icon .ressha[data-source_rosen='55'][data-jreast_series*='H5'][data-jreast_series*='E8'] .icon-img,
+						#stationList .eki-panel .ressha-contents .ressha-icon .ressha[data-source_rosen='56'][data-jreast_series*='H5'][data-jreast_series*='E8'] .icon-img {
+							background-image: url(../images/home/train_icon_h5_e8.svg);
 						}
 
 							/* 列車アイコン内の列車種別 */
