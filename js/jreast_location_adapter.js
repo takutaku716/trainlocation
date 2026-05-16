@@ -500,7 +500,7 @@
 	}
 
 	function convertJrEastDirectionToLocationDirection(direction) {
-		return direction === "up" ? "D" : "U";
+		return direction === "up" ? "U" : "D";
 	}
 
 	function getPositionInfo(context) {
