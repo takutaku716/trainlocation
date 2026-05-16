@@ -319,6 +319,24 @@
 		"area": "6"
 	},
 	{
+		"rosen": "56",
+		"rosenName": {
+			"ja": "北陸新幹線",
+			"en": "Hokuriku Shinkansen",
+			"tc": "北陸新幹線",
+			"sc": "北陆新干线",
+			"kr": "호쿠리쿠 신칸센"
+		},
+		"kukanName": {
+			"ja": "[東京～敦賀間]",
+			"en": "[Tokyo～Tsuruga]",
+			"tc": "[東京～敦賀間]",
+			"sc": "[东京～敦贺间]",
+			"kr": "[도쿄～쓰루가]"
+		},
+		"area": "6"
+	},
+	{
 		"rosen": "51",
 		"rosenName": {
 			"ja": "函館線",
