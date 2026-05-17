@@ -63,6 +63,7 @@ const DOKOTRE_LOCATION_SOURCE_MAP = {
 				mappingUrl: "./tools/dokotre_110_mapping.json",
 				lineUrl: "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://doko-train.jp/json/line/110.json",
 				diagramUrl: "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://doko-train.jp/json/diagram/line/110.json",
+				detailDiagramUrl: "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://doko-train.jp/json/diagram/line/110A.json",
 				statusUrl: "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://doko-train.jp/json/trainstatus/110.json"
 			},
 			{
@@ -71,6 +72,7 @@ const DOKOTRE_LOCATION_SOURCE_MAP = {
 				mappingUrl: "./tools/dokotre_9022_mapping.json",
 				lineUrl: "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://doko-train.jp/json/line/9022.json",
 				diagramUrl: "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://doko-train.jp/json/diagram/line/9022.json",
+				detailDiagramUrl: "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://doko-train.jp/json/diagram/line/110A.json",
 				statusUrl: "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://doko-train.jp/json/trainstatus/9022.json"
 			}
 		]
@@ -971,11 +973,13 @@ function load_dokotre_location_source(source, _now) {
 		jqxhr_to_promise(get_dokotre_location_request(source.lineUrl, _now)),
 		jqxhr_to_promise(get_dokotre_location_request(source.diagramUrl, _now)),
 		jqxhr_to_promise(get_dokotre_location_request(source.statusUrl, _now)),
-		jqxhr_to_promise(get_dokotre_mapping_request(source.mappingUrl, _now))
+		jqxhr_to_promise(get_dokotre_mapping_request(source.mappingUrl, _now)),
+		source.detailDiagramUrl ? jqxhr_to_promise(get_dokotre_location_request(source.detailDiagramUrl, _now)).catch(() => null) : Promise.resolve(null)
 	]).then((results) => {
 		const normalized = window.DokotreLocationAdapter.normalize(results[0], results[1], results[2], results[3], {
 			dokotreId: source.dokotreId,
-			senku: source.senku
+			senku: source.senku,
+			detailDiagramJson: results[4]
 		});
 		return normalized.location;
 	});

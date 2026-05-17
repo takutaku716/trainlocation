@@ -101,6 +101,7 @@
 		const settings = options || {};
 		const statusRows = getStatusRows(statusJson);
 		const diagramByKey = buildDiagramIndex(diagramJson);
+		const detailDiagramByTrainId = buildDiagramTrainIdIndex(settings.detailDiagramJson);
 		const trains = statusRows.map(function(entry) {
 			const row = entry.value;
 			const diagram = diagramByKey.get(entry.key) || diagramByKey.get(toText(row && row.TRAIN_LCLID).replace(/\.0$/, "")) || null;
@@ -110,6 +111,7 @@
 			const status = getUnkouStatus(diagram);
 			const statusDetails = getStatusDetails(diagram, context);
 			const trainName = buildTrainName(diagram, row);
+			const detailDiagram = isKomachiTrain(diagram, row) ? getDetailDiagram(entry, row, diagram, detailDiagramByTrainId) || diagram : diagram;
 
 			const destinationName = getStationName(destinationId, context) || toText(diagram && diagram.END_RLSTC_LNAME);
 
@@ -151,7 +153,7 @@
 					sectionId: toText(row && row.SECTION_ID),
 					lastUpdateTime: toText(row && row.LAST_UPDATE_TIME),
 					scdlTime: toText(row && row.SCDL_TIME),
-					timetable: convertDetailTimetable(diagram, context)
+					timetable: convertDetailTimetable(detailDiagram, context)
 				}
 			};
 		}).filter(Boolean);
@@ -245,6 +247,22 @@
 			if (trainLocalId) index.set(trainLocalId, train);
 		});
 		return index;
+	}
+
+	function buildDiagramTrainIdIndex(diagramJson) {
+		const index = new Map();
+		(Array.isArray(diagramJson && diagramJson.DIAGRAM) ? diagramJson.DIAGRAM : []).forEach(function(train) {
+			const trainId = toText(train && train.TRAIN_ID);
+			if (trainId && !index.has(trainId)) index.set(trainId, train);
+		});
+		return index;
+	}
+
+	function getDetailDiagram(entry, row, diagram, detailDiagramByTrainId) {
+		if (!detailDiagramByTrainId || detailDiagramByTrainId.size < 1) return null;
+		const trainId = getTrainNo(entry && entry.key, diagram) || toText(row && row.TRAIN_ID);
+		if (!trainId) return null;
+		return detailDiagramByTrainId.get(trainId) || null;
 	}
 
 	function resolvePosition(row, context) {
@@ -405,6 +423,11 @@
 		const nickname = toText(diagram && diagram.TRAIN_NNAME) || toText(statusRow && statusRow.TRAIN_NNAME);
 		if (nickname.indexOf("つばさ") >= 0 || nickname.indexOf("こまち") >= 0) return "1";
 		return "3";
+	}
+
+	function isKomachiTrain(diagram, statusRow) {
+		const nickname = toText(diagram && diagram.TRAIN_NNAME) || toText(statusRow && statusRow.TRAIN_NNAME);
+		return nickname.indexOf("こまち") >= 0;
 	}
 
 	function getTrainNo(statusKey, diagram) {
