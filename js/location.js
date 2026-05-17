@@ -53,6 +53,27 @@ const DOKOTRE_LOCATION_SOURCE_MAP = {
 		lineUrl: "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://doko-train.jp/json/line/9021.json",
 		diagramUrl: "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://doko-train.jp/json/diagram/line/9021.json",
 		statusUrl: "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://doko-train.jp/json/trainstatus/9021.json"
+	},
+	"58": {
+		senku: "58",
+		sources: [
+			{
+				dokotreId: "110",
+				senku: "58",
+				mappingUrl: "./tools/dokotre_110_mapping.json",
+				lineUrl: "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://doko-train.jp/json/line/110.json",
+				diagramUrl: "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://doko-train.jp/json/diagram/line/110.json",
+				statusUrl: "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://doko-train.jp/json/trainstatus/110.json"
+			},
+			{
+				dokotreId: "9022",
+				senku: "58",
+				mappingUrl: "./tools/dokotre_9022_mapping.json",
+				lineUrl: "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://doko-train.jp/json/line/9022.json",
+				diagramUrl: "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://doko-train.jp/json/diagram/line/9022.json",
+				statusUrl: "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://doko-train.jp/json/trainstatus/9022.json"
+			}
+		]
 	}
 };
 
@@ -933,6 +954,19 @@ function load_dokotre_location_now_data(_param_rosen, _now) {
 	if (!source || !window.DokotreLocationAdapter) {
 		return Promise.reject(new Error("Dokotre location adapter is not loaded"));
 	}
+	const sources = Array.isArray(source.sources) ? source.sources : [source];
+	return Promise.all(sources.map((entry) => {
+		return load_dokotre_location_source(entry, _now)
+			.then((nowData) => ({ rosen: entry.senku || source.senku || _param_rosen, sourceType: "dokotre", nowData: nowData }))
+			.catch(() => null);
+	})).then((nowDataResults) => {
+		const successDataList = nowDataResults.filter((entry) => entry && entry.nowData && Array.isArray(entry.nowData.trains));
+		if (successDataList.length < 1) throw new Error("Dokotre location now json load failed");
+		return merge_location_now_data(successDataList);
+	});
+}
+
+function load_dokotre_location_source(source, _now) {
 	return Promise.all([
 		jqxhr_to_promise(get_dokotre_location_request(source.lineUrl, _now)),
 		jqxhr_to_promise(get_dokotre_location_request(source.diagramUrl, _now)),

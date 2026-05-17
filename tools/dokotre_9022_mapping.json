@@ -1,0 +1,110 @@
+{
+	"dokotreId": "9022",
+	"senku": "58",
+	"lineName": "秋田新幹線（奥羽線）",
+	"stations": [
+		{
+			"name": "大曲",
+			"down": "DT9022P35D",
+			"up": "DT9022P35U",
+			"stationId": "2221208470",
+			"hokkaidoKey": "0346"
+		},
+		{
+			"name": "大曲神宮寺",
+			"down": "DT9022P36D",
+			"up": "DT9022P36U"
+		},
+		{
+			"name": "神宮寺",
+			"down": "DT9022P37D",
+			"up": "DT9022P37U",
+			"stationId": "2221208480",
+			"hokkaidoKey": "0860"
+		},
+		{
+			"name": "神宮寺刈和野",
+			"down": "DT9022P38D",
+			"up": "DT9022P38U"
+		},
+		{
+			"name": "刈和野",
+			"down": "DT9022P39D",
+			"up": "DT9022P39U",
+			"stationId": "2221208490",
+			"hokkaidoKey": "0517"
+		},
+		{
+			"name": "刈和野峰吉川",
+			"down": "DT9022P40D",
+			"up": "DT9022P40U"
+		},
+		{
+			"name": "峰吉川",
+			"down": "DT9022P41D",
+			"up": "DT9022P41U",
+			"stationId": "2221208500",
+			"hokkaidoKey": "1506"
+		},
+		{
+			"name": "峰吉川羽後境",
+			"down": "DT9022P42D",
+			"up": "DT9022P42U"
+		},
+		{
+			"name": "羽後境",
+			"down": "DT9022P43D",
+			"up": "DT9022P43U",
+			"stationId": "2221208510",
+			"hokkaidoKey": "0216"
+		},
+		{
+			"name": "羽後境大張野",
+			"down": "DT9022P44D",
+			"up": "DT9022P44U"
+		},
+		{
+			"name": "大張野",
+			"down": "DT9022P45D",
+			"up": "DT9022P45U",
+			"stationId": "2221208520",
+			"hokkaidoKey": "0399"
+		},
+		{
+			"name": "大張野和田",
+			"down": "DT9022P46D",
+			"up": "DT9022P46U"
+		},
+		{
+			"name": "和田",
+			"down": "DT9022P47D",
+			"up": "DT9022P47U",
+			"stationId": "2221208530",
+			"hokkaidoKey": "1699"
+		},
+		{
+			"name": "和田四ツ小屋",
+			"down": "DT9022P48D",
+			"up": "DT9022P48U"
+		},
+		{
+			"name": "四ツ小屋",
+			"down": "DT9022P49D",
+			"up": "DT9022P49U",
+			"stationId": "2221208540",
+			"hokkaidoKey": "1646"
+		},
+		{
+			"name": "四ツ小屋秋田",
+			"down": "DT9022P50D",
+			"up": "DT9022P50U"
+		},
+		{
+			"name": "秋田",
+			"down": "DT9022P51D",
+			"up": "DT9022P51U",
+			"stationId": "2221208550",
+			"hokkaidoKey": "0039"
+		}
+	]
+}

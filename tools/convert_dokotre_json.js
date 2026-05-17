@@ -16,7 +16,11 @@ const DESTINATION_SIMPLE_NAMES = {
 	"仙台": "仙",
 	"寒河江": "寒",
 	"左沢": "左",
-	"庭坂": "庭"
+	"庭坂": "庭",
+	"盛岡": "盛",
+	"秋田": "秋",
+	"大曲": "曲",
+	"田沢湖": "田"
 };
 
 const args = process.argv.slice(2);
@@ -175,6 +179,7 @@ function convertLocationNow(statusJson, diagramJson, context, options) {
 		const diagram = diagramByKey.get(entry.key) || diagramByKey.get(toText(row.TRAIN_LCLID).replace(/\.0$/, "")) || null;
 		const destinationId = toText(row.END_STATION || diagram && diagram.END_RLSTC);
 		const position = resolvePosition(row, context);
+		if (!position.key && settings.filterUnmappedPositions !== false) return null;
 		const status = getUnkouStatus(diagram);
 		const statusDetails = getStatusDetails(diagram, context);
 		const trainName = buildTrainName(diagram, row);
@@ -220,7 +225,7 @@ function convertLocationNow(statusJson, diagramJson, context, options) {
 				scdlTime: toText(row.SCDL_TIME)
 			}
 		};
-	});
+	}).filter(Boolean);
 
 	const result = {
 		time: formatDokotreTimestamp(statusJson && (statusJson.created || statusJson.announced_date)),
@@ -433,7 +438,7 @@ function buildTrainName(diagram, statusRow) {
 
 function mapTrainType(diagram, statusRow) {
 	const nickname = toText(diagram && diagram.TRAIN_NNAME) || toText(statusRow && statusRow.TRAIN_NNAME);
-	if (nickname.indexOf("つばさ") >= 0) return "1";
+	if (nickname.indexOf("つばさ") >= 0 || nickname.indexOf("こまち") >= 0) return "1";
 	return "3";
 }
 
