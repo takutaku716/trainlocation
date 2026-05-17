@@ -993,7 +993,7 @@ header {
 							}
 							/* 列車アイコン内の列車種別 (臨時列車)*/
 							#stationList .eki-panel .ressha-contents .ressha-icon .ressha[data-ressha_type='6'] .ressha-sbt {
-								color: #fff;
+								color: #444;
 							}
 							/* 英字の場合 */
 							[data-lang='en'] #stationList .eki-panel .ressha-contents .ressha-icon .ressha-sbt {
@@ -1929,7 +1929,7 @@ header {
 								}
 									/* 列車アイコン内の列車種別 (臨時列車)*/
 									#stationList .hoka-line-area .fujishiro-panel .ressha-icon .ressha[data-ressha_type='6'] .ressha-sbt {
-										color: #fff;
+										color: #444;
 									}
 									/* 英字の場合 */
 									[data-lang='en'] #stationList .hoka-line-area .fujishiro-panel .ressha-icon .ressha-sbt {
@@ -2376,7 +2376,7 @@ section#resshaDetail {
 		section#resshaDetail[dataResshaTypeColor='6'] .dialog #resshaTypeName {
 			background-color: #fff;
 			border: #444 solid 2px;
-			color: #fff;
+			color: #444;
 			min-width: 88px;
 			width: 88px;
 		}

@@ -2767,7 +2767,7 @@ function load_train_search_data() {
 	const lang = document.documentElement.dataset.lang;
 	const mstNow = Date.now() >>> 16;
 	const trnNow = Date.now() >>> 10;
-	const searchSourceRosens = ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "57"];
+	const searchSourceRosens = ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15"];
 	const daiyaSourceSenkus = ["00"].concat(searchSourceRosens, ["19"]);
 	const expressMasterPromise = jqxhr_to_promise($.getJSON("https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/webunkou/json/master/express_master.json?" + mstNow));
 	const expressCorePromise = jqxhr_to_promise(get_express_core_request(mstNow));
