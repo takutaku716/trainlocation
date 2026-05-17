@@ -311,8 +311,8 @@
 
 	function makePositionName(position, direction) {
 		if (position && position.prev && position.next) {
-			const from = direction === "U" ? position.next : position.prev;
-			const to = direction === "U" ? position.prev : position.next;
+			const from = position.prev;
+			const to = position.next;
 			const fromName = toText(from && from.name);
 			const toName = toText(to && to.name);
 			if (fromName && toName) return fromName + "→" + toName + " 間";
