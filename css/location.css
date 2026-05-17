@@ -1302,6 +1302,11 @@ header {
 				font-weight: bold;
 				opacity: 0.5;
 			}
+			#stationList .eki-panel .hoka-rosen-link .rosen-link-nolink {
+				font-size: 15px;
+				text-decoration: none;
+				font-weight: bold;
+			}
 				/* 留萌線・日高線・富良野線 英語版・韓国語版 */
 				[data-lang='en'] #stationList .eki-panel .hoka-rosen-link div,
 				[data-lang='kr'] #stationList .eki-panel .hoka-rosen-link div {
