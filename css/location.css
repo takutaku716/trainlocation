@@ -1412,6 +1412,9 @@ header {
 				display: inline-grid;
 				justify-items: center;
 			}
+			#stationList .down-rosen-link .rosen-link-nolink {
+				opacity: 0.5;
+			}
 
 			#stationList .down-rosen-link a {
 				cursor: pointer;
