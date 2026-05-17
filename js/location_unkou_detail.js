@@ -112,7 +112,8 @@ $(function ($) {
 				$("#unkouDetailMain").hide();
 				$.getJSON("./original/location_master" + (lang === "ja" ? "" : "_" + lang) + ".json?" + now)
 					.done(function(posNameMasterBase) {
-						$("#posDetailText").text(posNameMasterBase[dataset.pos] || dataset.pos_name || dataset.pos || "");
+						const posKey = String(dataset.pos || "").trim();
+						$("#posDetailText").text(posNameMasterBase[posKey] || dataset.pos_name || posKey || "");
 						$("#aisho").text(dataset.aisho || dataset.ressha_type_name || "");
 						create_jreast_daiya(dataset);
 						$('#resshaDetailMessage').empty();
@@ -123,7 +124,8 @@ $(function ($) {
 						loading_animation_hidden();
 					})
 					.fail(function() {
-						$("#posDetailText").text(dataset.pos_name || dataset.pos || "");
+						const posKey = String(dataset.pos || "").trim();
+						$("#posDetailText").text(dataset.pos_name || posKey || "");
 						$("#aisho").text(dataset.aisho || dataset.ressha_type_name || "");
 						create_jreast_daiya(dataset);
 						$('#resshaDetailMessage').empty();

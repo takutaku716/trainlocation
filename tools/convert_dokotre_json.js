@@ -319,8 +319,19 @@ function resolvePosition(row, context) {
 function positionResult(position, direction) {
 	return {
 		key: direction === "U" ? toText(position.up) : toText(position.down),
-		name: toText(position.name)
+		name: makePositionName(position, direction)
 	};
+}
+
+function makePositionName(position, direction) {
+	if (position && position.prev && position.next) {
+		const from = direction === "U" ? position.next : position.prev;
+		const to = direction === "U" ? position.prev : position.next;
+		const fromName = toText(from && from.name);
+		const toName = toText(to && to.name);
+		if (fromName && toName) return `${fromName}→${toName} 間`;
+	}
+	return toText(position && position.name);
 }
 
 function getDirectionSuffix(bound) {
