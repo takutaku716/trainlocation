@@ -1346,15 +1346,20 @@ header {
 			}
 
 			/* ページの一番上に表示する別路線の方面名 */
-			#stationList .up-rosen-link a {
+			#stationList .up-rosen-link a,
+			#stationList .up-rosen-link .rosen-link-nolink {
 				z-index: 18;
 				position: relative;
 				font-size: 15px;
 				text-decoration: none;
-				cursor: pointer;
 				font-weight: bold;
 				margin-top: 4px;
 				display: inline-grid;
+				justify-items: center;
+			}
+
+			#stationList .up-rosen-link a {
+				cursor: pointer;
 			}
 				/* ページの一番上に表示する別路線の方面名 にマウスカーソルを重ねたとき */
 				#stationList .up-rosen-link a:hover {
@@ -1392,14 +1397,19 @@ header {
 			}
 
 			/* ページの一番下に表示する別路線の方面名 */
-			#stationList .down-rosen-link a {
+			#stationList .down-rosen-link a,
+			#stationList .down-rosen-link .rosen-link-nolink {
 				z-index: 18;
 				position: relative;
 				font-size: 15px;
 				text-decoration: none;
-				cursor: pointer;
 				font-weight: bold;
 				display: inline-grid;
+				justify-items: center;
+			}
+
+			#stationList .down-rosen-link a {
+				cursor: pointer;
 			}
 
 				/* ページの一番下に表示する別路線の方面名 にマウスカーソルを重ねたとき */
