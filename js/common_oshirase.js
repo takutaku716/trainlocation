@@ -70,7 +70,7 @@ function disp_oshirase(_rosen) {
 	}
 
 	// 結合表示用・JR東日本変換表示用の仮想路線コードでは、路線別お知らせを表示しない
-	if (["51", "52", "53", "54", "55", "56"].includes(_rosen)) return;
+	if (["51", "52", "53", "54", "55", "56", "57"].includes(_rosen)) return;
 
 	// 路線のお知らせの表示
 	if (lang == "ja") {

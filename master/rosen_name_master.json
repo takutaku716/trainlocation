@@ -337,6 +337,24 @@
 		"area": "6"
 	},
 	{
+		"rosen": "57",
+		"rosenName": {
+			"ja": "山形新幹線",
+			"en": "Yamagata Shinkansen",
+			"tc": "山形新幹線",
+			"sc": "山形新干线",
+			"kr": "야마가타 신칸센"
+		},
+		"kukanName": {
+			"ja": "[福島～新庄間]",
+			"en": "[Fukushima～Shinjo]",
+			"tc": "[福島～新庄間]",
+			"sc": "[福岛～新庄间]",
+			"kr": "[후쿠시마～신조]"
+		},
+		"area": "6"
+	},
+	{
 		"rosen": "51",
 		"rosenName": {
 			"ja": "函館線",

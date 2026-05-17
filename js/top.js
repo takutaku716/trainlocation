@@ -501,7 +501,7 @@ function rosenToArea(rosen, selectAreaName) {
 		area = "dohoku";
 	} else if (["13", "14"].includes(rosen)) {					// 道東エリア
 		area = "doto";
-	} else if (["15"].includes(rosen)) {						// 北海道新幹線
+	} else if (["15", "57"].includes(rosen)) {				// 新幹線
 		area = "shin";
 	}
 	return area;

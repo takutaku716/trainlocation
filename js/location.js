@@ -45,6 +45,16 @@ const JREAST_LOCATION_SOURCE_MAP = {
 		url: "https://jrproxy-926717289220.asia-northeast1.run.app/proxy?name=jrelines/transaction/2.0.0/train_89.json"
 	}
 };
+const DOKOTRE_LOCATION_SOURCE_MAP = {
+	"57": {
+		dokotreId: "9021",
+		senku: "57",
+		mappingUrl: "./tools/dokotre_9021_mapping.json",
+		lineUrl: "https://doko-train.jp/json/line/9021.json",
+		diagramUrl: "https://doko-train.jp/json/diagram/line/9021.json",
+		statusUrl: "https://doko-train.jp/json/trainstatus/9021.json"
+	}
+};
 
 function get_mainte_json_request(fileName, cacheKey) {
 	const cloudflareApiBase = "https://trainlocation.pages.dev";
@@ -791,6 +801,10 @@ function is_jreast_location_rosen(_rosen) {
 	return Object.prototype.hasOwnProperty.call(JREAST_LOCATION_SOURCE_MAP, String(_rosen || ""));
 }
 
+function is_dokotre_location_rosen(_rosen) {
+	return Object.prototype.hasOwnProperty.call(DOKOTRE_LOCATION_SOURCE_MAP, String(_rosen || ""));
+}
+
 function is_location_auto_refresh_allowed(_rosen) {
 	return !is_jreast_location_rosen(_rosen);
 }
@@ -800,6 +814,19 @@ function get_jreast_location_request(_rosen, _now) {
 	if (!source) return $.Deferred().reject().promise();
 	const separator = source.url.indexOf("?") >= 0 ? "&" : "?";
 	return $.getJSON(source.url + separator + "cache=" + _now);
+}
+
+function get_dokotre_location_request(_url, _now) {
+	if (!_url) return $.Deferred().reject().promise();
+	const separator = _url.indexOf("?") >= 0 ? "&" : "?";
+	const url = _url + separator + "cache=" + _now;
+	return $.getJSON("https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=" + url);
+}
+
+function get_dokotre_mapping_request(_url, _now) {
+	if (!_url) return $.Deferred().reject().promise();
+	const separator = _url.indexOf("?") >= 0 ? "&" : "?";
+	return $.getJSON(_url + separator + "cache=" + _now);
 }
 
 function jqxhr_to_promise(_jqxhr) {
@@ -844,6 +871,9 @@ function merge_location_now_data(_nowDataList) {
 function load_location_now_data(_param_rosen, _now) {
 	if (is_jreast_location_rosen(_param_rosen)) {
 		return load_combined_jreast_location_now_data(_param_rosen, _now);
+	}
+	if (is_dokotre_location_rosen(_param_rosen)) {
+		return load_dokotre_location_now_data(_param_rosen, _now);
 	}
 
 	const sourceRosens = get_location_json_source_list(_param_rosen);
@@ -895,6 +925,25 @@ function load_jreast_location_now_data(_param_rosen, _now, _source_rosen) {
 	}
 	return jqxhr_to_promise(get_jreast_location_request(sourceRosen, _now))
 		.then((rawData) => convert_jreast_location_now_data(rawData, source, _param_rosen, sourceRosen));
+}
+
+function load_dokotre_location_now_data(_param_rosen, _now) {
+	const source = DOKOTRE_LOCATION_SOURCE_MAP[String(_param_rosen || "")];
+	if (!source || !window.DokotreLocationAdapter) {
+		return Promise.reject(new Error("Dokotre location adapter is not loaded"));
+	}
+	return Promise.all([
+		jqxhr_to_promise(get_dokotre_location_request(source.lineUrl, _now)),
+		jqxhr_to_promise(get_dokotre_location_request(source.diagramUrl, _now)),
+		jqxhr_to_promise(get_dokotre_location_request(source.statusUrl, _now)),
+		jqxhr_to_promise(get_dokotre_mapping_request(source.mappingUrl, _now))
+	]).then((results) => {
+		const normalized = window.DokotreLocationAdapter.normalize(results[0], results[1], results[2], results[3], {
+			dokotreId: source.dokotreId,
+			senku: source.senku
+		});
+		return normalized.location;
+	});
 }
 
 function convert_jreast_location_now_data(_rawData, _source, _display_rosen, _source_rosen) {
@@ -1026,8 +1075,8 @@ function set_station_list(_param_rosen, _scrollKey, _callback) {
 	)
 	.done(function(rosenNameData, maintenanceData, typeData, ekiData, rosen, maintenance) {
 
-		// 現在日付を設定。JRE変換路線はJSON内部の配信時刻を使用する。
-		if (is_jreast_location_rosen(_param_rosen)) $("#timestamp").text("");
+		// 現在日付を設定。外部JSON変換路線はJSON内部の配信時刻を使用する。
+		if (is_jreast_location_rosen(_param_rosen) || is_dokotre_location_rosen(_param_rosen)) $("#timestamp").text("");
 		else update_location_timestamp();
 
 		// 路線名を設定
@@ -1072,7 +1121,7 @@ function set_station_list(_param_rosen, _scrollKey, _callback) {
 			cachedResshaTypeData = typeData[0];
 			cachedEkiData = ekiData[0];
 			$("#stationList").html(rosen[0]);
-			if (is_jreast_location_rosen(_param_rosen)) setTimestamp(nowData);
+			if (is_jreast_location_rosen(_param_rosen) || is_dokotre_location_rosen(_param_rosen)) setTimestamp(nowData);
 			update_location_data_stale_warning(nowData);
 			// 列車アイコンを描画する
 			create_ressha_icon(_param_rosen, nowData, typeData[0], ekiData[0]);
@@ -1171,7 +1220,7 @@ function redraw_location_positions(_param_rosen, _nowData) {
 	clear_location_positions(_param_rosen);
 	create_ressha_icon(_param_rosen, _nowData, cachedResshaTypeData, cachedEkiData);
 	ressha_pos_sort();
-	if (is_jreast_location_rosen(_param_rosen)) setTimestamp(_nowData);
+	if (is_jreast_location_rosen(_param_rosen) || is_dokotre_location_rosen(_param_rosen)) setTimestamp(_nowData);
 	else update_location_timestamp();
 	update_location_data_stale_warning(_nowData);
 	restore_selected_train_marker(trackingScrollEnabled);
@@ -2179,9 +2228,10 @@ function create_ressha_detail(_objItem, _nowRow, _typeData, _ekiData) {
 			_objItem.dataset.cbango = _nowRow.cbango;
 			_objItem.dataset.source = _nowRow.source || "";
 			_objItem.dataset.source_rosen = _nowRow.sourceRosen || "";
-			_objItem.dataset.aisho = _nowRow.jrEast && _nowRow.jrEast.nickname ? _nowRow.jrEast.nickname : "";
+			_objItem.dataset.aisho = _nowRow.jrEast && _nowRow.jrEast.nickname ? _nowRow.jrEast.nickname : (_nowRow.name || "");
 			_objItem.dataset.jreast_series = _nowRow.jrEast && _nowRow.jrEast.series ? _nowRow.jrEast.series : "";
 			_objItem.dataset.jreast_timetable = _nowRow.jrEast && Array.isArray(_nowRow.jrEast.timetable) ? JSON.stringify(_nowRow.jrEast.timetable) : "[]";
+			_objItem.dataset.dokotre_timetable = _nowRow.dokotre && Array.isArray(_nowRow.dokotre.timetable) ? JSON.stringify(_nowRow.dokotre.timetable) : "[]";
 		}
 
 		// 列車種別を表す色を設定。
@@ -2716,7 +2766,7 @@ function load_train_search_data() {
 	const lang = document.documentElement.dataset.lang;
 	const mstNow = Date.now() >>> 16;
 	const trnNow = Date.now() >>> 10;
-	const searchSourceRosens = ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15"];
+	const searchSourceRosens = ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "57"];
 	const daiyaSourceSenkus = ["00"].concat(searchSourceRosens, ["19"]);
 	const expressMasterPromise = jqxhr_to_promise($.getJSON("https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/webunkou/json/master/express_master.json?" + mstNow));
 	const expressCorePromise = jqxhr_to_promise(get_express_core_request(mstNow));
@@ -2726,7 +2776,7 @@ function load_train_search_data() {
 	const ekiPromise = cachedEkiData ? Promise.resolve(cachedEkiData) : jqxhr_to_promise($.getJSON("https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/webunkou/json/master/eki_master.json?" + mstNow));
 	const locationMasterPromise = cachedLocationMasterData ? Promise.resolve(cachedLocationMasterData) : jqxhr_to_promise($.getJSON("./original/location_master.json")).catch(() => ({}));
 	const locationPromises = searchSourceRosens.map((rosen) =>
-		jqxhr_to_promise(get_location_now_request(rosen, trnNow))
+		(is_dokotre_location_rosen(rosen) ? load_location_now_data(rosen, trnNow) : jqxhr_to_promise(get_location_now_request(rosen, trnNow)))
 			.then((data) => ({ "rosen": rosen, "data": data }))
 			.catch(() => null)
 	);
@@ -2806,7 +2856,11 @@ function load_train_search_data() {
 			entry.data.trains.forEach((train) => {
 				if (!train || !train.cbango) return;
 				const cbango = String(train.cbango).toUpperCase();
-				const daiya = daiyaMap.get(String(train.cbango));
+				const daiya = daiyaMap.get(String(train.cbango)) || (train.source === "dokotre" ? {
+					"name": train.name || "",
+					"shuEkiKey": train.shuEkiKey || "",
+					"senku": train.senku || ""
+				} : undefined);
 				const nameInfo = parse_train_name(daiya && daiya.name ? daiya.name : "");
 				const displayName = build_train_search_display_name(train, daiya, typeData, ekiData);
 				const targetRosen = normalizeMergedRosen(entry.rosen, nameInfo.baseName || displayName);
