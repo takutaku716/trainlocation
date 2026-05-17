@@ -5,6 +5,19 @@ const fs = require("fs");
 const path = require("path");
 
 const DEFAULT_DOKOTRE_BASE = "https://doko-train.jp/json";
+const DESTINATION_SIMPLE_NAMES = {
+	"東京": "東",
+	"山形": "山",
+	"福島": "福",
+	"米沢": "米",
+	"新庄": "庄",
+	"天童": "天",
+	"村山": "村",
+	"仙台": "仙",
+	"寒河江": "寒",
+	"左沢": "左",
+	"庭坂": "庭"
+};
 
 const args = process.argv.slice(2);
 const options = parseArgs(args);
@@ -166,14 +179,16 @@ function convertLocationNow(statusJson, diagramJson, context, options) {
 		const statusDetails = getStatusDetails(diagram, context);
 		const trainName = buildTrainName(diagram, row);
 
+		const destinationName = getStationName(destinationId, context) || toText(diagram && diagram.END_RLSTC_LNAME);
+
 		return {
 			cbango: getTrainNo(entry.key, diagram),
 			type: mapTrainType(diagram, row),
 			pos: position.key,
 			posName: position.name,
 			chien: toNumber(row.LATENCY),
-			shuEkiSimple: getStationName(destinationId, context) || toText(diagram && diagram.END_RLSTC_LNAME),
-			shuEkiName: getStationName(destinationId, context) || toText(diagram && diagram.END_RLSTC_LNAME),
+			shuEkiSimple: getDestinationSimpleName(destinationName),
+			shuEkiName: destinationName,
 			shuEkiKey: getStationKey(destinationId, context),
 			status,
 			statusDetail: statusDetails.ja,
@@ -440,6 +455,11 @@ function getStationKey(stationId, context) {
 	const id = toText(stationId);
 	if (!id) return "";
 	return context.stationKeyById.get(id) || id;
+}
+
+function getDestinationSimpleName(name) {
+	const normalized = toText(name).replace(/\s+/g, "");
+	return DESTINATION_SIMPLE_NAMES[normalized] || normalized;
 }
 
 function formatDokotreTimestamp(value) {

@@ -7,6 +7,20 @@
 }(typeof self !== "undefined" ? self : this, function() {
 	"use strict";
 
+	const DESTINATION_SIMPLE_NAMES = {
+		"東京": "東",
+		"山形": "山",
+		"福島": "福",
+		"米沢": "米",
+		"新庄": "庄",
+		"天童": "天",
+		"村山": "村",
+		"仙台": "仙",
+		"寒河江": "寒",
+		"左沢": "左",
+		"庭坂": "庭"
+	};
+
 	function normalize(lineJson, diagramJson, statusJson, mapping, options) {
 		const settings = options || {};
 		const context = buildMappingContext(mapping, lineJson, settings.stationKeyMap || {}, settings);
@@ -95,14 +109,16 @@
 			const statusDetails = getStatusDetails(diagram, context);
 			const trainName = buildTrainName(diagram, row);
 
+			const destinationName = getStationName(destinationId, context) || toText(diagram && diagram.END_RLSTC_LNAME);
+
 			return {
 				cbango: getTrainNo(entry.key, diagram),
 				type: mapTrainType(diagram, row),
 				pos: position.key,
 				posName: position.name,
 				chien: toNumber(row && row.LATENCY),
-				shuEkiSimple: getStationName(destinationId, context) || toText(diagram && diagram.END_RLSTC_LNAME),
-				shuEkiName: getStationName(destinationId, context) || toText(diagram && diagram.END_RLSTC_LNAME),
+				shuEkiSimple: getDestinationSimpleName(destinationName),
+				shuEkiName: destinationName,
 				shuEkiKey: getStationKey(destinationId, context),
 				status: status,
 				statusDetail: statusDetails.ja,
@@ -407,6 +423,11 @@
 		const id = toText(stationId);
 		if (!id) return "";
 		return context.stationKeyById.get(id) || id;
+	}
+
+	function getDestinationSimpleName(name) {
+		const normalized = toText(name).replace(/\s+/g, "");
+		return DESTINATION_SIMPLE_NAMES[normalized] || normalized;
 	}
 
 	function formatDokotreTimestamp(value) {
