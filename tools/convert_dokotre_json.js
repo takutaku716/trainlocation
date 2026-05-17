@@ -398,7 +398,7 @@ function convertDaiyaStations(train, context, unmatchedStations) {
 
 function isDaiyaStop(row) {
 	const passCode = toText(row && row.PASS_CODE);
-	if (passCode === "10" || passCode === "30") return false;
+	if (passCode === "10" || passCode === "23" || passCode === "30") return false;
 	return Boolean(toText(row && (row.STD || row.STA)));
 }
 
