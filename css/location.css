@@ -1223,10 +1223,6 @@ header {
 				#stationList .eki-panel .senro-img.hoka-rosen.non-service {
 					opacity: 0.5;
 				}
-				#stationList .eki-panel.non-service-continue .senro-img,
-				#stationList .down-rosen-link.non-service-continue {
-					opacity: 0.5;
-				}
 
 		/* 別路線のリンク */
 		#stationList .eki-panel .hoka-rosen-link {
