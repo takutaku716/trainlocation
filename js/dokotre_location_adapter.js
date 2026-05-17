@@ -385,7 +385,7 @@
 
 	function mapTrainType(diagram, statusRow) {
 		const nickname = toText(diagram && diagram.TRAIN_NNAME) || toText(statusRow && statusRow.TRAIN_NNAME);
-		if (nickname.indexOf("つばさ") >= 0) return "4";
+		if (nickname.indexOf("つばさ") >= 0) return "1";
 		return "3";
 	}
 
