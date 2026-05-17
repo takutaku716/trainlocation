@@ -430,6 +430,7 @@
 	function mapTrainType(diagram, statusRow) {
 		const nickname = toText(diagram && diagram.TRAIN_NNAME) || toText(statusRow && statusRow.TRAIN_NNAME);
 		if (nickname.indexOf("つばさ") >= 0 || nickname.indexOf("こまち") >= 0) return "1";
+		if (nickname.indexOf("快速") >= 0 || toText(diagram && diagram.TRAIN_TYPE || statusRow && statusRow.TRAIN_TYPE) === "2" || toText(diagram && diagram.EXPRESS_CODE || statusRow && statusRow.EXPRESS_CODE) === "2") return "8";
 		return "3";
 	}
 
