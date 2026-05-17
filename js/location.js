@@ -50,9 +50,9 @@ const DOKOTRE_LOCATION_SOURCE_MAP = {
 		dokotreId: "9021",
 		senku: "57",
 		mappingUrl: "./tools/dokotre_9021_mapping.json",
-		lineUrl: "https://doko-train.jp/json/line/9021.json",
-		diagramUrl: "https://doko-train.jp/json/diagram/line/9021.json",
-		statusUrl: "https://doko-train.jp/json/trainstatus/9021.json"
+		lineUrl: "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://doko-train.jp/json/line/9021.json",
+		diagramUrl: "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://doko-train.jp/json/diagram/line/9021.json",
+		statusUrl: "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://doko-train.jp/json/trainstatus/9021.json"
 	}
 };
 
@@ -820,7 +820,8 @@ function get_dokotre_location_request(_url, _now) {
 	if (!_url) return $.Deferred().reject().promise();
 	const separator = _url.indexOf("?") >= 0 ? "&" : "?";
 	const url = _url + separator + "cache=" + _now;
-	return $.getJSON("https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=" + url);
+	const proxyPrefix = "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=";
+	return $.getJSON(url.indexOf(proxyPrefix) === 0 ? url : proxyPrefix + url);
 }
 
 function get_dokotre_mapping_request(_url, _now) {
