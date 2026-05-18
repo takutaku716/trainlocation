@@ -866,6 +866,7 @@ function merge_location_now_data(_nowDataList) {
 	const seenCbangoMap = new Map();
 	const mergedTrains = [];
 	const sourceTimes = [];
+	const maintenanceMessages = [];
 	let displayTime = null;
 
 	_nowDataList.forEach((entry) => {
@@ -875,6 +876,12 @@ function merge_location_now_data(_nowDataList) {
 		const sourceTime = get_location_now_time_info(nowData, sourceRosen);
 		if (sourceTime) sourceTimes.push(sourceTime);
 		if (!displayTime && nowData.time) displayTime = nowData.time;
+		const nowMaintenanceMessages = Array.isArray(nowData.maintenanceMessages)
+			? nowData.maintenanceMessages
+			: (nowData.maintenance ? [nowData.maintenance] : []);
+		nowMaintenanceMessages.forEach((maintenance) => {
+			if (maintenance) maintenanceMessages.push(maintenance);
+		});
 
 		nowData.trains.forEach((row) => {
 			if (!row || !row.cbango) {
@@ -890,6 +897,7 @@ function merge_location_now_data(_nowDataList) {
 
 	const mergedData = { trains: mergedTrains, sourceTimes: sourceTimes };
 	if (displayTime) mergedData.time = displayTime;
+	if (maintenanceMessages.length > 0) mergedData.maintenanceMessages = maintenanceMessages;
 	return mergedData;
 }
 
@@ -1038,12 +1046,28 @@ function convert_jreast_location_now_data(_rawData, _source, _display_rosen, _so
 		row.shuEkiKey = train.shuEkiKey || "";
 		return row;
 	});
+	const screenDisplayMode = normalized.screenDisplayMode || {};
+	const maintenanceMessages = is_jreast_location_not_in_service_time(_rawData, normalized)
+		? [{
+			source: "jreast",
+			rosen: _source_rosen || _display_rosen || "",
+			message: screenDisplayMode.message && screenDisplayMode.message.ja ? screenDisplayMode.message.ja : ""
+		}]
+		: [];
 
 	return {
 		time: timeText ? { ja: timeText } : undefined,
 		trains: trains,
-		sourceTimes: sourceTime ? [sourceTime] : []
+		sourceTimes: sourceTime ? [sourceTime] : [],
+		maintenanceMessages: maintenanceMessages
 	};
+}
+
+function is_jreast_location_not_in_service_time(_rawData, _normalized) {
+	if (_normalized && _normalized.screenDisplayMode && _normalized.screenDisplayMode.mode === "notInServiceTime") return true;
+	return !!(_rawData && Array.isArray(_rawData.statusInfo) && _rawData.statusInfo.some((status) => {
+		return status && status.deliveryStatus && status.deliveryStatus.mode === "notInServiceTime";
+	}));
 }
 
 function format_jreast_datetime_to_location_time(_dateTime) {
@@ -1098,7 +1122,20 @@ function get_oldest_location_now_time(_nowData) {
 	}, sourceTimes[0]);
 }
 
+function get_location_maintenance_warning_message(_nowData) {
+	const maintenanceMessages = _nowData && Array.isArray(_nowData.maintenanceMessages) ? _nowData.maintenanceMessages : [];
+	const hasJrEastMaintenance = maintenanceMessages.some((message) => message && message.source === "jreast");
+	if (!hasJrEastMaintenance) return "";
+	return "JR\u6771\u65e5\u672c\u5074\u30e1\u30f3\u30c6\u30ca\u30f3\u30b9\u4e2d\u3067\u3059\u3002\u5217\u8eca\u4f4d\u7f6e\u30c7\u30fc\u30bf\u3092\u53d6\u5f97\u3067\u304d\u306a\u3044\u53ef\u80fd\u6027\u304c\u3042\u308a\u307e\u3059\u3002";
+}
+
 function update_location_data_stale_warning(_nowData) {
+	const maintenanceMessage = get_location_maintenance_warning_message(_nowData);
+	if (maintenanceMessage) {
+		$("#locationDataStaleWarning").text(maintenanceMessage).removeAttr("hidden");
+		if (typeof set_header_height === "function") set_header_height();
+		return;
+	}
 	const oldestTime = get_oldest_location_now_time(_nowData);
 	if (!oldestTime) {
 		$("#locationDataStaleWarning").text("").attr("hidden", "hidden");
