@@ -78,6 +78,7 @@ const DOKOTRE_LOCATION_SOURCE_MAP = {
 		]
 	}
 };
+const dokotreStaticSourceDataCache = new Map();
 
 function get_mainte_json_request(fileName, cacheKey) {
 	const cloudflareApiBase = "https://trainlocation.pages.dev";
@@ -970,19 +971,54 @@ function load_dokotre_location_now_data(_param_rosen, _now) {
 
 function load_dokotre_location_source(source, _now) {
 	return Promise.all([
-		jqxhr_to_promise(get_dokotre_location_request(source.lineUrl, _now)),
-		jqxhr_to_promise(get_dokotre_location_request(source.diagramUrl, _now)),
-		jqxhr_to_promise(get_dokotre_location_request(source.statusUrl, _now)),
-		jqxhr_to_promise(get_dokotre_mapping_request(source.mappingUrl, _now)),
-		source.detailDiagramUrl ? jqxhr_to_promise(get_dokotre_location_request(source.detailDiagramUrl, _now)).catch(() => null) : Promise.resolve(null)
+		load_dokotre_static_source_data(source, _now),
+		jqxhr_to_promise(get_dokotre_location_request(source.statusUrl, _now))
 	]).then((results) => {
-		const normalized = window.DokotreLocationAdapter.normalize(results[0], results[1], results[2], results[3], {
+		const staticData = results[0];
+		const statusJson = results[1];
+		const normalized = window.DokotreLocationAdapter.normalize(staticData.lineJson, staticData.diagramJson, statusJson, staticData.mapping, {
 			dokotreId: source.dokotreId,
 			senku: source.senku,
-			detailDiagramJson: results[4]
+			detailDiagramJson: staticData.detailDiagramJson
 		});
 		return normalized.location;
 	});
+}
+
+function load_dokotre_static_source_data(source, _now) {
+	const cacheKey = get_dokotre_static_source_cache_key(source);
+	if (dokotreStaticSourceDataCache.has(cacheKey)) {
+		return dokotreStaticSourceDataCache.get(cacheKey);
+	}
+	const loadPromise = Promise.all([
+		source.lineUrl ? jqxhr_to_promise(get_dokotre_location_request(source.lineUrl, _now)) : Promise.resolve({ data: [] }),
+		jqxhr_to_promise(get_dokotre_location_request(source.diagramUrl, _now)),
+		jqxhr_to_promise(get_dokotre_mapping_request(source.mappingUrl, _now)),
+		source.detailDiagramUrl ? jqxhr_to_promise(get_dokotre_location_request(source.detailDiagramUrl, _now)).catch(() => null) : Promise.resolve(null)
+	]).then((results) => {
+		return {
+			lineJson: results[0],
+			diagramJson: results[1],
+			mapping: results[2],
+			detailDiagramJson: results[3]
+		};
+	}).catch((error) => {
+		dokotreStaticSourceDataCache.delete(cacheKey);
+		throw error;
+	});
+	dokotreStaticSourceDataCache.set(cacheKey, loadPromise);
+	return loadPromise;
+}
+
+function get_dokotre_static_source_cache_key(source) {
+	return [
+		source && source.dokotreId || "",
+		source && source.senku || "",
+		source && source.lineUrl || "",
+		source && source.diagramUrl || "",
+		source && source.mappingUrl || "",
+		source && source.detailDiagramUrl || ""
+	].join("|");
 }
 
 function convert_jreast_location_now_data(_rawData, _source, _display_rosen, _source_rosen) {
