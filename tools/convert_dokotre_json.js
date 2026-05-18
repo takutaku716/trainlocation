@@ -187,13 +187,14 @@ function convertLocationNow(statusJson, diagramJson, context, options) {
 		if (!position.key && settings.filterUnmappedPositions !== false) return null;
 		const status = getUnkouStatus(diagram);
 		const statusDetails = getStatusDetails(diagram, context);
-		const trainName = buildTrainName(diagram, row);
+		const trainType = mapTrainType(diagram, row);
+		const trainName = buildTrainName(diagram, row, trainType);
 
 		const destinationName = getStationName(destinationId, context) || toText(diagram && diagram.END_RLSTC_LNAME);
 
 		return {
 			cbango: getTrainNo(entry.key, diagram),
-			type: mapTrainType(diagram, row),
+			type: trainType,
 			pos: position.key,
 			posName: position.name,
 			chien: toNumber(row.LATENCY),
@@ -255,10 +256,11 @@ function convertDaiya(diagramJson, context, options) {
 	const today = (Array.isArray(diagramJson && diagramJson.DIAGRAM) ? diagramJson.DIAGRAM : []).map((train) => {
 		const stations = convertDaiyaStations(train, context, unmatchedStations);
 		const destinationKey = getStationKey(train.END_RLSTC, context) || (stations.length ? stations[stations.length - 1].key : "");
+		const trainType = mapTrainType(train);
 		return {
 			cbango: toText(train.TRAIN_ID),
-			name: buildTrainName(train),
-			type: mapTrainType(train),
+			name: buildTrainName(train, null, trainType),
+			type: trainType,
 			shuEkiKey: destinationKey,
 			ryosu: getCars(train),
 			stations
@@ -433,11 +435,12 @@ function selectDaiyaTime(row, isLast) {
 	return toText(row.STD) || toText(row.STA);
 }
 
-function buildTrainName(diagram, statusRow) {
+function buildTrainName(diagram, statusRow, trainType) {
 	const nickname = toText(diagram && diagram.TRAIN_NNAME) || toText(statusRow && statusRow.TRAIN_NNAME);
 	const nicknameNo = toText(diagram && diagram.TRAIN_NNAME_ID) || toText(statusRow && statusRow.TRAIN_NNO);
 	if (nickname && nicknameNo && nicknameNo !== "0") return `${nickname}${nicknameNo}号`;
 	if (nickname) return nickname;
+	if (String(trainType) === "8") return "快速";
 	return "普通列車";
 }
 
