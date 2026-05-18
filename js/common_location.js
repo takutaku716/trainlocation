@@ -85,6 +85,20 @@ function get_rosen_now_request(_now) {
 	return get_testable_json_request(testUrl, remoteUrl);
 }
 
+function get_dokotre_delay_section_request(_now) {
+	const testUrl = get_test_urls("dokotre/delay_section.json?" + _now);
+	const remoteUrl = "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://doko-train.jp/json/trainstatus/delay_section.json?" + _now;
+	return get_testable_json_request(testUrl, remoteUrl);
+}
+
+function get_optional_dokotre_delay_section_request(_now) {
+	const deferred = $.Deferred();
+	get_dokotre_delay_section_request(_now)
+		.done((data) => deferred.resolve(data))
+		.fail(() => deferred.resolve(null));
+	return deferred.promise();
+}
+
 /*
  * サイドメニュー　各路線の遅延情報の設定
  */
@@ -95,11 +109,18 @@ function set_side_area_chien() {
 		"52": ["02", "07", "09"],
 		"53": ["02", "13"]
 	};
+	const dokotreDelaySectionMap = {
+		"57": ["90211", "90212", "90213"],
+		"58": ["110A"]
+	};
 	// エリア名を取得
 	$.when(
-		get_rosen_now_request(now)
+		get_rosen_now_request(now),
+		get_optional_dokotre_delay_section_request(now)
 	)
-	.done(function(nowdata) {
+	.done(function(nowdataBase, dokotreDelayDataBase) {
+		const nowdata = get_json_data_from_jquery_when_result(nowdataBase);
+		const dokotreDelayData = get_json_data_from_jquery_when_result(dokotreDelayDataBase);
 		// 現在日付表示
 		function setTimestamp(nowdata) {
 			const now = new Date();
@@ -121,6 +142,9 @@ function set_side_area_chien() {
 			let nowStatus = nowdata.lines.find((v) => v.rosen == rosenValue);
 			if (typeof nowStatus === "undefined" && mergedRosenMap[rosenValue]) {
 				nowStatus = getMergedRosenStatus(nowdata.lines, mergedRosenMap[rosenValue]);
+			}
+			if (typeof nowStatus === "undefined" && dokotreDelaySectionMap[rosenValue]) {
+				nowStatus = getDokotreDelaySectionStatus(dokotreDelayData, dokotreDelaySectionMap[rosenValue]);
 			}
 			if (typeof nowStatus !== "undefined") {
 				// 遅延情報の表示
@@ -154,6 +178,27 @@ function set_side_area_chien() {
 		}, 0);
 		return merged;
 	}
+
+	function getDokotreDelaySectionStatus(delayData, sectionIds) {
+		const sections = delayData && delayData.current_hour && delayData.current_hour.sections ? delayData.current_hour.sections : null;
+		if (!sections) return undefined;
+		const maxChien = sectionIds.reduce((maxValue, sectionId) => {
+			const value = normalizeSideChienMinutes(sections[sectionId]);
+			return value > maxValue ? value : maxValue;
+		}, 0);
+		return { maxChien: maxChien };
+	}
+
+	function normalizeSideChienMinutes(value) {
+		const minutes = Number(value || 0);
+		if (!Number.isFinite(minutes) || minutes < 0) return 0;
+		return minutes;
+	}
+}
+
+function get_json_data_from_jquery_when_result(_result) {
+	if (Array.isArray(_result) && typeof _result[1] === "string") return _result[0];
+	return _result;
 }
 
 /**
