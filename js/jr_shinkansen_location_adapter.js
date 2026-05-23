@@ -144,10 +144,11 @@
 		rawTrains.forEach((rawTrain) => {
 			const trainNumber = String(rawTrain.trainNumber || rawTrain.train || "").trim();
 			if (!trainNumber) return;
+			const displayTrainNumber = normalizeShinkansenTrainNumber(trainNumber);
 			const trainName = trainNameMap[String(rawTrain.train)] || "";
 			const destination = getCentralDestination(rawTrain, centralTrainInfoMap) || fallbackDestination;
 			output.push(buildTrain({
-				cbango: trainNumber,
+				cbango: displayTrainNumber,
 				name: makeDisplayTrainName(trainName, trainNumber),
 				typeLabel: "\u65b0\u5e79\u7dda",
 				destination: destination,
@@ -161,6 +162,7 @@
 					jrShinkansen: {
 						source: "central",
 						trainCode: rawTrain.train || "",
+						rawTrainNumber: trainNumber,
 						track: rawTrain.track || "",
 						sot: rawTrain.sot || "",
 						terminalStation: getCentralTerminalStationId(rawTrain, centralTrainInfoMap)
@@ -196,15 +198,16 @@
 			if (!posBase) return;
 			row.trains.forEach((rawTrain) => {
 				const suffix = rawTrain.direction === "U" ? "U" : "D";
-				const trainNumber = rawTrain.number || rawTrain.cbango || "";
-				if (!trainNumber) return;
-				trains.push(buildTrain({
-					cbango: trainNumber,
-					name: rawTrain.name || makeDisplayTrainName(rawTrain.serviceName, trainNumber),
-					typeLabel: "\u65b0\u5e79\u7dda",
-					destination: rawTrain.destination || (suffix === "U" ? "\u535a\u591a" : "\u9e7f\u5150\u5cf6\u4e2d\u592e"),
-					delay: rawTrain.delay,
-					pos: posBase + suffix,
+			const trainNumber = rawTrain.number || rawTrain.cbango || "";
+			if (!trainNumber) return;
+			const displayTrainNumber = normalizeShinkansenTrainNumber(rawTrain.cbango || trainNumber);
+			trains.push(buildTrain({
+				cbango: displayTrainNumber,
+				name: rawTrain.name || makeDisplayTrainName(rawTrain.serviceName, trainNumber),
+				typeLabel: "\u65b0\u5e79\u7dda",
+				destination: rawTrain.destination || (suffix === "U" ? "\u535a\u591a" : "\u9e7f\u5150\u5cf6\u4e2d\u592e"),
+				delay: rawTrain.delay,
+				pos: posBase + suffix,
 					source: "jrshinkansen",
 					sourceRosen: "59",
 					senku: options && options.senku ? options.senku : "59",
@@ -212,6 +215,7 @@
 					extra: {
 						jrShinkansen: {
 							source: "kyushu",
+							rawTrainNumber: trainNumber,
 							rawCbango: rawTrain.cbango || ""
 						}
 					}
@@ -380,6 +384,14 @@
 	function makeDisplayTrainName(name, number) {
 		if (!name) return "";
 		return name + String(number || "") + "\u53f7";
+	}
+
+	function normalizeShinkansenTrainNumber(number) {
+		const text = String(number || "").trim().toUpperCase();
+		if (!text) return "";
+		const match = text.match(/^0*(\d+)([A-Z]?)$/);
+		if (!match) return text;
+		return String(Number(match[1])) + (match[2] || "A");
 	}
 
 	function normalizeKyushuDestination(destination) {
