@@ -108,7 +108,7 @@ $(function ($) {
 			$("#cbangoIcon").removeClass("hide");
 			$("#cbangoDetail").removeClass("hide");
 
-			if (dataset.source === "jreast" || dataset.source === "dokotre") {
+			if (dataset.source === "jreast" || dataset.source === "dokotre" || dataset.source === "jrshinkansen") {
 				$("#unkouDetailMain").hide();
 				$.getJSON("./original/location_master" + (lang === "ja" ? "" : "_" + lang) + ".json?" + now)
 					.done(function(posNameMasterBase) {
