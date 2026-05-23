@@ -165,7 +165,8 @@
 						rawTrainNumber: trainNumber,
 						track: rawTrain.track || "",
 						sot: rawTrain.sot || "",
-						terminalStation: getCentralTerminalStationId(rawTrain, centralTrainInfoMap)
+						terminalStation: getCentralTerminalStationId(rawTrain, centralTrainInfoMap),
+						timetable: convertCentralTrainInfoTimetable(rawTrain, centralTrainInfoMap)
 					}
 				}
 			}));
@@ -187,6 +188,35 @@
 
 	function getCentralTrainInfoKey(rawTrain) {
 		return String(rawTrain && rawTrain.train || "") + "_" + String(rawTrain && rawTrain.trainNumber || "");
+	}
+
+	function convertCentralTrainInfoTimetable(rawTrain, centralTrainInfoMap) {
+		const trainInfo = centralTrainInfoMap[getCentralTrainInfoKey(rawTrain)];
+		const trainRows = trainInfo && trainInfo.trainInfo && Array.isArray(trainInfo.trainInfo.trains) ? trainInfo.trainInfo.trains : [];
+		if (trainRows.length < 1) return [];
+		const stations = Array.isArray(trainRows[0].stations) ? trainRows[0].stations : [];
+		return stations.map((row) => {
+			const stationName = CENTRAL_STATION_NAMES[String(row && row.station)] || "";
+			const planArrival = formatCentralTrainInfoTime(row && row.arrivalTime);
+			const planDeparture = formatCentralTrainInfoTime(row && row.departureTime);
+			if (!stationName || (!planArrival && !planDeparture)) return null;
+			return {
+				stationName: stationName,
+				planArrival: planArrival,
+				planDeparture: planDeparture,
+				time: planDeparture || planArrival
+			};
+		}).filter(Boolean);
+	}
+
+	function formatCentralTrainInfoTime(value) {
+		if (value === null || typeof value === "undefined") return "";
+		const number = Number(value);
+		if (!Number.isFinite(number) || number <= 0) return "";
+		const hour = Math.floor(number / 100);
+		const minute = number % 100;
+		if (minute < 0 || minute > 59) return "";
+		return String(hour).padStart(2, "0") + ":" + String(minute).padStart(2, "0");
 	}
 
 	function normalizeKyushu(html, options) {

@@ -2455,6 +2455,7 @@ function create_ressha_detail(_objItem, _nowRow, _typeData, _ekiData) {
 			_objItem.dataset.jreast_series = _nowRow.jrEast && _nowRow.jrEast.series ? _nowRow.jrEast.series : "";
 			_objItem.dataset.jreast_timetable = _nowRow.jrEast && Array.isArray(_nowRow.jrEast.timetable) ? JSON.stringify(_nowRow.jrEast.timetable) : "[]";
 			_objItem.dataset.dokotre_timetable = _nowRow.dokotre && Array.isArray(_nowRow.dokotre.timetable) ? JSON.stringify(_nowRow.dokotre.timetable) : "[]";
+			_objItem.dataset.jrshinkansen_timetable = _nowRow.jrShinkansen && Array.isArray(_nowRow.jrShinkansen.timetable) ? JSON.stringify(_nowRow.jrShinkansen.timetable) : "[]";
 		}
 
 		// 列車種別を表す色を設定。

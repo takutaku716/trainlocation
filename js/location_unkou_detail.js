@@ -237,7 +237,10 @@ function create_jreast_daiya(_dataset) {
 	$("#teisyaTableArea div").empty();
 	let timetable = [];
 	try {
-		const timetableText = _dataset.source === "dokotre" ? _dataset.dokotre_timetable : _dataset.jreast_timetable;
+		const timetableText =
+			_dataset.source === "dokotre" ? _dataset.dokotre_timetable :
+			_dataset.source === "jrshinkansen" ? _dataset.jrshinkansen_timetable :
+			_dataset.jreast_timetable;
 		timetable = JSON.parse(timetableText || "[]");
 	} catch (_error) {
 		timetable = [];
