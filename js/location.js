@@ -84,6 +84,7 @@ const JR_SHINKANSEN_LOCATION_SOURCE_MAP = {
 		senku: "59",
 		centralUrl: "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://traininfo.jr-central.co.jp/shinkansen/var/train_info/train_location_info.json",
 		centralMasterUrl: "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://traininfo.jr-central.co.jp/shinkansen/common/data/common_ja.json",
+		centralTrainInfoUrlBase: "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://traininfo.jr-central.co.jp/shinkansen/var/train_info/",
 		kyushuUrl: "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://george-doredore.jrkyushu.co.jp/jrqSEN29.html"
 	}
 };
@@ -1064,13 +1065,20 @@ function load_jr_shinkansen_location_now_data(_param_rosen, _now) {
 		load_jr_shinkansen_static_source_data(source, _now).catch(() => ({ centralMasterJson: null })),
 		jqxhr_to_promise(get_external_text_request(source.kyushuUrl, _now)).catch(() => "")
 	]).then((results) => {
-		const normalized = window.JrShinkansenLocationAdapter.normalize(results[0], results[1].centralMasterJson, results[2], {
-			senku: source.senku || _param_rosen
-		});
-		if (!normalized.location || !Array.isArray(normalized.location.trains) || normalized.location.trains.length < 1) {
-			throw new Error("JR Shinkansen location now json load failed");
-		}
-		return normalized.location;
+		const centralLocationJson = results[0];
+		const centralMasterJson = results[1].centralMasterJson;
+		const kyushuHtml = results[2];
+		return load_jr_shinkansen_central_train_info_map(source, centralLocationJson, _now)
+			.then((centralTrainInfoMap) => {
+				const normalized = window.JrShinkansenLocationAdapter.normalize(centralLocationJson, centralMasterJson, kyushuHtml, {
+					senku: source.senku || _param_rosen,
+					centralTrainInfoMap: centralTrainInfoMap
+				});
+				if (!normalized.location || !Array.isArray(normalized.location.trains) || normalized.location.trains.length < 1) {
+					throw new Error("JR Shinkansen location now json load failed");
+				}
+				return normalized.location;
+			});
 	});
 }
 
@@ -1091,6 +1099,45 @@ function load_jr_shinkansen_static_source_data(source, _now) {
 	});
 	jrShinkansenStaticSourceDataCache.set(cacheKey, loadPromise);
 	return loadPromise;
+}
+
+function load_jr_shinkansen_central_train_info_map(source, centralLocationJson, _now) {
+	const refs = collect_jr_shinkansen_central_train_refs(centralLocationJson);
+	if (refs.length < 1) return Promise.resolve({});
+	return Promise.all(refs.map((ref) => {
+		return jqxhr_to_promise(get_jr_shinkansen_central_train_info_request(source, ref.train, ref.trainNumber, _now))
+			.then((json) => ({ key: ref.key, json: json }))
+			.catch(() => null);
+	})).then((results) => {
+		return results.filter(Boolean).reduce((map, entry) => {
+			map[entry.key] = entry.json;
+			return map;
+		}, {});
+	});
+}
+
+function get_jr_shinkansen_central_train_info_request(source, train, trainNumber, _now) {
+	if (!source || !source.centralTrainInfoUrlBase || !train || !trainNumber) return $.Deferred().reject().promise();
+	const url = source.centralTrainInfoUrlBase + "train_info_" + encodeURIComponent(train) + "_" + encodeURIComponent(trainNumber) + ".json";
+	return get_dokotre_location_request(url, _now);
+}
+
+function collect_jr_shinkansen_central_train_refs(centralLocationJson) {
+	const refs = new Map();
+	const locationInfo = centralLocationJson && centralLocationJson.trainLocationInfo ? centralLocationJson.trainLocationInfo : {};
+	["atStation", "betweenStation"].forEach((groupName) => {
+		const bounds = locationInfo[groupName] && locationInfo[groupName].bounds ? locationInfo[groupName].bounds : {};
+		Object.keys(bounds).forEach((bound) => {
+			(bounds[bound] || []).forEach((entry) => {
+				(entry.trains || []).forEach((train) => {
+					if (!train || !train.train || !train.trainNumber) return;
+					const key = String(train.train) + "_" + String(train.trainNumber);
+					if (!refs.has(key)) refs.set(key, { key: key, train: String(train.train), trainNumber: String(train.trainNumber) });
+				});
+			});
+		});
+	});
+	return Array.from(refs.values());
 }
 
 function convert_jreast_location_now_data(_rawData, _source, _display_rosen, _source_rosen) {

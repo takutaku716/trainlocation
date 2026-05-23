@@ -113,16 +113,17 @@
 		const trains = [];
 		const stationIndexById = new Map(CENTRAL_STATION_ORDER.map((id, index) => [String(id), index]));
 		const trainNameMap = Object.assign({}, CENTRAL_TRAIN_NAMES, extractCentralTrainNameMap(masterData));
+		const centralTrainInfoMap = options && options.centralTrainInfoMap ? options.centralTrainInfoMap : {};
 
 		["1", "2"].forEach((bound) => {
 			const suffix = bound === "1" ? "U" : "D";
-			const destination = bound === "1" ? "\u6771\u4eac" : "\u535a\u591a";
+			const fallbackDestination = bound === "1" ? "\u6771\u4eac" : "\u535a\u591a";
 			const atStations = locationInfo.atStation && locationInfo.atStation.bounds && locationInfo.atStation.bounds[bound] ? locationInfo.atStation.bounds[bound] : [];
 			atStations.forEach((entry) => {
 				const index = stationIndexById.get(String(entry.station));
 				if (typeof index !== "number") return;
 				const posNumber = index * 2 + 1;
-				addCentralTrains(trains, entry.trains, "JT01P" + pad2(posNumber) + suffix, destination, trainNameMap, options);
+				addCentralTrains(trains, entry.trains, "JT01P" + pad2(posNumber) + suffix, fallbackDestination, trainNameMap, centralTrainInfoMap, options);
 			});
 
 			const betweenStations = locationInfo.betweenStation && locationInfo.betweenStation.bounds && locationInfo.betweenStation.bounds[bound] ? locationInfo.betweenStation.bounds[bound] : [];
@@ -131,19 +132,20 @@
 				if (typeof index !== "number") return;
 				const posNumber = bound === "1" ? index * 2 : index * 2 + 2;
 				if (posNumber < 1 || posNumber > 68) return;
-				addCentralTrains(trains, entry.trains, "JT01P" + pad2(posNumber) + suffix, destination, trainNameMap, options);
+				addCentralTrains(trains, entry.trains, "JT01P" + pad2(posNumber) + suffix, fallbackDestination, trainNameMap, centralTrainInfoMap, options);
 			});
 		});
 
 		return trains;
 	}
 
-	function addCentralTrains(output, rawTrains, pos, destination, trainNameMap, options) {
+	function addCentralTrains(output, rawTrains, pos, fallbackDestination, trainNameMap, centralTrainInfoMap, options) {
 		if (!Array.isArray(rawTrains)) return;
 		rawTrains.forEach((rawTrain) => {
 			const trainNumber = String(rawTrain.trainNumber || rawTrain.train || "").trim();
 			if (!trainNumber) return;
 			const trainName = trainNameMap[String(rawTrain.train)] || "";
+			const destination = getCentralDestination(rawTrain, centralTrainInfoMap) || fallbackDestination;
 			output.push(buildTrain({
 				cbango: trainNumber,
 				name: makeDisplayTrainName(trainName, trainNumber),
@@ -160,11 +162,29 @@
 						source: "central",
 						trainCode: rawTrain.train || "",
 						track: rawTrain.track || "",
-						sot: rawTrain.sot || ""
+						sot: rawTrain.sot || "",
+						terminalStation: getCentralTerminalStationId(rawTrain, centralTrainInfoMap)
 					}
 				}
 			}));
 		});
+	}
+
+	function getCentralDestination(rawTrain, centralTrainInfoMap) {
+		const stationId = getCentralTerminalStationId(rawTrain, centralTrainInfoMap);
+		return stationId ? CENTRAL_STATION_NAMES[String(stationId)] || "" : "";
+	}
+
+	function getCentralTerminalStationId(rawTrain, centralTrainInfoMap) {
+		const trainInfo = centralTrainInfoMap[getCentralTrainInfoKey(rawTrain)];
+		const trainRows = trainInfo && trainInfo.trainInfo && Array.isArray(trainInfo.trainInfo.trains) ? trainInfo.trainInfo.trains : [];
+		if (trainRows.length < 1) return "";
+		const terminal = trainRows[0].terminalStation || {};
+		return terminal.station ? String(terminal.station) : "";
+	}
+
+	function getCentralTrainInfoKey(rawTrain) {
+		return String(rawTrain && rawTrain.train || "") + "_" + String(rawTrain && rawTrain.trainNumber || "");
 	}
 
 	function normalizeKyushu(html, options) {
