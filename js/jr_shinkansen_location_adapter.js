@@ -194,11 +194,23 @@
 		const trainInfo = centralTrainInfoMap[getCentralTrainInfoKey(rawTrain)];
 		const trainRows = trainInfo && trainInfo.trainInfo && Array.isArray(trainInfo.trainInfo.trains) ? trainInfo.trainInfo.trains : [];
 		if (trainRows.length < 1) return [];
-		const stations = Array.isArray(trainRows[0].stations) ? trainRows[0].stations : [];
-		return stations.map((row) => {
-			const stationName = CENTRAL_STATION_NAMES[String(row && row.station)] || "";
-			const planArrival = formatCentralTrainInfoTime(row && row.arrivalTime);
-			const planDeparture = formatCentralTrainInfoTime(row && row.departureTime);
+		const trainRow = trainRows[0];
+		const stations = Array.isArray(trainRow.stations) ? trainRow.stations : [];
+		const startingStation = trainRow.startingStation || {};
+		const terminalStation = trainRow.terminalStation || {};
+		const timetable = stations.map((row) => {
+			const stationId = String(row && row.station || "");
+			const stationName = CENTRAL_STATION_NAMES[stationId] || "";
+			let planArrival = formatCentralTrainInfoTime(row && row.arrivalTime);
+			let planDeparture = formatCentralTrainInfoTime(row && row.departureTime);
+			if (stationId && stationId === String(startingStation.station || "")) {
+				planArrival = "";
+				planDeparture = planDeparture || formatCentralTrainInfoTime(startingStation.time);
+			}
+			if (stationId && stationId === String(terminalStation.station || "")) {
+				planArrival = planArrival || formatCentralTrainInfoTime(terminalStation.time);
+				planDeparture = "";
+			}
 			if (!stationName || (!planArrival && !planDeparture)) return null;
 			return {
 				stationName: stationName,
@@ -207,14 +219,36 @@
 				time: planDeparture || planArrival
 			};
 		}).filter(Boolean);
+		const startStationName = CENTRAL_STATION_NAMES[String(startingStation.station || "")] || "";
+		const startTime = formatCentralTrainInfoTime(startingStation.time);
+		if (startStationName && startTime && !timetable.some((row) => row.stationName === startStationName)) {
+			timetable.unshift({
+				stationName: startStationName,
+				planArrival: "",
+				planDeparture: startTime,
+				time: startTime
+			});
+		}
+		const terminalStationName = CENTRAL_STATION_NAMES[String(terminalStation.station || "")] || "";
+		const terminalTime = formatCentralTrainInfoTime(terminalStation.time);
+		if (terminalStationName && terminalTime && !timetable.some((row) => row.stationName === terminalStationName)) {
+			timetable.push({
+				stationName: terminalStationName,
+				planArrival: terminalTime,
+				planDeparture: "",
+				time: terminalTime
+			});
+		}
+		return timetable;
 	}
 
 	function formatCentralTrainInfoTime(value) {
 		if (value === null || typeof value === "undefined") return "";
 		const number = Number(value);
 		if (!Number.isFinite(number) || number <= 0) return "";
-		const hour = Math.floor(number / 100);
-		const minute = number % 100;
+		const normalizedMinutes = ((Math.floor(number) % 1440) + 1440) % 1440;
+		const hour = Math.floor(normalizedMinutes / 60);
+		const minute = normalizedMinutes % 60;
 		if (minute < 0 || minute > 59) return "";
 		return String(hour).padStart(2, "0") + ":" + String(minute).padStart(2, "0");
 	}
