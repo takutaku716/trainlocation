@@ -236,6 +236,7 @@
 			}
 			if (!stationName || (!planArrival && !planDeparture)) return null;
 			return {
+				stationId: stationId,
 				stationName: stationName,
 				planArrival: planArrival,
 				planDeparture: planDeparture,
@@ -246,6 +247,7 @@
 		const startTime = formatCentralTrainInfoTime(startingStation.time);
 		if (startStationName && startTime && !timetable.some((row) => row.stationName === startStationName)) {
 			timetable.unshift({
+				stationId: String(startingStation.station || ""),
 				stationName: startStationName,
 				planArrival: "",
 				planDeparture: startTime,
@@ -256,13 +258,36 @@
 		const terminalTime = formatCentralTrainInfoTime(terminalStation.time);
 		if (terminalStationName && terminalTime && !timetable.some((row) => row.stationName === terminalStationName)) {
 			timetable.push({
+				stationId: String(terminalStation.station || ""),
 				stationName: terminalStationName,
 				planArrival: terminalTime,
 				planDeparture: "",
 				time: terminalTime
 			});
 		}
+		if (isKyushuThroughTerminal(terminalStation.station)) insertKyushuThroughNotice(timetable, terminalStationName);
 		return timetable;
+	}
+
+	function isKyushuThroughTerminal(station) {
+		const stationId = Number(station);
+		return stationId >= 46 && stationId <= 56;
+	}
+
+	function insertKyushuThroughNotice(timetable, terminalStationName) {
+		if (!Array.isArray(timetable) || timetable.some((row) => row && row.note)) return;
+		const noteRow = {
+			note: "\u535a\u591a\u304b\u3089\u5148\u3001\u4e5d\u5dde\u65b0\u5e79\u7dda\u306e\u9014\u4e2d\u99c5\u306f\u60c5\u5831\u63d0\u4f9b\u5bfe\u8c61\u5916"
+		};
+		const terminalIndex = timetable.findIndex((row) => row && row.stationName === terminalStationName);
+		const hakataIndex = timetable.findIndex((row) => row && (row.stationId === "30" || row.stationName === "\u535a\u591a"));
+		if (hakataIndex >= 0) {
+			timetable.splice(hakataIndex + 1, 0, noteRow);
+		} else if (terminalIndex >= 0) {
+			timetable.splice(terminalIndex, 0, noteRow);
+		} else {
+			timetable.push(noteRow);
+		}
 	}
 
 	function formatCentralTrainInfoTime(value) {

@@ -270,6 +270,10 @@ function create_jreast_daiya(_dataset) {
 	}
 
 	timetable.forEach(function(row, index) {
+		if (row && row.note) {
+			html += "<tr><td colspan='" + (hasDelay ? "3" : "2") + "' align='center'>" + escape_detail_html(row.note) + "</td></tr>";
+			return;
+		}
 		const stationName = row && row.stationName ? row.stationName : "";
 		const time = select_jreast_daiya_time(row);
 		if (!stationName || !time) return;
@@ -288,6 +292,7 @@ function create_jreast_daiya(_dataset) {
 function unique_jreast_timetable_rows(_timetable) {
 	const seen = new Set();
 	return (Array.isArray(_timetable) ? _timetable : []).filter(function(row) {
+		if (row && row.note) return true;
 		const stationName = row && row.stationName ? row.stationName : "";
 		const time = select_jreast_daiya_time(row);
 		const key = stationName;
