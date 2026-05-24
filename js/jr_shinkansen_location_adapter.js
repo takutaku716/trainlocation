@@ -277,7 +277,7 @@
 	function insertKyushuThroughNotice(timetable, terminalStationName) {
 		if (!Array.isArray(timetable) || timetable.some((row) => row && row.note)) return;
 		const noteRow = {
-			note: "\u535a\u591a\u304b\u3089\u5148\u3001\u4e5d\u5dde\u65b0\u5e79\u7dda\u306e\u9014\u4e2d\u99c5\u306f\u60c5\u5831\u63d0\u4f9b\u5bfe\u8c61\u5916"
+			note: "\u4e5d\u5dde\u65b0\u5e79\u7dda\u306e\u9014\u4e2d\u99c5\u306f\u8868\u793a\u5bfe\u8c61\u5916"
 		};
 		const terminalIndex = timetable.findIndex((row) => row && row.stationName === terminalStationName);
 		const hakataIndex = timetable.findIndex((row) => row && (row.stationId === "30" || row.stationName === "\u535a\u591a"));
