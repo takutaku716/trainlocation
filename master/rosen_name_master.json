@@ -391,6 +391,24 @@
 		"area": "6"
 	},
 	{
+		"rosen": "60",
+		"rosenName": {
+			"ja": "西九州新幹線",
+			"en": "Nishi Kyushu Shinkansen",
+			"tc": "西九州新幹線",
+			"sc": "西九州新干线",
+			"kr": "니시큐슈 신칸센"
+		},
+		"kukanName": {
+			"ja": "[武雄温泉～長崎間]",
+			"en": "[Takeo-Onsen - Nagasaki]",
+			"tc": "[武雄溫泉～長崎間]",
+			"sc": "[武雄温泉～长崎间]",
+			"kr": "[다케오온센～나가사키]"
+		},
+		"area": "6"
+	},
+	{
 		"rosen": "51",
 		"rosenName": {
 			"ja": "函館線",

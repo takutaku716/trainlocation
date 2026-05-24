@@ -87,6 +87,11 @@
 		"\u6771\u4eac": "\u6771",
 		"\u535a\u591a": "\u535a",
 		"\u9e7f\u5150\u5cf6\u4e2d\u592e": "\u9e7f",
+		"\u6b66\u96c4\u6e29\u6cc9": "\u6b66",
+		"\u5b09\u91ce\u6e29\u6cc9": "\u5b09",
+		"\u65b0\u5927\u6751": "\u6751",
+		"\u8acf\u65e9": "\u8acf",
+		"\u9577\u5d0e": "\u9577",
 		"\u718a\u672c": "\u718a",
 		"\u5c0f\u5009": "\u5c0f",
 		"\u5e83\u5cf6": "\u5e83",
@@ -257,9 +262,10 @@
 	function normalizeKyushu(html, options) {
 		const rows = parseKyushuRows(html);
 		const trains = [];
+		const senku = options && options.senku ? String(options.senku) : "59";
 		rows.forEach((row) => {
 			if (!row || !Array.isArray(row.trains)) return;
-			const posBase = getKyushuPosBase(row.kukan);
+			const posBase = getKyushuPosBase(row.kukan, options);
 			if (!posBase) return;
 			row.trains.forEach((rawTrain) => {
 				const suffix = rawTrain.direction === "U" ? "U" : "D";
@@ -270,12 +276,12 @@
 				cbango: displayTrainNumber,
 				name: rawTrain.name || makeDisplayTrainName(rawTrain.serviceName, trainNumber),
 				typeLabel: "\u65b0\u5e79\u7dda",
-				destination: rawTrain.destination || (suffix === "U" ? "\u535a\u591a" : "\u9e7f\u5150\u5cf6\u4e2d\u592e"),
+				destination: rawTrain.destination || getKyushuFallbackDestination(senku, suffix),
 				delay: rawTrain.delay,
 				pos: posBase + suffix,
 					source: "jrshinkansen",
-					sourceRosen: "59",
-					senku: options && options.senku ? options.senku : "59",
+					sourceRosen: senku,
+					senku: senku,
 					ryosu: "",
 					extra: {
 						jrShinkansen: {
@@ -383,9 +389,19 @@
 		}, params.extra || {});
 	}
 
-	function getKyushuPosBase(kukan) {
+	function getKyushuPosBase(kukan, options) {
+		const senku = options && options.senku ? String(options.senku) : "59";
+		if (senku === "60") {
+			if (kukan < 1 || kukan > 9) return "";
+			return "JQ02P" + pad2(kukan);
+		}
 		if (kukan < 2 || kukan > 24) return "";
 		return "JQ01P" + pad2(kukan - 1);
+	}
+
+	function getKyushuFallbackDestination(senku, suffix) {
+		if (String(senku || "") === "60") return suffix === "U" ? "\u6b66\u96c4\u6e29\u6cc9" : "\u9577\u5d0e";
+		return suffix === "U" ? "\u535a\u591a" : "\u9e7f\u5150\u5cf6\u4e2d\u592e";
 	}
 
 	function extractCentralTrainNameMap(masterData) {

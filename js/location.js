@@ -86,6 +86,10 @@ const JR_SHINKANSEN_LOCATION_SOURCE_MAP = {
 		centralMasterUrl: "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://traininfo.jr-central.co.jp/shinkansen/common/data/common_ja.json",
 		centralTrainInfoUrlBase: "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://traininfo.jr-central.co.jp/shinkansen/var/train_info/",
 		kyushuUrl: "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://george-doredore.jrkyushu.co.jp/jrqSEN29.html"
+	},
+	"60": {
+		senku: "60",
+		kyushuUrl: "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://george-doredore.jrkyushu.co.jp/jrqSEN57.html"
 	}
 };
 const jrShinkansenStaticSourceDataCache = new Map();
@@ -1083,6 +1087,7 @@ function load_jr_shinkansen_location_now_data(_param_rosen, _now) {
 }
 
 function load_jr_shinkansen_static_source_data(source, _now) {
+	if (!source || !source.centralMasterUrl) return Promise.resolve({ centralMasterJson: null });
 	const cacheKey = source && source.centralMasterUrl || "";
 	if (jrShinkansenStaticSourceDataCache.has(cacheKey)) {
 		return jrShinkansenStaticSourceDataCache.get(cacheKey);
@@ -3011,7 +3016,7 @@ function load_train_search_data() {
 	const lang = document.documentElement.dataset.lang;
 	const mstNow = Date.now() >>> 16;
 	const trnNow = Date.now() >>> 10;
-	const searchSourceRosens = ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "57", "58", "59"];
+	const searchSourceRosens = ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "57", "58", "59", "60"];
 	const daiyaSourceSenkus = ["00"].concat(searchSourceRosens, ["19"]);
 	const expressMasterPromise = jqxhr_to_promise($.getJSON("https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/webunkou/json/master/express_master.json?" + mstNow));
 	const expressCorePromise = jqxhr_to_promise(get_express_core_request(mstNow));
@@ -3196,7 +3201,7 @@ function load_train_search_data() {
 		));
 		const shinkansenNames = Array.from(new Set(
 			Array.from(daiyaMap.values())
-				.filter((row) => row && (String(row.senku || "") === "19" || String(row.senku || "") === "59"))
+				.filter((row) => row && (String(row.senku || "") === "19" || String(row.senku || "") === "59" || String(row.senku || "") === "60"))
 				.map((row) => parse_train_name(row.name).baseName)
 				.filter(Boolean)
 		));
