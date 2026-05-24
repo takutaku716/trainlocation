@@ -2263,6 +2263,22 @@ function set_hakodate_height() {
 /*
  *　上り列車のアイコンのhtmlを生成する。
  */
+function set_jr_shinkansen_train_icon(_iconArea, _nowRow) {
+	const icon = _nowRow.jrShinkansen && _nowRow.jrShinkansen.trainIcon ? _nowRow.jrShinkansen.trainIcon : "";
+	if (!icon) return;
+	const iconMap = {
+		nozomi: "./images/home/train_icon_nozomi.svg",
+		hikari: "./images/home/train_icon_hikari.svg",
+		kodama: "./images/home/train_icon_kodama.svg",
+		mizuho: "./images/home/train_icon_mizuho.svg",
+		sakura: "./images/home/train_icon_sakura.svg",
+		tsubame: "./images/home/train_icon_tsubame.svg"
+	};
+	if (iconMap[icon]) {
+		_iconArea.style.backgroundImage = "url(" + iconMap[icon] + ")";
+	}
+}
+
 function create_html_up_ressha_icon(_nowRow, _typeData, _ekiData) {
 	let lang = document.documentElement.dataset.lang;
 	let objItem = document.createElement("div");
@@ -2273,6 +2289,7 @@ function create_html_up_ressha_icon(_nowRow, _typeData, _ekiData) {
 	// アイコン内の列車種別を設定
 	let iconArea = document.createElement("div");
 	iconArea.classList.add("icon-img");
+	set_jr_shinkansen_train_icon(iconArea, _nowRow);
 	// 新幹線以外には列車種別の文字をアイコンに入れる
 	if(_nowRow.type != "4") {
 		let objSbt = document.createElement("span");
@@ -2379,6 +2396,7 @@ function create_html_down_ressha_icon(_nowRow, _typeData, _ekiData) {
 	// アイコン内の列車種別を設定
 	let iconArea = document.createElement("div");
 	iconArea.classList.add("icon-img");
+	set_jr_shinkansen_train_icon(iconArea, _nowRow);
 	// 新幹線以外には列車種別の文字をアイコンに入れる
 	if(_nowRow.type != "4") {
 		let objSbt = document.createElement("span");
@@ -2456,7 +2474,7 @@ function create_ressha_detail(_objItem, _nowRow, _typeData, _ekiData) {
 			_objItem.dataset.jreast_timetable = _nowRow.jrEast && Array.isArray(_nowRow.jrEast.timetable) ? JSON.stringify(_nowRow.jrEast.timetable) : "[]";
 			_objItem.dataset.dokotre_timetable = _nowRow.dokotre && Array.isArray(_nowRow.dokotre.timetable) ? JSON.stringify(_nowRow.dokotre.timetable) : "[]";
 			_objItem.dataset.jrshinkansen_timetable = _nowRow.jrShinkansen && Array.isArray(_nowRow.jrShinkansen.timetable) ? JSON.stringify(_nowRow.jrShinkansen.timetable) : "[]";
-			_objItem.dataset.jrshinkansen_icon = _nowRow.jrShinkansen && _nowRow.jrShinkansen.trainIcon ? _nowRow.jrShinkansen.trainIcon : "";
+			_objItem.dataset.jrshinkansenIcon = _nowRow.jrShinkansen && _nowRow.jrShinkansen.trainIcon ? _nowRow.jrShinkansen.trainIcon : "";
 		}
 
 		// 列車種別を表す色を設定。
