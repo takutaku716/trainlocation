@@ -43,7 +43,18 @@
 		"42": "\u539a\u72ed",
 		"28": "\u65b0\u4e0b\u95a2",
 		"29": "\u5c0f\u5009",
-		"30": "\u535a\u591a"
+		"30": "\u535a\u591a",
+		"46": "\u65b0\u9ce5\u6816",
+		"47": "\u4e45\u7559\u7c73",
+		"48": "\u7b51\u5f8c\u8239\u5c0f\u5c4b",
+		"49": "\u65b0\u5927\u725f\u7530",
+		"50": "\u65b0\u7389\u540d",
+		"51": "\u718a\u672c",
+		"52": "\u65b0\u516b\u4ee3",
+		"53": "\u65b0\u6c34\u4fe3",
+		"54": "\u51fa\u6c34",
+		"55": "\u5ddd\u5185",
+		"56": "\u9e7f\u5150\u5cf6\u4e2d\u592e"
 	};
 
 	const CENTRAL_TRAIN_NAMES = {
@@ -101,9 +112,14 @@
 	};
 
 	function normalize(centralLocationJson, centralMasterJson, kyushuHtml, options) {
+		const kyushuRows = parseKyushuRows(kyushuHtml);
+		const normalizeOptions = Object.assign({}, options || {}, {
+			kyushuRows: kyushuRows,
+			kyushuDestinationMap: buildKyushuDestinationMap(kyushuRows)
+		});
 		const trains = []
-			.concat(normalizeCentral(centralLocationJson, centralMasterJson, options))
-			.concat(normalizeKyushu(kyushuHtml, options));
+			.concat(normalizeCentral(centralLocationJson, centralMasterJson, normalizeOptions))
+			.concat(normalizeKyushu(kyushuHtml, normalizeOptions));
 		const timeText = getLatestTimeText(centralLocationJson, kyushuHtml);
 		return {
 			location: {
@@ -151,7 +167,8 @@
 			if (!trainNumber) return;
 			const displayTrainNumber = normalizeShinkansenTrainNumber(trainNumber);
 			const trainName = trainNameMap[String(rawTrain.train)] || "";
-			const destination = getCentralDestination(rawTrain, centralTrainInfoMap) || fallbackDestination;
+			const kyushuDestinationMap = options && options.kyushuDestinationMap ? options.kyushuDestinationMap : {};
+			const destination = getCentralDestination(rawTrain, centralTrainInfoMap) || kyushuDestinationMap[displayTrainNumber] || fallbackDestination;
 			output.push(buildTrain({
 				cbango: displayTrainNumber,
 				name: makeDisplayTrainName(trainName, trainNumber),
@@ -260,7 +277,7 @@
 	}
 
 	function normalizeKyushu(html, options) {
-		const rows = parseKyushuRows(html);
+		const rows = options && Array.isArray(options.kyushuRows) ? options.kyushuRows : parseKyushuRows(html);
 		const trains = [];
 		const senku = options && options.senku ? String(options.senku) : "59";
 		rows.forEach((row) => {
@@ -295,6 +312,19 @@
 			});
 		});
 		return trains;
+	}
+
+	function buildKyushuDestinationMap(rows) {
+		const map = {};
+		(rows || []).forEach((row) => {
+			if (!row || !Array.isArray(row.trains)) return;
+			row.trains.forEach((rawTrain) => {
+				const trainNumber = normalizeShinkansenTrainNumber(rawTrain.cbango || rawTrain.number || "");
+				const destination = normalizeKyushuDestination(rawTrain.destination || "");
+				if (trainNumber && destination) map[trainNumber] = destination;
+			});
+		});
+		return map;
 	}
 
 	function parseKyushuRows(html) {
