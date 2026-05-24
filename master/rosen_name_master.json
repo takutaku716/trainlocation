@@ -373,6 +373,24 @@
 		"area": "6"
 	},
 	{
+		"rosen": "59",
+		"rosenName": {
+			"ja": "東海道・山陽新幹線",
+			"en": "Tokaido/Sanyo/Kyushu Shinkansen",
+			"tc": "東海道・山陽新幹線",
+			"sc": "东海道・山阳・九州新干线",
+			"kr": "도카이도・산요・규슈 신칸센"
+		},
+		"kukanName": {
+			"ja": "[東京～鹿児島中央間]",
+			"en": "[Tokyo - Kagoshima-Chuo]",
+			"tc": "[東京～鹿兒島中央間]",
+			"sc": "[东京～鹿儿岛中央间]",
+			"kr": "[도쿄～가고시마추오]"
+		},
+		"area": "6"
+	},
+	{
 		"rosen": "51",
 		"rosenName": {
 			"ja": "函館線",
