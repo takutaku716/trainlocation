@@ -3611,4 +3611,23 @@ section#refreshSettingDetail {
 		[data-lang='sc'] #stationList .shin-link.hakodate img {
 			bottom: -2px;
 		}
+
+	#stationList .eki-panel .ressha-contents .ressha-icon .ressha[data-source='jrshinkansen'][data-jrshinkansen_icon='nozomi'] .icon-img {
+		background-image: url(../images/home/train_icon_nozomi.svg);
+	}
+	#stationList .eki-panel .ressha-contents .ressha-icon .ressha[data-source='jrshinkansen'][data-jrshinkansen_icon='hikari'] .icon-img {
+		background-image: url(../images/home/train_icon_hikari.svg);
+	}
+	#stationList .eki-panel .ressha-contents .ressha-icon .ressha[data-source='jrshinkansen'][data-jrshinkansen_icon='kodama'] .icon-img {
+		background-image: url(../images/home/train_icon_kodama.svg);
+	}
+	#stationList .eki-panel .ressha-contents .ressha-icon .ressha[data-source='jrshinkansen'][data-jrshinkansen_icon='mizuho'] .icon-img {
+		background-image: url(../images/home/train_icon_mizuho.svg);
+	}
+	#stationList .eki-panel .ressha-contents .ressha-icon .ressha[data-source='jrshinkansen'][data-jrshinkansen_icon='sakura'] .icon-img {
+		background-image: url(../images/home/train_icon_sakura.svg);
+	}
+	#stationList .eki-panel .ressha-contents .ressha-icon .ressha[data-source='jrshinkansen'][data-jrshinkansen_icon='tsubame'] .icon-img {
+		background-image: url(../images/home/train_icon_tsubame.svg);
+	}
 }

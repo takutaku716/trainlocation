@@ -162,6 +162,7 @@
 					jrShinkansen: {
 						source: "central",
 						trainCode: rawTrain.train || "",
+						trainIcon: getTrainIconKey(rawTrain.train, trainName),
 						rawTrainNumber: trainNumber,
 						track: rawTrain.track || "",
 						sot: rawTrain.sot || "",
@@ -279,6 +280,7 @@
 					extra: {
 						jrShinkansen: {
 							source: "kyushu",
+							trainIcon: getTrainIconKey("", rawTrain.serviceName || rawTrain.name || ""),
 							rawTrainNumber: trainNumber,
 							rawCbango: rawTrain.cbango || ""
 						}
@@ -448,6 +450,18 @@
 	function makeDisplayTrainName(name, number) {
 		if (!name) return "";
 		return name + String(number || "") + "\u53f7";
+	}
+
+	function getTrainIconKey(code, name) {
+		const codeText = String(code || "");
+		const nameText = String(name || "");
+		if (codeText === "6" || nameText.indexOf("\u306e\u305e\u307f") >= 0) return "nozomi";
+		if (codeText === "1" || nameText.indexOf("\u3072\u304b\u308a") >= 0) return "hikari";
+		if (codeText === "2" || nameText.indexOf("\u3053\u3060\u307e") >= 0) return "kodama";
+		if (codeText === "10" || nameText.indexOf("\u307f\u305a\u307b") >= 0) return "mizuho";
+		if (codeText === "11" || nameText.indexOf("\u3055\u304f\u3089") >= 0) return "sakura";
+		if (codeText === "12" || nameText.indexOf("\u3064\u3070\u3081") >= 0) return "tsubame";
+		return "";
 	}
 
 	function normalizeShinkansenTrainNumber(number) {
