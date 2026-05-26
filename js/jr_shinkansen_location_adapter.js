@@ -67,6 +67,7 @@
 		"11": "\u3055\u304f\u3089",
 		"12": "\u3064\u3070\u3081"
 	};
+	const DESTINATION_UNAVAILABLE = "\u884c\u5148\u53d6\u5f97\u4e0d\u53ef";
 
 	const KYUSHU_POSITION_NAMES = [
 		"\u535a\u591a",
@@ -108,7 +109,8 @@
 		"\u5e83\u5cf6": "\u5e83",
 		"\u5ca1\u5c71": "\u5ca1",
 		"\u65b0\u5927\u962a": "\u962a",
-		"\u540d\u53e4\u5c4b": "\u540d"
+		"\u540d\u53e4\u5c4b": "\u540d",
+		"\u884c\u5148\u53d6\u5f97\u4e0d\u53ef": "\uff1f"
 	};
 
 	function normalize(centralLocationJson, centralMasterJson, kyushuHtml, options) {
@@ -318,7 +320,7 @@
 				cbango: displayTrainNumber,
 				name: rawTrain.name || makeDisplayTrainName(rawTrain.serviceName, trainNumber),
 				typeLabel: "\u65b0\u5e79\u7dda",
-				destination: rawTrain.destination || getKyushuFallbackDestination(senku, suffix),
+				destination: rawTrain.destination || DESTINATION_UNAVAILABLE,
 				delay: rawTrain.delay,
 				pos: posBase + suffix,
 					source: "jrshinkansen",
@@ -397,8 +399,10 @@
 		const lines = text.split(/\n+/).map((line) => line.trim()).filter(Boolean);
 		if (lines.length < 1) return null;
 		const direction = /up/i.test(String(background || "")) ? "U" : "D";
-		const destination = normalizeKyushuDestination(lines[0] || "");
-		const nameLine = lines[1] || "";
+		const hasDestination = isKyushuDestinationLine(lines[0] || "");
+		const destination = hasDestination ? normalizeKyushuDestination(lines[0] || "") : "";
+		const nameLine = hasDestination ? (lines[1] || "") : (lines[0] || "");
+		const delayLines = hasDestination ? lines.slice(2) : lines.slice(1);
 		const numberMatch = nameLine.match(/(\d+)/) || String(cbango || "").match(/(\d+)/);
 		const trainNumber = numberMatch ? numberMatch[1] : String(cbango || "");
 		const serviceName = (nameLine.match(/^([^\d\s]+)/) || [null, ""])[1] || "";
@@ -409,8 +413,12 @@
 			name: nameLine,
 			destination: destination,
 			direction: direction,
-			delay: parseDelay(lines.slice(2).join(" "))
+			delay: parseDelay(delayLines.join(" "))
 		};
+	}
+
+	function isKyushuDestinationLine(line) {
+		return /\u884c\s*$/.test(String(line || "").trim());
 	}
 
 	function buildTrain(params) {

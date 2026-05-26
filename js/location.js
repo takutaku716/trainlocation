@@ -2615,7 +2615,7 @@ function create_ressha_detail(_objItem, _nowRow, _typeData, _ekiData) {
 
 		// 行先
 		const jreastDestination = _nowRow.shuEkiName || _nowRow.shuEkiSimple || "";
-		if (lang == "ja") _objItem.dataset.shu_eki = typeof findEki !== "undefined" ? findEki.ja + " 行き" : (jreastDestination ? jreastDestination + " 行き" : "行き");
+		if (lang == "ja") _objItem.dataset.shu_eki = jreastDestination === "行先取得不可" ? jreastDestination : (typeof findEki !== "undefined" ? findEki.ja + " 行き" : (jreastDestination ? jreastDestination + " 行き" : "行き"));
 		if (lang == "en") _objItem.dataset.shu_eki = typeof findEki !== "undefined" ? "For " + findEki.en : (jreastDestination ? "For " + jreastDestination : "For ");
 		if (lang == "tc") _objItem.dataset.shu_eki = typeof findEki !== "undefined" ? "開往" + findEki.tc : (jreastDestination ? "開往" + jreastDestination : "開往");
 		if (lang == "sc") _objItem.dataset.shu_eki = typeof findEki !== "undefined" ? "开往" + findEki.sc : (jreastDestination ? "开往" + jreastDestination : "开往");
