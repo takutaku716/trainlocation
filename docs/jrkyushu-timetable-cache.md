@@ -1,11 +1,13 @@
 # JR Kyushu Timetable Cache
 
-JR Kyushu timetables switch service dates at 04:00 JST. The cache Worker is intended to run at about 04:30 JST and save train detail timetable JSON to Workers KV.
+JR Kyushu timetables switch service dates at 04:00 JST. The cache Worker starts at about 04:30 JST and saves train detail timetable JSON to Workers KV in small batches.
 
-Cloudflare Cron Triggers use UTC, so 04:30 JST is:
+Cloudflare Cron Triggers use UTC. The configured triggers run every 5 minutes from 04:30 to 06:30 JST:
 
 ```text
-30 19 * * *
+30,35,40,45,50,55 19 * * *
+*/5 20 * * *
+0,5,10,15,20,25,30 21 * * *
 ```
 
 ## Bindings
@@ -40,7 +42,18 @@ Manual refresh:
 
 ```text
 https://<worker-domain>/refresh
+https://<worker-domain>/refresh?reset=1
+https://<worker-domain>/refresh?cursor=15
 https://<worker-domain>/refresh?token=<TIMETABLE_REFRESH_TOKEN>
+```
+
+The Worker processes up to 15 train detail pages per invocation to avoid Cloudflare subrequest limits on the Free plan. If the response contains `nextUrl`, open that URL to continue a manual refresh.
+
+Worker timetable read endpoint:
+
+```text
+https://<worker-domain>/timetable/765A
+https://<worker-domain>/timetable/765A?date=2026-05-26
 ```
 
 ## Pages Functions API
@@ -62,6 +75,7 @@ KV keys:
 
 ```text
 jrkyushu:timetable:latest
+jrkyushu:timetable:refresh-state
 jrkyushu:timetable:YYYY-MM-DD:index
 jrkyushu:timetable:YYYY-MM-DD:train:765A
 ```

@@ -94,6 +94,7 @@ const JR_SHINKANSEN_LOCATION_SOURCE_MAP = {
 };
 const jrShinkansenStaticSourceDataCache = new Map();
 const jrKyushuTimetableDataCache = new Map();
+const JR_KYUSHU_TIMETABLE_WORKER_BASE = "https://trainlocation-jrkyushu-timetable-cache.densha716.workers.dev";
 
 function get_mainte_json_request(fileName, cacheKey) {
 	const cloudflareApiBase = "https://trainlocation.pages.dev";
@@ -1139,14 +1140,35 @@ function load_jrkyushu_timetable_data(trainNumber, _now) {
 	const cacheKey = serviceDate + "|" + normalizedTrainNumber;
 	if (jrKyushuTimetableDataCache.has(cacheKey)) return jrKyushuTimetableDataCache.get(cacheKey);
 	const apiBase = (location.protocol === "file:" || location.hostname.endsWith("github.io")) ? "https://trainlocation.pages.dev" : "";
-	const url = apiBase + "/api/jrkyushu/timetable/" + encodeURIComponent(normalizedTrainNumber) + "?date=" + encodeURIComponent(serviceDate) + "&_=" + encodeURIComponent(_now || Date.now());
-	const loadPromise = jqxhr_to_promise($.getJSON(url))
+	const cacheBuster = encodeURIComponent(_now || Date.now());
+	const pagesUrl = apiBase + "/api/jrkyushu/timetable/" + encodeURIComponent(normalizedTrainNumber) + "?date=" + encodeURIComponent(serviceDate) + "&_=" + cacheBuster;
+	const workerUrl = JR_KYUSHU_TIMETABLE_WORKER_BASE + "/timetable/" + encodeURIComponent(normalizedTrainNumber) + "?date=" + encodeURIComponent(serviceDate) + "&_=" + cacheBuster;
+	const loadPromise = get_jrkyushu_timetable_json(pagesUrl)
+		.catch(() => get_jrkyushu_timetable_json(workerUrl))
 		.catch((error) => {
 			jrKyushuTimetableDataCache.delete(cacheKey);
 			throw error;
 		});
 	jrKyushuTimetableDataCache.set(cacheKey, loadPromise);
 	return loadPromise;
+}
+
+function get_jrkyushu_timetable_json(url) {
+	return new Promise((resolve, reject) => {
+		$.ajax({
+			url: url,
+			dataType: "json",
+			cache: false
+		}).done((data) => {
+			if (!data || data.ok === false || !Array.isArray(data.stations)) {
+				reject(new Error("JR Kyushu timetable response is invalid"));
+				return;
+			}
+			resolve(data);
+		}).fail((jqxhr, textStatus, errorThrown) => {
+			reject(new Error(errorThrown || textStatus || "JR Kyushu timetable request failed"));
+		});
+	});
 }
 
 function get_jrkyushu_timetable_service_date(now = new Date()) {
