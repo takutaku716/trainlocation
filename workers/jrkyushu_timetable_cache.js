@@ -10,6 +10,13 @@ const STATION_SOURCES = [
 	{ code: "28533", group: "nishi_kyushu", name: "nagasaki" }
 ];
 
+const SHINKANSEN_TRAIN_NAMES = new Set([
+	"\u307f\u305a\u307b",
+	"\u3055\u304f\u3089",
+	"\u3064\u3070\u3081",
+	"\u304b\u3082\u3081"
+]);
+
 const JSON_HEADERS = {
 	"content-type": "application/json; charset=utf-8",
 	"cache-control": "no-store",
@@ -206,6 +213,7 @@ function parseStationTimetable(html, source, serviceDate) {
 		const number = lines[1] || "";
 		const trainNumber = normalizeTrainNumber(number);
 		if (!trainNumber) continue;
+		if (!isTargetShinkansenTrain(trainName, trainNumber, source)) continue;
 		result.push({
 			date: serviceDate.ymd,
 			trainNumber,
@@ -281,6 +289,15 @@ function normalizeTrainNumber(number) {
 	const match = text.match(/^0*(\d+)([A-Z]?)$/);
 	if (!match) return text;
 	return String(Number(match[1])) + (match[2] || "A");
+}
+
+function isTargetShinkansenTrain(trainName, trainNumber, source) {
+	const normalizedName = String(trainName || "").replace(/\s+/g, "");
+	if (!SHINKANSEN_TRAIN_NAMES.has(normalizedName)) return false;
+	const normalizedNumber = normalizeTrainNumber(trainNumber);
+	if (!/^\d+A$/.test(normalizedNumber)) return false;
+	if (source && source.group === "nishi_kyushu") return normalizedName === "\u304b\u3082\u3081";
+	return normalizedName !== "\u304b\u3082\u3081";
 }
 
 function normalizeDate(date) {
