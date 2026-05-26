@@ -93,6 +93,7 @@ const JR_SHINKANSEN_LOCATION_SOURCE_MAP = {
 	}
 };
 const jrShinkansenStaticSourceDataCache = new Map();
+const jrKyushuTimetableDataCache = new Map();
 
 function get_mainte_json_request(fileName, cacheKey) {
 	const cloudflareApiBase = "https://trainlocation.pages.dev";
@@ -1074,16 +1075,87 @@ function load_jr_shinkansen_location_now_data(_param_rosen, _now) {
 		const kyushuHtml = results[2];
 		return load_jr_shinkansen_central_train_info_map(source, centralLocationJson, _now)
 			.then((centralTrainInfoMap) => {
-				const normalized = window.JrShinkansenLocationAdapter.normalize(centralLocationJson, centralMasterJson, kyushuHtml, {
+				const baseOptions = {
 					senku: source.senku || _param_rosen,
 					centralTrainInfoMap: centralTrainInfoMap
-				});
+				};
+				const preliminary = window.JrShinkansenLocationAdapter.normalize(centralLocationJson, centralMasterJson, kyushuHtml, baseOptions);
+				return load_jr_shinkansen_kyushu_timetable_map(source, preliminary.location, _now)
+					.then((kyushuTimetableMap) => {
+						const normalized = window.JrShinkansenLocationAdapter.normalize(centralLocationJson, centralMasterJson, kyushuHtml, Object.assign({}, baseOptions, {
+							kyushuTimetableMap: kyushuTimetableMap
+						}));
+						return normalized;
+					});
+			})
+			.then((normalized) => {
 				if (!normalized.location || !Array.isArray(normalized.location.trains) || normalized.location.trains.length < 1) {
 					throw new Error("JR Shinkansen location now json load failed");
 				}
 				return normalized.location;
 			});
 	});
+}
+
+function load_jr_shinkansen_kyushu_timetable_map(source, normalizedLocation, _now) {
+	const trainNumbers = collect_jr_shinkansen_kyushu_timetable_train_numbers(source, normalizedLocation);
+	if (trainNumbers.length < 1) return Promise.resolve({});
+	return Promise.all(trainNumbers.map((trainNumber) => {
+		return load_jrkyushu_timetable_data(trainNumber, _now)
+			.then((data) => ({ trainNumber: trainNumber, data: data }))
+			.catch(() => null);
+	})).then((results) => {
+		return results.filter((entry) => entry && entry.data).reduce((map, entry) => {
+			map[entry.trainNumber] = entry.data;
+			return map;
+		}, {});
+	});
+}
+
+function collect_jr_shinkansen_kyushu_timetable_train_numbers(source, normalizedLocation) {
+	const senku = String(source && source.senku || "");
+	const trainNumbers = new Set();
+	const trains = normalizedLocation && Array.isArray(normalizedLocation.trains) ? normalizedLocation.trains : [];
+	trains.forEach((train) => {
+		if (!train || !train.jrShinkansen || !train.cbango) return;
+		if (senku === "60") {
+			trainNumbers.add(String(train.cbango));
+			return;
+		}
+		const jr = train.jrShinkansen;
+		const terminalStation = Number(jr.terminalStation || 0);
+		const pos = String(train.pos || "");
+		if (jr.source === "kyushu" || /^JQ01P/.test(pos) || (terminalStation >= 46 && terminalStation <= 56)) {
+			trainNumbers.add(String(train.cbango));
+		}
+	});
+	return Array.from(trainNumbers).slice(0, 80);
+}
+
+function load_jrkyushu_timetable_data(trainNumber, _now) {
+	const normalizedTrainNumber = normalize_train_search_cbango(trainNumber);
+	if (!normalizedTrainNumber) return Promise.reject(new Error("empty train number"));
+	const serviceDate = get_jrkyushu_timetable_service_date();
+	const cacheKey = serviceDate + "|" + normalizedTrainNumber;
+	if (jrKyushuTimetableDataCache.has(cacheKey)) return jrKyushuTimetableDataCache.get(cacheKey);
+	const apiBase = (location.protocol === "file:" || location.hostname.endsWith("github.io")) ? "https://trainlocation.pages.dev" : "";
+	const url = apiBase + "/api/jrkyushu/timetable/" + encodeURIComponent(normalizedTrainNumber) + "?date=" + encodeURIComponent(serviceDate) + "&_=" + encodeURIComponent(_now || Date.now());
+	const loadPromise = jqxhr_to_promise($.getJSON(url))
+		.catch((error) => {
+			jrKyushuTimetableDataCache.delete(cacheKey);
+			throw error;
+		});
+	jrKyushuTimetableDataCache.set(cacheKey, loadPromise);
+	return loadPromise;
+}
+
+function get_jrkyushu_timetable_service_date(now = new Date()) {
+	const jst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+	if (jst.getUTCHours() < 4) jst.setUTCDate(jst.getUTCDate() - 1);
+	const year = jst.getUTCFullYear();
+	const month = String(jst.getUTCMonth() + 1).padStart(2, "0");
+	const day = String(jst.getUTCDate()).padStart(2, "0");
+	return year + "-" + month + "-" + day;
 }
 
 function load_jr_shinkansen_static_source_data(source, _now) {
