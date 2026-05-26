@@ -1,0 +1,11 @@
+name = "trainlocation-jrkyushu-timetable-cache"
+main = "workers/jrkyushu_timetable_cache.js"
+compatibility_date = "2026-05-26"
+
+kv_namespaces = [
+	{ binding = "JRKYUSHU_TIMETABLE_KV", id = "replace_with_kv_namespace_id" }
+]
+
+[triggers]
+# Cloudflare cron is UTC. 19:30 UTC is 04:30 JST.
+crons = [ "30 19 * * *" ]
