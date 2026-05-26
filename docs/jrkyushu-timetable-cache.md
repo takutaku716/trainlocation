@@ -84,5 +84,6 @@ jrkyushu:timetable:YYYY-MM-DD:train:765A
 
 - The Worker stores scheduled timetable data, not live delay data.
 - The Worker only stores Shinkansen train detail pages. Kyushu Shinkansen sources are limited to Mizuho, Sakura, and Tsubame. Nishi-Kyushu Shinkansen sources are limited to Kamome.
+- Nishi-Kyushu Shinkansen train numbers are stored as `2002G`-style numbers. When a JR Kyushu timetable detail page contains both Shinkansen and relay limited express columns, only the Shinkansen column is stored.
 - Special or group trains may not have public train-detail timetable pages.
-- The initial source stations are Hakata, Kagoshima-Chuo, Takeo-Onsen, and Nagasaki.
+- The source stations are Hakata, Kumamoto, Sendai, Kagoshima-Chuo, Takeo-Onsen, Shin-Omura, and Nagasaki. Duplicate trains found at multiple source stations are merged by train number before fetching detail pages.

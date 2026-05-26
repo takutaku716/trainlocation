@@ -5,8 +5,11 @@ const DETAIL_BATCH_SIZE = 15;
 
 const STATION_SOURCES = [
 	{ code: "28283", group: "kyushu", name: "hakata" },
+	{ code: "28626", group: "kyushu", name: "kumamoto" },
+	{ code: "28984", group: "kyushu", name: "sendai" },
 	{ code: "29007", group: "kyushu", name: "kagoshima_chuo" },
 	{ code: "28395", group: "nishi_kyushu", name: "takeo_onsen" },
+	{ code: "11227", group: "nishi_kyushu", name: "shin_omura" },
 	{ code: "28533", group: "nishi_kyushu", name: "nagasaki" }
 ];
 
@@ -211,7 +214,7 @@ function parseStationTimetable(html, source, serviceDate) {
 		if (lines.length < 3) continue;
 		const trainName = lines[0] || "";
 		const number = lines[1] || "";
-		const trainNumber = normalizeTrainNumber(number);
+		const trainNumber = normalizeSourceTrainNumber(number, source);
 		if (!trainNumber) continue;
 		if (!isTargetShinkansenTrain(trainName, trainNumber, source)) continue;
 		result.push({
@@ -229,25 +232,26 @@ function parseStationTimetable(html, source, serviceDate) {
 }
 
 function parseTrainDetail(html, entry, serviceDate) {
+	const columnInfo = getTrainDetailColumnInfo(html, entry);
 	const rows = [];
 	const rowPattern = /<tr\b[^>]*>([\s\S]*?)<\/tr>/gi;
 	let rowMatch;
 	while ((rowMatch = rowPattern.exec(String(html || ""))) !== null) {
 		const cells = Array.from(rowMatch[1].matchAll(/<td\b[^>]*>([\s\S]*?)<\/td>/gi)).map((cell) => cell[1]);
-		if (cells.length < 3) continue;
+		if (cells.length <= columnInfo.timeIndex) continue;
 		const stationName = stripHtml(cells[0]).replace(/\s+/g, "");
-		const timeText = stripHtml(cells[1]);
+		const timeText = stripHtml(cells[columnInfo.timeIndex]);
 		if (!stationName || !/\d{1,2}:\d{2}/.test(timeText)) continue;
 		rows.push({
 			stationName,
 			arrival: extractTime(timeText, "\u7740"),
 			departure: extractTime(timeText, "\u767a"),
-			platform: stripHtml(cells[2]).replace(/\s+/g, "")
+			platform: stripHtml(cells[columnInfo.platformIndex] || "").replace(/\s+/g, "")
 		});
 	}
 	return {
 		date: serviceDate.ymd,
-		trainNumber: normalizeTrainNumber(entry.trainNumber),
+		trainNumber: columnInfo.trainNumber,
 		trainName: entry.trainName,
 		destination: entry.destination,
 		source: "jrkyushu-timetable",
@@ -257,6 +261,33 @@ function parseTrainDetail(html, entry, serviceDate) {
 		fetchedAt: new Date().toISOString(),
 		stations: rows
 	};
+}
+
+function getTrainDetailColumnInfo(html, entry) {
+	const numbers = extractDetailTrainNumbers(html);
+	const entryNumber = normalizeSourceTrainNumber(entry && entry.trainNumber, { group: entry && entry.sourceGroup });
+	const sourceGroup = entry && entry.sourceGroup || "";
+	let index = numbers.findIndex((number) => number === entryNumber);
+	if (index < 0 && sourceGroup === "nishi_kyushu") index = numbers.findIndex((number) => /G$/.test(number));
+	if (index < 0) index = 0;
+	const trainNumber = numbers[index] || entryNumber || normalizeTrainNumber(entry && entry.trainNumber);
+	return {
+		trainNumber: trainNumber,
+		timeIndex: index * 2 + 1,
+		platformIndex: index * 2 + 2
+	};
+}
+
+function extractDetailTrainNumbers(html) {
+	const result = [];
+	const pattern = /<td\b[^>]*colspan\s*=\s*["']?2["']?[^>]*>\s*([\s\S]*?)\s*<\/td>/gi;
+	let match;
+	while ((match = pattern.exec(String(html || ""))) !== null) {
+		const text = stripHtml(match[1]).replace(/\s+/g, "");
+		const numberMatch = text.match(/\d+[A-Z]/i);
+		if (numberMatch) result.push(normalizeTrainNumber(numberMatch[0]));
+	}
+	return result;
 }
 
 function extractTime(text, suffix) {
@@ -291,12 +322,27 @@ function normalizeTrainNumber(number) {
 	return String(Number(match[1])) + (match[2] || "A");
 }
 
+function normalizeSourceTrainNumber(number, source) {
+	const text = String(number || "").trim().toUpperCase();
+	if (!text) return "";
+	const match = text.match(/^0*(\d+)([A-Z]?)$/);
+	if (!match) return text;
+	const digits = Number(match[1]);
+	const suffix = match[2] || "";
+	if (source && source.group === "nishi_kyushu") {
+		return String(suffix ? digits : (digits < 1000 ? digits + 2000 : digits)) + (suffix || "G");
+	}
+	return String(digits) + (suffix || "A");
+}
+
 function isTargetShinkansenTrain(trainName, trainNumber, source) {
 	const normalizedName = String(trainName || "").replace(/\s+/g, "");
 	if (!SHINKANSEN_TRAIN_NAMES.has(normalizedName)) return false;
-	const normalizedNumber = normalizeTrainNumber(trainNumber);
+	const normalizedNumber = normalizeSourceTrainNumber(trainNumber, source);
+	if (source && source.group === "nishi_kyushu") {
+		return normalizedName === "\u304b\u3082\u3081" && /^\d+G$/.test(normalizedNumber);
+	}
 	if (!/^\d+A$/.test(normalizedNumber)) return false;
-	if (source && source.group === "nishi_kyushu") return normalizedName === "\u304b\u3082\u3081";
 	return normalizedName !== "\u304b\u3082\u3081";
 }
 
