@@ -126,9 +126,65 @@
 		return {
 			location: {
 				time: timeText ? { ja: timeText } : undefined,
-				trains: trains
+				trains: dedupeBoundaryDuplicateTrains(trains)
 			}
 		};
+	}
+
+	function dedupeBoundaryDuplicateTrains(trains) {
+		if (!Array.isArray(trains) || trains.length < 2) return trains;
+		const result = [];
+		const seen = new Map();
+		trains.forEach((train) => {
+			const key = getBoundaryDuplicateKey(train);
+			if (!key) {
+				result.push(train);
+				return;
+			}
+			const existingIndex = seen.get(key);
+			if (typeof existingIndex !== "number") {
+				seen.set(key, result.length);
+				result.push(train);
+				return;
+			}
+			const existing = result[existingIndex];
+			result[existingIndex] = chooseBoundaryDuplicateTrain(existing, train);
+		});
+		return result;
+	}
+
+	function getBoundaryDuplicateKey(train) {
+		if (!train || !train.cbango || !isHakataBoundaryPos(train.pos)) return "";
+		return String(train.cbango) + "|" + getDirectionSuffix(train.pos);
+	}
+
+	function isHakataBoundaryPos(pos) {
+		return /^JT01P69[UD]$/.test(String(pos || "")) || /^JQ01P01[UD]$/.test(String(pos || ""));
+	}
+
+	function getDirectionSuffix(pos) {
+		const match = String(pos || "").match(/[UD]$/);
+		return match ? match[0] : "";
+	}
+
+	function chooseBoundaryDuplicateTrain(existing, current) {
+		const existingSource = existing && existing.jrShinkansen ? existing.jrShinkansen.source : "";
+		const currentSource = current && current.jrShinkansen ? current.jrShinkansen.source : "";
+		if (existingSource === "central" && currentSource === "kyushu") return mergeBoundaryDuplicateTrain(existing, current);
+		if (existingSource === "kyushu" && currentSource === "central") return mergeBoundaryDuplicateTrain(current, existing);
+		return existing || current;
+	}
+
+	function mergeBoundaryDuplicateTrain(centralTrain, kyushuTrain) {
+		if (!centralTrain) return kyushuTrain;
+		if (!kyushuTrain) return centralTrain;
+		if ((!centralTrain.shuEkiName || centralTrain.shuEkiName === DESTINATION_UNAVAILABLE) && kyushuTrain.shuEkiName) {
+			centralTrain.shuEkiName = kyushuTrain.shuEkiName;
+			centralTrain.shuEkiSimple = kyushuTrain.shuEkiSimple;
+		}
+		if ((!centralTrain.name || /^\d/.test(centralTrain.name)) && kyushuTrain.name) centralTrain.name = kyushuTrain.name;
+		if (!centralTrain.chien && kyushuTrain.chien) centralTrain.chien = kyushuTrain.chien;
+		return centralTrain;
 	}
 
 	function normalizeCentral(rawData, masterData, options) {
