@@ -1139,12 +1139,9 @@ function load_jrkyushu_timetable_data(trainNumber, _now) {
 	const serviceDate = get_jrkyushu_timetable_service_date();
 	const cacheKey = serviceDate + "|" + normalizedTrainNumber;
 	if (jrKyushuTimetableDataCache.has(cacheKey)) return jrKyushuTimetableDataCache.get(cacheKey);
-	const apiBase = (location.protocol === "file:" || location.hostname.endsWith("github.io")) ? "https://trainlocation.pages.dev" : "";
 	const cacheBuster = encodeURIComponent(_now || Date.now());
-	const pagesUrl = apiBase + "/api/jrkyushu/timetable/" + encodeURIComponent(normalizedTrainNumber) + "?date=" + encodeURIComponent(serviceDate) + "&_=" + cacheBuster;
 	const workerUrl = JR_KYUSHU_TIMETABLE_WORKER_BASE + "/timetable/" + encodeURIComponent(normalizedTrainNumber) + "?date=" + encodeURIComponent(serviceDate) + "&_=" + cacheBuster;
-	const loadPromise = get_jrkyushu_timetable_json(pagesUrl)
-		.catch(() => get_jrkyushu_timetable_json(workerUrl))
+	const loadPromise = get_jrkyushu_timetable_json(workerUrl)
 		.catch((error) => {
 			jrKyushuTimetableDataCache.delete(cacheKey);
 			throw error;
