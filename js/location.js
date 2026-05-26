@@ -27,6 +27,72 @@ const LOCATION_JSON_SOURCE_MAP = {
 	"52": ["02", "07", "09"],
 	"53": ["02", "13"]
 };
+const JREAST_LOCATION_SOURCE_MAP = {
+	"54": {
+		screenCode: "88",
+		hokkaidoRosens: ["15"],
+		relatedJreastRosens: ["54", "55", "56"],
+		url: "https://jrproxy-926717289220.asia-northeast1.run.app/proxy?name=jrelines/transaction/2.0.0/train_88.json"
+	},
+	"55": {
+		screenCode: "87",
+		relatedJreastRosens: ["54", "55", "56"],
+		url: "https://jrproxy-926717289220.asia-northeast1.run.app/proxy?name=jrelines/transaction/2.0.0/train_87.json"
+	},
+	"56": {
+		screenCode: "89",
+		relatedJreastRosens: ["54", "55", "56"],
+		url: "https://jrproxy-926717289220.asia-northeast1.run.app/proxy?name=jrelines/transaction/2.0.0/train_89.json"
+	}
+};
+const DOKOTRE_LOCATION_SOURCE_MAP = {
+	"57": {
+		dokotreId: "9021",
+		senku: "57",
+		mappingUrl: "./tools/dokotre_9021_mapping.json",
+		lineUrl: "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://doko-train.jp/json/line/9021.json",
+		diagramUrl: "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://doko-train.jp/json/diagram/line/9021.json",
+		statusUrl: "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://doko-train.jp/json/trainstatus/9021.json"
+	},
+	"58": {
+		senku: "58",
+		sources: [
+			{
+				dokotreId: "110",
+				senku: "58",
+				mappingUrl: "./tools/dokotre_110_mapping.json",
+				lineUrl: "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://doko-train.jp/json/line/110.json",
+				diagramUrl: "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://doko-train.jp/json/diagram/line/110.json",
+				detailDiagramUrl: "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://doko-train.jp/json/diagram/line/110A.json",
+				statusUrl: "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://doko-train.jp/json/trainstatus/110.json"
+			},
+			{
+				dokotreId: "9022",
+				senku: "58",
+				mappingUrl: "./tools/dokotre_9022_mapping.json",
+				lineUrl: "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://doko-train.jp/json/line/9022.json",
+				diagramUrl: "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://doko-train.jp/json/diagram/line/9022.json",
+				detailDiagramUrl: "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://doko-train.jp/json/diagram/line/110A.json",
+				statusUrl: "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://doko-train.jp/json/trainstatus/9022.json"
+			}
+		]
+	}
+};
+const dokotreStaticSourceDataCache = new Map();
+const JR_SHINKANSEN_LOCATION_SOURCE_MAP = {
+	"59": {
+		senku: "59",
+		centralUrl: "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://traininfo.jr-central.co.jp/shinkansen/var/train_info/train_location_info.json",
+		centralMasterUrl: "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://traininfo.jr-central.co.jp/shinkansen/common/data/common_ja.json",
+		centralTrainInfoUrlBase: "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://traininfo.jr-central.co.jp/shinkansen/var/train_info/",
+		kyushuUrl: "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://george-doredore.jrkyushu.co.jp/jrqSEN29.html"
+	},
+	"60": {
+		senku: "60",
+		kyushuUrl: "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://george-doredore.jrkyushu.co.jp/jrqSEN57.html"
+	}
+};
+const jrShinkansenStaticSourceDataCache = new Map();
 
 function get_mainte_json_request(fileName, cacheKey) {
 	const cloudflareApiBase = "https://trainlocation.pages.dev";
@@ -374,9 +440,11 @@ $(function ($) {
 		// 取得した駅からボタンをダイアログに表示する内容を作成
 		let html = "<ul>";
 		for(let row of list){
+			const stationNode = row.querySelector("[key]");
+			if (!stationNode) continue;
 			html += "<li>";
 			html += row.children[0].children[0].outerHTML;
-			html += "<div value='" + row.href.slice(-3) + "'>" + row.children[0].children[1].innerText.replace("\n", "") + "</div></li>";
+			html += "<div value='" + stationNode.getAttribute("key") + "'>" + stationNode.innerText.replace("\n", "") + "</div>";
 			html += "</li>";
 		}
 		html += "</ul>";
@@ -444,7 +512,9 @@ $(function ($) {
 		// 駅コードを取得
 		let id = this.children[1].getAttribute("value");
 		// 対象の駅までスクロール
-		let pos = $("div[key='" + id + "']").offset().top - 380;
+		let target = $("div[key='" + id + "']").first();
+		if (target.length == 0) return;
+		let pos = target.offset().top - 380;
 		$("body,html").animate({scrollTop: pos});
 	});
 
@@ -566,18 +636,19 @@ $(function ($) {
 		let rosen = $(this).attr("value");
 		if (!rosen) return;
 		scrollKey = $(this).attr("key");
+		const hash = scrollKey ? "rosen=" + rosen + "&id=" + scrollKey : "rosen=" + rosen;
 
 		if (befRosen == rosen) {
 			// 表示中の路線と遷移先の路線が同じ場合
 			// ハッシュからid（駅キー）、列車番号を取得
 			let param_id = get_param_id();
 			let param_cbango = get_param_cbango();
-			location.hash = "rosen=" + rosen;
+			location.hash = hash;
 			// 駅キー、列車番号が設定されていた場合、画面表示処理を行う
 			if (!param_id && !param_cbango) init_disp(scrollKey);
 		} else {
 			// ハッシュを選択した路線に変更
-			location.hash = "rosen=" + rosen;
+			location.hash = hash;
 		}
 
 		$(function(){
@@ -764,6 +835,52 @@ function get_location_json_url(_rosen, _now) {
 	return "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/trainlocation/json/location/now/location_" + _rosen + "_now.json?" + _now;
 }
 
+function is_jreast_location_rosen(_rosen) {
+	return Object.prototype.hasOwnProperty.call(JREAST_LOCATION_SOURCE_MAP, String(_rosen || ""));
+}
+
+function is_dokotre_location_rosen(_rosen) {
+	return Object.prototype.hasOwnProperty.call(DOKOTRE_LOCATION_SOURCE_MAP, String(_rosen || ""));
+}
+
+function is_jr_shinkansen_location_rosen(_rosen) {
+	return Object.prototype.hasOwnProperty.call(JR_SHINKANSEN_LOCATION_SOURCE_MAP, String(_rosen || ""));
+}
+
+function is_location_auto_refresh_allowed(_rosen) {
+	return !is_jreast_location_rosen(_rosen);
+}
+
+function get_jreast_location_request(_rosen, _now) {
+	const source = JREAST_LOCATION_SOURCE_MAP[String(_rosen || "")];
+	if (!source) return $.Deferred().reject().promise();
+	const separator = source.url.indexOf("?") >= 0 ? "&" : "?";
+	return $.getJSON(source.url + separator + "cache=" + _now);
+}
+
+function get_dokotre_location_request(_url, _now) {
+	if (!_url) return $.Deferred().reject().promise();
+	const separator = _url.indexOf("?") >= 0 ? "&" : "?";
+	const url = _url + separator + "cache=" + _now;
+	const proxyPrefix = "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=";
+	return $.getJSON(url.indexOf(proxyPrefix) === 0 ? url : proxyPrefix + url);
+}
+
+function get_dokotre_mapping_request(_url, _now) {
+	if (!_url) return $.Deferred().reject().promise();
+	const separator = _url.indexOf("?") >= 0 ? "&" : "?";
+	return $.getJSON(_url + separator + "cache=" + _now);
+}
+
+function get_external_text_request(_url, _now) {
+	if (!_url) return $.Deferred().reject().promise();
+	const separator = _url.indexOf("?") >= 0 ? "&" : "?";
+	return $.ajax({
+		url: _url + separator + "cache=" + _now,
+		dataType: "text"
+	});
+}
+
 function jqxhr_to_promise(_jqxhr) {
 	return new Promise((resolve, reject) => {
 		_jqxhr.done((data) => resolve(data)).fail((error) => reject(error));
@@ -776,6 +893,8 @@ function merge_location_now_data(_nowDataList) {
 	const seenCbangoMap = new Map();
 	const mergedTrains = [];
 	const sourceTimes = [];
+	const maintenanceMessages = [];
+	let displayTime = null;
 
 	_nowDataList.forEach((entry) => {
 		const nowData = entry && entry.nowData ? entry.nowData : entry;
@@ -783,6 +902,13 @@ function merge_location_now_data(_nowDataList) {
 		if (!nowData || !Array.isArray(nowData.trains)) return;
 		const sourceTime = get_location_now_time_info(nowData, sourceRosen);
 		if (sourceTime) sourceTimes.push(sourceTime);
+		if (!displayTime && nowData.time) displayTime = nowData.time;
+		const nowMaintenanceMessages = Array.isArray(nowData.maintenanceMessages)
+			? nowData.maintenanceMessages
+			: (nowData.maintenance ? [nowData.maintenance] : []);
+		nowMaintenanceMessages.forEach((maintenance) => {
+			if (maintenance) maintenanceMessages.push(maintenance);
+		});
 
 		nowData.trains.forEach((row) => {
 			if (!row || !row.cbango) {
@@ -796,10 +922,23 @@ function merge_location_now_data(_nowDataList) {
 		});
 	});
 
-	return { trains: mergedTrains, sourceTimes: sourceTimes };
+	const mergedData = { trains: mergedTrains, sourceTimes: sourceTimes };
+	if (displayTime) mergedData.time = displayTime;
+	if (maintenanceMessages.length > 0) mergedData.maintenanceMessages = maintenanceMessages;
+	return mergedData;
 }
 
 function load_location_now_data(_param_rosen, _now) {
+	if (is_jreast_location_rosen(_param_rosen)) {
+		return load_combined_jreast_location_now_data(_param_rosen, _now);
+	}
+	if (is_dokotre_location_rosen(_param_rosen)) {
+		return load_dokotre_location_now_data(_param_rosen, _now);
+	}
+	if (is_jr_shinkansen_location_rosen(_param_rosen)) {
+		return load_jr_shinkansen_location_now_data(_param_rosen, _now);
+	}
+
 	const sourceRosens = get_location_json_source_list(_param_rosen);
 	return Promise.all(
 		sourceRosens.map((rosen) => {
@@ -812,6 +951,257 @@ function load_location_now_data(_param_rosen, _now) {
 		if (successDataList.length < 1) throw new Error("location now json load failed");
 		return merge_location_now_data(successDataList);
 	});
+}
+
+function load_combined_jreast_location_now_data(_param_rosen, _now) {
+	const source = JREAST_LOCATION_SOURCE_MAP[String(_param_rosen || "")];
+	const hokkaidoRosens = source && Array.isArray(source.hokkaidoRosens) ? source.hokkaidoRosens : [];
+	const jreastRosens = source && Array.isArray(source.relatedJreastRosens) ? source.relatedJreastRosens : [_param_rosen];
+	const hokkaidoRequests = hokkaidoRosens.map((rosen) => {
+		return jqxhr_to_promise(get_location_now_request(rosen, _now))
+			.then((nowData) => ({ rosen: rosen, sourceType: "hokkaido", nowData: nowData }))
+			.catch(() => null);
+	});
+	const jreastRequests = jreastRosens.map((rosen) => {
+		return load_jreast_location_now_data(_param_rosen, _now, rosen)
+			.then((nowData) => ({ rosen: rosen, sourceType: "jreast", nowData: nowData }))
+			.catch(() => null);
+	});
+
+	return Promise.all(hokkaidoRequests.concat(jreastRequests))
+		.then((nowDataResults) => {
+			const successDataList = nowDataResults.filter((entry) => entry && entry.nowData && Array.isArray(entry.nowData.trains));
+			if (successDataList.length < 1) throw new Error("location now json load failed");
+			const mergedData = merge_location_now_data(successDataList);
+			const jreastData = successDataList.find((entry) => entry.sourceType === "jreast" && entry.rosen == _param_rosen && entry.nowData && entry.nowData.time)
+				|| successDataList.find((entry) => entry.sourceType === "jreast" && entry.nowData && entry.nowData.time);
+			if (jreastData) mergedData.time = jreastData.nowData.time;
+			return mergedData;
+		});
+}
+
+function load_jreast_location_now_data(_param_rosen, _now, _source_rosen) {
+	const sourceRosen = _source_rosen || _param_rosen;
+	const source = JREAST_LOCATION_SOURCE_MAP[String(sourceRosen || "")];
+	if (!source || !window.JrEastLocationAdapter) {
+		return Promise.reject(new Error("JRE location adapter is not loaded"));
+	}
+	return jqxhr_to_promise(get_jreast_location_request(sourceRosen, _now))
+		.then((rawData) => convert_jreast_location_now_data(rawData, source, _param_rosen, sourceRosen));
+}
+
+function load_dokotre_location_now_data(_param_rosen, _now) {
+	const source = DOKOTRE_LOCATION_SOURCE_MAP[String(_param_rosen || "")];
+	if (!source || !window.DokotreLocationAdapter) {
+		return Promise.reject(new Error("Dokotre location adapter is not loaded"));
+	}
+	const sources = Array.isArray(source.sources) ? source.sources : [source];
+	return Promise.all(sources.map((entry) => {
+		return load_dokotre_location_source(entry, _now)
+			.then((nowData) => ({ rosen: entry.senku || source.senku || _param_rosen, sourceType: "dokotre", nowData: nowData }))
+			.catch(() => null);
+	})).then((nowDataResults) => {
+		const successDataList = nowDataResults.filter((entry) => entry && entry.nowData && Array.isArray(entry.nowData.trains));
+		if (successDataList.length < 1) throw new Error("Dokotre location now json load failed");
+		return merge_location_now_data(successDataList);
+	});
+}
+
+function load_dokotre_location_source(source, _now) {
+	return Promise.all([
+		load_dokotre_static_source_data(source, _now),
+		jqxhr_to_promise(get_dokotre_location_request(source.statusUrl, _now))
+	]).then((results) => {
+		const staticData = results[0];
+		const statusJson = results[1];
+		const normalized = window.DokotreLocationAdapter.normalize(staticData.lineJson, staticData.diagramJson, statusJson, staticData.mapping, {
+			dokotreId: source.dokotreId,
+			senku: source.senku,
+			detailDiagramJson: staticData.detailDiagramJson
+		});
+		return normalized.location;
+	});
+}
+
+function load_dokotre_static_source_data(source, _now) {
+	const cacheKey = get_dokotre_static_source_cache_key(source);
+	if (dokotreStaticSourceDataCache.has(cacheKey)) {
+		return dokotreStaticSourceDataCache.get(cacheKey);
+	}
+	const loadPromise = Promise.all([
+		source.lineUrl ? jqxhr_to_promise(get_dokotre_location_request(source.lineUrl, _now)) : Promise.resolve({ data: [] }),
+		jqxhr_to_promise(get_dokotre_location_request(source.diagramUrl, _now)),
+		jqxhr_to_promise(get_dokotre_mapping_request(source.mappingUrl, _now)),
+		source.detailDiagramUrl ? jqxhr_to_promise(get_dokotre_location_request(source.detailDiagramUrl, _now)).catch(() => null) : Promise.resolve(null)
+	]).then((results) => {
+		return {
+			lineJson: results[0],
+			diagramJson: results[1],
+			mapping: results[2],
+			detailDiagramJson: results[3]
+		};
+	}).catch((error) => {
+		dokotreStaticSourceDataCache.delete(cacheKey);
+		throw error;
+	});
+	dokotreStaticSourceDataCache.set(cacheKey, loadPromise);
+	return loadPromise;
+}
+
+function get_dokotre_static_source_cache_key(source) {
+	return [
+		source && source.dokotreId || "",
+		source && source.senku || "",
+		source && source.lineUrl || "",
+		source && source.diagramUrl || "",
+		source && source.mappingUrl || "",
+		source && source.detailDiagramUrl || ""
+	].join("|");
+}
+
+function load_jr_shinkansen_location_now_data(_param_rosen, _now) {
+	const source = JR_SHINKANSEN_LOCATION_SOURCE_MAP[String(_param_rosen || "")];
+	if (!source || !window.JrShinkansenLocationAdapter) {
+		return Promise.reject(new Error("JR Shinkansen location adapter is not loaded"));
+	}
+	return Promise.all([
+		jqxhr_to_promise(get_dokotre_location_request(source.centralUrl, _now)).catch(() => null),
+		load_jr_shinkansen_static_source_data(source, _now).catch(() => ({ centralMasterJson: null })),
+		jqxhr_to_promise(get_external_text_request(source.kyushuUrl, _now)).catch(() => "")
+	]).then((results) => {
+		const centralLocationJson = results[0];
+		const centralMasterJson = results[1].centralMasterJson;
+		const kyushuHtml = results[2];
+		return load_jr_shinkansen_central_train_info_map(source, centralLocationJson, _now)
+			.then((centralTrainInfoMap) => {
+				const normalized = window.JrShinkansenLocationAdapter.normalize(centralLocationJson, centralMasterJson, kyushuHtml, {
+					senku: source.senku || _param_rosen,
+					centralTrainInfoMap: centralTrainInfoMap
+				});
+				if (!normalized.location || !Array.isArray(normalized.location.trains) || normalized.location.trains.length < 1) {
+					throw new Error("JR Shinkansen location now json load failed");
+				}
+				return normalized.location;
+			});
+	});
+}
+
+function load_jr_shinkansen_static_source_data(source, _now) {
+	if (!source || !source.centralMasterUrl) return Promise.resolve({ centralMasterJson: null });
+	const cacheKey = source && source.centralMasterUrl || "";
+	if (jrShinkansenStaticSourceDataCache.has(cacheKey)) {
+		return jrShinkansenStaticSourceDataCache.get(cacheKey);
+	}
+	const loadPromise = Promise.all([
+		jqxhr_to_promise(get_dokotre_location_request(source.centralMasterUrl, _now))
+	]).then((results) => {
+		return {
+			centralMasterJson: results[0]
+		};
+	}).catch((error) => {
+		jrShinkansenStaticSourceDataCache.delete(cacheKey);
+		throw error;
+	});
+	jrShinkansenStaticSourceDataCache.set(cacheKey, loadPromise);
+	return loadPromise;
+}
+
+function load_jr_shinkansen_central_train_info_map(source, centralLocationJson, _now) {
+	const refs = collect_jr_shinkansen_central_train_refs(centralLocationJson);
+	if (refs.length < 1) return Promise.resolve({});
+	return Promise.all(refs.map((ref) => {
+		return jqxhr_to_promise(get_jr_shinkansen_central_train_info_request(source, ref.train, ref.trainNumber, _now))
+			.then((json) => ({ key: ref.key, json: json }))
+			.catch(() => null);
+	})).then((results) => {
+		return results.filter(Boolean).reduce((map, entry) => {
+			map[entry.key] = entry.json;
+			return map;
+		}, {});
+	});
+}
+
+function get_jr_shinkansen_central_train_info_request(source, train, trainNumber, _now) {
+	if (!source || !source.centralTrainInfoUrlBase || !train || !trainNumber) return $.Deferred().reject().promise();
+	const url = source.centralTrainInfoUrlBase + "train_info_" + encodeURIComponent(train) + "_" + encodeURIComponent(trainNumber) + ".json";
+	return get_dokotre_location_request(url, _now);
+}
+
+function collect_jr_shinkansen_central_train_refs(centralLocationJson) {
+	const refs = new Map();
+	const locationInfo = centralLocationJson && centralLocationJson.trainLocationInfo ? centralLocationJson.trainLocationInfo : {};
+	["atStation", "betweenStation"].forEach((groupName) => {
+		const bounds = locationInfo[groupName] && locationInfo[groupName].bounds ? locationInfo[groupName].bounds : {};
+		Object.keys(bounds).forEach((bound) => {
+			(bounds[bound] || []).forEach((entry) => {
+				(entry.trains || []).forEach((train) => {
+					if (!train || !train.train || !train.trainNumber) return;
+					const key = String(train.train) + "_" + String(train.trainNumber);
+					if (!refs.has(key)) refs.set(key, { key: key, train: String(train.train), trainNumber: String(train.trainNumber) });
+				});
+			});
+		});
+	});
+	return Array.from(refs.values());
+}
+
+function convert_jreast_location_now_data(_rawData, _source, _display_rosen, _source_rosen) {
+	const normalized = window.JrEastLocationAdapter.normalize(_rawData, {
+		screenCode: _source.screenCode
+	});
+	const timeText = format_jreast_datetime_to_location_time(normalized.dateTime);
+	const sourceTime = timeText ? get_location_now_time_info({ time: { ja: timeText } }, normalized.screenCode) : null;
+	const trains = (Array.isArray(normalized.trains) ? normalized.trains : []).map((train) => {
+		const row = Object.assign({}, train);
+		row.source = "jreast";
+		row.sourceRosen = _source_rosen || "";
+		row.senku = "";
+		row.posName = train.jrEast && train.jrEast.positionName ? train.jrEast.positionName : "";
+		row.shuEkiSimple = train.shuEkiSimple || make_jreast_destination_short(train.shuEkiName);
+		row.shuEkiName = train.shuEkiName || train.shuEkiSimple || "";
+		row.shuEkiKey = train.shuEkiKey || "";
+		return row;
+	});
+	const screenDisplayMode = normalized.screenDisplayMode || {};
+	const maintenanceMessages = is_jreast_location_not_in_service_time(_rawData, normalized)
+		? [{
+			source: "jreast",
+			rosen: _source_rosen || _display_rosen || "",
+			message: screenDisplayMode.message && screenDisplayMode.message.ja ? screenDisplayMode.message.ja : ""
+		}]
+		: [];
+
+	return {
+		time: timeText ? { ja: timeText } : undefined,
+		trains: trains,
+		sourceTimes: sourceTime ? [sourceTime] : [],
+		maintenanceMessages: maintenanceMessages
+	};
+}
+
+function is_jreast_location_not_in_service_time(_rawData, _normalized) {
+	if (_normalized && _normalized.screenDisplayMode && _normalized.screenDisplayMode.mode === "notInServiceTime") return true;
+	return !!(_rawData && Array.isArray(_rawData.statusInfo) && _rawData.statusInfo.some((status) => {
+		return status && status.deliveryStatus && status.deliveryStatus.mode === "notInServiceTime";
+	}));
+}
+
+function format_jreast_datetime_to_location_time(_dateTime) {
+	const match = String(_dateTime || "").match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})/);
+	if (!match) return "";
+	return Number(match[1]) + "年" +
+		Number(match[2]) + "月" +
+		Number(match[3]) + "日" +
+		Number(match[4]) + "時" +
+		Number(match[5]) + "分" +
+		Number(match[6]) + "秒現在";
+}
+
+function make_jreast_destination_short(_destination) {
+	const text = String(_destination || "").replace(/\s+/g, "");
+	if (!text) return "";
+	const first = text.split(/[・･／/]/)[0] || text;
+	return first.length > 2 ? first.slice(0, 2) : first;
 }
 
 function get_location_now_time_info(_nowData, _rosen) {
@@ -828,15 +1218,16 @@ function get_location_now_time_info(_nowData, _rosen) {
 
 function parse_location_now_time(_timeText) {
 	if (!_timeText) return null;
-	const match = String(_timeText).match(/(\d{4})年\s*(\d{1,2})月\s*(\d{1,2})日\s*(\d{1,2})時\s*(\d{1,2})分/);
+	const match = String(_timeText).match(/(\d{4})年\s*(\d{1,2})月\s*(\d{1,2})日\s*(\d{1,2})時\s*(\d{1,2})分(?:(\d{1,2})秒)?/);
 	if (!match) return null;
 	const year = Number(match[1]);
 	const month = Number(match[2]);
 	const day = Number(match[3]);
 	const hour = Number(match[4]);
 	const minute = Number(match[5]);
-	if ([year, month, day, hour, minute].some((value) => Number.isNaN(value))) return null;
-	return Date.UTC(year, month - 1, day, hour - 9, minute, 0);
+	const second = Number(match[6] || 0);
+	if ([year, month, day, hour, minute, second].some((value) => Number.isNaN(value))) return null;
+	return Date.UTC(year, month - 1, day, hour - 9, minute, second);
 }
 
 function get_oldest_location_now_time(_nowData) {
@@ -847,7 +1238,20 @@ function get_oldest_location_now_time(_nowData) {
 	}, sourceTimes[0]);
 }
 
+function get_location_maintenance_warning_message(_nowData) {
+	const maintenanceMessages = _nowData && Array.isArray(_nowData.maintenanceMessages) ? _nowData.maintenanceMessages : [];
+	const hasJrEastMaintenance = maintenanceMessages.some((message) => message && message.source === "jreast");
+	if (!hasJrEastMaintenance) return "";
+	return "JR\u6771\u65e5\u672c\u5074\u30e1\u30f3\u30c6\u30ca\u30f3\u30b9\u4e2d\u3067\u3059\u3002\u5217\u8eca\u4f4d\u7f6e\u30c7\u30fc\u30bf\u3092\u53d6\u5f97\u3067\u304d\u306a\u3044\u53ef\u80fd\u6027\u304c\u3042\u308a\u307e\u3059\u3002";
+}
+
 function update_location_data_stale_warning(_nowData) {
+	const maintenanceMessage = get_location_maintenance_warning_message(_nowData);
+	if (maintenanceMessage) {
+		$("#locationDataStaleWarning").text(maintenanceMessage).removeAttr("hidden");
+		if (typeof set_header_height === "function") set_header_height();
+		return;
+	}
 	const oldestTime = get_oldest_location_now_time(_nowData);
 	if (!oldestTime) {
 		$("#locationDataStaleWarning").text("").attr("hidden", "hidden");
@@ -899,8 +1303,9 @@ function set_station_list(_param_rosen, _scrollKey, _callback) {
 	)
 	.done(function(rosenNameData, maintenanceData, typeData, ekiData, rosen, maintenance) {
 
-		// 現在日付を日本時間で設定
-		update_location_timestamp();
+		// 現在日付を設定。外部JSON変換路線はJSON内部の配信時刻を使用する。
+		if (is_jreast_location_rosen(_param_rosen) || is_dokotre_location_rosen(_param_rosen) || is_jr_shinkansen_location_rosen(_param_rosen)) $("#timestamp").text("");
+		else update_location_timestamp();
 
 		// 路線名を設定
 		let findRosenName = rosenNameData[0].find((v) => v.rosen == _param_rosen);
@@ -911,6 +1316,11 @@ function set_station_list(_param_rosen, _scrollKey, _callback) {
 			if (lang == "sc") $("#title").html(findRosenName.rosenName.sc + findRosenName.kukanName.sc);
 			if (lang == "kr") $("#title").html(`<span>${findRosenName.rosenName.kr}</span><span>${findRosenName.kukanName.kr}</span>`);
 		}
+		const canAutoRefresh = is_location_auto_refresh_allowed(_param_rosen);
+		const isMobileLayout = window.innerWidth <= 1000;
+		$("#refreshSettingBtn").toggle(canAutoRefresh && !isMobileLayout);
+		$("#refreshSettingBtnSub").toggle(canAutoRefresh);
+		update_refresh_status_label();
 
 		let result = maintenanceData[0].lines.filter((v) => v.status == "1" && v.rosen == _param_rosen);
 		if (result.length > 0) {
@@ -939,6 +1349,7 @@ function set_station_list(_param_rosen, _scrollKey, _callback) {
 			cachedResshaTypeData = typeData[0];
 			cachedEkiData = ekiData[0];
 			$("#stationList").html(rosen[0]);
+			if (is_jreast_location_rosen(_param_rosen) || is_dokotre_location_rosen(_param_rosen) || is_jr_shinkansen_location_rosen(_param_rosen)) setTimestamp(nowData);
 			update_location_data_stale_warning(nowData);
 			// 列車アイコンを描画する
 			create_ressha_icon(_param_rosen, nowData, typeData[0], ekiData[0]);
@@ -984,6 +1395,10 @@ function set_station_list(_param_rosen, _scrollKey, _callback) {
 function start_location_auto_refresh(_param_rosen, _delay = locationAutoRefreshInterval) {
 	stop_location_auto_refresh(true);
 	if (!_param_rosen || !locationAutoRefreshEnabled) return;
+	if (!is_location_auto_refresh_allowed(_param_rosen)) {
+		stop_location_auto_refresh();
+		return;
+	}
 	set_next_location_auto_refresh_time(_delay);
 	locationAutoRefreshTimer = setTimeout(() => {
 		if (document.visibilityState === "visible") {
@@ -1033,7 +1448,8 @@ function redraw_location_positions(_param_rosen, _nowData) {
 	clear_location_positions(_param_rosen);
 	create_ressha_icon(_param_rosen, _nowData, cachedResshaTypeData, cachedEkiData);
 	ressha_pos_sort();
-	update_location_timestamp();
+	if (is_jreast_location_rosen(_param_rosen) || is_dokotre_location_rosen(_param_rosen) || is_jr_shinkansen_location_rosen(_param_rosen)) setTimestamp(_nowData);
+	else update_location_timestamp();
 	update_location_data_stale_warning(_nowData);
 	restore_selected_train_marker(trackingScrollEnabled);
 	update_tracking_footer_controls();
@@ -1140,7 +1556,7 @@ function update_refresh_status_label() {
 		sc: "下次更新：" + format_refresh_time(nextLocationAutoRefreshAt),
 		kr: "다음 갱신: " + format_refresh_time(nextLocationAutoRefreshAt)
 	};
-	if (locationAutoRefreshEnabled) {
+	if (locationAutoRefreshEnabled && is_location_auto_refresh_allowed(get_param_rosen())) {
 		const message = (messages[lang] || messages.ja) + (nextLocationAutoRefreshAt ? "  " + (nextMessages[lang] || nextMessages.ja) : "");
 		$("#refreshStatusLabel").text(message).removeAttr("hidden");
 	} else {
@@ -1182,6 +1598,10 @@ function apply_location_auto_refresh_settings(_enabled, _interval, _persist = tr
 	update_refresh_status_label();
 	if (locationAutoRefreshEnabled) {
 		const currentRosen = get_param_rosen();
+		if (!is_location_auto_refresh_allowed(currentRosen)) {
+			stop_location_auto_refresh();
+			return;
+		}
 		start_location_auto_refresh(currentRosen);
 		if (currentRosen && document.visibilityState === "visible" && (!wasEnabled || _persist)) {
 			refresh_location_positions(currentRosen);
@@ -1201,6 +1621,10 @@ function handle_page_visibility_change() {
 		return;
 	}
 	if (document.visibilityState === "visible" && locationAutoRefreshEnabled && currentRosen) {
+		if (!is_location_auto_refresh_allowed(currentRosen)) {
+			stop_location_auto_refresh();
+			return;
+		}
 		if (!nextLocationAutoRefreshAt) {
 			start_location_auto_refresh(currentRosen);
 			return;
@@ -1844,6 +2268,22 @@ function set_hakodate_height() {
 /*
  *　上り列車のアイコンのhtmlを生成する。
  */
+function set_jr_shinkansen_train_icon(_iconArea, _nowRow) {
+	const icon = _nowRow.jrShinkansen && _nowRow.jrShinkansen.trainIcon ? _nowRow.jrShinkansen.trainIcon : "";
+	if (!icon) return;
+	const iconMap = {
+		nozomi: "./images/home/train_icon_nozomi.svg",
+		hikari: "./images/home/train_icon_hikari.svg",
+		kodama: "./images/home/train_icon_kodama.svg",
+		mizuho: "./images/home/train_icon_mizuho.svg",
+		sakura: "./images/home/train_icon_sakura.svg",
+		tsubame: "./images/home/train_icon_tsubame.svg"
+	};
+	if (iconMap[icon]) {
+		_iconArea.style.backgroundImage = "url(" + iconMap[icon] + ")";
+	}
+}
+
 function create_html_up_ressha_icon(_nowRow, _typeData, _ekiData) {
 	let lang = document.documentElement.dataset.lang;
 	let objItem = document.createElement("div");
@@ -1854,6 +2294,7 @@ function create_html_up_ressha_icon(_nowRow, _typeData, _ekiData) {
 	// アイコン内の列車種別を設定
 	let iconArea = document.createElement("div");
 	iconArea.classList.add("icon-img");
+	set_jr_shinkansen_train_icon(iconArea, _nowRow);
 	// 新幹線以外には列車種別の文字をアイコンに入れる
 	if(_nowRow.type != "4") {
 		let objSbt = document.createElement("span");
@@ -1960,6 +2401,7 @@ function create_html_down_ressha_icon(_nowRow, _typeData, _ekiData) {
 	// アイコン内の列車種別を設定
 	let iconArea = document.createElement("div");
 	iconArea.classList.add("icon-img");
+	set_jr_shinkansen_train_icon(iconArea, _nowRow);
 	// 新幹線以外には列車種別の文字をアイコンに入れる
 	if(_nowRow.type != "4") {
 		let objSbt = document.createElement("span");
@@ -2030,6 +2472,14 @@ function create_ressha_detail(_objItem, _nowRow, _typeData, _ekiData) {
 		// 列車番号
 		{
 			_objItem.dataset.cbango = _nowRow.cbango;
+			_objItem.dataset.source = _nowRow.source || "";
+			_objItem.dataset.source_rosen = _nowRow.sourceRosen || "";
+			_objItem.dataset.aisho = _nowRow.jrEast && _nowRow.jrEast.nickname ? _nowRow.jrEast.nickname : (_nowRow.name || "");
+			_objItem.dataset.jreast_series = _nowRow.jrEast && _nowRow.jrEast.series ? _nowRow.jrEast.series : "";
+			_objItem.dataset.jreast_timetable = _nowRow.jrEast && Array.isArray(_nowRow.jrEast.timetable) ? JSON.stringify(_nowRow.jrEast.timetable) : "[]";
+			_objItem.dataset.dokotre_timetable = _nowRow.dokotre && Array.isArray(_nowRow.dokotre.timetable) ? JSON.stringify(_nowRow.dokotre.timetable) : "[]";
+			_objItem.dataset.jrshinkansen_timetable = _nowRow.jrShinkansen && Array.isArray(_nowRow.jrShinkansen.timetable) ? JSON.stringify(_nowRow.jrShinkansen.timetable) : "[]";
+			_objItem.dataset.jrshinkansenIcon = _nowRow.jrShinkansen && _nowRow.jrShinkansen.trainIcon ? _nowRow.jrShinkansen.trainIcon : "";
 		}
 
 		// 列車種別を表す色を設定。
@@ -2043,7 +2493,9 @@ function create_ressha_detail(_objItem, _nowRow, _typeData, _ekiData) {
 
 		// 列車種別名
 		{
-			if (type) {
+			if (_nowRow.typeLabel) {
+				_objItem.dataset.ressha_type_name = _nowRow.typeLabel;
+			} else if (type) {
 				if (type.type === 8) {
 					_objItem.dataset.ressha_type_name = "快速";
 				} else {
@@ -2156,18 +2608,21 @@ function create_ressha_detail(_objItem, _nowRow, _typeData, _ekiData) {
 
 		// 地点キー
 		_objItem.dataset.pos = _nowRow.pos;
+		_objItem.dataset.pos_name = _nowRow.posName || "";
 
 		// 駅マスタからダイヤデータの終着駅を取得する
 		let findEki = _ekiData.find((v) => v.key == _nowRow.shuEkiKey);
 
 		// 行先
-		if (lang == "ja") _objItem.dataset.shu_eki = typeof findEki !== "undefined" ? findEki.ja + " 行き" : "行き";
-		if (lang == "en") _objItem.dataset.shu_eki = typeof findEki !== "undefined" ? "For " + findEki.en : "For ";
-		if (lang == "tc") _objItem.dataset.shu_eki = typeof findEki !== "undefined" ? "開往" + findEki.tc : "開往";
-		if (lang == "sc") _objItem.dataset.shu_eki = typeof findEki !== "undefined" ? "开往" + findEki.sc : "开往";
-		if (lang == "kr") _objItem.dataset.shu_eki = typeof findEki !== "undefined" ? findEki.kr + "행" : "행";
+		const jreastDestination = _nowRow.shuEkiName || _nowRow.shuEkiSimple || "";
+		if (lang == "ja") _objItem.dataset.shu_eki = jreastDestination === "行先取得不可" ? jreastDestination : (typeof findEki !== "undefined" ? findEki.ja + " 行き" : (jreastDestination ? jreastDestination + " 行き" : "行き"));
+		if (lang == "en") _objItem.dataset.shu_eki = typeof findEki !== "undefined" ? "For " + findEki.en : (jreastDestination ? "For " + jreastDestination : "For ");
+		if (lang == "tc") _objItem.dataset.shu_eki = typeof findEki !== "undefined" ? "開往" + findEki.tc : (jreastDestination ? "開往" + jreastDestination : "開往");
+		if (lang == "sc") _objItem.dataset.shu_eki = typeof findEki !== "undefined" ? "开往" + findEki.sc : (jreastDestination ? "开往" + jreastDestination : "开往");
+		if (lang == "kr") _objItem.dataset.shu_eki = typeof findEki !== "undefined" ? findEki.kr + "행" : (jreastDestination ? jreastDestination + "행" : "행");
 
 		// 車両数
+		const jreastSeries = _nowRow.jrEast && _nowRow.jrEast.series ? _nowRow.jrEast.series : "";
 		_objItem.dataset.ryosu = _nowRow.ryosu && _nowRow.ryosu != 0 ? _nowRow.ryosu : "";
 		if (_objItem.dataset.ryosu != "") {
 			if (lang == "ja") _objItem.dataset.ryosu += "両";
@@ -2175,6 +2630,9 @@ function create_ressha_detail(_objItem, _nowRow, _typeData, _ekiData) {
 			if (lang == "tc") _objItem.dataset.ryosu += "節車廂";
 			if (lang == "sc") _objItem.dataset.ryosu += "节车厢";
 			if (lang == "kr") _objItem.dataset.ryosu += "량 편성";
+			if (_nowRow.source === "jreast" && jreastSeries) {
+				_objItem.dataset.ryosu += "（" + jreastSeries + "）";
+			}
 		}
 	}
 }
@@ -2456,7 +2914,7 @@ function get_param_rosen() {
 function get_param_id() {
 	let params = location.hash.slice(1).split('&');
 	if (params.length > 1) {
-		if (params[1].indexOf("id=") >= 0) return params[1].slice(-3);
+		if (params[1].indexOf("id=") >= 0) return params[1].substring(3);
 		else return "";
 	}
 }
@@ -2558,7 +3016,7 @@ function load_train_search_data() {
 	const lang = document.documentElement.dataset.lang;
 	const mstNow = Date.now() >>> 16;
 	const trnNow = Date.now() >>> 10;
-	const searchSourceRosens = ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15"];
+	const searchSourceRosens = ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "57", "58", "59", "60"];
 	const daiyaSourceSenkus = ["00"].concat(searchSourceRosens, ["19"]);
 	const expressMasterPromise = jqxhr_to_promise($.getJSON("https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/webunkou/json/master/express_master.json?" + mstNow));
 	const expressCorePromise = jqxhr_to_promise(get_express_core_request(mstNow));
@@ -2568,7 +3026,7 @@ function load_train_search_data() {
 	const ekiPromise = cachedEkiData ? Promise.resolve(cachedEkiData) : jqxhr_to_promise($.getJSON("https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/webunkou/json/master/eki_master.json?" + mstNow));
 	const locationMasterPromise = cachedLocationMasterData ? Promise.resolve(cachedLocationMasterData) : jqxhr_to_promise($.getJSON("./original/location_master.json")).catch(() => ({}));
 	const locationPromises = searchSourceRosens.map((rosen) =>
-		jqxhr_to_promise(get_location_now_request(rosen, trnNow))
+		(is_dokotre_location_rosen(rosen) || is_jr_shinkansen_location_rosen(rosen) ? load_location_now_data(rosen, trnNow) : jqxhr_to_promise(get_location_now_request(rosen, trnNow)))
 			.then((data) => ({ "rosen": rosen, "data": data }))
 			.catch(() => null)
 	);
@@ -2648,7 +3106,11 @@ function load_train_search_data() {
 			entry.data.trains.forEach((train) => {
 				if (!train || !train.cbango) return;
 				const cbango = String(train.cbango).toUpperCase();
-				const daiya = daiyaMap.get(String(train.cbango));
+				const daiya = daiyaMap.get(String(train.cbango)) || (train.source === "dokotre" || train.source === "jrshinkansen" ? {
+					"name": train.name || "",
+					"shuEkiKey": train.shuEkiKey || "",
+					"senku": train.senku || ""
+				} : undefined);
 				const nameInfo = parse_train_name(daiya && daiya.name ? daiya.name : "");
 				const displayName = build_train_search_display_name(train, daiya, typeData, ekiData);
 				const targetRosen = normalizeMergedRosen(entry.rosen, nameInfo.baseName || displayName);
@@ -2739,7 +3201,7 @@ function load_train_search_data() {
 		));
 		const shinkansenNames = Array.from(new Set(
 			Array.from(daiyaMap.values())
-				.filter((row) => row && String(row.senku || "") === "19")
+				.filter((row) => row && (String(row.senku || "") === "19" || String(row.senku || "") === "59" || String(row.senku || "") === "60"))
 				.map((row) => parse_train_name(row.name).baseName)
 				.filter(Boolean)
 		));

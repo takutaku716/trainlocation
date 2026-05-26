@@ -108,6 +108,37 @@ $(function ($) {
 			$("#cbangoIcon").removeClass("hide");
 			$("#cbangoDetail").removeClass("hide");
 
+			if (dataset.source === "jreast" || dataset.source === "dokotre" || dataset.source === "jrshinkansen") {
+				$("#unkouDetailMain").hide();
+				$.getJSON("./original/location_master" + (lang === "ja" ? "" : "_" + lang) + ".json?" + now)
+					.done(function(posNameMasterBase) {
+						const posKey = String(dataset.pos || "").trim();
+						$("#posDetailText").text(posNameMasterBase[posKey] || dataset.pos_name || posKey || "");
+						$("#aisho").text(dataset.aisho || dataset.ressha_type_name || "");
+						create_jreast_daiya(dataset);
+						$('#resshaDetailMessage').empty();
+						$('#resshaDetailMessage').hide();
+						$('#resshaDetailMain').show();
+						$("#resshaDetail").fadeIn("fast");
+						$("#teisyaTableArea").scrollTop(0);
+						loading_animation_hidden();
+					})
+					.fail(function() {
+						const posKey = String(dataset.pos || "").trim();
+						$("#posDetailText").text(dataset.pos_name || posKey || "");
+						$("#aisho").text(dataset.aisho || dataset.ressha_type_name || "");
+						create_jreast_daiya(dataset);
+						$('#resshaDetailMessage').empty();
+						$('#resshaDetailMessage').hide();
+						$('#resshaDetailMain').show();
+						$("#resshaDetail").fadeIn("fast");
+						$("#teisyaTableArea").scrollTop(0);
+						loading_animation_hidden();
+					});
+				set_scroll_hide($("#resshaDetail .dialog"));
+				return;
+			}
+
 			$.when(
 				$.getJSON("./original/location_master" + (lang === "ja" ? "" : "_" + lang) + ".json?" + now),
 				$.getJSON("https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/webunkou/json/master/eki_master.json?" + now),
@@ -198,6 +229,100 @@ $(function ($) {
 		location.hash = "rosen=" + rosen + "&cbango=" + cbango;
 	});
 });
+
+/*
+ * JR東日本形式の時刻表データを表示する
+ */
+function create_jreast_daiya(_dataset) {
+	$("#teisyaTableArea div").empty();
+	let timetable = [];
+	try {
+		const timetableText =
+			_dataset.source === "dokotre" ? _dataset.dokotre_timetable :
+			_dataset.source === "jrshinkansen" ? _dataset.jrshinkansen_timetable :
+			_dataset.jreast_timetable;
+		timetable = JSON.parse(timetableText || "[]");
+	} catch (_error) {
+		timetable = [];
+	}
+	timetable = unique_jreast_timetable_rows(timetable);
+
+	let lang = document.documentElement.dataset.lang;
+	const chien = Number(_dataset.chien || 0);
+	const hasDelay = chien > 0;
+	$("#teisyaTableArea .adjusted-notice").toggle(hasDelay);
+
+	if (!Array.isArray(timetable) || timetable.length < 1) return;
+
+	let html = "<table id='teisyaTable' border='1' width='80%'>";
+	if (hasDelay) {
+		if (lang == "ja") html += "<tr><th width='50%'>停車駅</th><th width='25%'>定刻</th><th width='25%'>遅延考慮</th></tr>";
+		if (lang == "en") html += "<tr><th width='50%'>Stops</th><th width='25%'>Scheduled time</th><th width='25%'>Adjusted</th></tr>";
+		if (lang == "tc") html += "<tr><th width='50%'>停靠站</th><th width='25%'>準點</th><th width='25%'>延遲後</th></tr>";
+		if (lang == "sc") html += "<tr><th width='50%'>停靠站</th><th width='25%'>准点</th><th width='25%'>晚点后</th></tr>";
+		if (lang == "kr") html += "<tr><th width='50%'>정차역</th><th width='25%'>통상 운행시각</th><th width='25%'>지연 반영</th></tr>";
+	} else {
+		if (lang == "ja") html += "<tr><th width='65%'>停車駅</th><th width='35%'>定刻</th></tr>";
+		if (lang == "en") html += "<tr><th width='65%'>Stops</th><th width='35%'>Scheduled time</th></tr>";
+		if (lang == "tc") html += "<tr><th width='65%'>停靠站</th><th width='35%'>準點</th></tr>";
+		if (lang == "sc") html += "<tr><th width='65%'>停靠站</th><th width='35%'>准点</th></tr>";
+		if (lang == "kr") html += "<tr><th width='65%'>정차역</th><th width='35%'>통상 운행시각</th></tr>";
+	}
+
+	timetable.forEach(function(row, index) {
+		if (row && row.note) {
+			html += "<tr><td colspan='" + (hasDelay ? "3" : "2") + "' align='center'>" + escape_detail_html(row.note) + "</td></tr>";
+			return;
+		}
+		const stationName = row && row.stationName ? row.stationName : "";
+		const time = select_jreast_daiya_time(row);
+		if (!stationName || !time) return;
+		const adjustedTime = calc_adjusted_time(time, chien);
+		const isLast = index == timetable.length - 1;
+		html += "<tr>";
+		html += "<td>" + escape_detail_html(stationName) + "</td>";
+		html += "<td align='center'>" + escape_detail_html(time) + " " + get_jreast_time_suffix(lang, isLast) + "</td>";
+		if (hasDelay) html += "<td align='center' style='color:#f00;font-weight:bold;'>" + escape_detail_html(adjustedTime) + " " + get_jreast_time_suffix(lang, isLast) + "</td>";
+		html += "</tr>";
+	});
+	html += "</table>";
+	$("#teisyaTableArea div").html(html);
+}
+
+function unique_jreast_timetable_rows(_timetable) {
+	const seen = new Set();
+	return (Array.isArray(_timetable) ? _timetable : []).filter(function(row) {
+		if (row && row.note) return true;
+		const stationName = row && row.stationName ? row.stationName : "";
+		const time = select_jreast_daiya_time(row);
+		const key = stationName;
+		if (!stationName || !time || seen.has(key)) return false;
+		seen.add(key);
+		return true;
+	});
+}
+
+function select_jreast_daiya_time(_row) {
+	if (!_row) return "";
+	return _row.planDeparture || _row.planArrival || _row.prospectDeparture || _row.prospectArrival || "";
+}
+
+function get_jreast_time_suffix(_lang, _isLast) {
+	if (_lang == "en") return _isLast ? "arr." : "dep.";
+	if (_lang == "tc") return _isLast ? "到" : "開";
+	if (_lang == "sc") return _isLast ? "到" : "开";
+	if (_lang == "kr") return _isLast ? "도착" : "출발";
+	return _isLast ? "着" : "発";
+}
+
+function escape_detail_html(_text) {
+	return String(_text || "")
+		.replace(/&/g, "&amp;")
+		.replace(/</g, "&lt;")
+		.replace(/>/g, "&gt;")
+		.replace(/"/g, "&quot;")
+		.replace(/'/g, "&#39;");
+}
 
 /*
  * ダイヤデータ作成

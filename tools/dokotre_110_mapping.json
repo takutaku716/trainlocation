@@ -1,0 +1,218 @@
+{
+	"dokotreId": "110",
+	"senku": "58",
+	"lineName": "秋田新幹線（田沢湖線）",
+	"stations": [
+		{
+			"name": "盛岡",
+			"down": "DT110P01D",
+			"up": "DT110P01U",
+			"stationId": "2221110240",
+			"hokkaidoKey": "919"
+		},
+		{
+			"name": "盛岡前潟",
+			"down": "DT110P02D",
+			"up": "DT110P02U"
+		},
+		{
+			"name": "前潟",
+			"down": "DT110P03D",
+			"up": "DT110P03U",
+			"stationId": "2221102015",
+			"hokkaidoKey": "1761"
+		},
+		{
+			"name": "前潟大釜",
+			"down": "DT110P04D",
+			"up": "DT110P04U"
+		},
+		{
+			"name": "大釜",
+			"down": "DT110P05D",
+			"up": "DT110P05U",
+			"stationId": "2221102020",
+			"hokkaidoKey": "0310"
+		},
+		{
+			"name": "大釜小岩井",
+			"down": "DT110P06D",
+			"up": "DT110P06U"
+		},
+		{
+			"name": "小岩井",
+			"down": "DT110P07D",
+			"up": "DT110P07U",
+			"stationId": "2221102030",
+			"hokkaidoKey": "0661"
+		},
+		{
+			"name": "小岩井雫石",
+			"down": "DT110P08D",
+			"up": "DT110P08U"
+		},
+		{
+			"name": "雫石",
+			"down": "DT110P09D",
+			"up": "DT110P09U",
+			"stationId": "2221102050",
+			"hokkaidoKey": "0782"
+		},
+		{
+			"name": "雫石春木場",
+			"down": "DT110P10D",
+			"up": "DT110P10U"
+		},
+		{
+			"name": "春木場",
+			"down": "DT110P11D",
+			"up": "DT110P11U",
+			"stationId": "2221102060",
+			"hokkaidoKey": "1260"
+		},
+		{
+			"name": "春木場赤渕",
+			"down": "DT110P12D",
+			"up": "DT110P12U"
+		},
+		{
+			"name": "赤渕",
+			"down": "DT110P13D",
+			"up": "DT110P13U",
+			"stationId": "2221102070",
+			"hokkaidoKey": "0035"
+		},
+		{
+			"name": "赤渕田沢湖",
+			"down": "DT110P14D",
+			"up": "DT110P14U"
+		},
+		{
+			"name": "田沢湖",
+			"down": "DT110P15D",
+			"up": "DT110P15U",
+			"stationId": "2221202010",
+			"hokkaidoKey": "0955"
+		},
+		{
+			"name": "田沢湖刺巻",
+			"down": "DT110P16D",
+			"up": "DT110P16U"
+		},
+		{
+			"name": "刺巻",
+			"down": "DT110P17D",
+			"up": "DT110P17U",
+			"stationId": "2221202020",
+			"hokkaidoKey": "0747"
+		},
+		{
+			"name": "刺巻神代",
+			"down": "DT110P18D",
+			"up": "DT110P18U"
+		},
+		{
+			"name": "神代",
+			"down": "DT110P19D",
+			"up": "DT110P19U",
+			"stationId": "2221202040",
+			"hokkaidoKey": "0872"
+		},
+		{
+			"name": "神代生田",
+			"down": "DT110P20D",
+			"up": "DT110P20U"
+		},
+		{
+			"name": "生田",
+			"down": "DT110P21D",
+			"up": "DT110P21U",
+			"stationId": "2221202050",
+			"hokkaidoKey": "0843"
+		},
+		{
+			"name": "生田角館",
+			"down": "DT110P22D",
+			"up": "DT110P22U"
+		},
+		{
+			"name": "角館",
+			"down": "DT110P23D",
+			"up": "DT110P23U",
+			"stationId": "2221202060",
+			"hokkaidoKey": "0421"
+		},
+		{
+			"name": "角館鶯野",
+			"down": "DT110P24D",
+			"up": "DT110P24U"
+		},
+		{
+			"name": "鶯野",
+			"down": "DT110P25D",
+			"up": "DT110P25U",
+			"stationId": "2221202070",
+			"hokkaidoKey": "0210"
+		},
+		{
+			"name": "鶯野羽後長野",
+			"down": "DT110P26D",
+			"up": "DT110P26U"
+		},
+		{
+			"name": "羽後長野",
+			"down": "DT110P27D",
+			"up": "DT110P27U",
+			"stationId": "2221202080",
+			"hokkaidoKey": "0217"
+		},
+		{
+			"name": "羽後長野鑓見内",
+			"down": "DT110P28D",
+			"up": "DT110P28U"
+		},
+		{
+			"name": "鑓見内",
+			"down": "DT110P29D",
+			"up": "DT110P29U",
+			"stationId": "2221202090",
+			"hokkaidoKey": "1613"
+		},
+		{
+			"name": "鑓見内羽後四ッ屋",
+			"down": "DT110P30D",
+			"up": "DT110P30U"
+		},
+		{
+			"name": "羽後四ッ屋",
+			"down": "DT110P31D",
+			"up": "DT110P31U",
+			"stationId": "2221202100",
+			"hokkaidoKey": "0219"
+		},
+		{
+			"name": "羽後四ッ屋北大曲",
+			"down": "DT110P32D",
+			"up": "DT110P32U"
+		},
+		{
+			"name": "北大曲",
+			"down": "DT110P33D",
+			"up": "DT110P33U",
+			"stationId": "2221202110",
+			"hokkaidoKey": "0557"
+		},
+		{
+			"name": "北大曲大曲",
+			"down": "DT110P34D",
+			"up": "DT110P34U"
+		},
+		{
+			"name": "大曲",
+			"down": "DT110P35D",
+			"up": "DT110P35U",
+			"stationId": "2221208470",
+			"hokkaidoKey": "0346"
+		}
+	]
+}

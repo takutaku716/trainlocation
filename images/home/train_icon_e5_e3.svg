@@ -1,0 +1,21 @@
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 100 100">
+<defs>
+	<path id="trainBody" d="M 23 16 a 20 7 0 1 1 54 0 L77, 59 L74, 59 L74, 66 L73, 67 L60, 67 L60, 71 L58, 71 L58, 67 L42, 67 L42, 71 L40, 71 L40, 67 L28, 67 L27, 67 L26, 66 L26, 59 L23, 59 L23, 21 L23, 16"/>
+	<clipPath id="trainBodyClip"><use href="#trainBody"/></clipPath>
+	<clipPath id="leftHalfClip"><rect x="0" y="0" width="50" height="100"/></clipPath>
+	<clipPath id="rightHalfClip"><rect x="50" y="0" width="50" height="100"/></clipPath>
+</defs>
+<g clip-path="url(#trainBodyClip)">
+	<g clip-path="url(#leftHalfClip)">
+		<rect x="0" y="0" width="100" height="48" fill="#35BEC3"/>
+		<rect x="0" y="48" width="100" height="5" fill="#E0448B"/>
+		<rect x="0" y="53" width="100" height="47" fill="#E8E8E8"/>
+	</g>
+	<g clip-path="url(#rightHalfClip)">
+		<rect x="0" y="0" width="100" height="46" fill="#E8E8E8"/>
+		<rect x="0.24783148" y="45.008675" width="102.23048" height="7.4151187" fill="#05b45b"/>
+		<rect x="0.12391574" y="52.175961" width="99.876083" height="47.824039" fill="#53635a"/>
+	</g>
+</g>
+<use href="#trainBody" fill="none" stroke="#444444" stroke-width="2"/>
+</svg>

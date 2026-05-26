@@ -105,6 +105,12 @@ function showTrainDetailDialog(target, train, isError) {
 			// 列車種別名を取得する。
 			const resshaTypeInfo = resshaTypeMaster.find(ressha => ressha.type == type);
 			const typeLabel = $(dialog).find(".type-label");
+			if (train && train.typeLabel) {
+				typeLabel.attr("data-type", type);
+				typeLabel.text(train.typeLabel);
+				typeLabel.removeClass("hide");
+				return;
+			}
 			// 未走行列車の検索結果から開く詳細ダイアログでは、種別は主要なものだけ文字表示する。
 			if (!resshaTypeInfo) {
 				typeLabel.attr("data-type", "0");
