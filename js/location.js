@@ -3202,6 +3202,7 @@ function load_train_search_data() {
 					"shuEkiKey": train.shuEkiKey || "",
 					"senku": train.senku || ""
 				} : undefined);
+				if (is_hidden_train_search_shinkansen(train.senku || train.sourceRosen || entry.rosen || (daiya ? daiya.senku : ""))) return;
 				const nameInfo = parse_train_name(daiya && daiya.name ? daiya.name : "");
 				const displayName = build_train_search_display_name(train, daiya, typeData, ekiData);
 				const targetRosen = normalizeMergedRosen(entry.rosen, nameInfo.baseName || displayName);
@@ -3225,6 +3226,7 @@ function load_train_search_data() {
 		});
 		daiyaMap.forEach((daiya, cbangoKey) => {
 			const cbango = String(cbangoKey).toUpperCase();
+			if (is_hidden_train_search_shinkansen(daiya && daiya.senku)) return;
 			if (trainMap.has(cbango)) return;
 			const nameInfo = parse_train_name(daiya && daiya.name ? daiya.name : "");
 			const expressNow = expressNowMap.get(cbango);
@@ -3292,7 +3294,7 @@ function load_train_search_data() {
 		));
 		const shinkansenNames = Array.from(new Set(
 			Array.from(daiyaMap.values())
-				.filter((row) => row && (String(row.senku || "") === "19" || String(row.senku || "") === "59" || String(row.senku || "") === "60"))
+				.filter((row) => row && String(row.senku || "") === "19")
 				.map((row) => parse_train_name(row.name).baseName)
 				.filter(Boolean)
 		));
@@ -3361,6 +3363,11 @@ function build_train_search_display_name(train, daiya, typeData, ekiData) {
 	if (displayName) return displayName;
 	if (daiya && daiya.name) return (daiya.name + destText).trim();
 	return String(train.cbango || "");
+}
+
+function is_hidden_train_search_shinkansen(senku) {
+	const value = String(senku || "");
+	return value === "59" || value === "60";
 }
 
 function get_train_search_current_section(train, locationMasterData) {
