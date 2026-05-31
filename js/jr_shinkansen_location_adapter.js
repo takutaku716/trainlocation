@@ -251,6 +251,7 @@
 						rawTrainNumber: trainNumber,
 						track: rawTrain.track || "",
 						sot: rawTrain.sot || "",
+						startingStation: getCentralStartingStationId(rawTrain, centralTrainInfoMap),
 						terminalStation: getCentralTerminalStationId(rawTrain, centralTrainInfoMap),
 						timetable: timetable
 					}
@@ -270,6 +271,14 @@
 		if (trainRows.length < 1) return "";
 		const terminal = trainRows[0].terminalStation || {};
 		return terminal.station ? String(terminal.station) : "";
+	}
+
+	function getCentralStartingStationId(rawTrain, centralTrainInfoMap) {
+		const trainInfo = centralTrainInfoMap[getCentralTrainInfoKey(rawTrain)];
+		const trainRows = trainInfo && trainInfo.trainInfo && Array.isArray(trainInfo.trainInfo.trains) ? trainInfo.trainInfo.trains : [];
+		if (trainRows.length < 1) return "";
+		const starting = trainRows[0].startingStation || {};
+		return starting.station ? String(starting.station) : "";
 	}
 
 	function getCentralTrainInfoKey(rawTrain) {

@@ -1124,9 +1124,10 @@ function collect_jr_shinkansen_kyushu_timetable_train_numbers(source, normalized
 			return;
 		}
 		const jr = train.jrShinkansen;
+		const startingStation = Number(jr.startingStation || 0);
 		const terminalStation = Number(jr.terminalStation || 0);
 		const pos = String(train.pos || "");
-		if (jr.source === "kyushu" || /^JQ01P/.test(pos) || (terminalStation >= 46 && terminalStation <= 56)) {
+		if (jr.source === "kyushu" || /^JQ01P/.test(pos) || (startingStation >= 46 && startingStation <= 56) || (terminalStation >= 46 && terminalStation <= 56)) {
 			trainNumbers.add(String(train.cbango));
 		}
 	});
