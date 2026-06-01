@@ -297,17 +297,48 @@ function set_unko_info(_param_rosen) {
 }
 
 function set_jr_shinkansen_unko_info(_param_rosen, _now, _lang) {
-	if (String(_param_rosen || "") !== "59") return false;
+	const rosen = String(_param_rosen || "");
+	if (rosen !== "59" && rosen !== "60") return false;
 	const areaName = "\u65b0\u5e79\u7dda";
 
-	Promise.all([
-		get_jr_shinkansen_notice_promise(get_jr_central_shinkansen_unko_info_request(_now), get_jr_central_shinkansen_notice_list),
-		get_jr_shinkansen_notice_promise(get_jr_west_shinkansen_unko_info_request(_now), get_jr_west_shinkansen_notice_list)
-	]).then((noticeGroups) => {
-			const groups = [
-				{ "name": "\u6771\u6d77\u9053\u65b0\u5e79\u7dda", "notices": noticeGroups[0], "converter": convert_jr_central_shinkansen_notice_gaikyo },
-				{ "name": "\u5c71\u967d\u65b0\u5e79\u7dda", "notices": noticeGroups[1], "converter": convert_jr_west_shinkansen_notice_gaikyo }
-			];
+	const groupLoaders = rosen === "60" ? [
+		{
+			"name": "\u897f\u4e5d\u5dde\u65b0\u5e79\u7dda",
+			"request": get_jr_kyushu_shinkansen_unko_info_request(_now),
+			"parser": (data) => get_jr_kyushu_shinkansen_notice_list(data, "Nishi-Kyushu-Shinkansen", "\u897f\u4e5d\u5dde\u65b0\u5e79\u7dda"),
+			"converter": convert_jr_kyushu_shinkansen_notice_gaikyo
+		}
+	] : [
+		{
+			"name": "\u6771\u6d77\u9053\u65b0\u5e79\u7dda",
+			"request": get_jr_central_shinkansen_unko_info_request(_now),
+			"parser": get_jr_central_shinkansen_notice_list,
+			"converter": convert_jr_central_shinkansen_notice_gaikyo
+		},
+		{
+			"name": "\u5c71\u967d\u65b0\u5e79\u7dda",
+			"request": get_jr_west_shinkansen_unko_info_request(_now),
+			"parser": get_jr_west_shinkansen_notice_list,
+			"converter": convert_jr_west_shinkansen_notice_gaikyo
+		},
+		{
+			"name": "\u4e5d\u5dde\u65b0\u5e79\u7dda",
+			"request": get_jr_kyushu_shinkansen_unko_info_request(_now),
+			"parser": (data) => get_jr_kyushu_shinkansen_notice_list(data, "Kyushu-Shinkansen", "\u4e5d\u5dde\u65b0\u5e79\u7dda"),
+			"converter": convert_jr_kyushu_shinkansen_notice_gaikyo
+		}
+	];
+
+	Promise.all(groupLoaders.map((group) => {
+		return get_jr_shinkansen_notice_promise(group.request, group.parser);
+	})).then((noticeGroups) => {
+			const groups = groupLoaders.map((group, index) => {
+				return {
+					"name": group.name,
+					"notices": noticeGroups[index],
+					"converter": group.converter
+				};
+			});
 			const activeGroups = groups.filter((group) => group.notices.length > 0);
 			if (activeGroups.length < 1) {
 				$("#unkouInfo").hide();
@@ -359,11 +390,46 @@ function get_jr_west_shinkansen_unko_info_request(now) {
 	return $.getJSON(remoteUrl);
 }
 
+function get_jr_kyushu_shinkansen_unko_info_request(now) {
+	const remoteUrl = "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www.jrkyushu.co.jp/trains/info/data/IDS2Web.xml?" + now;
+	return $.ajax({
+		"url": remoteUrl,
+		"type": "GET",
+		"dataType": "xml",
+		"timeout": 5000
+	});
+}
+
 function get_jr_central_shinkansen_notice_list(data) {
 	const notices = data && data.screen && Array.isArray(data.screen.noticeList) ? data.screen.noticeList : [];
 	return notices.filter((notice) => {
 		return get_dokotre_text(notice && notice.noticeTitle) || get_dokotre_text(notice && notice.contents);
 	});
+}
+
+function get_jr_kyushu_shinkansen_notice_list(data, targetAreaName, displayAreaName) {
+	const xmlData = typeof data === "string" ? $.parseXML(data) : data;
+	const target = $(xmlData).find("aif").filter(function() {
+		return $(this).children("nm").first().text() === targetAreaName;
+	}).first();
+	if (target.length < 1 || target.children("sts").first().text() !== "1") return [];
+
+	const notices = [];
+	target.children("eif").each(function() {
+		const row = $(this);
+		const text = row.children("txt").first().text();
+		if (!text) return;
+		const lineNames = row.children("lin").map(function() {
+			return $(this).children("nm").first().text();
+		}).get().filter(Boolean);
+		notices.push({
+			"areaName": displayAreaName,
+			"lineName": lineNames.join("\u30fb"),
+			"time": row.children("time").first().text(),
+			"text": text
+		});
+	});
+	return notices;
 }
 
 function get_jr_west_shinkansen_notice_list(data) {
@@ -441,6 +507,25 @@ function convert_jr_central_shinkansen_notice_gaikyo(notice) {
 	};
 }
 
+function convert_jr_kyushu_shinkansen_notice_gaikyo(notice) {
+	const title = [
+		get_dokotre_text(notice && notice.areaName),
+		get_dokotre_text(notice && notice.lineName)
+	].filter(Boolean).join(" ");
+	return {
+		"time": format_jr_kyushu_shinkansen_notice_time(notice && notice.time),
+		"title": escape_dokotre_info_html(title),
+		"honbun": sanitize_jr_kyushu_shinkansen_notice_text(notice && notice.text),
+		"eikyo": {
+			"spo": 0,
+			"doo": 0,
+			"donan": 0,
+			"dohoku": 0,
+			"doto": 0
+		}
+	};
+}
+
 function convert_jr_west_shinkansen_notice_gaikyo(notice) {
 	const title = [
 		get_dokotre_text(notice && notice.lineName),
@@ -478,7 +563,8 @@ function get_jr_shinkansen_info_status(notices) {
 			get_dokotre_text(notice && notice.contents),
 			get_dokotre_text(notice && notice.supplementary),
 			get_dokotre_text(notice && notice.title),
-			get_dokotre_text(notice && notice.body)
+			get_dokotre_text(notice && notice.body),
+			get_dokotre_text(notice && notice.text)
 		].join(" ");
 	}).join(" ");
 	if (text.indexOf("\u904b\u8ee2\u898b\u5408") >= 0 || text.indexOf("\u898b\u5408\u308f\u305b") >= 0 || text.indexOf("\u904b\u4f11") >= 0) return "2";
@@ -500,6 +586,16 @@ function format_jr_west_shinkansen_notice_time(value) {
 		date.getDate().toString().padStart(2, "0") + "\u65e5 " +
 		date.getHours().toString().padStart(2, "0") + "\u6642" +
 		date.getMinutes().toString().padStart(2, "0") + "\u5206";
+}
+
+function format_jr_kyushu_shinkansen_notice_time(value) {
+	const text = get_dokotre_text(value);
+	if (!/^\d{12,14}$/.test(text)) return "";
+	return text.substring(0, 4) + "\u5e74" +
+		text.substring(4, 6) + "\u6708" +
+		text.substring(6, 8) + "\u65e5 " +
+		text.substring(8, 10) + "\u6642" +
+		text.substring(10, 12) + "\u5206\u66f4\u65b0";
 }
 
 function sanitize_jr_central_shinkansen_notice_html(contents, links) {
@@ -526,6 +622,10 @@ function sanitize_jr_central_shinkansen_notice_link(linkHtml) {
 }
 
 function sanitize_jr_west_shinkansen_notice_text(text) {
+	return escape_dokotre_info_html(get_dokotre_text(text)).replace(/\r?\n/g, "<br>");
+}
+
+function sanitize_jr_kyushu_shinkansen_notice_text(text) {
 	return escape_dokotre_info_html(get_dokotre_text(text)).replace(/\r?\n/g, "<br>");
 }
 
