@@ -5,6 +5,7 @@ function set_unko_info(_param_rosen) {
 	let now = Date.now() >>> 10;
 	let lang = document.documentElement.dataset.lang;
 	if (set_merged_unko_info(_param_rosen, now, lang)) return;
+	if (set_dokotre_unko_info(_param_rosen, now, lang)) return;
 
 	if (_param_rosen == "01" || _param_rosen == "02" || _param_rosen == "03") {
 		// 札幌近郊
@@ -292,6 +293,179 @@ function set_unko_info(_param_rosen) {
 	} else {
 		$("#unkouInfo").hide();
 	}
+}
+
+function set_dokotre_unko_info(_param_rosen, _now, _lang) {
+	const configMap = {
+		"57": {
+			"areaCode": "1",
+			"areaName": "\u5c71\u5f62\u65b0\u5e79\u7dda",
+			"items": [
+				{ "lineId": "902", "name": "\u5965\u7fbd\u672c\u7dda\uff08\u5c71\u5f62\u7dda\uff09", "filter": "yamagata" }
+			]
+		},
+		"58": {
+			"areaCode": "1",
+			"areaName": "\u79cb\u7530\u65b0\u5e79\u7dda",
+			"items": [
+				{ "lineId": "110", "name": "\u7530\u6ca2\u6e56\u7dda" },
+				{ "lineId": "902", "name": "\u5965\u7fbd\u672c\u7dda", "filter": "akita" }
+			]
+		}
+	};
+	const config = configMap[String(_param_rosen || "")];
+	if (!config) return false;
+
+	get_dokotre_delay_info_request(config.areaCode, _now)
+		.done((data) => {
+			const groupedItems = config.items.map((itemConfig) => {
+				const items = get_dokotre_delay_info_items(data, itemConfig.lineId)
+					.filter((item) => is_dokotre_delay_info_target(item, itemConfig.filter));
+				return Object.assign({}, itemConfig, { "items": items });
+			});
+			const gaikyoItems = groupedItems.reduce((list, group) => list.concat(group.items), []);
+
+			if (gaikyoItems.length < 1) {
+				$("#unkouInfo").hide();
+				return;
+			}
+
+			$("#unkouInfo").show();
+			$("#titleAreaName").text(config.areaName);
+			$("#senkuList").show();
+			$("#commonSenkuOperation").show();
+			$("#senkuListAreaName").text(config.areaName);
+			$("#gaikyoAreaName").text(config.areaName);
+			create_gaikyo(gaikyoItems.map(convert_dokotre_delay_info_gaikyo));
+
+			let html = "<ul>";
+			groupedItems.forEach((group) => {
+				html += create_dokotre_unko_list(group.name, group.items);
+			});
+			html += "</ul>";
+			$("#commonSenkuOperation").html(html);
+		})
+		.fail(() => {
+			$("#unkouInfo").hide();
+		});
+
+	return true;
+}
+
+function get_dokotre_delay_info_request(areaCode, now) {
+	const remoteUrl = "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://doko-train.jp/json/trainstatus/delay_info/" + areaCode + "/delay_info.json?" + now;
+	if (typeof get_testable_json_request === "function" && typeof get_test_urls === "function") {
+		return get_testable_json_request(get_test_urls("dokotre/delay_info_" + areaCode + ".json?" + now), remoteUrl);
+	}
+	return $.getJSON(remoteUrl);
+}
+
+function get_dokotre_delay_info_items(data, lineId) {
+	const lineInfo = data && Array.isArray(data.LINE_INFO) ? data.LINE_INFO[0] : null;
+	const rows = lineInfo && lineInfo[String(lineId)] ? lineInfo[String(lineId)] : [];
+	return Array.isArray(rows) ? rows : [];
+}
+
+function is_dokotre_delay_info_target(item, filter) {
+	if (!filter) return true;
+	const lineName = get_dokotre_text(item && item.LINE_NAME);
+	const text = [
+		lineName,
+		get_dokotre_text(item && item.TEXT),
+		get_dokotre_text(item && item.FROM),
+		get_dokotre_text(item && item.TO)
+	].join(" ");
+	if (filter === "yamagata") {
+		if (lineName.indexOf("\u5c71\u5f62\u7dda") >= 0) return true;
+		return contains_any_dokotre_word(text, [
+			"\u798f\u5cf6", "\u7b39\u6728\u91ce", "\u5ead\u5742", "\u677f\u8c37", "\u5ce0", "\u5927\u6ca2", "\u95a2\u6839", "\u7c73\u6ca2",
+			"\u7f6e\u8cdc", "\u9ad8\u7551", "\u8d64\u6e6f", "\u4e2d\u5ddd", "\u7fbd\u524d\u4e2d\u5c71", "\u304b\u307f\u306e\u3084\u307e\u6e29\u6cc9",
+			"\u8302\u5409\u8a18\u5ff5\u9928\u524d", "\u8535\u738b", "\u5c71\u5f62", "\u5317\u5c71\u5f62", "\u7fbd\u524d\u5343\u6b73",
+			"\u5357\u51fa\u7fbd", "\u6f06\u5c71", "\u9ad8\u64c1", "\u5929\u7ae5", "\u4e71\u5ddd", "\u795e\u753a", "\u3055\u304f\u3089\u3093\u307c\u6771\u6839",
+			"\u6771\u6839", "\u6751\u5c71", "\u8896\u5d0e", "\u5927\u77f3\u7530", "\u5317\u5927\u77f3\u7530", "\u82a6\u6ca2", "\u821f\u5f62", "\u65b0\u5e84"
+		]);
+	}
+	if (filter === "akita") {
+		if (lineName.indexOf("\u5c71\u5f62\u7dda") >= 0) return false;
+		return contains_any_dokotre_word(text, [
+			"\u5927\u66f2", "\u795e\u5bae\u5bfa", "\u5208\u548c\u91ce", "\u5cf0\u5409\u5ddd", "\u7fbd\u5f8c\u5883",
+			"\u548c\u7530", "\u56db\u30c4\u5c0f\u5c4b", "\u79cb\u7530", "\u516b\u90ce\u6f5f", "\u8ffd\u5206"
+		]);
+	}
+	return true;
+}
+
+function contains_any_dokotre_word(text, words) {
+	return words.some((word) => text.indexOf(word) >= 0);
+}
+
+function convert_dokotre_delay_info_gaikyo(item) {
+	return {
+		"time": format_dokotre_delay_info_time(item && item.UPDATED),
+		"title": [get_dokotre_text(item && item.LINE_NAME), get_dokotre_text(item && item.STATUS)].filter(Boolean).join(" "),
+		"honbun": get_dokotre_text(item && item.TEXT),
+		"eikyo": {
+			"spo": 0,
+			"doo": 0,
+			"donan": 0,
+			"dohoku": 0,
+			"doto": 0
+		}
+	};
+}
+
+function create_dokotre_unko_list(name, items) {
+	const status = get_dokotre_info_status(items);
+	let html = "<li>";
+	html += "<div class='common-button'>";
+	html += "<span class='name'>" + escape_dokotre_info_html(name) + "</span>";
+	html += "<img class='unkou-icon' alt='' src='" + get_dokotre_info_icon(status) + "'/>";
+	html += "</div>";
+	html += "</li>";
+	return html;
+}
+
+function get_dokotre_info_status(items) {
+	if (!Array.isArray(items) || items.length < 1) return "0";
+	if (items.some((item) => {
+		const status = get_dokotre_text(item && item.STATUS);
+		return status.indexOf("\u904b\u4f11") >= 0 || status.indexOf("\u898b\u5408") >= 0;
+	})) return "2";
+	return "1";
+}
+
+function get_dokotre_info_icon(status) {
+	if (status === "2") return "./images/home/03.svg";
+	if (status === "1") return "./images/home/02.svg";
+	return "./images/home/01.svg";
+}
+
+function format_dokotre_delay_info_time(value) {
+	const date = new Date(String(value || "").replace(/-/g, "/"));
+	if (Number.isNaN(date.getTime())) return "";
+	const lang = document.documentElement.dataset.lang;
+	if (lang === "en") {
+		return (date.getMonth() + 1).toString().padStart(2, "0") + "/" +
+			date.getDate().toString().padStart(2, "0") + " " +
+			date.getHours().toString().padStart(2, "0") + ":" +
+			date.getMinutes().toString().padStart(2, "0");
+	}
+	return date.getDate().toString().padStart(2, "0") + "\u65e5 " +
+		date.getHours().toString().padStart(2, "0") + "\u6642" +
+		date.getMinutes().toString().padStart(2, "0") + "\u5206";
+}
+
+function get_dokotre_text(value) {
+	return value === null || typeof value === "undefined" ? "" : String(value);
+}
+
+function escape_dokotre_info_html(text) {
+	return String(text || "")
+		.replace(/&/g, "&amp;")
+		.replace(/</g, "&lt;")
+		.replace(/>/g, "&gt;")
+		.replace(/"/g, "&quot;")
+		.replace(/'/g, "&#39;");
 }
 
 function set_merged_unko_info(_param_rosen, _now, _lang) {
