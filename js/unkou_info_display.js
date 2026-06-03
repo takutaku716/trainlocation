@@ -5,6 +5,8 @@ function set_unko_info(_param_rosen) {
 	let now = Date.now() >>> 10;
 	let lang = document.documentElement.dataset.lang;
 	if (set_merged_unko_info(_param_rosen, now, lang)) return;
+	if (set_dokotre_unko_info(_param_rosen, now, lang)) return;
+	if (set_jr_shinkansen_unko_info(_param_rosen, now, lang)) return;
 
 	if (_param_rosen == "01" || _param_rosen == "02" || _param_rosen == "03") {
 		// 札幌近郊
@@ -292,6 +294,532 @@ function set_unko_info(_param_rosen) {
 	} else {
 		$("#unkouInfo").hide();
 	}
+}
+
+function set_jr_shinkansen_unko_info(_param_rosen, _now, _lang) {
+	const rosen = String(_param_rosen || "");
+	if (rosen !== "59" && rosen !== "60") return false;
+	const areaName = "\u65b0\u5e79\u7dda";
+
+	const groupLoaders = rosen === "60" ? [
+		{
+			"name": "\u897f\u4e5d\u5dde\u65b0\u5e79\u7dda",
+			"request": get_jr_kyushu_shinkansen_unko_info_request(_now),
+			"parser": (data) => get_jr_kyushu_shinkansen_notice_list(data, "Nishi-Kyushu-Shinkansen", "\u897f\u4e5d\u5dde\u65b0\u5e79\u7dda"),
+			"converter": convert_jr_kyushu_shinkansen_notice_gaikyo
+		}
+	] : [
+		{
+			"name": "\u6771\u6d77\u9053\u65b0\u5e79\u7dda",
+			"request": get_jr_central_shinkansen_unko_info_request(_now),
+			"parser": get_jr_central_shinkansen_notice_list,
+			"converter": convert_jr_central_shinkansen_notice_gaikyo
+		},
+		{
+			"name": "\u5c71\u967d\u65b0\u5e79\u7dda",
+			"request": get_jr_west_shinkansen_unko_info_request(_now),
+			"parser": get_jr_west_shinkansen_notice_list,
+			"converter": convert_jr_west_shinkansen_notice_gaikyo
+		},
+		{
+			"name": "\u4e5d\u5dde\u65b0\u5e79\u7dda",
+			"request": get_jr_kyushu_shinkansen_unko_info_request(_now),
+			"parser": (data) => get_jr_kyushu_shinkansen_notice_list(data, "Kyushu-Shinkansen", "\u4e5d\u5dde\u65b0\u5e79\u7dda"),
+			"converter": convert_jr_kyushu_shinkansen_notice_gaikyo
+		}
+	];
+
+	Promise.all(groupLoaders.map((group) => {
+		return get_jr_shinkansen_notice_promise(group.request, group.parser);
+	})).then((noticeGroups) => {
+			const groups = groupLoaders.map((group, index) => {
+				return {
+					"name": group.name,
+					"notices": noticeGroups[index],
+					"converter": group.converter
+				};
+			});
+			const activeGroups = groups.filter((group) => group.notices.length > 0);
+			if (activeGroups.length < 1) {
+				$("#unkouInfo").hide();
+				return;
+			}
+
+			$("#unkouInfo").show();
+			$("#titleAreaName").text(areaName);
+			$("#senkuList").show();
+			$("#commonSenkuOperation").show();
+			$("#senkuListAreaName").text(areaName);
+			$("#gaikyoAreaName").text(areaName);
+			create_gaikyo(activeGroups.reduce((list, group) => {
+				return list.concat(group.notices.map(group.converter));
+			}, []));
+
+			let html = "<ul>";
+			activeGroups.forEach((group) => {
+				html += create_jr_shinkansen_unko_list(group.name, group.notices);
+			});
+			html += "</ul>";
+			$("#commonSenkuOperation").html(html);
+		});
+
+	return true;
+}
+
+function get_jr_shinkansen_notice_promise(request, parser) {
+	return new Promise((resolve) => {
+		request
+			.done((data) => resolve(parser(data)))
+			.fail(() => resolve([]));
+	});
+}
+
+function get_jr_central_shinkansen_unko_info_request(now) {
+	const remoteUrl = "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://traininfo.jr-central.co.jp/shinkansen/var/train_info/ti01_ja.json?" + now;
+	if (typeof get_testable_json_request === "function" && typeof get_test_urls === "function") {
+		return get_testable_json_request(get_test_urls("jr_central/ti01_ja.json?" + now), remoteUrl);
+	}
+	return $.getJSON(remoteUrl);
+}
+
+function get_jr_west_shinkansen_unko_info_request(now) {
+	const remoteUrl = "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://trafficinfo.westjr.co.jp/api/v1/trafficinfo.json?" + now;
+	if (typeof get_testable_json_request === "function" && typeof get_test_urls === "function") {
+		return get_testable_json_request(get_test_urls("jr_west/trafficinfo.json?" + now), remoteUrl);
+	}
+	return $.getJSON(remoteUrl);
+}
+
+function get_jr_kyushu_shinkansen_unko_info_request(now) {
+	const remoteUrl = "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www.jrkyushu.co.jp/trains/info/data/IDS2Web.xml?" + now;
+	return $.ajax({
+		"url": remoteUrl,
+		"type": "GET",
+		"dataType": "xml",
+		"timeout": 5000
+	});
+}
+
+function get_jr_central_shinkansen_notice_list(data) {
+	const notices = data && data.screen && Array.isArray(data.screen.noticeList) ? data.screen.noticeList : [];
+	const screenMessage = get_jr_central_shinkansen_screen_message_notice(data && data.screen && data.screen.message);
+	return (screenMessage ? [screenMessage] : []).concat(notices).filter((notice) => {
+		return get_dokotre_text(notice && notice.noticeTitle) || get_dokotre_text(notice && notice.contents);
+	});
+}
+
+function get_jr_central_shinkansen_screen_message_notice(message) {
+	const html = get_dokotre_text(message).trim();
+	if (!html) return null;
+	const parts = html.split(/<br\s*\/?>/i);
+	const title = get_jr_central_shinkansen_plain_text(parts.shift() || "");
+	const contents = parts.join("<br>");
+	return {
+		"noticeTitle": title || "\u6771\u6d77\u9053\u65b0\u5e79\u7dda",
+		"contents": contents || html,
+		"links": []
+	};
+}
+
+function get_jr_central_shinkansen_plain_text(html) {
+	const wrapper = document.createElement("div");
+	wrapper.innerHTML = html;
+	return wrapper.textContent || wrapper.innerText || "";
+}
+
+function get_jr_kyushu_shinkansen_notice_list(data, targetAreaName, displayAreaName) {
+	const xmlData = typeof data === "string" ? $.parseXML(data) : data;
+	const target = $(xmlData).find("aif").filter(function() {
+		return $(this).children("nm").first().text() === targetAreaName;
+	}).first();
+	if (target.length < 1 || target.children("sts").first().text() !== "1") return [];
+
+	const notices = [];
+	target.children("eif").each(function() {
+		const row = $(this);
+		const text = row.children("txt").first().text();
+		if (!text) return;
+		const lineNames = row.children("lin").map(function() {
+			return $(this).children("nm").first().text();
+		}).get().filter(Boolean);
+		notices.push({
+			"areaName": displayAreaName,
+			"lineName": lineNames.join("\u30fb"),
+			"time": row.children("time").first().text(),
+			"text": text
+		});
+	});
+	return notices;
+}
+
+function get_jr_west_shinkansen_notice_list(data) {
+	const area = data && Array.isArray(data.areaTrafficInfos) ? data.areaTrafficInfos.find((row) => Number(row && row.id) === 4) : null;
+	const today = area && Array.isArray(area.dailyData) ? area.dailyData[0] : null;
+	const places = today && Array.isArray(today.placeTrafficInfos) ? today.placeTrafficInfos : [];
+	const notices = [];
+	places.forEach((place) => {
+		if (Array.isArray(place.noEffectLineTrafficInfos)) {
+			place.noEffectLineTrafficInfos.forEach((row) => {
+				const detail = get_jr_west_latest_version_detail(row && row.versionDetail);
+				if (!detail) return;
+				notices.push({
+					"lineName": "\u5c71\u967d\u65b0\u5e79\u7dda",
+					"iconType": "0000",
+					"cause": row && row.cause,
+					"supplementary": row && row.supplementary,
+					"updatedAt": detail.updatedAt || row.publicationDate,
+					"title": detail.title,
+					"body": detail.body
+				});
+			});
+		}
+		if (Array.isArray(place.shinkansenTrafficInfos)) {
+			place.shinkansenTrafficInfos.forEach((line) => {
+				const lineName = get_jr_west_shinkansen_line_name(data, line && line.id) || "\u5c71\u967d\u65b0\u5e79\u7dda";
+				const details = Array.isArray(line && line.shinkansenTrafficInfoDetails) ? line.shinkansenTrafficInfoDetails : [];
+				details.forEach((row) => {
+					const detail = get_jr_west_latest_version_detail(row && row.versionDetail);
+					if (!detail) return;
+					notices.push({
+						"lineName": lineName,
+						"iconType": row && row.iconType,
+						"cause": row && row.cause,
+						"supplementary": row && row.supplementary,
+						"updatedAt": detail.updatedAt || row.publicationDate,
+						"title": detail.title,
+						"body": detail.body
+					});
+				});
+			});
+		}
+	});
+	return notices.filter((notice) => get_dokotre_text(notice.title) || get_dokotre_text(notice.body));
+}
+
+function get_jr_west_latest_version_detail(details) {
+	if (!Array.isArray(details) || details.length < 1) return null;
+	return details[0];
+}
+
+function get_jr_west_shinkansen_line_name(data, lineId) {
+	const area = data && data.masterData && Array.isArray(data.masterData.areas) ? data.masterData.areas.find((row) => Number(row && row.id) === 4) : null;
+	if (!area || !Array.isArray(area.places)) return "";
+	for (const place of area.places) {
+		if (!Array.isArray(place.lines)) continue;
+		const line = place.lines.find((row) => String(row && row.id) === String(lineId));
+		if (line) return line.name || "";
+	}
+	return "";
+}
+
+function convert_jr_central_shinkansen_notice_gaikyo(notice) {
+	return {
+		"time": get_jr_central_shinkansen_notice_time(notice && notice.noticeTitle),
+		"title": escape_dokotre_info_html(get_dokotre_text(notice && notice.noticeTitle)),
+		"honbun": sanitize_jr_central_shinkansen_notice_html(notice && notice.contents, notice && notice.links),
+		"eikyo": {
+			"spo": 0,
+			"doo": 0,
+			"donan": 0,
+			"dohoku": 0,
+			"doto": 0
+		}
+	};
+}
+
+function convert_jr_kyushu_shinkansen_notice_gaikyo(notice) {
+	const title = [
+		get_dokotre_text(notice && notice.areaName),
+		get_dokotre_text(notice && notice.lineName)
+	].filter(Boolean).join(" ");
+	return {
+		"time": format_jr_kyushu_shinkansen_notice_time(notice && notice.time),
+		"title": escape_dokotre_info_html(title),
+		"honbun": sanitize_jr_kyushu_shinkansen_notice_text(notice && notice.text),
+		"eikyo": {
+			"spo": 0,
+			"doo": 0,
+			"donan": 0,
+			"dohoku": 0,
+			"doto": 0
+		}
+	};
+}
+
+function convert_jr_west_shinkansen_notice_gaikyo(notice) {
+	const title = [
+		get_dokotre_text(notice && notice.lineName),
+		get_dokotre_text(notice && notice.supplementary) || get_dokotre_text(notice && notice.title)
+	].filter(Boolean).join(" ");
+	return {
+		"time": format_jr_west_shinkansen_notice_time(notice && notice.updatedAt),
+		"title": escape_dokotre_info_html(title),
+		"honbun": sanitize_jr_west_shinkansen_notice_text(notice && notice.body),
+		"eikyo": {
+			"spo": 0,
+			"doo": 0,
+			"donan": 0,
+			"dohoku": 0,
+			"doto": 0
+		}
+	};
+}
+
+function create_jr_shinkansen_unko_list(name, notices) {
+	const status = get_jr_shinkansen_info_status(notices);
+	let html = "<li>";
+	html += "<div class='common-button'>";
+	html += "<span class='name'>" + escape_dokotre_info_html(name) + "</span>";
+	html += "<img class='unkou-icon' alt='' src='" + get_dokotre_info_icon(status) + "'/>";
+	html += "</div>";
+	html += "</li>";
+	return html;
+}
+
+function get_jr_shinkansen_info_status(notices) {
+	const text = (Array.isArray(notices) ? notices : []).map((notice) => {
+		return [
+			get_dokotre_text(notice && notice.noticeTitle),
+			get_dokotre_text(notice && notice.contents),
+			get_dokotre_text(notice && notice.supplementary),
+			get_dokotre_text(notice && notice.title),
+			get_dokotre_text(notice && notice.body),
+			get_dokotre_text(notice && notice.text)
+		].join(" ");
+	}).join(" ");
+	if (text.indexOf("\u904b\u8ee2\u898b\u5408") >= 0 || text.indexOf("\u898b\u5408\u308f\u305b") >= 0 || text.indexOf("\u904b\u4f11") >= 0) return "2";
+	return "1";
+}
+
+function get_jr_central_shinkansen_notice_time(title) {
+	const text = get_dokotre_text(title);
+	const match = text.match(/(\d{1,2})\u6708(\d{1,2})\u65e5(\d{1,2})\u6642(\d{1,2})\u5206/);
+	if (!match) return "";
+	return match[1].padStart(2, "0") + "\u6708" + match[2].padStart(2, "0") + "\u65e5 " +
+		match[3].padStart(2, "0") + "\u6642" + match[4].padStart(2, "0") + "\u5206";
+}
+
+function format_jr_west_shinkansen_notice_time(value) {
+	const date = new Date(String(value || ""));
+	if (Number.isNaN(date.getTime())) return "";
+	return (date.getMonth() + 1).toString().padStart(2, "0") + "\u6708" +
+		date.getDate().toString().padStart(2, "0") + "\u65e5 " +
+		date.getHours().toString().padStart(2, "0") + "\u6642" +
+		date.getMinutes().toString().padStart(2, "0") + "\u5206";
+}
+
+function format_jr_kyushu_shinkansen_notice_time(value) {
+	const text = get_dokotre_text(value);
+	if (!/^\d{12,14}$/.test(text)) return "";
+	return text.substring(0, 4) + "\u5e74" +
+		text.substring(4, 6) + "\u6708" +
+		text.substring(6, 8) + "\u65e5 " +
+		text.substring(8, 10) + "\u6642" +
+		text.substring(10, 12) + "\u5206\u66f4\u65b0";
+}
+
+function sanitize_jr_central_shinkansen_notice_html(contents, links) {
+	let html = escape_dokotre_info_html(get_dokotre_text(contents)).replace(/&lt;br\s*\/?&gt;/gi, "<br>");
+	if (Array.isArray(links) && links.length > 0) {
+		const safeLinks = links
+			.map((link) => sanitize_jr_central_shinkansen_notice_link(link))
+			.filter(Boolean);
+		if (safeLinks.length > 0) html += "<br><br>" + safeLinks.join("<br>");
+	}
+	return html;
+}
+
+function sanitize_jr_central_shinkansen_notice_link(linkHtml) {
+	const wrapper = document.createElement("div");
+	wrapper.innerHTML = get_dokotre_text(linkHtml);
+	const anchor = wrapper.querySelector("a");
+	if (!anchor) return "";
+	const href = anchor.getAttribute("href") || "";
+	if (!/^https:\/\/[^"\s]+$/i.test(href)) return "";
+	const text = anchor.textContent || href;
+	return "<a href='" + escape_dokotre_info_html(href) + "' target='_blank' rel='noopener noreferrer'>" +
+		escape_dokotre_info_html(text) + "</a>";
+}
+
+function sanitize_jr_west_shinkansen_notice_text(text) {
+	return escape_dokotre_info_html(get_dokotre_text(text)).replace(/\r?\n/g, "<br>");
+}
+
+function sanitize_jr_kyushu_shinkansen_notice_text(text) {
+	return escape_dokotre_info_html(get_dokotre_text(text)).replace(/\r?\n/g, "<br>");
+}
+
+function set_dokotre_unko_info(_param_rosen, _now, _lang) {
+	const configMap = {
+		"57": {
+			"areaCode": "1",
+			"areaName": "\u5c71\u5f62\u65b0\u5e79\u7dda",
+			"items": [
+				{ "lineId": "902", "name": "\u5965\u7fbd\u672c\u7dda\uff08\u5c71\u5f62\u7dda\uff09", "filter": "yamagata" }
+			]
+		},
+		"58": {
+			"areaCode": "1",
+			"areaName": "\u79cb\u7530\u65b0\u5e79\u7dda",
+			"items": [
+				{ "lineId": "110", "name": "\u7530\u6ca2\u6e56\u7dda" },
+				{ "lineId": "902", "name": "\u5965\u7fbd\u672c\u7dda", "filter": "akita" }
+			]
+		}
+	};
+	const config = configMap[String(_param_rosen || "")];
+	if (!config) return false;
+
+	get_dokotre_delay_info_request(config.areaCode, _now)
+		.done((data) => {
+			const groupedItems = config.items.map((itemConfig) => {
+				const items = get_dokotre_delay_info_items(data, itemConfig.lineId)
+					.filter((item) => is_dokotre_delay_info_target(item, itemConfig.filter));
+				return Object.assign({}, itemConfig, { "items": items });
+			});
+			const gaikyoItems = groupedItems.reduce((list, group) => list.concat(group.items), []);
+
+			if (gaikyoItems.length < 1) {
+				$("#unkouInfo").hide();
+				return;
+			}
+
+			$("#unkouInfo").show();
+			$("#titleAreaName").text(config.areaName);
+			$("#senkuList").show();
+			$("#commonSenkuOperation").show();
+			$("#senkuListAreaName").text(config.areaName);
+			$("#gaikyoAreaName").text(config.areaName);
+			create_gaikyo(gaikyoItems.map(convert_dokotre_delay_info_gaikyo));
+
+			let html = "<ul>";
+			groupedItems.forEach((group) => {
+				html += create_dokotre_unko_list(group.name, group.items);
+			});
+			html += "</ul>";
+			$("#commonSenkuOperation").html(html);
+		})
+		.fail(() => {
+			$("#unkouInfo").hide();
+		});
+
+	return true;
+}
+
+function get_dokotre_delay_info_request(areaCode, now) {
+	const remoteUrl = "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://doko-train.jp/json/trainstatus/delay_info/" + areaCode + "/delay_info.json?" + now;
+	if (typeof get_testable_json_request === "function" && typeof get_test_urls === "function") {
+		return get_testable_json_request(get_test_urls("dokotre/delay_info_" + areaCode + ".json?" + now), remoteUrl);
+	}
+	return $.getJSON(remoteUrl);
+}
+
+function get_dokotre_delay_info_items(data, lineId) {
+	const lineInfo = data && Array.isArray(data.LINE_INFO) ? data.LINE_INFO[0] : null;
+	const rows = lineInfo && lineInfo[String(lineId)] ? lineInfo[String(lineId)] : [];
+	return Array.isArray(rows) ? rows : [];
+}
+
+function is_dokotre_delay_info_target(item, filter) {
+	if (!filter) return true;
+	const lineName = get_dokotre_text(item && item.LINE_NAME);
+	const text = [
+		lineName,
+		get_dokotre_text(item && item.TEXT),
+		get_dokotre_text(item && item.FROM),
+		get_dokotre_text(item && item.TO)
+	].join(" ");
+	if (filter === "yamagata") {
+		if (lineName.indexOf("\u5c71\u5f62\u7dda") >= 0) return true;
+		return contains_any_dokotre_word(text, [
+			"\u798f\u5cf6", "\u7b39\u6728\u91ce", "\u5ead\u5742", "\u677f\u8c37", "\u5ce0", "\u5927\u6ca2", "\u95a2\u6839", "\u7c73\u6ca2",
+			"\u7f6e\u8cdc", "\u9ad8\u7551", "\u8d64\u6e6f", "\u4e2d\u5ddd", "\u7fbd\u524d\u4e2d\u5c71", "\u304b\u307f\u306e\u3084\u307e\u6e29\u6cc9",
+			"\u8302\u5409\u8a18\u5ff5\u9928\u524d", "\u8535\u738b", "\u5c71\u5f62", "\u5317\u5c71\u5f62", "\u7fbd\u524d\u5343\u6b73",
+			"\u5357\u51fa\u7fbd", "\u6f06\u5c71", "\u9ad8\u64c1", "\u5929\u7ae5", "\u4e71\u5ddd", "\u795e\u753a", "\u3055\u304f\u3089\u3093\u307c\u6771\u6839",
+			"\u6771\u6839", "\u6751\u5c71", "\u8896\u5d0e", "\u5927\u77f3\u7530", "\u5317\u5927\u77f3\u7530", "\u82a6\u6ca2", "\u821f\u5f62", "\u65b0\u5e84"
+		]);
+	}
+	if (filter === "akita") {
+		if (lineName.indexOf("\u5c71\u5f62\u7dda") >= 0) return false;
+		return contains_any_dokotre_word(text, [
+			"\u5927\u66f2", "\u795e\u5bae\u5bfa", "\u5208\u548c\u91ce", "\u5cf0\u5409\u5ddd", "\u7fbd\u5f8c\u5883",
+			"\u548c\u7530", "\u56db\u30c4\u5c0f\u5c4b", "\u79cb\u7530", "\u516b\u90ce\u6f5f", "\u8ffd\u5206"
+		]);
+	}
+	return true;
+}
+
+function contains_any_dokotre_word(text, words) {
+	return words.some((word) => text.indexOf(word) >= 0);
+}
+
+function convert_dokotre_delay_info_gaikyo(item) {
+	return {
+		"time": format_dokotre_delay_info_time(item && item.UPDATED),
+		"title": [get_dokotre_text(item && item.LINE_NAME), get_dokotre_text(item && item.STATUS)].filter(Boolean).join(" "),
+		"honbun": get_dokotre_text(item && item.TEXT),
+		"eikyo": {
+			"spo": 0,
+			"doo": 0,
+			"donan": 0,
+			"dohoku": 0,
+			"doto": 0
+		}
+	};
+}
+
+function create_dokotre_unko_list(name, items) {
+	const status = get_dokotre_info_status(items);
+	let html = "<li>";
+	html += "<div class='common-button'>";
+	html += "<span class='name'>" + escape_dokotre_info_html(name) + "</span>";
+	html += "<img class='unkou-icon' alt='' src='" + get_dokotre_info_icon(status) + "'/>";
+	html += "</div>";
+	html += "</li>";
+	return html;
+}
+
+function get_dokotre_info_status(items) {
+	if (!Array.isArray(items) || items.length < 1) return "0";
+	if (items.some((item) => {
+		const status = get_dokotre_text(item && item.STATUS);
+		return status.indexOf("\u904b\u4f11") >= 0 || status.indexOf("\u898b\u5408") >= 0;
+	})) return "2";
+	return "1";
+}
+
+function get_dokotre_info_icon(status) {
+	if (status === "2") return "./images/home/03.svg";
+	if (status === "1") return "./images/home/02.svg";
+	return "./images/home/01.svg";
+}
+
+function format_dokotre_delay_info_time(value) {
+	const date = new Date(String(value || "").replace(/-/g, "/"));
+	if (Number.isNaN(date.getTime())) return "";
+	const lang = document.documentElement.dataset.lang;
+	if (lang === "en") {
+		return (date.getMonth() + 1).toString().padStart(2, "0") + "/" +
+			date.getDate().toString().padStart(2, "0") + " " +
+			date.getHours().toString().padStart(2, "0") + ":" +
+			date.getMinutes().toString().padStart(2, "0");
+	}
+	return date.getDate().toString().padStart(2, "0") + "\u65e5 " +
+		date.getHours().toString().padStart(2, "0") + "\u6642" +
+		date.getMinutes().toString().padStart(2, "0") + "\u5206";
+}
+
+function get_dokotre_text(value) {
+	return value === null || typeof value === "undefined" ? "" : String(value);
+}
+
+function escape_dokotre_info_html(text) {
+	return String(text || "")
+		.replace(/&/g, "&amp;")
+		.replace(/</g, "&lt;")
+		.replace(/>/g, "&gt;")
+		.replace(/"/g, "&quot;")
+		.replace(/'/g, "&#39;");
 }
 
 function set_merged_unko_info(_param_rosen, _now, _lang) {

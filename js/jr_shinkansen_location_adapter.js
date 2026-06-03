@@ -227,6 +227,11 @@
 			const trainName = trainNameMap[String(rawTrain.train)] || "";
 			const kyushuDestinationMap = options && options.kyushuDestinationMap ? options.kyushuDestinationMap : {};
 			const destination = getCentralDestination(rawTrain, centralTrainInfoMap) || kyushuDestinationMap[displayTrainNumber] || fallbackDestination;
+			const timetable = mergeKyushuTimetable(
+				displayTrainNumber,
+				convertCentralTrainInfoTimetable(rawTrain, centralTrainInfoMap),
+				options && options.kyushuTimetableMap
+			);
 			output.push(buildTrain({
 				cbango: displayTrainNumber,
 				name: makeDisplayTrainName(trainName, trainNumber),
@@ -246,8 +251,9 @@
 						rawTrainNumber: trainNumber,
 						track: rawTrain.track || "",
 						sot: rawTrain.sot || "",
+						startingStation: getCentralStartingStationId(rawTrain, centralTrainInfoMap),
 						terminalStation: getCentralTerminalStationId(rawTrain, centralTrainInfoMap),
-						timetable: convertCentralTrainInfoTimetable(rawTrain, centralTrainInfoMap)
+						timetable: timetable
 					}
 				}
 			}));
@@ -265,6 +271,14 @@
 		if (trainRows.length < 1) return "";
 		const terminal = trainRows[0].terminalStation || {};
 		return terminal.station ? String(terminal.station) : "";
+	}
+
+	function getCentralStartingStationId(rawTrain, centralTrainInfoMap) {
+		const trainInfo = centralTrainInfoMap[getCentralTrainInfoKey(rawTrain)];
+		const trainRows = trainInfo && trainInfo.trainInfo && Array.isArray(trainInfo.trainInfo.trains) ? trainInfo.trainInfo.trains : [];
+		if (trainRows.length < 1) return "";
+		const starting = trainRows[0].startingStation || {};
+		return starting.station ? String(starting.station) : "";
 	}
 
 	function getCentralTrainInfoKey(rawTrain) {
@@ -388,7 +402,8 @@
 							source: "kyushu",
 							trainIcon: getTrainIconKey("", rawTrain.serviceName || rawTrain.name || ""),
 							rawTrainNumber: trainNumber,
-							rawCbango: rawTrain.cbango || ""
+							rawCbango: rawTrain.cbango || "",
+							timetable: getKyushuCachedTimetable(displayTrainNumber, options)
 						}
 					}
 				}));
@@ -408,6 +423,73 @@
 			});
 		});
 		return map;
+	}
+
+	function mergeKyushuTimetable(trainNumber, centralTimetable, kyushuTimetableMap) {
+		const centralRows = (Array.isArray(centralTimetable) ? centralTimetable : []).filter((row) => row && !row.note);
+		const kyushuRows = getKyushuCachedTimetable(trainNumber, { kyushuTimetableMap: kyushuTimetableMap });
+		if (kyushuRows.length < 1) return Array.isArray(centralTimetable) ? centralTimetable : [];
+		if (centralRows.length < 1) return kyushuRows;
+
+		const anchorIndex = centralRows.findIndex((row) => kyushuRows.some((kyushuRow) => sameStationName(row.stationName, kyushuRow.stationName)));
+		if (anchorIndex < 0) {
+			return centralRows.concat(kyushuRows);
+		}
+		const result = centralRows.slice(0, anchorIndex).map((row) => Object.assign({}, row));
+		kyushuRows.forEach((row) => {
+			const centralRow = centralRows.find((current) => sameStationName(current.stationName, row.stationName));
+			result.push(centralRow ? mergeTimetableRow(centralRow, row) : row);
+		});
+		centralRows.slice(anchorIndex + 1).forEach((row) => {
+			if (!result.some((current) => sameStationName(current.stationName, row.stationName))) result.push(Object.assign({}, row));
+		});
+		return result;
+	}
+
+	function getKyushuCachedTimetable(trainNumber, options) {
+		const map = options && options.kyushuTimetableMap ? options.kyushuTimetableMap : {};
+		const detail = map[normalizeShinkansenTrainNumber(trainNumber)] || map[String(trainNumber || "")];
+		return convertKyushuTimetableDetail(detail);
+	}
+
+	function convertKyushuTimetableDetail(detail) {
+		const stations = detail && Array.isArray(detail.stations) ? detail.stations : [];
+		return stations.map((row) => {
+			const stationName = normalizeStationName(row && row.stationName);
+			const planArrival = normalizeTimetableTime(row && row.arrival);
+			const planDeparture = normalizeTimetableTime(row && row.departure);
+			if (!stationName || (!planArrival && !planDeparture)) return null;
+			return {
+				stationName: stationName,
+				planArrival: planArrival,
+				planDeparture: planDeparture,
+				time: planDeparture || planArrival
+			};
+		}).filter(Boolean);
+	}
+
+	function mergeTimetableRow(baseRow, kyushuRow) {
+		return Object.assign({}, baseRow, {
+			stationName: baseRow.stationName || kyushuRow.stationName,
+			planArrival: kyushuRow.planArrival || baseRow.planArrival || "",
+			planDeparture: kyushuRow.planDeparture || baseRow.planDeparture || "",
+			time: kyushuRow.time || baseRow.time || ""
+		});
+	}
+
+	function sameStationName(left, right) {
+		return normalizeStationName(left) === normalizeStationName(right);
+	}
+
+	function normalizeStationName(name) {
+		return String(name || "").replace(/\s+/g, "");
+	}
+
+	function normalizeTimetableTime(value) {
+		const match = String(value || "").match(/\d{1,2}:\d{2}/);
+		if (!match) return "";
+		const parts = match[0].split(":");
+		return parts[0].padStart(2, "0") + ":" + parts[1];
 	}
 
 	function parseKyushuRows(html) {

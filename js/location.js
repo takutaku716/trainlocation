@@ -93,6 +93,8 @@ const JR_SHINKANSEN_LOCATION_SOURCE_MAP = {
 	}
 };
 const jrShinkansenStaticSourceDataCache = new Map();
+const jrKyushuTimetableDataCache = new Map();
+const JR_KYUSHU_TIMETABLE_WORKER_BASE = "https://trainlocation-jrkyushu-timetable-cache.densha716.workers.dev";
 
 function get_mainte_json_request(fileName, cacheKey) {
 	const cloudflareApiBase = "https://trainlocation.pages.dev";
@@ -1074,16 +1076,106 @@ function load_jr_shinkansen_location_now_data(_param_rosen, _now) {
 		const kyushuHtml = results[2];
 		return load_jr_shinkansen_central_train_info_map(source, centralLocationJson, _now)
 			.then((centralTrainInfoMap) => {
-				const normalized = window.JrShinkansenLocationAdapter.normalize(centralLocationJson, centralMasterJson, kyushuHtml, {
+				const baseOptions = {
 					senku: source.senku || _param_rosen,
 					centralTrainInfoMap: centralTrainInfoMap
-				});
+				};
+				const preliminary = window.JrShinkansenLocationAdapter.normalize(centralLocationJson, centralMasterJson, kyushuHtml, baseOptions);
+				return load_jr_shinkansen_kyushu_timetable_map(source, preliminary.location, _now)
+					.then((kyushuTimetableMap) => {
+						const normalized = window.JrShinkansenLocationAdapter.normalize(centralLocationJson, centralMasterJson, kyushuHtml, Object.assign({}, baseOptions, {
+							kyushuTimetableMap: kyushuTimetableMap
+						}));
+						return normalized;
+					});
+			})
+			.then((normalized) => {
 				if (!normalized.location || !Array.isArray(normalized.location.trains) || normalized.location.trains.length < 1) {
 					throw new Error("JR Shinkansen location now json load failed");
 				}
 				return normalized.location;
 			});
 	});
+}
+
+function load_jr_shinkansen_kyushu_timetable_map(source, normalizedLocation, _now) {
+	const trainNumbers = collect_jr_shinkansen_kyushu_timetable_train_numbers(source, normalizedLocation);
+	if (trainNumbers.length < 1) return Promise.resolve({});
+	return Promise.all(trainNumbers.map((trainNumber) => {
+		return load_jrkyushu_timetable_data(trainNumber, _now)
+			.then((data) => ({ trainNumber: trainNumber, data: data }))
+			.catch(() => null);
+	})).then((results) => {
+		return results.filter((entry) => entry && entry.data).reduce((map, entry) => {
+			map[entry.trainNumber] = entry.data;
+			return map;
+		}, {});
+	});
+}
+
+function collect_jr_shinkansen_kyushu_timetable_train_numbers(source, normalizedLocation) {
+	const senku = String(source && source.senku || "");
+	const trainNumbers = new Set();
+	const trains = normalizedLocation && Array.isArray(normalizedLocation.trains) ? normalizedLocation.trains : [];
+	trains.forEach((train) => {
+		if (!train || !train.jrShinkansen || !train.cbango) return;
+		if (senku === "60") {
+			trainNumbers.add(String(train.cbango));
+			return;
+		}
+		const jr = train.jrShinkansen;
+		const startingStation = Number(jr.startingStation || 0);
+		const terminalStation = Number(jr.terminalStation || 0);
+		const pos = String(train.pos || "");
+		if (jr.source === "kyushu" || /^JQ01P/.test(pos) || (startingStation >= 46 && startingStation <= 56) || (terminalStation >= 46 && terminalStation <= 56)) {
+			trainNumbers.add(String(train.cbango));
+		}
+	});
+	return Array.from(trainNumbers).slice(0, 80);
+}
+
+function load_jrkyushu_timetable_data(trainNumber, _now) {
+	const normalizedTrainNumber = normalize_train_search_cbango(trainNumber);
+	if (!normalizedTrainNumber) return Promise.reject(new Error("empty train number"));
+	const serviceDate = get_jrkyushu_timetable_service_date();
+	const cacheKey = serviceDate + "|" + normalizedTrainNumber;
+	if (jrKyushuTimetableDataCache.has(cacheKey)) return jrKyushuTimetableDataCache.get(cacheKey);
+	const cacheBuster = encodeURIComponent(_now || Date.now());
+	const workerUrl = JR_KYUSHU_TIMETABLE_WORKER_BASE + "/timetable/" + encodeURIComponent(normalizedTrainNumber) + "?date=" + encodeURIComponent(serviceDate) + "&_=" + cacheBuster;
+	const loadPromise = get_jrkyushu_timetable_json(workerUrl)
+		.catch((error) => {
+			jrKyushuTimetableDataCache.delete(cacheKey);
+			throw error;
+		});
+	jrKyushuTimetableDataCache.set(cacheKey, loadPromise);
+	return loadPromise;
+}
+
+function get_jrkyushu_timetable_json(url) {
+	return new Promise((resolve, reject) => {
+		$.ajax({
+			url: url,
+			dataType: "json",
+			cache: false
+		}).done((data) => {
+			if (!data || data.ok === false || !Array.isArray(data.stations)) {
+				reject(new Error("JR Kyushu timetable response is invalid"));
+				return;
+			}
+			resolve(data);
+		}).fail((jqxhr, textStatus, errorThrown) => {
+			reject(new Error(errorThrown || textStatus || "JR Kyushu timetable request failed"));
+		});
+	});
+}
+
+function get_jrkyushu_timetable_service_date(now = new Date()) {
+	const jst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+	if (jst.getUTCHours() < 4) jst.setUTCDate(jst.getUTCDate() - 1);
+	const year = jst.getUTCFullYear();
+	const month = String(jst.getUTCMonth() + 1).padStart(2, "0");
+	const day = String(jst.getUTCDate()).padStart(2, "0");
+	return year + "-" + month + "-" + day;
 }
 
 function load_jr_shinkansen_static_source_data(source, _now) {
@@ -3016,7 +3108,7 @@ function load_train_search_data() {
 	const lang = document.documentElement.dataset.lang;
 	const mstNow = Date.now() >>> 16;
 	const trnNow = Date.now() >>> 10;
-	const searchSourceRosens = ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "57", "58", "59", "60"];
+	const searchSourceRosens = ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15"];
 	const daiyaSourceSenkus = ["00"].concat(searchSourceRosens, ["19"]);
 	const expressMasterPromise = jqxhr_to_promise($.getJSON("https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/webunkou/json/master/express_master.json?" + mstNow));
 	const expressCorePromise = jqxhr_to_promise(get_express_core_request(mstNow));
@@ -3111,6 +3203,7 @@ function load_train_search_data() {
 					"shuEkiKey": train.shuEkiKey || "",
 					"senku": train.senku || ""
 				} : undefined);
+				if (is_hidden_train_search_shinkansen(train.senku || train.sourceRosen || entry.rosen || (daiya ? daiya.senku : ""))) return;
 				const nameInfo = parse_train_name(daiya && daiya.name ? daiya.name : "");
 				const displayName = build_train_search_display_name(train, daiya, typeData, ekiData);
 				const targetRosen = normalizeMergedRosen(entry.rosen, nameInfo.baseName || displayName);
@@ -3134,6 +3227,7 @@ function load_train_search_data() {
 		});
 		daiyaMap.forEach((daiya, cbangoKey) => {
 			const cbango = String(cbangoKey).toUpperCase();
+			if (is_hidden_train_search_shinkansen(daiya && daiya.senku)) return;
 			if (trainMap.has(cbango)) return;
 			const nameInfo = parse_train_name(daiya && daiya.name ? daiya.name : "");
 			const expressNow = expressNowMap.get(cbango);
@@ -3201,7 +3295,7 @@ function load_train_search_data() {
 		));
 		const shinkansenNames = Array.from(new Set(
 			Array.from(daiyaMap.values())
-				.filter((row) => row && (String(row.senku || "") === "19" || String(row.senku || "") === "59" || String(row.senku || "") === "60"))
+				.filter((row) => row && String(row.senku || "") === "19")
 				.map((row) => parse_train_name(row.name).baseName)
 				.filter(Boolean)
 		));
@@ -3270,6 +3364,11 @@ function build_train_search_display_name(train, daiya, typeData, ekiData) {
 	if (displayName) return displayName;
 	if (daiya && daiya.name) return (daiya.name + destText).trim();
 	return String(train.cbango || "");
+}
+
+function is_hidden_train_search_shinkansen(senku) {
+	const value = String(senku || "");
+	return value === "59" || value === "60";
 }
 
 function get_train_search_current_section(train, locationMasterData) {
