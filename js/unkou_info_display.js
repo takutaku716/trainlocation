@@ -402,9 +402,29 @@ function get_jr_kyushu_shinkansen_unko_info_request(now) {
 
 function get_jr_central_shinkansen_notice_list(data) {
 	const notices = data && data.screen && Array.isArray(data.screen.noticeList) ? data.screen.noticeList : [];
-	return notices.filter((notice) => {
+	const screenMessage = get_jr_central_shinkansen_screen_message_notice(data && data.screen && data.screen.message);
+	return (screenMessage ? [screenMessage] : []).concat(notices).filter((notice) => {
 		return get_dokotre_text(notice && notice.noticeTitle) || get_dokotre_text(notice && notice.contents);
 	});
+}
+
+function get_jr_central_shinkansen_screen_message_notice(message) {
+	const html = get_dokotre_text(message).trim();
+	if (!html) return null;
+	const parts = html.split(/<br\s*\/?>/i);
+	const title = get_jr_central_shinkansen_plain_text(parts.shift() || "");
+	const contents = parts.join("<br>");
+	return {
+		"noticeTitle": title || "\u6771\u6d77\u9053\u65b0\u5e79\u7dda",
+		"contents": contents || html,
+		"links": []
+	};
+}
+
+function get_jr_central_shinkansen_plain_text(html) {
+	const wrapper = document.createElement("div");
+	wrapper.innerHTML = html;
+	return wrapper.textContent || wrapper.innerText || "";
 }
 
 function get_jr_kyushu_shinkansen_notice_list(data, targetAreaName, displayAreaName) {
