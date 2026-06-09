@@ -21,6 +21,7 @@ const LOCATION_AUTO_REFRESH_DEFAULT_INTERVAL = 15000;
 // 自動更新設定の保存キー
 const LOCATION_AUTO_REFRESH_ENABLED_KEY = "location_auto_refresh_enabled";
 const LOCATION_AUTO_REFRESH_INTERVAL_KEY = "location_auto_refresh_interval";
+const LOCATION_SLEEP_PREVENT_ENABLED_KEY = "location_sleep_prevent_enabled";
 const TRACKING_SCROLL_ENABLED_KEY = "tracking_scroll_enabled";
 const LOCATION_JSON_SOURCE_MAP = {
 	"51": ["01", "05"],
@@ -134,6 +135,8 @@ let cachedLocationMasterData = null;
 // 自動更新設定
 let locationAutoRefreshEnabled = false;
 let locationAutoRefreshInterval = LOCATION_AUTO_REFRESH_DEFAULT_INTERVAL;
+let locationSleepPreventEnabled = false;
+let locationWakeLock = null;
 // 次回自動更新予定時刻
 let nextLocationAutoRefreshAt = null;
 // 列車検索用キャッシュ
@@ -499,7 +502,8 @@ $(function ($) {
 	$(document).on("click", "#refreshSettingApplyBtn", function() {
 		const enabled = $("#refreshEnabledSelect").val() === "on";
 		const intervalSeconds = Number($("#refreshIntervalSelect").val());
-		apply_location_auto_refresh_settings(enabled, intervalSeconds * 1000);
+		const sleepPreventEnabled = $("#sleepPreventSelect").val() === "on";
+		apply_location_auto_refresh_settings(enabled, intervalSeconds * 1000, sleepPreventEnabled);
 		$("#refreshSettingDetail").fadeOut("fast");
 		set_scroll_show($("#refreshSettingDetail .dialog"));
 	});
@@ -607,6 +611,10 @@ $(function ($) {
 
 	// ページの表示状態に応じて自動更新を制御する
 	document.addEventListener("visibilitychange", handle_page_visibility_change);
+	document.addEventListener("pointerdown", handle_location_wake_lock_user_activation);
+	document.addEventListener("keydown", handle_location_wake_lock_user_activation);
+	window.addEventListener("pagehide", release_location_wake_lock);
+	window.addEventListener("beforeunload", release_location_wake_lock);
 
 	// サイドメニューの閉じるボタンをクリックしたときの動き
 	$("#sideMenu .side-menu .area-contents-header, #sideMenu .side-menu-outer").on("click", function() {
@@ -1615,9 +1623,12 @@ function scroll_selected_train_into_view(_ressha) {
 function load_location_auto_refresh_settings() {
 	const storedEnabled = localStorage.getItem(LOCATION_AUTO_REFRESH_ENABLED_KEY);
 	const storedInterval = Number(localStorage.getItem(LOCATION_AUTO_REFRESH_INTERVAL_KEY));
+	const storedSleepPrevent = localStorage.getItem(LOCATION_SLEEP_PREVENT_ENABLED_KEY);
 	locationAutoRefreshEnabled = storedEnabled === null ? false : storedEnabled === "true";
 	locationAutoRefreshInterval = [15000, 30000, 60000].includes(storedInterval) ? storedInterval : LOCATION_AUTO_REFRESH_DEFAULT_INTERVAL;
+	locationSleepPreventEnabled = storedSleepPrevent === null ? false : storedSleepPrevent === "true";
 	update_refresh_status_label();
+	update_location_wake_lock();
 }
 
 /*
@@ -1626,6 +1637,7 @@ function load_location_auto_refresh_settings() {
 function sync_refresh_setting_controls() {
 	$("#refreshEnabledSelect").val(locationAutoRefreshEnabled ? "on" : "off");
 	$("#refreshIntervalSelect").val(String(locationAutoRefreshInterval / 1000));
+	$("#sleepPreventSelect").val(locationSleepPreventEnabled ? "on" : "off");
 }
 
 /*
@@ -1678,16 +1690,46 @@ function format_refresh_time(_date) {
 /*
  * 自動更新設定を適用する
  */
-function apply_location_auto_refresh_settings(_enabled, _interval, _persist = true) {
+async function update_location_wake_lock() {
+	if (!locationSleepPreventEnabled || document.visibilityState !== "visible") {
+		release_location_wake_lock();
+		return;
+	}
+	if (locationWakeLock || !("wakeLock" in navigator)) return;
+	try {
+		locationWakeLock = await navigator.wakeLock.request("screen");
+		locationWakeLock.addEventListener("release", function() {
+			locationWakeLock = null;
+		});
+	} catch (_error) {
+		locationWakeLock = null;
+	}
+}
+
+function release_location_wake_lock() {
+	if (!locationWakeLock) return;
+	const wakeLock = locationWakeLock;
+	locationWakeLock = null;
+	wakeLock.release().catch(function() {});
+}
+
+function handle_location_wake_lock_user_activation() {
+	if (locationSleepPreventEnabled && !locationWakeLock) update_location_wake_lock();
+}
+
+function apply_location_auto_refresh_settings(_enabled, _interval, _sleepPreventEnabled = locationSleepPreventEnabled, _persist = true) {
 	const wasEnabled = locationAutoRefreshEnabled;
 	locationAutoRefreshEnabled = _enabled;
 	locationAutoRefreshInterval = [15000, 30000, 60000].includes(_interval) ? _interval : LOCATION_AUTO_REFRESH_DEFAULT_INTERVAL;
+	locationSleepPreventEnabled = _sleepPreventEnabled;
 	if (_persist) {
 		localStorage.setItem(LOCATION_AUTO_REFRESH_ENABLED_KEY, String(locationAutoRefreshEnabled));
 		localStorage.setItem(LOCATION_AUTO_REFRESH_INTERVAL_KEY, String(locationAutoRefreshInterval));
+		localStorage.setItem(LOCATION_SLEEP_PREVENT_ENABLED_KEY, String(locationSleepPreventEnabled));
 	}
 	sync_refresh_setting_controls();
 	update_refresh_status_label();
+	update_location_wake_lock();
 	if (locationAutoRefreshEnabled) {
 		const currentRosen = get_param_rosen();
 		if (!is_location_auto_refresh_allowed(currentRosen)) {
@@ -1709,9 +1751,11 @@ function apply_location_auto_refresh_settings(_enabled, _interval, _persist = tr
 function handle_page_visibility_change() {
 	const currentRosen = get_param_rosen();
 	if (document.visibilityState === "hidden") {
+		release_location_wake_lock();
 		stop_location_auto_refresh(true);
 		return;
 	}
+	update_location_wake_lock();
 	if (document.visibilityState === "visible" && locationAutoRefreshEnabled && currentRosen) {
 		if (!is_location_auto_refresh_allowed(currentRosen)) {
 			stop_location_auto_refresh();
