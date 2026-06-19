@@ -3487,6 +3487,56 @@ section#refreshSettingDetail {
 	}
 }
 @media (max-width:550px) {
+	section#resshaDetail .dialog-outer {
+		box-sizing: border-box;
+		padding: 8px;
+	}
+	section#resshaDetail .dialog {
+		box-sizing: border-box;
+		max-width: 100%;
+		width: 100%;
+	}
+	section#resshaDetail .dialog #unkouDetailMain,
+	section#resshaDetail .dialog #dialogGaikyo,
+	section#resshaDetail .dialog .common-contents-frame,
+	section#resshaDetail .dialog .gaikyo-frame,
+	section#resshaDetail .dialog .jr-shinkansen-suspension-list,
+	section#resshaDetail .dialog .jr-shinkansen-suspension-table-wrap {
+		box-sizing: border-box;
+		max-width: 100%;
+		min-width: 0;
+	}
+	section#resshaDetail .dialog .jr-shinkansen-suspension-list table {
+		font-size: 12px;
+		min-width: 0;
+		table-layout: fixed;
+		width: 100%;
+	}
+	section#resshaDetail .dialog .jr-shinkansen-suspension-list th,
+	section#resshaDetail .dialog .jr-shinkansen-suspension-list td {
+		overflow-wrap: anywhere;
+		padding: 5px 4px;
+		white-space: normal;
+		word-break: normal;
+	}
+	section#resshaDetail .dialog .jr-shinkansen-suspension-list th:nth-child(1) {
+		width: 28%;
+	}
+	section#resshaDetail .dialog .jr-shinkansen-suspension-list th:nth-child(2) {
+		width: 12%;
+	}
+	section#resshaDetail .dialog .jr-shinkansen-suspension-list th:nth-child(3) {
+		width: 36%;
+	}
+	section#resshaDetail .dialog .jr-shinkansen-suspension-list th:nth-child(4) {
+		width: 24%;
+	}
+	section#resshaDetail .dialog .jr-shinkansen-suspension-list td:first-child,
+	section#resshaDetail .dialog .jr-shinkansen-suspension-list td:nth-child(2),
+	section#resshaDetail .dialog .jr-shinkansen-suspension-list td:last-child {
+		white-space: normal;
+	}
+
 	#stationList .eki-panel .ressha-contents .ressha-icon .cbango-label,
 	#stationList .hoka-line-area .fujishiro-panel .ressha-icon.up .cbango-label {
 		font-size: 8px;
