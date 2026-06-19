@@ -2455,6 +2455,19 @@ section#unkouDetail {
 		section#resshaDetail #commonSenkuOperation ul {
 			grid-template-columns: repeat(1, 1fr);
 		}
+		section#resshaDetail #commonSenkuOperation .jr-shinkansen-unko-group-button {
+			background: #fff;
+			box-sizing: border-box;
+			color: #111;
+			cursor: pointer;
+			font: inherit;
+			width: 100%;
+		}
+		section#resshaDetail #commonSenkuOperation .jr-shinkansen-unko-group-button.selected {
+			background: #f2f9ed;
+			border-color: #4cbd2b;
+			box-shadow: inset 4px 0 0 #4cbd2b;
+		}
 		section#resshaDetail #commonSenkuOperation .merged-area-operation {
 			margin-bottom: 14px;
 		}
@@ -2522,6 +2535,38 @@ section#unkouDetail {
 				border-bottom: 0px solid black;
 				padding-bottom: 5px;
 			}
+
+		section#resshaDetail .dialog .jr-shinkansen-suspension-list h3 {
+			font-size: 17px;
+			margin: 0 0 10px;
+		}
+		section#resshaDetail .dialog .jr-shinkansen-suspension-table-wrap {
+			overflow-x: auto;
+		}
+		section#resshaDetail .dialog .jr-shinkansen-suspension-list table {
+			border-collapse: collapse;
+			font-size: 14px;
+			min-width: 480px;
+			width: 100%;
+		}
+		section#resshaDetail .dialog .jr-shinkansen-suspension-list th,
+		section#resshaDetail .dialog .jr-shinkansen-suspension-list td {
+			border: 1px solid #777;
+			padding: 7px 8px;
+			text-align: left;
+			vertical-align: middle;
+		}
+		section#resshaDetail .dialog .jr-shinkansen-suspension-list th {
+			background: #222;
+			color: #fff;
+			font-weight: normal;
+			white-space: nowrap;
+		}
+		section#resshaDetail .dialog .jr-shinkansen-suspension-list td:first-child,
+		section#resshaDetail .dialog .jr-shinkansen-suspension-list td:nth-child(2),
+		section#resshaDetail .dialog .jr-shinkansen-suspension-list td:last-child {
+			white-space: nowrap;
+		}
 
 	/* 列車詳細ダイアログ内のスクロール領域 */
 	section#resshaDetail .dialog .ressha-detail-scroll-contents {
@@ -2831,6 +2876,7 @@ section#trainSearchDetail {
 			section#trainSearchDetail .dialog .train-search-row {
 				margin-bottom: 16px;
 			}
+
 			section#trainSearchDetail .dialog .train-search-list-action {
 				margin-top: -4px;
 				text-align: right;

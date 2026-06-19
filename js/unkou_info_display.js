@@ -296,6 +296,9 @@ function set_unko_info(_param_rosen) {
 	}
 }
 
+let jrShinkansenUnkoInfoGroups = [];
+let jrShinkansenSelectedUnkoGroup = "";
+
 function set_jr_shinkansen_unko_info(_param_rosen, _now, _lang) {
 	const rosen = String(_param_rosen || "");
 	if (rosen !== "59" && rosen !== "60") return false;
@@ -303,6 +306,7 @@ function set_jr_shinkansen_unko_info(_param_rosen, _now, _lang) {
 
 	const groupLoaders = rosen === "60" ? [
 		{
+			"key": "nishi-kyushu",
 			"name": "\u897f\u4e5d\u5dde\u65b0\u5e79\u7dda",
 			"request": get_jr_kyushu_shinkansen_unko_info_request(_now),
 			"parser": (data) => get_jr_kyushu_shinkansen_notice_list(data, "Nishi-Kyushu-Shinkansen", "\u897f\u4e5d\u5dde\u65b0\u5e79\u7dda"),
@@ -310,18 +314,21 @@ function set_jr_shinkansen_unko_info(_param_rosen, _now, _lang) {
 		}
 	] : [
 		{
+			"key": "tokaido",
 			"name": "\u6771\u6d77\u9053\u65b0\u5e79\u7dda",
 			"request": get_jr_central_shinkansen_unko_info_request(_now),
 			"parser": get_jr_central_shinkansen_notice_list,
 			"converter": convert_jr_central_shinkansen_notice_gaikyo
 		},
 		{
+			"key": "sanyo",
 			"name": "\u5c71\u967d\u65b0\u5e79\u7dda",
 			"request": get_jr_west_shinkansen_unko_info_request(_now),
 			"parser": get_jr_west_shinkansen_notice_list,
 			"converter": convert_jr_west_shinkansen_notice_gaikyo
 		},
 		{
+			"key": "kyushu",
 			"name": "\u4e5d\u5dde\u65b0\u5e79\u7dda",
 			"request": get_jr_kyushu_shinkansen_unko_info_request(_now),
 			"parser": (data) => get_jr_kyushu_shinkansen_notice_list(data, "Kyushu-Shinkansen", "\u4e5d\u5dde\u65b0\u5e79\u7dda"),
@@ -329,41 +336,95 @@ function set_jr_shinkansen_unko_info(_param_rosen, _now, _lang) {
 		}
 	];
 
-	Promise.all(groupLoaders.map((group) => {
+	const noticeGroupsPromise = Promise.all(groupLoaders.map((group) => {
 		return get_jr_shinkansen_notice_promise(group.request, group.parser);
-	})).then((noticeGroups) => {
-			const groups = groupLoaders.map((group, index) => {
-				return {
-					"name": group.name,
-					"notices": noticeGroups[index],
-					"converter": group.converter
-				};
-			});
-			const activeGroups = groups.filter((group) => group.notices.length > 0);
-			if (activeGroups.length < 1) {
-				$("#unkouInfo").hide();
-				return;
-			}
+	}));
+	const suspensionPromise = rosen === "59" ? get_jr_central_shinkansen_suspension_promise(_now) : Promise.resolve([]);
 
-			$("#unkouInfo").show();
+	Promise.all([noticeGroupsPromise, suspensionPromise]).then((results) => {
+		const noticeGroups = results[0];
+		const suspensions = results[1];
+		const groups = groupLoaders.map((group, index) => {
+			return {
+				"key": group.key,
+				"name": group.name,
+				"notices": noticeGroups[index],
+				"converter": group.converter,
+				"suspensions": suspensions.filter((row) => !row.partial && row.routes.indexOf(group.key) >= 0)
+			};
+		});
+		const activeGroups = groups.filter((group) => group.notices.length > 0 || group.suspensions.length > 0);
+		if (activeGroups.length < 1) {
+			jrShinkansenUnkoInfoGroups = [];
+			jrShinkansenSelectedUnkoGroup = "";
+			$("#unkouInfo").hide();
+			return;
+		}
+		jrShinkansenUnkoInfoGroups = groups;
+		if (!groups.some((group) => group.key === jrShinkansenSelectedUnkoGroup)) {
+			jrShinkansenSelectedUnkoGroup = activeGroups[0].key;
+		}
+
+		$("#unkouInfo").show();
 			$("#titleAreaName").text(areaName);
 			$("#senkuList").show();
 			$("#commonSenkuOperation").show();
 			$("#senkuListAreaName").text(areaName);
-			$("#gaikyoAreaName").text(areaName);
-			create_gaikyo(activeGroups.reduce((list, group) => {
-				return list.concat(group.notices.map(group.converter));
-			}, []));
 
-			let html = "<ul>";
-			activeGroups.forEach((group) => {
-				html += create_jr_shinkansen_unko_list(group.name, group.notices);
-			});
-			html += "</ul>";
-			$("#commonSenkuOperation").html(html);
+		let html = "<ul>";
+		groups.forEach((group) => {
+			html += create_jr_shinkansen_unko_list(group);
 		});
+		html += "</ul>";
+		$("#commonSenkuOperation").html(html);
+		render_jr_shinkansen_unko_group(jrShinkansenSelectedUnkoGroup);
+	});
 
 	return true;
+}
+
+$(document).off("click.jrShinkansenUnko", ".jr-shinkansen-unko-group-button")
+	.on("click.jrShinkansenUnko", ".jr-shinkansen-unko-group-button", function(event) {
+		event.preventDefault();
+		event.stopPropagation();
+		render_jr_shinkansen_unko_group($(this).attr("data-group-key"));
+	});
+
+function render_jr_shinkansen_unko_group(groupKey) {
+	const group = jrShinkansenUnkoInfoGroups.find((row) => row.key === groupKey);
+	if (!group) return;
+	jrShinkansenSelectedUnkoGroup = group.key;
+	$("#gaikyoAreaName").text(group.name);
+	$(".jr-shinkansen-unko-group-button").each(function() {
+		const selected = $(this).attr("data-group-key") === group.key;
+		$(this).toggleClass("selected", selected).attr("aria-pressed", selected ? "true" : "false");
+	});
+	const gaikyo = group.notices.map(group.converter);
+	create_gaikyo(gaikyo);
+	if (gaikyo.length < 1 && group.suspensions.length < 1) {
+		$("#dialogGaikyo .gaikyo-frame").html("<div class='jr-shinkansen-no-operation-info'>現在、運行情報はありません。</div>");
+	}
+	if (group.suspensions.length > 0) {
+		$("#dialogGaikyo .gaikyo-frame").append(create_jr_shinkansen_suspension_html(group.suspensions));
+	}
+	$("#unkouDetailMain").scrollTop(0);
+}
+
+function create_jr_shinkansen_suspension_html(rows) {
+	let html = "<section class='jr-shinkansen-suspension-list'>";
+	html += "<h3>運休列車</h3>";
+	html += "<div class='jr-shinkansen-suspension-table-wrap'><table>";
+	html += "<thead><tr><th>列車</th><th>方向</th><th>運休区間</th><th>状況</th></tr></thead><tbody>";
+	rows.forEach((row) => {
+		html += "<tr>";
+		html += "<td>" + escape_dokotre_info_html(row.trainName + row.trainNumber + "号") + "</td>";
+		html += "<td>" + (row.bound === "1" ? "上り" : "下り") + "</td>";
+		html += "<td>" + escape_dokotre_info_html(row.startName + "～" + row.endName) + "</td>";
+		html += "<td>" + (row.partial ? "一部区間運休" : "運休") + "</td>";
+		html += "</tr>";
+	});
+	html += "</tbody></table></div></section>";
+	return html;
 }
 
 function get_jr_shinkansen_notice_promise(request, parser) {
@@ -380,6 +441,64 @@ function get_jr_central_shinkansen_unko_info_request(now) {
 		return get_testable_json_request(get_test_urls("jr_central/ti01_ja.json?" + now), remoteUrl);
 	}
 	return $.getJSON(remoteUrl);
+}
+
+function get_jr_central_shinkansen_suspension_info_request(now) {
+	const remoteUrl = "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://traininfo.jr-central.co.jp/shinkansen/var/train_info/suspension_info.json?" + now;
+	if (typeof get_testable_json_request === "function" && typeof get_test_urls === "function") {
+		return get_testable_json_request(get_test_urls("jr_central/suspension_info.json?" + now), remoteUrl);
+	}
+	return $.getJSON(remoteUrl);
+}
+
+function get_jr_central_shinkansen_suspension_promise(now) {
+	return new Promise((resolve) => {
+		get_jr_central_shinkansen_suspension_info_request(now)
+			.done((data) => resolve(get_jr_central_shinkansen_suspension_list(data)))
+			.fail(() => resolve([]));
+	});
+}
+
+function get_jr_central_shinkansen_suspension_list(data) {
+	const stationNames = {
+		"1": "東京", "2": "品川", "3": "新横浜", "4": "小田原", "5": "熱海", "6": "三島",
+		"32": "新富士", "7": "静岡", "33": "掛川", "8": "浜松", "9": "豊橋", "34": "三河安城",
+		"10": "名古屋", "11": "岐阜羽島", "12": "米原", "13": "京都", "15": "新大阪",
+		"16": "新神戸", "17": "西明石", "18": "姫路", "19": "相生", "20": "岡山", "21": "新倉敷",
+		"22": "福山", "35": "新尾道", "23": "三原", "41": "東広島", "24": "広島", "25": "新岩国",
+		"26": "徳山", "27": "新山口", "42": "厚狭", "28": "新下関", "29": "小倉", "30": "博多"
+	};
+	const stationOrder = ["1", "2", "3", "4", "5", "6", "32", "7", "33", "8", "9", "34", "10", "11", "12", "13", "15", "16", "17", "18", "19", "20", "21", "22", "35", "23", "41", "24", "25", "26", "27", "42", "28", "29", "30"];
+	const trainNames = { "1": "ひかり", "2": "こだま", "6": "のぞみ", "10": "みずほ", "11": "さくら", "12": "つばめ" };
+	const bounds = data && data.suspensionInfo && data.suspensionInfo.bounds;
+	if (!bounds) return [];
+	const boundaryIndex = stationOrder.indexOf("15");
+	const rows = [];
+	["1", "2"].forEach((bound) => {
+		const sourceRows = Array.isArray(bounds[bound]) ? bounds[bound] : [];
+		sourceRows.forEach((row) => {
+			const start = String(row && row.stopSection && row.stopSection.start || "");
+			const end = String(row && row.stopSection && row.stopSection.end || "");
+			const startIndex = stationOrder.indexOf(start);
+			const endIndex = stationOrder.indexOf(end);
+			if (startIndex < 0 || endIndex < 0) return;
+			const low = Math.min(startIndex, endIndex);
+			const high = Math.max(startIndex, endIndex);
+			const routes = [];
+			if (low < boundaryIndex || (low === boundaryIndex && high === boundaryIndex)) routes.push("tokaido");
+			if (high > boundaryIndex || (low === boundaryIndex && high === boundaryIndex)) routes.push("sanyo");
+			rows.push({
+				bound: bound,
+				trainName: trainNames[String(row.train || "")] || "列車",
+				trainNumber: String(row.trainNumber || ""),
+				partial: row.partFlag === true,
+				startName: stationNames[start] || start,
+				endName: stationNames[end] || end,
+				routes: routes
+			});
+		});
+	});
+	return rows;
 }
 
 function get_jr_west_shinkansen_unko_info_request(now) {
@@ -565,13 +684,15 @@ function convert_jr_west_shinkansen_notice_gaikyo(notice) {
 	};
 }
 
-function create_jr_shinkansen_unko_list(name, notices) {
-	const status = get_jr_shinkansen_info_status(notices);
+function create_jr_shinkansen_unko_list(group) {
+	const notices = group && Array.isArray(group.notices) ? group.notices : [];
+	const suspensions = group && Array.isArray(group.suspensions) ? group.suspensions : [];
+	const status = suspensions.length > 0 ? "2" : get_jr_shinkansen_info_status(notices);
 	let html = "<li>";
-	html += "<div class='common-button'>";
-	html += "<span class='name'>" + escape_dokotre_info_html(name) + "</span>";
+	html += "<button type='button' class='common-button jr-shinkansen-unko-group-button' data-group-key='" + escape_dokotre_info_html(group.key) + "' aria-pressed='false'>";
+	html += "<span class='name'>" + escape_dokotre_info_html(group.name) + "</span>";
 	html += "<img class='unkou-icon' alt='' src='" + get_dokotre_info_icon(status) + "'/>";
-	html += "</div>";
+	html += "</button>";
 	html += "</li>";
 	return html;
 }
