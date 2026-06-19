@@ -387,12 +387,14 @@ $(document).off("click.jrShinkansenUnko", ".jr-shinkansen-unko-group-button")
 	.on("click.jrShinkansenUnko", ".jr-shinkansen-unko-group-button", function(event) {
 		event.preventDefault();
 		event.stopPropagation();
-		render_jr_shinkansen_unko_group($(this).attr("data-group-key"));
+		render_jr_shinkansen_unko_group($(this).attr("data-group-key"), true);
 	});
 
-function render_jr_shinkansen_unko_group(groupKey) {
+function render_jr_shinkansen_unko_group(groupKey, resetScroll) {
 	const group = jrShinkansenUnkoInfoGroups.find((row) => row.key === groupKey);
 	if (!group) return;
+	const scrollContainer = $("#unkouDetailMain");
+	const previousScrollTop = scrollContainer.scrollTop();
 	jrShinkansenSelectedUnkoGroup = group.key;
 	$("#gaikyoAreaName").text(group.name);
 	$(".jr-shinkansen-unko-group-button").each(function() {
@@ -407,7 +409,7 @@ function render_jr_shinkansen_unko_group(groupKey) {
 	if (group.suspensions.length > 0) {
 		$("#dialogGaikyo .gaikyo-frame").append(create_jr_shinkansen_suspension_html(group.suspensions));
 	}
-	$("#unkouDetailMain").scrollTop(0);
+	scrollContainer.scrollTop(resetScroll ? 0 : previousScrollTop);
 }
 
 function create_jr_shinkansen_suspension_html(rows) {
