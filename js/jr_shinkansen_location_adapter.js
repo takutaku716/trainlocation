@@ -202,7 +202,7 @@
 				const index = stationIndexById.get(String(entry.station));
 				if (typeof index !== "number") return;
 				const posNumber = index * 2 + 1;
-				addCentralTrains(trains, entry.trains, "JT01P" + pad2(posNumber) + suffix, fallbackDestination, trainNameMap, centralTrainInfoMap, options);
+				addCentralTrains(trains, entry.trains, "JT01P" + pad2(posNumber) + suffix, fallbackDestination, trainNameMap, centralTrainInfoMap, options, bound);
 			});
 
 			const betweenStations = locationInfo.betweenStation && locationInfo.betweenStation.bounds && locationInfo.betweenStation.bounds[bound] ? locationInfo.betweenStation.bounds[bound] : [];
@@ -211,14 +211,14 @@
 				if (typeof index !== "number") return;
 				const posNumber = bound === "1" ? index * 2 : index * 2 + 2;
 				if (posNumber < 1 || posNumber > 68) return;
-				addCentralTrains(trains, entry.trains, "JT01P" + pad2(posNumber) + suffix, fallbackDestination, trainNameMap, centralTrainInfoMap, options);
+				addCentralTrains(trains, entry.trains, "JT01P" + pad2(posNumber) + suffix, fallbackDestination, trainNameMap, centralTrainInfoMap, options, bound);
 			});
 		});
 
 		return trains;
 	}
 
-	function addCentralTrains(output, rawTrains, pos, fallbackDestination, trainNameMap, centralTrainInfoMap, options) {
+	function addCentralTrains(output, rawTrains, pos, fallbackDestination, trainNameMap, centralTrainInfoMap, options, bound) {
 		if (!Array.isArray(rawTrains)) return;
 		rawTrains.forEach((rawTrain) => {
 			const trainNumber = String(rawTrain.trainNumber || rawTrain.train || "").trim();
@@ -232,6 +232,7 @@
 				convertCentralTrainInfoTimetable(rawTrain, centralTrainInfoMap),
 				options && options.kyushuTimetableMap
 			);
+			const partialSuspension = getCentralPartialSuspension(rawTrain, bound, options);
 			output.push(buildTrain({
 				cbango: displayTrainNumber,
 				name: makeDisplayTrainName(trainName, trainNumber),
@@ -243,6 +244,8 @@
 				sourceRosen: "59",
 				senku: options && options.senku ? options.senku : "59",
 				ryosu: "",
+				status: partialSuspension ? 2 : 1,
+				statusDetail: partialSuspension ? partialSuspension.detail : "",
 				extra: {
 					jrShinkansen: {
 						source: "central",
@@ -258,6 +261,29 @@
 				}
 			}));
 		});
+	}
+
+	function getCentralPartialSuspension(rawTrain, bound, options) {
+		const data = options && options.centralSuspensionJson;
+		const suspensionInfo = data && data.suspensionInfo;
+		const bounds = suspensionInfo && suspensionInfo.bounds;
+		const rows = bounds && Array.isArray(bounds[String(bound)]) ? bounds[String(bound)] : [];
+		const trainCode = String(rawTrain && rawTrain.train || "");
+		const trainNumber = String(rawTrain && rawTrain.trainNumber || "");
+		const row = rows.find((entry) => {
+			return entry && entry.partFlag === true &&
+				String(entry.train || "") === trainCode &&
+				String(entry.trainNumber || "") === trainNumber;
+		});
+		if (!row || !row.stopSection) return null;
+		const startName = CENTRAL_STATION_NAMES[String(row.stopSection.start || "")] || "";
+		const endName = CENTRAL_STATION_NAMES[String(row.stopSection.end || "")] || "";
+		if (!startName || !endName) return null;
+		return {
+			start: startName,
+			end: endName,
+			detail: startName + "～" + endName + "間運休"
+		};
 	}
 
 	function getCentralDestination(rawTrain, centralTrainInfoMap) {
@@ -577,8 +603,8 @@
 			runStatus: 1,
 			yokuStatus: 0,
 			yokuDetail: {},
-			status: 1,
-			statusDetail: "",
+			status: typeof params.status === "number" ? params.status : 1,
+			statusDetail: params.statusDetail || "",
 			statusDetailEn: "",
 			statusDetailTc: "",
 			statusDetailSc: "",
