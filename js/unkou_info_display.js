@@ -350,7 +350,7 @@ function set_jr_shinkansen_unko_info(_param_rosen, _now, _lang) {
 				"name": group.name,
 				"notices": noticeGroups[index],
 				"converter": group.converter,
-				"suspensions": suspensions.filter((row) => !row.partial && row.routes.indexOf(group.key) >= 0)
+				"suspensions": suspensions.filter((row) => row.routes.indexOf(group.key) >= 0)
 			};
 		});
 		const activeGroups = groups.filter((group) => group.notices.length > 0 || group.suspensions.length > 0);
