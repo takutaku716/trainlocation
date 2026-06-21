@@ -590,6 +590,15 @@ header {
 				margin: 0 5px;
 				max-height: 44px;
 			}
+			#stationList .eki-panel .eki-contents .stalist-eki-link.jr-shinkansen-tokaido {
+				border-color: #ED6D00;
+			}
+			#stationList .eki-panel .eki-contents .stalist-eki-link.jr-shinkansen-sanyo {
+				border-color: #0169B7;
+			}
+			#stationList .eki-panel .eki-contents .stalist-eki-link.jr-shinkansen-kyushu {
+				border-color: #E40112;
+			}
 				/* 駅のリンク領域 2駅 */
 				#stationList .eki-panel .eki-contents .stalist-eki-link.two-eki {
 					height: 94px;

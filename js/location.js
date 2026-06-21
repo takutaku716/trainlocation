@@ -1458,6 +1458,7 @@ function set_station_list(_param_rosen, _scrollKey, _callback) {
 			cachedResshaTypeData = typeData[0];
 			cachedEkiData = ekiData[0];
 			$("#stationList").html(rosen[0]);
+			set_jr_shinkansen_station_border_colors(_param_rosen);
 			if (is_jreast_location_rosen(_param_rosen) || is_dokotre_location_rosen(_param_rosen) || is_jr_shinkansen_location_rosen(_param_rosen)) setTimestamp(nowData);
 			update_location_data_stale_warning(nowData);
 			// 列車アイコンを描画する
@@ -1495,6 +1496,18 @@ function set_station_list(_param_rosen, _scrollKey, _callback) {
 		var errormessage = `<h2 class='msg-bg'>${get_error_message()}</h2>`;
 		$('#message').html(errormessage);
 		$('#message').show();
+	});
+}
+
+function set_jr_shinkansen_station_border_colors(_param_rosen) {
+	if (String(_param_rosen || "") !== "59") return;
+	let sectionClass = "jr-shinkansen-tokaido";
+	$("#stationList .eki-panel.eki").each(function() {
+		const stationLink = $(this).find(".eki-contents > .stalist-eki-link").first();
+		const stationKey = String(stationLink.find("[key]").first().attr("key") || "");
+		if (stationKey === "0156") sectionClass = "jr-shinkansen-sanyo";
+		if (stationKey === "1627") sectionClass = "jr-shinkansen-kyushu";
+		stationLink.addClass(sectionClass);
 	});
 }
 
