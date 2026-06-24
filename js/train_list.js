@@ -6,12 +6,16 @@ const TRAIN_LIST_SOURCE_MAP = {
 };
 const TRAIN_LIST_DEFAULT_ROSEN = "51";
 const TRAIN_LIST_AUTO_REFRESH_INTERVAL = 15000;
+const LOCATION_AUTO_REFRESH_ENABLED_KEY = "location_auto_refresh_enabled";
+const LOCATION_AUTO_REFRESH_INTERVAL_KEY = "location_auto_refresh_interval";
 
 let trainListRosenMaster = [];
 let trainListLocationMaster = {};
 let trainListAutoRefreshTimer = null;
 let trainListCommMarkTimer = null;
 let trainListPreservedScrollTop = null;
+let trainListAutoRefreshEnabled = true;
+let trainListAutoRefreshInterval = TRAIN_LIST_AUTO_REFRESH_INTERVAL;
 
 window.onload = function() {
 	load_train_list_page();
@@ -30,6 +34,9 @@ window.onhashchange = function() {
 
 function load_train_list_page() {
 	const mstNow = Date.now() >>> 16;
+
+	load_train_list_auto_refresh_settings();
+	initialize_train_list_refresh_setting();
 
 	$("#loaderBg").fadeIn("fast").css("display", "flex");
 
@@ -131,9 +138,10 @@ function restore_train_list_scroll() {
 function start_train_list_auto_refresh() {
 	stop_train_list_auto_refresh();
 	if (document.hidden) return;
+	if (!trainListAutoRefreshEnabled) return;
 	trainListAutoRefreshTimer = window.setTimeout(function() {
 		render_train_list_page();
-	}, TRAIN_LIST_AUTO_REFRESH_INTERVAL);
+	}, trainListAutoRefreshInterval);
 }
 
 function stop_train_list_auto_refresh() {
@@ -150,6 +158,64 @@ function show_train_list_comm_mark() {
 	trainListCommMarkTimer = window.setTimeout(function() {
 		mark.removeClass("active");
 	}, 900);
+}
+
+function load_train_list_auto_refresh_settings() {
+	const storedEnabled = localStorage.getItem(LOCATION_AUTO_REFRESH_ENABLED_KEY);
+	const storedInterval = Number(localStorage.getItem(LOCATION_AUTO_REFRESH_INTERVAL_KEY));
+	trainListAutoRefreshEnabled = storedEnabled === null ? true : storedEnabled === "true";
+	trainListAutoRefreshInterval = [15000, 30000, 60000].includes(storedInterval) ? storedInterval : TRAIN_LIST_AUTO_REFRESH_INTERVAL;
+	sync_train_list_refresh_setting_controls();
+	update_train_list_refresh_setting_button();
+}
+
+function initialize_train_list_refresh_setting() {
+	$("#trainListRefreshSettingBtn").off("click").on("click", function() {
+		sync_train_list_refresh_setting_controls();
+		$("#trainListRefreshSettingDetail").fadeIn("fast");
+	});
+
+	$(document).off("click.trainListRefreshSettingClose").on("click.trainListRefreshSettingClose", "#trainListRefreshSettingDetail, #trainListRefreshSettingDetail .close", function() {
+		$("#trainListRefreshSettingDetail").fadeOut("fast");
+	});
+
+	$(document).off("click.trainListRefreshSettingDialog").on("click.trainListRefreshSettingDialog", "#trainListRefreshSettingDetail .dialog", function(event) {
+		event.stopPropagation();
+	});
+
+	$("#trainListRefreshSettingApplyBtn").off("click").on("click", function() {
+		const enabled = $("#trainListRefreshEnabledSelect").val() === "on";
+		const intervalSeconds = Number($("#trainListRefreshIntervalSelect").val()) || 15;
+		apply_train_list_auto_refresh_settings(enabled, intervalSeconds * 1000);
+		$("#trainListRefreshSettingDetail").fadeOut("fast");
+	});
+}
+
+function sync_train_list_refresh_setting_controls() {
+	$("#trainListRefreshEnabledSelect").val(trainListAutoRefreshEnabled ? "on" : "off");
+	$("#trainListRefreshIntervalSelect").val(String(trainListAutoRefreshInterval / 1000));
+}
+
+function update_train_list_refresh_setting_button() {
+	const intervalSeconds = trainListAutoRefreshInterval / 1000;
+	$("#trainListRefreshSettingBtn")
+		.toggleClass("off", !trainListAutoRefreshEnabled)
+		.attr("aria-label", trainListAutoRefreshEnabled ? "自動更新設定（ON、" + intervalSeconds + "秒間隔）" : "自動更新設定（OFF）");
+}
+
+function apply_train_list_auto_refresh_settings(enabled, interval) {
+	trainListAutoRefreshEnabled = enabled;
+	trainListAutoRefreshInterval = [15000, 30000, 60000].includes(interval) ? interval : TRAIN_LIST_AUTO_REFRESH_INTERVAL;
+	localStorage.setItem(LOCATION_AUTO_REFRESH_ENABLED_KEY, String(trainListAutoRefreshEnabled));
+	localStorage.setItem(LOCATION_AUTO_REFRESH_INTERVAL_KEY, String(trainListAutoRefreshInterval));
+	sync_train_list_refresh_setting_controls();
+	update_train_list_refresh_setting_button();
+
+	if (trainListAutoRefreshEnabled) {
+		render_train_list_page();
+	} else {
+		stop_train_list_auto_refresh();
+	}
 }
 
 function normalize_train_list_request_args(doneArguments, requestCount) {
