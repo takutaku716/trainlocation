@@ -8,6 +8,7 @@ const TRAIN_LIST_DEFAULT_ROSEN = "51";
 const TRAIN_LIST_AUTO_REFRESH_INTERVAL = 15000;
 const LOCATION_AUTO_REFRESH_ENABLED_KEY = "location_auto_refresh_enabled";
 const LOCATION_AUTO_REFRESH_INTERVAL_KEY = "location_auto_refresh_interval";
+const LOCATION_SLEEP_PREVENT_ENABLED_KEY = "location_sleep_prevent_enabled";
 
 let trainListRosenMaster = [];
 let trainListLocationMaster = {};
@@ -16,16 +17,21 @@ let trainListCommMarkTimer = null;
 let trainListPreservedScrollTop = null;
 let trainListAutoRefreshEnabled = true;
 let trainListAutoRefreshInterval = TRAIN_LIST_AUTO_REFRESH_INTERVAL;
+let trainListSleepPreventEnabled = false;
+let trainListWakeLock = null;
 
 window.onload = function() {
 	load_train_list_page();
 	document.addEventListener("visibilitychange", function() {
 		if (document.hidden) {
+			release_train_list_wake_lock();
 			stop_train_list_auto_refresh();
 		} else {
+			update_train_list_wake_lock();
 			render_train_list_page();
 		}
 	});
+	document.addEventListener("click", handle_train_list_wake_lock_user_activation);
 };
 
 window.onhashchange = function() {
@@ -163,10 +169,13 @@ function show_train_list_comm_mark() {
 function load_train_list_auto_refresh_settings() {
 	const storedEnabled = localStorage.getItem(LOCATION_AUTO_REFRESH_ENABLED_KEY);
 	const storedInterval = Number(localStorage.getItem(LOCATION_AUTO_REFRESH_INTERVAL_KEY));
+	const storedSleepPrevent = localStorage.getItem(LOCATION_SLEEP_PREVENT_ENABLED_KEY);
 	trainListAutoRefreshEnabled = storedEnabled === null ? true : storedEnabled === "true";
 	trainListAutoRefreshInterval = [15000, 30000, 60000].includes(storedInterval) ? storedInterval : TRAIN_LIST_AUTO_REFRESH_INTERVAL;
+	trainListSleepPreventEnabled = storedSleepPrevent === null ? false : storedSleepPrevent === "true";
 	sync_train_list_refresh_setting_controls();
 	update_train_list_refresh_setting_button();
+	update_train_list_wake_lock();
 }
 
 function initialize_train_list_refresh_setting() {
@@ -186,7 +195,8 @@ function initialize_train_list_refresh_setting() {
 	$("#trainListRefreshSettingApplyBtn").off("click").on("click", function() {
 		const enabled = $("#trainListRefreshEnabledSelect").val() === "on";
 		const intervalSeconds = Number($("#trainListRefreshIntervalSelect").val()) || 15;
-		apply_train_list_auto_refresh_settings(enabled, intervalSeconds * 1000);
+		const sleepPreventEnabled = $("#trainListSleepPreventSelect").val() === "on";
+		apply_train_list_auto_refresh_settings(enabled, intervalSeconds * 1000, sleepPreventEnabled);
 		$("#trainListRefreshSettingDetail").fadeOut("fast");
 	});
 }
@@ -194,6 +204,7 @@ function initialize_train_list_refresh_setting() {
 function sync_train_list_refresh_setting_controls() {
 	$("#trainListRefreshEnabledSelect").val(trainListAutoRefreshEnabled ? "on" : "off");
 	$("#trainListRefreshIntervalSelect").val(String(trainListAutoRefreshInterval / 1000));
+	$("#trainListSleepPreventSelect").val(trainListSleepPreventEnabled ? "on" : "off");
 }
 
 function update_train_list_refresh_setting_button() {
@@ -203,13 +214,43 @@ function update_train_list_refresh_setting_button() {
 		.attr("aria-label", trainListAutoRefreshEnabled ? "自動更新設定（ON、" + intervalSeconds + "秒間隔）" : "自動更新設定（OFF）");
 }
 
-function apply_train_list_auto_refresh_settings(enabled, interval) {
+async function update_train_list_wake_lock() {
+	if (!trainListSleepPreventEnabled || document.visibilityState !== "visible") {
+		release_train_list_wake_lock();
+		return;
+	}
+	if (trainListWakeLock || !("wakeLock" in navigator)) return;
+	try {
+		trainListWakeLock = await navigator.wakeLock.request("screen");
+		trainListWakeLock.addEventListener("release", function() {
+			trainListWakeLock = null;
+		});
+	} catch (_error) {
+		trainListWakeLock = null;
+	}
+}
+
+function release_train_list_wake_lock() {
+	if (!trainListWakeLock) return;
+	const wakeLock = trainListWakeLock;
+	trainListWakeLock = null;
+	wakeLock.release().catch(function() {});
+}
+
+function handle_train_list_wake_lock_user_activation() {
+	if (trainListSleepPreventEnabled && !trainListWakeLock) update_train_list_wake_lock();
+}
+
+function apply_train_list_auto_refresh_settings(enabled, interval, sleepPreventEnabled = trainListSleepPreventEnabled) {
 	trainListAutoRefreshEnabled = enabled;
 	trainListAutoRefreshInterval = [15000, 30000, 60000].includes(interval) ? interval : TRAIN_LIST_AUTO_REFRESH_INTERVAL;
+	trainListSleepPreventEnabled = sleepPreventEnabled;
 	localStorage.setItem(LOCATION_AUTO_REFRESH_ENABLED_KEY, String(trainListAutoRefreshEnabled));
 	localStorage.setItem(LOCATION_AUTO_REFRESH_INTERVAL_KEY, String(trainListAutoRefreshInterval));
+	localStorage.setItem(LOCATION_SLEEP_PREVENT_ENABLED_KEY, String(trainListSleepPreventEnabled));
 	sync_train_list_refresh_setting_controls();
 	update_train_list_refresh_setting_button();
+	update_train_list_wake_lock();
 
 	if (trainListAutoRefreshEnabled) {
 		render_train_list_page();
