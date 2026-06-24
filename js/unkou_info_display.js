@@ -689,7 +689,7 @@ function convert_jr_west_shinkansen_notice_gaikyo(notice) {
 function create_jr_shinkansen_unko_list(group) {
 	const notices = group && Array.isArray(group.notices) ? group.notices : [];
 	const suspensions = group && Array.isArray(group.suspensions) ? group.suspensions : [];
-	const status = suspensions.length > 0 ? "2" : get_jr_shinkansen_info_status(notices);
+	const status = get_jr_shinkansen_group_status(notices, suspensions);
 	let html = "<li>";
 	html += "<button type='button' class='common-button jr-shinkansen-unko-group-button' data-group-key='" + escape_dokotre_info_html(group.key) + "' aria-pressed='false'>";
 	html += "<span class='name'>" + escape_dokotre_info_html(group.name) + "</span>";
@@ -699,7 +699,14 @@ function create_jr_shinkansen_unko_list(group) {
 	return html;
 }
 
+function get_jr_shinkansen_group_status(notices, suspensions) {
+	if (Array.isArray(notices) && notices.length > 0) return get_jr_shinkansen_info_status(notices);
+	if (Array.isArray(suspensions) && suspensions.length > 0) return "2";
+	return "0";
+}
+
 function get_jr_shinkansen_info_status(notices) {
+	if (!Array.isArray(notices) || notices.length < 1) return "0";
 	const text = (Array.isArray(notices) ? notices : []).map((notice) => {
 		return [
 			get_dokotre_text(notice && notice.noticeTitle),
@@ -710,7 +717,13 @@ function get_jr_shinkansen_info_status(notices) {
 			get_dokotre_text(notice && notice.text)
 		].join(" ");
 	}).join(" ");
-	if (text.indexOf("\u904b\u8ee2\u898b\u5408") >= 0 || text.indexOf("\u898b\u5408\u308f\u305b") >= 0 || text.indexOf("\u904b\u4f11") >= 0) return "2";
+	if (
+		text.indexOf("\u904b\u8ee2\u898b\u5408") >= 0 ||
+		text.indexOf("\u904b\u8ee2\u3092\u898b\u5408") >= 0 ||
+		text.indexOf("\u904b\u884c\u3092\u898b\u5408") >= 0 ||
+		text.indexOf("\u904b\u8ee2\u53d6\u308a\u6b62\u3081") >= 0 ||
+		text.indexOf("\u904b\u4f11") >= 0
+	) return "2";
 	return "1";
 }
 
