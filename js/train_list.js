@@ -114,7 +114,7 @@ function render_train_list_page() {
 	$.when.apply($, requests)
 		.done(function() {
 			const args = normalize_train_list_request_args(arguments, requests.length);
-			const rows = merge_train_list_rows(args, sourceRosens);
+			const rows = merge_train_list_rows(args, sourceRosens, rosen);
 			render_train_list_tables(rows, rosen);
 			restore_train_list_scroll();
 		})
@@ -272,7 +272,7 @@ function update_train_list_header(rosen) {
 	$("#trainListTitle").text(title);
 }
 
-function merge_train_list_rows(responseArgs, sourceRosens) {
+function merge_train_list_rows(responseArgs, sourceRosens, displayRosen) {
 	const seenCbango = new Map();
 	const rows = [];
 
@@ -283,6 +283,7 @@ function merge_train_list_rows(responseArgs, sourceRosens) {
 
 		trains.forEach(function(train) {
 			if (!train || !train.cbango) return;
+			if (!should_include_train_list_train(train, sourceRosen, displayRosen)) return;
 			const cbango = String(train.cbango);
 			if (seenCbango.has(cbango)) return;
 			seenCbango.set(cbango, true);
@@ -299,6 +300,16 @@ function merge_train_list_rows(responseArgs, sourceRosens) {
 	});
 
 	return rows.sort(compare_train_list_rows);
+}
+
+function should_include_train_list_train(train, sourceRosen, displayRosen) {
+	if (displayRosen !== "53" || sourceRosen !== "02") return true;
+
+	const match = String((train && train.pos) || "").match(/^R1P(\d+)[UD]$/);
+	if (!match) return true;
+
+	const point = Number(match[1]);
+	return point < 121 || point > 131;
 }
 
 function get_train_list_direction(train) {
