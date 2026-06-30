@@ -194,9 +194,26 @@
 }
 
 .train-list-table td.cbango,
-.train-list-table td.delay {
+.train-list-table td.delay,
+.train-list-table td.status {
 	text-align: right;
 	white-space: nowrap;
+}
+
+.train-list-table td.status {
+	text-align: center;
+}
+
+.train-list-status-badge {
+	background: #777;
+	color: #fff;
+	display: inline-block;
+	font-size: 13px;
+	font-weight: bold;
+	line-height: 1.2;
+	min-width: 38px;
+	padding: 3px 6px;
+	text-align: center;
 }
 
 .train-list-table td.section {

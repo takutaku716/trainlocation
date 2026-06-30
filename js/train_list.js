@@ -292,6 +292,7 @@ function merge_train_list_rows(responseArgs, sourceRosens) {
 				rosen: sourceRosen,
 				direction: get_train_list_direction(train),
 				delayText: get_train_list_delay_text(train),
+				statusText: get_train_list_status_text(train),
 				sectionText: get_train_list_section_text(train.pos, trainListLocationMaster)
 			});
 		});
@@ -318,6 +319,12 @@ function get_train_list_delay_text(train) {
 	if (!chien || chien < 1) return "";
 	if (chien >= 999) return "大";
 	return String(chien);
+}
+
+function get_train_list_status_text(train) {
+	const yokuStatus = String(train && train.yokuStatus || "0");
+	if (yokuStatus === "1" || yokuStatus === "2") return "抑止";
+	return "";
 }
 
 function get_train_list_section_text(pos, locationMaster) {
@@ -403,7 +410,7 @@ function render_train_list_table(selector, rows, rosen) {
 	body.empty();
 
 	if (!rows.length) {
-		body.append("<tr class='empty'><td colspan='3'>列車はありません</td></tr>");
+		body.append("<tr class='empty'><td colspan='4'>列車はありません</td></tr>");
 		return;
 	}
 
@@ -411,12 +418,27 @@ function render_train_list_table(selector, rows, rosen) {
 		const tr = $("<tr></tr>");
 		tr.append($("<td class='cbango'></td>").text(row.cbango));
 		tr.append($("<td class='delay'></td>").text(row.delayText));
+		tr.append($("<td class='status'></td>").html(create_train_list_status_html(row.statusText)));
 		tr.append($("<td class='section'></td>").text(row.sectionText));
 		tr.on("click", function() {
 			location.href = build_page_url("./location.html", "rosen=" + rosen + "&cbango=" + row.cbango);
 		});
 		body.append(tr);
 	});
+}
+
+function create_train_list_status_html(statusText) {
+	if (!statusText) return "";
+	return "<span class='train-list-status-badge'>" + escape_train_list_html(statusText) + "</span>";
+}
+
+function escape_train_list_html(value) {
+	return String(value || "")
+		.replace(/&/g, "&amp;")
+		.replace(/</g, "&lt;")
+		.replace(/>/g, "&gt;")
+		.replace(/"/g, "&quot;")
+		.replace(/'/g, "&#39;");
 }
 
 function find_train_list_rosen_master(rosen) {
