@@ -175,7 +175,7 @@
 .train-list-table th,
 .train-list-table td {
 	border: 1px solid #d1d1d1;
-	padding: 8px 10px;
+	padding: 8px 8px;
 }
 
 .train-list-table th {
@@ -200,7 +200,15 @@
 	white-space: nowrap;
 }
 
+.train-list-table td.cbango,
+.train-list-table td.delay {
+	padding-left: 4px;
+	padding-right: 8px;
+}
+
 .train-list-table td.status {
+	padding-left: 3px;
+	padding-right: 3px;
 	text-align: center;
 }
 
