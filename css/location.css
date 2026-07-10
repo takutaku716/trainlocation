@@ -1856,7 +1856,7 @@ header {
 						}
 
 							/* 藤城線の列車アイコン内の領域 */
-							#stationList .hoka-line-area .fujishiro-panel .ressha-icon.up div {
+							#stationList .hoka-line-area .fujishiro-panel .ressha-icon.up > div.ressha {
 								display: inline-grid;
 								grid-template-rows: 35px 12px;
 								width: 52px;
@@ -1874,7 +1874,7 @@ header {
 			line-height: 1;
 			text-align: center;
 			white-space: nowrap;
-			margin-top: -14px;
+			margin-top: -5px;
 			width: 100%;
 			pointer-events: none;
 		}
