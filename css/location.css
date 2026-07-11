@@ -2275,6 +2275,7 @@ header {
 section#resshaDetail {
 	display: none;
 	height: 100%;
+	height: 100dvh;
 	left: 0;
 	position: fixed;
 	top: 0;
@@ -2292,9 +2293,19 @@ section#resshaDetail {
 	/* 列車詳細ダイアログ領域 */
 	section#resshaDetail .dialog {
 		background-color: #fff;
+		display: flex;
+		flex-direction: column;
 		width: 502px;
 		max-height: calc(100vh - 80px);
+		overflow: hidden;
 	}
+		section#resshaDetail .dialog .dialog-body {
+			flex: 1 1 auto;
+			min-height: 0;
+			overflow-y: auto;
+			overscroll-behavior: contain;
+			-webkit-overflow-scrolling: touch;
+		}
 
 		/* 列車詳細ダイアログのヘッダー */
 		section#resshaDetail .dialog .header {
@@ -2302,6 +2313,7 @@ section#resshaDetail {
 			background-color: #5b3;
 			border-width: 0px;
 			color: #fff;
+			flex: 0 0 auto;
 		}
 			/* 列車詳細ダイアログのヘッダーの｢×｣ボタン */
 			section#resshaDetail .dialog .header .close {
@@ -2415,6 +2427,7 @@ section#resshaDetail {
 	/* 列車詳細ダイアログ内のボタン領域 */
 	section#resshaDetail .dialog .dialog-btn-contents {
 		display: flex;
+		flex: 0 0 auto;
 		justify-content: center;
 		padding: 0 0 10px 0;
 	}
@@ -3504,6 +3517,7 @@ section#refreshSettingDetail {
 	}
 	section#resshaDetail .dialog {
 		box-sizing: border-box;
+		max-height: calc(100dvh - 16px);
 		max-width: 100%;
 		width: 100%;
 	}
