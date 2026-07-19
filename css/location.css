@@ -896,6 +896,10 @@ header {
 						#stationList .eki-panel .ressha-contents .ressha-icon .ressha[data-ressha_type='6'] .icon-img {
 							background-image: url(../images/home/train_icon_white.svg);
 						}
+						#stationList .eki-panel .ressha-contents .ressha-icon .ressha[data-ressha_type='6'] .cbango-label,
+						#stationList .hoka-line-area .fujishiro-panel .ressha-icon .ressha[data-ressha_type='6'] .cbango-label {
+							color: #000;
+						}
 												/* 列車アイコン（緑） 区間快速*/
 						#stationList .eki-panel .ressha-contents .ressha-icon .ressha[data-ressha_type='7'] .icon-img {
 							background-image: url(../images/home/train_icon_green.svg);
