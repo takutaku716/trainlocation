@@ -84,6 +84,7 @@ const JR_SHINKANSEN_LOCATION_SOURCE_MAP = {
 	"59": {
 		senku: "59",
 		centralUrl: "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://traininfo.jr-central.co.jp/shinkansen/var/train_info/train_location_info.json",
+		centralSuspensionUrl: "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://traininfo.jr-central.co.jp/shinkansen/var/train_info/suspension_info.json",
 		centralMasterUrl: "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://traininfo.jr-central.co.jp/shinkansen/common/data/common_ja.json",
 		centralTrainInfoUrlBase: "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://traininfo.jr-central.co.jp/shinkansen/var/train_info/",
 		kyushuUrl: "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://george-doredore.jrkyushu.co.jp/jrqSEN29.html"
@@ -143,7 +144,10 @@ let nextLocationAutoRefreshAt = null;
 let cachedTrainSearchData = null;
 let trainSearchDataPromise = null;
 let cachedTrainSearchLoadedAt = 0;
+const trainSearchTimetableCoreCache = new Map();
+const trainSearchTimetableNowCache = new Map();
 const TRAIN_SEARCH_CACHE_TTL = 30000;
+const TRAIN_SEARCH_TIMETABLE_NOW_CACHE_TTL = 30000;
 let trainNumberListRows = [];
 let trainNumberListFilter = "all";
 let preserveScrollAfterHashChange = false;
@@ -551,7 +555,8 @@ $(function ($) {
 		if (!isRunning) {
 			const searchTrain = find_train_search_result(cbango);
 			if (searchTrain && searchTrain.detailTrain) {
-				showTrainDetailDialog($("#trainDetail"), searchTrain.detailTrain);
+				load_train_search_detail_data(searchTrain.detailTrain)
+					.then((detailTrain) => showTrainDetailDialog($("#trainDetail"), detailTrain));
 				return;
 			}
 			show_train_not_running_message();
@@ -1077,16 +1082,19 @@ function load_jr_shinkansen_location_now_data(_param_rosen, _now) {
 	return Promise.all([
 		jqxhr_to_promise(get_dokotre_location_request(source.centralUrl, _now)).catch(() => null),
 		load_jr_shinkansen_static_source_data(source, _now).catch(() => ({ centralMasterJson: null })),
-		jqxhr_to_promise(get_external_text_request(source.kyushuUrl, _now)).catch(() => "")
+		jqxhr_to_promise(get_external_text_request(source.kyushuUrl, _now)).catch(() => ""),
+		load_jr_shinkansen_central_suspension_data(source, _now).catch(() => null)
 	]).then((results) => {
 		const centralLocationJson = results[0];
 		const centralMasterJson = results[1].centralMasterJson;
 		const kyushuHtml = results[2];
+		const centralSuspensionJson = results[3];
 		return load_jr_shinkansen_central_train_info_map(source, centralLocationJson, _now)
 			.then((centralTrainInfoMap) => {
 				const baseOptions = {
 					senku: source.senku || _param_rosen,
-					centralTrainInfoMap: centralTrainInfoMap
+					centralTrainInfoMap: centralTrainInfoMap,
+					centralSuspensionJson: centralSuspensionJson
 				};
 				const preliminary = window.JrShinkansenLocationAdapter.normalize(centralLocationJson, centralMasterJson, kyushuHtml, baseOptions);
 				return load_jr_shinkansen_kyushu_timetable_map(source, preliminary.location, _now)
@@ -1104,6 +1112,11 @@ function load_jr_shinkansen_location_now_data(_param_rosen, _now) {
 				return normalized.location;
 			});
 	});
+}
+
+function load_jr_shinkansen_central_suspension_data(source, _now) {
+	if (!source || !source.centralSuspensionUrl) return Promise.resolve(null);
+	return jqxhr_to_promise(get_dokotre_location_request(source.centralSuspensionUrl, _now));
 }
 
 function load_jr_shinkansen_kyushu_timetable_map(source, normalizedLocation, _now) {
@@ -1449,6 +1462,7 @@ function set_station_list(_param_rosen, _scrollKey, _callback) {
 			cachedResshaTypeData = typeData[0];
 			cachedEkiData = ekiData[0];
 			$("#stationList").html(rosen[0]);
+			set_jr_shinkansen_station_border_colors(_param_rosen);
 			if (is_jreast_location_rosen(_param_rosen) || is_dokotre_location_rosen(_param_rosen) || is_jr_shinkansen_location_rosen(_param_rosen)) setTimestamp(nowData);
 			update_location_data_stale_warning(nowData);
 			// 列車アイコンを描画する
@@ -1486,6 +1500,18 @@ function set_station_list(_param_rosen, _scrollKey, _callback) {
 		var errormessage = `<h2 class='msg-bg'>${get_error_message()}</h2>`;
 		$('#message').html(errormessage);
 		$('#message').show();
+	});
+}
+
+function set_jr_shinkansen_station_border_colors(_param_rosen) {
+	if (String(_param_rosen || "") !== "59") return;
+	let sectionClass = "jr-shinkansen-tokaido";
+	$("#stationList .eki-panel.eki").each(function() {
+		const stationLink = $(this).find(".eki-contents > .stalist-eki-link").first();
+		const stationKey = String(stationLink.find("[key]").first().attr("key") || "");
+		if (stationKey === "0156") sectionClass = "jr-shinkansen-sanyo";
+		if (stationKey === "1627") sectionClass = "jr-shinkansen-kyushu";
+		stationLink.addClass(sectionClass);
 	});
 }
 
@@ -3143,6 +3169,76 @@ function find_train_search_result(cbango) {
 	return cachedTrainSearchData.trains.find((train) => normalize_train_search_cbango(train.cbango) === normalizedCbango);
 }
 
+/*
+ * 駅別時刻表の公式データから、非走行列車の種別と運行状態を取得する。
+ */
+function load_train_search_detail_data(detailTrain) {
+	const stationKey = String((detailTrain && detailTrain.typeLookupStation) || "");
+	if (!detailTrain || !stationKey) return Promise.resolve(detailTrain);
+
+	let corePromise = Promise.resolve(null);
+	if (!detailTrain.type) {
+		corePromise = trainSearchTimetableCoreCache.get(stationKey);
+		if (!corePromise) {
+			const sourceUrl = "https://www3.jrhokkaido.co.jp/webunkou/json/timetable/core/" + encodeURIComponent(stationKey) + "_core.json";
+			const requestUrl = "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=" + encodeURIComponent(sourceUrl) + "&_=" + (Date.now() >>> 16);
+			corePromise = jqxhr_to_promise($.getJSON(requestUrl));
+			trainSearchTimetableCoreCache.set(stationKey, corePromise);
+			corePromise.catch(() => trainSearchTimetableCoreCache.delete(stationKey));
+		}
+	}
+
+	let nowPromise = Promise.resolve(null);
+	if (detailTrain.status === null || typeof detailTrain.status === "undefined") {
+		const now = Date.now();
+		const cachedNow = trainSearchTimetableNowCache.get(stationKey);
+		if (cachedNow && now - cachedNow.loadedAt < TRAIN_SEARCH_TIMETABLE_NOW_CACHE_TTL) {
+			nowPromise = cachedNow.promise;
+		} else {
+			const sourceUrl = "https://www3.jrhokkaido.co.jp/webunkou/json/timetable/now/" + encodeURIComponent(stationKey) + "_now.json";
+			const requestUrl = "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=" + encodeURIComponent(sourceUrl) + "&_=" + (now >>> 10);
+			nowPromise = jqxhr_to_promise($.getJSON(requestUrl));
+			trainSearchTimetableNowCache.set(stationKey, { "promise": nowPromise, "loadedAt": now });
+			nowPromise.catch(() => trainSearchTimetableNowCache.delete(stationKey));
+		}
+	}
+
+	return Promise.all([corePromise, nowPromise]).then(([coreData, nowData]) => {
+		const resolvedDetail = Object.assign({}, detailTrain);
+		const targetCbango = normalize_train_search_cbango(detailTrain.cbango);
+		const timetables = coreData && coreData.today && Array.isArray(coreData.today.timetable) ? coreData.today.timetable : [];
+		let matchedTrain;
+		timetables.some((timetable) => {
+			if (!timetable || !Array.isArray(timetable.trains)) return false;
+			matchedTrain = timetable.trains.find((train) => train && normalize_train_search_cbango(train.cbango) === targetCbango);
+			return !!matchedTrain;
+		});
+		if (matchedTrain && matchedTrain.type !== null && typeof matchedTrain.type !== "undefined" && String(matchedTrain.type) !== "") {
+			resolvedDetail.type = String(matchedTrain.type);
+			resolvedDetail.typeLabel = String(matchedTrain.typeText || "");
+		}
+
+		const operationRows = nowData && Array.isArray(nowData.today) ? nowData.today : [];
+		const operation = operationRows.find((train) => train && normalize_train_search_cbango(train.cbango) === targetCbango);
+		if (operation) {
+			const lang = document.documentElement.dataset.lang;
+			resolvedDetail.runStatus = operation.runStatus;
+			resolvedDetail.yokuStatus = operation.yokuStatus;
+			resolvedDetail.yokuDetail = operation.yokuDetail;
+			resolvedDetail.status = Number(operation.status);
+			resolvedDetail.statusDetail =
+				lang === "ja" ? operation.statusDetail :
+				lang === "en" ? operation.statusDetailEn :
+				lang === "tc" ? operation.statusDetailTc :
+				lang === "sc" ? operation.statusDetailSc :
+				lang === "kr" ? operation.statusDetailKr : "";
+			resolvedDetail.chien = operation.chien;
+			resolvedDetail.pos = operation.pos;
+		}
+		return resolvedDetail;
+	}).catch(() => detailTrain);
+}
+
 function load_train_search_data() {
 	if (cachedTrainSearchData && (Date.now() - cachedTrainSearchLoadedAt) < TRAIN_SEARCH_CACHE_TTL) {
 		return Promise.resolve(cachedTrainSearchData);
@@ -3283,8 +3379,11 @@ function load_train_search_data() {
 				lang === "sc" ? expressNow.statusDetailSc :
 				lang === "kr" ? expressNow.statusDetailKr : ""
 			) : "";
+			const suppliedType = expressCoreTrain && expressCoreTrain.type !== null && typeof expressCoreTrain.type !== "undefined" && String(expressCoreTrain.type) !== "" ?
+				String(expressCoreTrain.type) :
+				(daiya && daiya.type !== null && typeof daiya.type !== "undefined" ? String(daiya.type) : "");
 			const resolvedType = resolve_train_search_type(
-				expressCoreTrain && typeof expressCoreTrain.type !== "undefined" ? String(expressCoreTrain.type) : (daiya && typeof daiya.type !== "undefined" ? String(daiya.type) : ""),
+				suppliedType,
 				daiya ? daiya.name : "",
 				typeData,
 				cbango,
@@ -3295,13 +3394,15 @@ function load_train_search_data() {
 				"shuEkiKey": daiya ? daiya.shuEkiKey : "",
 				"cbango": cbango
 			}, daiya, typeData, ekiData);
+			const detailType = daiya && String(daiya.senku || "") === "19" ? "4" : suppliedType;
 			const detailTrain = daiya ? {
 				"cbango": cbango,
 				"name": daiya.name || "",
-				"type": resolvedType,
+				"type": detailType,
 				"shuEki": daiya.shuEkiKey || "",
 				"ryosu": daiya.ryosu || "",
-				"senku": daiya.senku || "00"
+				"senku": daiya.senku || "00",
+				"typeLookupStation": Array.isArray(daiya.stations) && daiya.stations[0] ? String(daiya.stations[0].key || "") : ""
 			} : null;
 			if (detailTrain && expressNow) {
 				detailTrain.runStatus = expressNow.runStatus;

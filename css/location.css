@@ -590,6 +590,15 @@ header {
 				margin: 0 5px;
 				max-height: 44px;
 			}
+			#stationList .eki-panel .eki-contents .stalist-eki-link.jr-shinkansen-tokaido {
+				border-color: #ED6D00;
+			}
+			#stationList .eki-panel .eki-contents .stalist-eki-link.jr-shinkansen-sanyo {
+				border-color: #0169B7;
+			}
+			#stationList .eki-panel .eki-contents .stalist-eki-link.jr-shinkansen-kyushu {
+				border-color: #E40112;
+			}
 				/* 駅のリンク領域 2駅 */
 				#stationList .eki-panel .eki-contents .stalist-eki-link.two-eki {
 					height: 94px;
@@ -824,7 +833,7 @@ header {
 			line-height: 1;
 			text-align: center;
 			white-space: nowrap;
-			margin-top: -5px;
+			margin-top: 1px;
 			pointer-events: none;
 		}
 						#stationList .eki-panel .ressha-contents .ressha-icon .icon-img.cbango-only .cbango-label {
@@ -886,6 +895,10 @@ header {
 						/* 列車アイコン（白） 臨時列車*/
 						#stationList .eki-panel .ressha-contents .ressha-icon .ressha[data-ressha_type='6'] .icon-img {
 							background-image: url(../images/home/train_icon_white.svg);
+						}
+						#stationList .eki-panel .ressha-contents .ressha-icon .ressha[data-ressha_type='6'] .cbango-label,
+						#stationList .hoka-line-area .fujishiro-panel .ressha-icon .ressha[data-ressha_type='6'] .cbango-label {
+							color: #000;
 						}
 												/* 列車アイコン（緑） 区間快速*/
 						#stationList .eki-panel .ressha-contents .ressha-icon .ressha[data-ressha_type='7'] .icon-img {
@@ -989,6 +1002,7 @@ header {
 								color: #fff;
 								font-size: 17px;
 								font-weight: bold;
+								line-height: 1;
 								margin-top: 6px;
 							}
 							/* 列車アイコン内の列車種別 (臨時列車)*/
@@ -1847,7 +1861,7 @@ header {
 						}
 
 							/* 藤城線の列車アイコン内の領域 */
-							#stationList .hoka-line-area .fujishiro-panel .ressha-icon.up div {
+							#stationList .hoka-line-area .fujishiro-panel .ressha-icon.up > div.ressha {
 								display: inline-grid;
 								grid-template-rows: 35px 12px;
 								width: 52px;
@@ -1865,7 +1879,7 @@ header {
 			line-height: 1;
 			text-align: center;
 			white-space: nowrap;
-			margin-top: -14px;
+			margin-top: 1px;
 			width: 100%;
 			pointer-events: none;
 		}
@@ -1928,6 +1942,7 @@ header {
 									display: block;
 									font-size: 17px;
 									font-weight: bold;
+									line-height: 1;
 									margin-top: 6px;
 									width: 100%;
 									text-align: center;
@@ -2264,6 +2279,7 @@ header {
 section#resshaDetail {
 	display: none;
 	height: 100%;
+	height: 100dvh;
 	left: 0;
 	position: fixed;
 	top: 0;
@@ -2281,9 +2297,19 @@ section#resshaDetail {
 	/* 列車詳細ダイアログ領域 */
 	section#resshaDetail .dialog {
 		background-color: #fff;
+		display: flex;
+		flex-direction: column;
 		width: 502px;
 		max-height: calc(100vh - 80px);
+		overflow: hidden;
 	}
+		section#resshaDetail .dialog .dialog-body {
+			flex: 1 1 auto;
+			min-height: 0;
+			overflow-y: auto;
+			overscroll-behavior: contain;
+			-webkit-overflow-scrolling: touch;
+		}
 
 		/* 列車詳細ダイアログのヘッダー */
 		section#resshaDetail .dialog .header {
@@ -2291,6 +2317,7 @@ section#resshaDetail {
 			background-color: #5b3;
 			border-width: 0px;
 			color: #fff;
+			flex: 0 0 auto;
 		}
 			/* 列車詳細ダイアログのヘッダーの｢×｣ボタン */
 			section#resshaDetail .dialog .header .close {
@@ -2404,6 +2431,7 @@ section#resshaDetail {
 	/* 列車詳細ダイアログ内のボタン領域 */
 	section#resshaDetail .dialog .dialog-btn-contents {
 		display: flex;
+		flex: 0 0 auto;
 		justify-content: center;
 		padding: 0 0 10px 0;
 	}
@@ -2454,6 +2482,19 @@ section#unkouDetail {
 		/* 運行詳細ダイアログ内の線区別運行状況ボタン */
 		section#resshaDetail #commonSenkuOperation ul {
 			grid-template-columns: repeat(1, 1fr);
+		}
+		section#resshaDetail #commonSenkuOperation .jr-shinkansen-unko-group-button {
+			background: #fff;
+			box-sizing: border-box;
+			color: #111;
+			cursor: pointer;
+			font: inherit;
+			width: 100%;
+		}
+		section#resshaDetail #commonSenkuOperation .jr-shinkansen-unko-group-button.selected {
+			background: #f2f9ed;
+			border-color: #4cbd2b;
+			box-shadow: inset 4px 0 0 #4cbd2b;
 		}
 		section#resshaDetail #commonSenkuOperation .merged-area-operation {
 			margin-bottom: 14px;
@@ -2522,6 +2563,38 @@ section#unkouDetail {
 				border-bottom: 0px solid black;
 				padding-bottom: 5px;
 			}
+
+		section#resshaDetail .dialog .jr-shinkansen-suspension-list h3 {
+			font-size: 17px;
+			margin: 0 0 10px;
+		}
+		section#resshaDetail .dialog .jr-shinkansen-suspension-table-wrap {
+			overflow-x: auto;
+		}
+		section#resshaDetail .dialog .jr-shinkansen-suspension-list table {
+			border-collapse: collapse;
+			font-size: 14px;
+			min-width: 480px;
+			width: 100%;
+		}
+		section#resshaDetail .dialog .jr-shinkansen-suspension-list th,
+		section#resshaDetail .dialog .jr-shinkansen-suspension-list td {
+			border: 1px solid #777;
+			padding: 7px 8px;
+			text-align: left;
+			vertical-align: middle;
+		}
+		section#resshaDetail .dialog .jr-shinkansen-suspension-list th {
+			background: #222;
+			color: #fff;
+			font-weight: normal;
+			white-space: nowrap;
+		}
+		section#resshaDetail .dialog .jr-shinkansen-suspension-list td:first-child,
+		section#resshaDetail .dialog .jr-shinkansen-suspension-list td:nth-child(2),
+		section#resshaDetail .dialog .jr-shinkansen-suspension-list td:last-child {
+			white-space: nowrap;
+		}
 
 	/* 列車詳細ダイアログ内のスクロール領域 */
 	section#resshaDetail .dialog .ressha-detail-scroll-contents {
@@ -2831,6 +2904,7 @@ section#trainSearchDetail {
 			section#trainSearchDetail .dialog .train-search-row {
 				margin-bottom: 16px;
 			}
+
 			section#trainSearchDetail .dialog .train-search-list-action {
 				margin-top: -4px;
 				text-align: right;
@@ -3441,10 +3515,61 @@ section#refreshSettingDetail {
 	}
 }
 @media (max-width:550px) {
+	section#resshaDetail .dialog-outer {
+		box-sizing: border-box;
+		padding: 8px;
+	}
+	section#resshaDetail .dialog {
+		box-sizing: border-box;
+		max-height: calc(100dvh - 16px);
+		max-width: 100%;
+		width: 100%;
+	}
+	section#resshaDetail .dialog #unkouDetailMain,
+	section#resshaDetail .dialog #dialogGaikyo,
+	section#resshaDetail .dialog .common-contents-frame,
+	section#resshaDetail .dialog .gaikyo-frame,
+	section#resshaDetail .dialog .jr-shinkansen-suspension-list,
+	section#resshaDetail .dialog .jr-shinkansen-suspension-table-wrap {
+		box-sizing: border-box;
+		max-width: 100%;
+		min-width: 0;
+	}
+	section#resshaDetail .dialog .jr-shinkansen-suspension-list table {
+		font-size: 12px;
+		min-width: 0;
+		table-layout: fixed;
+		width: 100%;
+	}
+	section#resshaDetail .dialog .jr-shinkansen-suspension-list th,
+	section#resshaDetail .dialog .jr-shinkansen-suspension-list td {
+		overflow-wrap: anywhere;
+		padding: 5px 4px;
+		white-space: normal;
+		word-break: normal;
+	}
+	section#resshaDetail .dialog .jr-shinkansen-suspension-list th:nth-child(1) {
+		width: 28%;
+	}
+	section#resshaDetail .dialog .jr-shinkansen-suspension-list th:nth-child(2) {
+		width: 12%;
+	}
+	section#resshaDetail .dialog .jr-shinkansen-suspension-list th:nth-child(3) {
+		width: 36%;
+	}
+	section#resshaDetail .dialog .jr-shinkansen-suspension-list th:nth-child(4) {
+		width: 24%;
+	}
+	section#resshaDetail .dialog .jr-shinkansen-suspension-list td:first-child,
+	section#resshaDetail .dialog .jr-shinkansen-suspension-list td:nth-child(2),
+	section#resshaDetail .dialog .jr-shinkansen-suspension-list td:last-child {
+		white-space: normal;
+	}
+
 	#stationList .eki-panel .ressha-contents .ressha-icon .cbango-label,
 	#stationList .hoka-line-area .fujishiro-panel .ressha-icon.up .cbango-label {
 		font-size: 8px;
-		margin-top: -5px;
+		margin-top: 1px;
 	}
 	#stationList .eki-panel .ressha-contents .ressha-icon .icon-img.cbango-only .cbango-label,
 	#stationList .hoka-line-area .fujishiro-panel .ressha-icon .icon-img.cbango-only .cbango-label {

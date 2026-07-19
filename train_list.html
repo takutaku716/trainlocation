@@ -63,6 +63,7 @@
 			<div class="train-list-controls">
 				<span class="label">線区</span>
 				<select id="trainListRosenSelect"></select>
+				<button id="trainListRefreshSettingBtn" type="button" class="train-list-refresh-setting-button common-button">自動更新設定</button>
 			</div>
 			<div class="train-list-lineboard">
 				<div id="trainListCommMark" class="train-list-lineboard-mark">＊</div>
@@ -82,8 +83,9 @@
 					<table class="train-list-table">
 						<thead>
 							<tr>
-								<th style="width: 24%;">列番</th>
-								<th style="width: 14%;">遅延</th>
+								<th style="width: 17%;">列番</th>
+								<th style="width: 10%;">遅延</th>
+								<th style="width: 8%;">状態</th>
 								<th>在線位置</th>
 							</tr>
 						</thead>
@@ -95,8 +97,9 @@
 					<table class="train-list-table">
 						<thead>
 							<tr>
-								<th style="width: 24%;">列番</th>
-								<th style="width: 14%;">遅延</th>
+								<th style="width: 17%;">列番</th>
+								<th style="width: 10%;">遅延</th>
+								<th style="width: 8%;">状態</th>
 								<th>在線位置</th>
 							</tr>
 						</thead>
@@ -106,6 +109,42 @@
 			</div>
 		</section>
 	</div>
+
+	<section id="trainListRefreshSettingDetail">
+		<div class="dialog-outer">
+			<div class="dialog">
+				<h2 class="common-subtitle header"><span>自動更新設定</span><span class="close"><img src="./images/home/close.svg" alt="閉じる"></span></h2>
+				<div id="trainListRefreshSettingMain">
+					<div class="refresh-setting-message">在線一覧の自動更新設定を変更できます。</div>
+					<div class="refresh-setting-row">
+						<label for="trainListRefreshEnabledSelect">自動更新</label>
+						<select id="trainListRefreshEnabledSelect">
+							<option value="on">ON</option>
+							<option value="off">OFF</option>
+						</select>
+					</div>
+					<div class="refresh-setting-row">
+						<label for="trainListRefreshIntervalSelect">更新間隔</label>
+						<select id="trainListRefreshIntervalSelect">
+							<option value="15">15秒</option>
+							<option value="30">30秒</option>
+							<option value="60">60秒</option>
+						</select>
+					</div>
+					<div class="refresh-setting-row">
+						<label for="trainListSleepPreventSelect">画面スリープ防止</label>
+						<select id="trainListSleepPreventSelect">
+							<option value="on">ON</option>
+							<option value="off">OFF</option>
+						</select>
+					</div>
+					<div class="dialog-btn-contents">
+						<button id="trainListRefreshSettingApplyBtn" type="button" class="common-button">適用</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</section>
 
 	<section id="guideDetail"></section>
 

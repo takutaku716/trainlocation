@@ -21,10 +21,26 @@
 
 .train-list-controls select {
 	border: 1px solid #999;
+	flex: 1 1 auto;
 	font-size: 24px;
 	height: 48px;
 	max-width: 100%;
 	padding: 0 10px;
+}
+
+.train-list-refresh-setting-button {
+	background-color: #fff;
+	cursor: pointer;
+	flex: 0 0 180px;
+	font-size: 16px;
+	font-weight: bold;
+	min-height: 48px;
+	padding: 0 16px;
+}
+
+.train-list-refresh-setting-button.off {
+	background-color: #f2f2f2;
+	color: #666;
 }
 
 .train-list-title {
@@ -159,7 +175,7 @@
 .train-list-table th,
 .train-list-table td {
 	border: 1px solid #d1d1d1;
-	padding: 8px 10px;
+	padding: 8px 8px;
 }
 
 .train-list-table th {
@@ -178,9 +194,34 @@
 }
 
 .train-list-table td.cbango,
-.train-list-table td.delay {
+.train-list-table td.delay,
+.train-list-table td.status {
 	text-align: right;
 	white-space: nowrap;
+}
+
+.train-list-table td.cbango,
+.train-list-table td.delay {
+	padding-left: 4px;
+	padding-right: 8px;
+}
+
+.train-list-table td.status {
+	padding-left: 3px;
+	padding-right: 3px;
+	text-align: center;
+}
+
+.train-list-status-badge {
+	background: #777;
+	color: #fff;
+	display: inline-block;
+	font-size: 12px;
+	font-weight: bold;
+	line-height: 1.2;
+	min-width: 32px;
+	padding: 3px 4px;
+	text-align: center;
 }
 
 .train-list-table td.section {
@@ -205,6 +246,98 @@
 	background: #fff;
 }
 
+#trainListRefreshSettingDetail {
+	background-color: rgba(0, 0, 0, 0.5);
+	display: none;
+	height: 100%;
+	left: 0;
+	position: fixed;
+	top: 0;
+	width: 100%;
+	z-index: 20000;
+}
+
+#trainListRefreshSettingDetail .dialog-outer {
+	align-items: center;
+	display: flex;
+	height: 100%;
+	justify-content: center;
+	width: 100%;
+}
+
+#trainListRefreshSettingDetail .dialog {
+	background-color: #fff;
+	box-sizing: border-box;
+	max-width: calc(100% - 24px);
+	width: 502px;
+}
+
+#trainListRefreshSettingDetail .dialog .header {
+	background-color: #5b3;
+	border-width: 0;
+	color: #fff;
+	cursor: pointer;
+}
+
+#trainListRefreshSettingDetail .dialog .header .close {
+	line-height: 10px;
+	padding: 7px 6px;
+	position: absolute;
+	right: 0;
+	top: 0;
+	width: 32px;
+}
+
+#trainListRefreshSettingDetail .dialog .header .close:hover {
+	background-color: #6c4;
+	cursor: pointer;
+}
+
+#trainListRefreshSettingMain {
+	padding: 15px;
+}
+
+#trainListRefreshSettingMain .refresh-setting-message {
+	font-size: 15px;
+	margin: 5px 10px 20px 10px;
+}
+
+#trainListRefreshSettingMain .refresh-setting-row {
+	align-items: center;
+	display: flex;
+	justify-content: space-between;
+	margin: 0 10px 15px 10px;
+}
+
+#trainListRefreshSettingMain .refresh-setting-row label {
+	font-size: 16px;
+	font-weight: bold;
+}
+
+#trainListRefreshSettingMain .refresh-setting-row select {
+	border: 1px solid #8c5;
+	font-size: 16px;
+	min-width: 140px;
+	padding: 6px 10px;
+}
+
+#trainListRefreshSettingMain .dialog-btn-contents {
+	margin-top: 20px;
+}
+
+#trainListRefreshSettingMain .common-button {
+	background-color: #5b3;
+	color: #fff;
+	cursor: pointer;
+	margin: 0 auto;
+	min-height: 34px;
+	width: 160px;
+}
+
+#trainListRefreshSettingMain .common-button:hover {
+	background-color: #6c4;
+}
+
 @media (max-width: 900px) {
 	.train-list-panels {
 		grid-template-columns: 1fr;
@@ -214,6 +347,10 @@
 	.train-list-controls select,
 	.train-list-title {
 		font-size: 20px;
+	}
+
+	.train-list-refresh-setting-button {
+		flex-basis: 160px;
 	}
 
 	.train-list-lineboard {
@@ -257,6 +394,13 @@
 
 	.train-list-controls select {
 		height: 42px;
+	}
+
+	.train-list-refresh-setting-button {
+		flex: 0 0 auto;
+		font-size: 15px;
+		min-height: 42px;
+		width: 100%;
 	}
 
 	.train-list-title {

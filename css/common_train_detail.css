@@ -139,12 +139,17 @@
 				border: #444 solid 2px;
 				color: #444;
 			}
-			/* ｢列車種別｣のアイコン (8:快速（札幌～手稲・小樽間普通）) */
+			/* ｢列車種別｣のアイコン (0:特別快速、8:快速。札幌～手稲・小樽間は普通) */
+			.trainDetailDialog .train-info dl dt.type-item .type-label[data-type='0'],
 			.trainDetailDialog .train-info dl dt.type-item .type-label[data-type='8'] {
 				background-color: #07c;
 			}
+			/* ｢列車種別｣のアイコン (9:区間快速) */
+			.trainDetailDialog .train-info dl dt.type-item .type-label[data-type='9'] {
+				background-color: #080;
+			}
 			/* ｢列車種別｣のアイコン (その他・未判定) */
-			.trainDetailDialog .train-info dl dt.type-item .type-label[data-type='0'] {
+			.trainDetailDialog .train-info dl dt.type-item .type-label[data-type='unknown'] {
 				background-color: #777;
 				color: transparent;
 			}
@@ -210,8 +215,8 @@
 			border-top: 1px solid #ccc;
 		}
 		.trainDetailDialog .train-info dl dd.unban-item .cbango {
-			color: #f00;
-			font-weight: bold;
+			color: #333;
+			font-weight: normal;
 		}
 /* 列車詳細情報ダイアログのダイヤデータ部分 */
 .trainDetailDialog .station-list {
