@@ -113,7 +113,7 @@ function showTrainDetailDialog(target, train, isError) {
 			}
 			// 種別を判定できない場合だけ、従来どおりグレーの空欄を表示する。
 			if (!resshaTypeInfo) {
-				typeLabel.attr("data-type", "0");
+				typeLabel.attr("data-type", "unknown");
 				typeLabel.text("");
 				typeLabel.removeClass("hide");
 				return;
@@ -123,7 +123,7 @@ function showTrainDetailDialog(target, train, isError) {
 				(resshaTypeInfo.labelText && (resshaTypeInfo.labelText[lang] || resshaTypeInfo.labelText.ja)) ||
 				"";
 			if (!resshaTypeName) {
-				typeLabel.attr("data-type", "0");
+				typeLabel.attr("data-type", "unknown");
 				typeLabel.text("");
 				typeLabel.removeClass("hide");
 				return;

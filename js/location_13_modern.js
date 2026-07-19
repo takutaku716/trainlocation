@@ -1,608 +1,481 @@
-const MODERN_ROSEN = "53";
-const MODERN_ROUTE_LAYOUT_PATH = "./rosen/rosen_53.html";
-const MODERN_LINE_MIN_HEIGHT = 2200;
-const MODERN_LOCATION_JSON_SOURCE_MAP = {
-	"51": ["01", "05"],
-	"52": ["02", "07", "09"],
-	"53": ["02", "13"]
-};
-const MODERN_FALLBACK_STATIONS = [
-	{ name: "南千歳", key: "R1P118" },
-	{ name: "追分", key: "R2P6" },
-	{ name: "新夕張", key: "R2P53" },
-	{ name: "占冠", key: "R7P19" },
-	{ name: "トマム", key: "R7P21" },
-	{ name: "新得", key: "R7P29" },
-	{ name: "帯広", key: "R7P39" },
-	{ name: "池田", key: "R7P51" },
-	{ name: "浦幌", key: "R7P57" },
-	{ name: "白糠", key: "R7P69" },
-	{ name: "釧路", key: "R7P79" }
-];
+(function() {
+	"use strict";
 
-let modernRouteLayout = create_modern_fallback_layout();
+	const stationRows = [
+		"札幌|01", "苗穂|H02", "白石|H03", "平和|H04", "新札幌|H05", "上野幌|H06",
+		"西の里信号場|", "北広島|H07", "島松|H08", "恵み野|H09", "恵庭|H10", "サッポロビール庭園|H11",
+		"長都|H12", "千歳|H13", "南千歳|H14", "新千歳空港|AP15", "駒里信号場|", "西早来信号場|",
+		"追分|K15", "東追分信号場|", "川端|K17", "滝ノ下信号場|", "滝ノ上信号場|", "十三里信号場|",
+		"新夕張|K20", "楓信号場|", "オサワ信号場|", "東オサワ信号場|", "清風山信号場|", "占冠|K21",
+		"東占冠信号場|", "滝ノ沢信号場|", "ホロカ信号場|", "トマム|K22", "串内信号場|", "上落合信号場|",
+		"新狩勝信号場|", "広内信号場|", "西新得信号場|", "新得|K23", "十勝清水|K24", "平野川信号場|",
+		"御影|K26", "上芽室信号場|", "芽室|K27", "大成|K28", "西帯広|K29", "帯広貨物|",
+		"柏林台|K30", "帯広|K31", "札内|K32", "幕別|K34", "利別|K35", "池田|K36",
+		"昭栄信号場|", "十弗|K37", "豊頃|K38", "新吉野|K39", "浦幌|K40", "常豊信号場|",
+		"上厚内信号場|", "厚内|K42", "直別信号場|", "尺別信号場|", "音別|K45", "古瀬信号場|",
+		"白糠|K47", "西庶路|K48", "庶路|K49", "東庶路信号場|", "大楽毛|K50", "新大楽毛|K51",
+		"新富士|K52", "(旧)釧路操車場|", "釧路|K53"
+	];
 
-$(function() {
-	$("#modernRefreshButton").on("click", load_modern_location_53);
-	$("#modernBackLink").attr("href", build_page_url("./location.html", "rosen=53"));
-	initialize_modern_location_53();
-});
-
-function initialize_modern_location_53() {
-	load_modern_route_layout().always(() => {
-		render_modern_stations();
-		load_modern_location_53();
+	const stations = stationRows.map(function(row, index) {
+		const parts = row.split("|");
+		return { name: parts[0], code: parts[1], top: index * 224 };
 	});
-}
 
-function load_modern_route_layout() {
-	return $.get(MODERN_ROUTE_LAYOUT_PATH)
-		.done((html) => {
-			modernRouteLayout = build_modern_route_layout(html) || create_modern_fallback_layout();
-		})
-		.fail(() => {
-			modernRouteLayout = create_modern_fallback_layout();
+	const proxyBase = "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=";
+	const typeFallback = {
+		0: "特別快速", 1: "特急", 2: "快速", 3: "普通", 4: "北海道新幹線",
+		5: "特別快速", 6: "ライナー", 7: "臨時", 8: "快速", 9: "区間快速"
+	};
+	const destinationFallback = {
+		"札": "札幌", "釧": "釧路", "帯": "帯広", "空": "新千歳空港",
+		"小": "小樽", "岩": "岩見沢", "北": "北広島", "千": "千歳", "苫": "苫小牧"
+	};
+
+	let trains = [];
+	let livePositionMap = new Map();
+	let routeStationKeyMap = new Map();
+	let metadataPromise;
+
+	let titleTimer;
+	let displayMode = 0;
+
+	document.addEventListener("DOMContentLoaded", function() {
+		setRouteHeight();
+		renderSections();
+		renderStations();
+		updateCurrentTime();
+		bindInteractions();
+		refreshLiveTrains();
+	});
+
+	function setRouteHeight() {
+		const line = document.querySelector(".modern-line");
+		line.style.height = ((stations.length * 224) - 112) + "px";
+	}
+
+	function bindInteractions() {
+		const header = document.getElementById("modernHeader");
+		const guideButton = document.getElementById("modernGuideButton");
+		const guide = document.getElementById("modernGuide");
+		const guideClose = document.getElementById("modernGuideClose");
+		const displayModeButton = document.getElementById("modernDisplayModeButton");
+		const refreshButton = document.getElementById("modernRefreshButton");
+		const details = document.getElementById("modernTrainDetails");
+		const detailsClose = document.getElementById("modernTrainDetailsClose");
+
+		header.addEventListener("click", function() {
+			header.classList.add("is-title-visible");
+			window.clearTimeout(titleTimer);
+			titleTimer = window.setTimeout(function() {
+				header.classList.remove("is-title-visible");
+			}, 1700);
 		});
-}
 
-function build_modern_route_layout(html) {
-	const root = $("<div>").append($.parseHTML(html, document, false));
-	const points = [];
-	const pointSet = new Set();
-	const stations = [];
+		guideButton.addEventListener("click", function(event) {
+			event.stopPropagation();
+			window.clearTimeout(titleTimer);
+			guide.classList.add("is-open");
+			guide.setAttribute("aria-hidden", "false");
+			document.body.classList.add("is-guide-open");
+		});
 
-	root.find(".eki-panel").each(function() {
-		const panel = $(this);
-		const panelKeys = collect_modern_position_keys(panel);
-		const isStation = panel.hasClass("eki");
-		const stationName = isStation ? extract_modern_station_name(panel) : "";
-		panelKeys.forEach((key) => {
-			if (pointSet.has(key)) return;
-			pointSet.add(key);
-			points.push({
-				key: key,
-				isStation: isStation,
-				name: stationName
+		guideClose.addEventListener("click", function() {
+			guide.classList.remove("is-open");
+			guide.setAttribute("aria-hidden", "true");
+			document.body.classList.remove("is-guide-open");
+			header.classList.remove("is-title-visible");
+		});
+
+		displayModeButton.addEventListener("click", function() {
+			displayMode = (displayMode + 1) % 3;
+			document.body.classList.toggle("train-mode-compact", displayMode === 1);
+			document.body.classList.toggle("train-mode-minimal", displayMode === 2);
+			displayModeButton.setAttribute("aria-label", displayMode === 0 ? "列車アイコンを簡略表示にする" : displayMode === 1 ? "列車アイコンを最小表示にする" : "列車アイコンを詳細表示にする");
+		});
+
+		detailsClose.addEventListener("click", closeTrainDetails);
+		details.addEventListener("click", function(event) {
+			if (event.target === details) closeTrainDetails();
+		});
+
+		refreshButton.addEventListener("click", function() {
+			if (refreshButton.disabled) return;
+			refreshLiveTrains();
+		});
+	}
+
+	async function refreshLiveTrains() {
+		const refreshButton = document.getElementById("modernRefreshButton");
+		const loading = document.getElementById("modernLoading");
+		const status = document.getElementById("modernDataStatus");
+		refreshButton.disabled = true;
+		refreshButton.classList.add("is-spinning");
+		loading.classList.add("is-visible");
+		loading.setAttribute("aria-hidden", "false");
+		status.classList.remove("is-neutral");
+		status.hidden = true;
+
+		try {
+			const metadata = await loadLiveMetadata();
+			const nowData = await loadLocationSources();
+			trains = convertLiveTrains(nowData.trains, metadata);
+			renderTrains();
+			setDataTimestamp(nowData.time);
+
+			if (trains.length === 0) {
+				status.textContent = "現在、53路線内に表示できる列車はありません";
+				status.classList.add("is-neutral");
+				status.hidden = false;
+			}
+		} catch (error) {
+			trains = [];
+			renderTrains();
+			status.textContent = "在線情報を取得できません。更新ボタンでもう一度お試しください";
+			status.classList.remove("is-neutral");
+			status.hidden = false;
+			console.error("Modern location data load failed", error);
+		} finally {
+			refreshButton.disabled = false;
+			refreshButton.classList.remove("is-spinning");
+			loading.classList.remove("is-visible");
+			loading.setAttribute("aria-hidden", "true");
+		}
+	}
+
+	function loadLiveMetadata() {
+		if (metadataPromise) return metadataPromise;
+
+		metadataPromise = Promise.all([
+			fetchText("./rosen/rosen_53.html"),
+			fetchJson(proxyBase + "https://www3.jrhokkaido.co.jp/webunkou/json/master/ressha_type_master.json").catch(function() { return []; }),
+			fetchJson(proxyBase + "https://www3.jrhokkaido.co.jp/webunkou/json/master/eki_master.json").catch(function() { return []; }),
+			fetchJson("./original/location_master.json").catch(function() { return {}; })
+		]).then(function(results) {
+			buildPositionMap(results[0]);
+			return {
+				types: Array.isArray(results[1]) ? results[1] : [],
+				stations: Array.isArray(results[2]) ? results[2] : [],
+				positions: results[3] || {}
+			};
+		});
+
+		return metadataPromise;
+	}
+
+	async function loadLocationSources() {
+		const cache = Date.now() >>> 10;
+		const isTest = new URLSearchParams(window.location.search).get("test") === "1";
+		const urls = isTest
+			? ["./testdata/location/location_02_now.json?" + cache, "./testdata/location/location_13_now.json?" + cache]
+			: [
+				proxyBase + "https://www3.jrhokkaido.co.jp/trainlocation/json/location/now/location_02_now.json?" + cache,
+				proxyBase + "https://www3.jrhokkaido.co.jp/trainlocation/json/location/now/location_13_now.json?" + cache
+			];
+		const results = await Promise.allSettled(urls.map(fetchJson));
+		const successful = results
+			.filter(function(result) { return result.status === "fulfilled" && result.value && Array.isArray(result.value.trains); })
+			.map(function(result) { return result.value; });
+
+		if (successful.length === 0) throw new Error("No location source was available");
+
+		const seen = new Set();
+		const merged = [];
+		successful.forEach(function(source) {
+			source.trains.forEach(function(train) {
+				const key = String(train.cbango || train.pos || "");
+				if (seen.has(key)) return;
+				seen.add(key);
+				merged.push(train);
 			});
 		});
 
-		if (!isStation) return;
-		if (!stationName || panelKeys.length < 1) return;
-		stations.push({
-			name: stationName,
-			key: panelKeys[0]
+		return { trains: merged, time: successful[0].time || "" };
+	}
+
+	function buildPositionMap(html) {
+		const routeDocument = new DOMParser().parseFromString(html, "text/html");
+		const stationIndexByName = new Map();
+		stations.forEach(function(station, index) {
+			stationIndexByName.set(station.name, index);
 		});
-	});
+		livePositionMap = new Map();
+		routeStationKeyMap = new Map();
+		let currentStationIndex = -1;
 
-	if (points.length < 2 || stations.length < 2) return null;
-	return normalize_modern_route_layout(points, stations);
-}
+		routeDocument.querySelectorAll(".eki-panel").forEach(function(panel) {
+			const stationNodes = Array.from(panel.querySelectorAll(".stalist-eki-contents [key]"));
+			let panelTop = currentStationIndex < 0 ? 56 : (currentStationIndex * 224) + 168;
 
-function collect_modern_position_keys(panel) {
-	const keys = [];
-	const keySet = new Set();
-
-	panel.find(".ressha-icon").each(function() {
-		String($(this).attr("class") || "")
-			.split(/\s+/)
-			.forEach((className) => {
-				const match = className.match(/^(R\d+P\d+)[UD]$/);
-				if (!match || keySet.has(match[1])) return;
-				keySet.add(match[1]);
-				keys.push(match[1]);
+			stationNodes.forEach(function(node) {
+				const stationName = node.textContent.trim();
+				const stationIndex = stationIndexByName.get(stationName);
+				if (typeof stationIndex === "number") {
+					currentStationIndex = stationIndex;
+					panelTop = (stationIndex * 224) + 56;
+				}
+				const stationKey = node.getAttribute("key");
+				if (stationKey && stationName) routeStationKeyMap.set(stationKey, stationName);
 			});
-	});
 
-	return keys;
-}
-
-function extract_modern_station_name(panel) {
-	const contents = panel.find(".stalist-eki-contents").first().clone();
-	contents.find(".eki-icon").remove();
-	const name = contents.text().replace(/\s+/g, "").trim();
-	if (name) return name;
-	return panel.find("[key]").first().text().replace(/\s+/g, "").trim();
-}
-
-function create_modern_fallback_layout() {
-	const points = MODERN_FALLBACK_STATIONS.map((station) => ({
-		key: station.key,
-		isStation: true,
-		name: station.name
-	}));
-	const stations = MODERN_FALLBACK_STATIONS.map((station) => ({
-		name: station.name,
-		key: station.key
-	}));
-	return normalize_modern_route_layout(points, stations);
-}
-
-function normalize_modern_route_layout(points, stations) {
-	const positionIndexMap = new Map();
-	points.forEach((point, index) => {
-		point.index = index;
-		positionIndexMap.set(point.key, index);
-	});
-
-	const normalizedStations = stations
-		.map((station) => ({
-			name: station.name,
-			key: station.key,
-			index: positionIndexMap.get(station.key)
-		}))
-		.filter((station) => Number.isInteger(station.index));
-
-	return {
-		points: points,
-		stations: normalizedStations,
-		positionIndexMap: positionIndexMap
-	};
-}
-
-function render_modern_stations() {
-	const list = $("#modernStationList");
-	list.empty();
-	update_modern_line_height();
-
-	render_modern_sections(list);
-
-	modernRouteLayout.stations.forEach((station) => {
-		const top = station_top_percent(station);
-		const stationElement = $("<div>", {
-			class: "modern-station",
-			css: { top: top + "%" }
+			panel.querySelectorAll(".ressha-icon").forEach(function(icon) {
+				Array.from(icon.classList).forEach(function(className) {
+					if (/^R\d+P\d+[UD]$/.test(className) && !livePositionMap.has(className)) {
+						livePositionMap.set(className, { top: panelTop });
+					}
+				});
+			});
 		});
-		stationElement.append($("<span>", { class: "modern-station-name", text: station.name }));
-		stationElement.append($("<span>", { class: "modern-station-dot", "aria-hidden": "true" }));
-		list.append(stationElement);
-	});
-}
+	}
 
-function render_modern_sections(list) {
-	const height = modern_section_height_percent();
+	function convertLiveTrains(rows, metadata) {
+		const typeMap = new Map();
+		metadata.types.forEach(function(type) {
+			typeMap.set(String(type.type), type.typeText && type.typeText.ja ? type.typeText.ja : "");
+		});
+		const destinationMap = new Map(routeStationKeyMap);
+		metadata.stations.forEach(function(station) {
+			if (station && station.key && station.ja) destinationMap.set(String(station.key), station.ja);
+		});
+		const stackCounts = new Map();
 
-	modernRouteLayout.points.forEach((point) => {
-		const sectionElement = $("<div>", {
-			class: "modern-section " + (point.isStation ? "station-section" : "between-section"),
-			css: {
-				top: position_index_to_percent(point.index) + "%",
-				height: height + "%"
+		return rows.map(function(row) {
+			const placement = livePositionMap.get(String(row.pos || ""));
+			if (!placement) return null;
+			const type = typeMap.get(String(row.type)) || typeFallback[row.type] || "列車";
+			const destination = destinationMap.get(String(row.shuEkiKey || "")) || destinationFallback[row.shuEkiSimple] || row.shuEkiSimple || "行先不明";
+			const direction = /U$/.test(row.pos) ? "up" : "down";
+			const stackKey = String(row.pos) + "|" + direction;
+			const stack = stackCounts.get(stackKey) || 0;
+			stackCounts.set(stackKey, stack + 1);
+			const positionName = metadata.positions[row.pos] || destination;
+			const delayMinutes = Number(row.chien || 0);
+
+			return {
+				direction: direction,
+				top: placement.top,
+				type: type,
+				destination: destination,
+				cars: row.ryosu ? row.ryosu + "両" : "両数不明",
+				number: row.cbango || "不明",
+				congestion: "混雑情報はありません",
+				stops: [["現在", positionName], ["行先", destination]],
+				delay: delayMinutes > 0 ? (delayMinutes >= 999 ? "大幅" : "+" + delayMinutes + "分") : "",
+				stack: stack,
+				position: row.pos,
+				icon: "local"
+			};
+		}).filter(Boolean).sort(function(a, b) {
+			return a.top - b.top || a.direction.localeCompare(b.direction) || a.number.localeCompare(b.number, "ja");
+		});
+	}
+
+	function setDataTimestamp(rawTime) {
+		const time = document.getElementById("modernCurrentTime");
+		const match = String(rawTime || "").match(/\d+年(\d+)月(\d+)日(\d+)時(\d+)分/);
+		if (!match) {
+			updateCurrentTime();
+			return;
+		}
+		time.textContent = Number(match[1]) + "月" + Number(match[2]) + "日 " + match[3].padStart(2, "0") + ":" + match[4].padStart(2, "0") + " 現在";
+	}
+
+	async function fetchJson(url) {
+		const response = await fetch(url, { cache: "no-store" });
+		if (!response.ok) throw new Error("HTTP " + response.status + " for " + url);
+		const text = await response.text();
+		return JSON.parse(text.replace(/^\uFEFF/, ""));
+	}
+
+	async function fetchText(url) {
+		const response = await fetch(url, { cache: "no-store" });
+		if (!response.ok) throw new Error("HTTP " + response.status + " for " + url);
+		return response.text();
+	}
+
+	function renderSections() {
+		const list = document.getElementById("modernStationList");
+		if (!list) return;
+		list.innerHTML = "";
+
+		for (let index = 0; index < (stations.length * 2) - 1; index += 1) {
+			const element = document.createElement("div");
+			element.className = "modern-section" + (index % 2 === 0 ? " is-station" : "");
+			element.style.top = (index * 112) + "px";
+			element.style.height = "112px";
+			list.appendChild(element);
+		}
+	}
+
+	function renderStations() {
+		const list = document.getElementById("modernStationList");
+		if (!list) return;
+
+		stations.forEach(function(station) {
+			const element = document.createElement("div");
+			element.className = "modern-station" + (station.code ? "" : " is-operational-point");
+			element.style.top = station.top + "px";
+
+			const name = document.createElement("span");
+			name.className = "modern-station-name";
+			name.textContent = station.name;
+
+			element.appendChild(name);
+
+			if (station.code) {
+				const code = document.createElement("span");
+				code.className = "modern-station-code";
+				code.textContent = station.code;
+				element.appendChild(code);
 			}
+
+			list.appendChild(element);
 		});
-		list.append(sectionElement);
-	});
-}
-
-function load_modern_location_53() {
-	const now = Date.now() >>> 10;
-	$("#modernTimestamp").text("読み込み中...");
-
-	load_modern_now_data(MODERN_ROSEN, now)
-		.then((data) => {
-			const trains = Array.isArray(data.trains) ? data.trains : [];
-			render_modern_trains(trains);
-			update_modern_timestamp();
-		})
-		.catch(() => {
-			$("#modernTrainLayer").html($("<div>", {
-				class: "modern-error",
-				text: "データを取得できませんでした。"
-			}));
-			update_modern_timestamp("取得失敗");
-		});
-}
-
-function load_modern_now_data(rosen, now) {
-	const sources = get_modern_location_sources(rosen);
-	return Promise.all(
-		sources.map((sourceRosen) => jqxhr_to_modern_promise(get_location_now_request(sourceRosen, now)).catch(() => null))
-	).then((nowDataList) => {
-		const successDataList = nowDataList.filter((nowData) => nowData && Array.isArray(nowData.trains));
-		if (successDataList.length < 1) throw new Error("location now json load failed");
-		return merge_modern_now_data(successDataList);
-	});
-}
-
-function get_modern_location_sources(rosen) {
-	const sourceList = MODERN_LOCATION_JSON_SOURCE_MAP[String(rosen)];
-	if (!Array.isArray(sourceList) || sourceList.length < 1) return [String(rosen)];
-	return [...new Set(sourceList.map(String).filter(Boolean))];
-}
-
-function jqxhr_to_modern_promise(jqxhr) {
-	return new Promise((resolve, reject) => {
-		jqxhr.done((data) => resolve(data)).fail((error) => reject(error));
-	});
-}
-
-function merge_modern_now_data(nowDataList) {
-	const seenCbangoMap = new Map();
-	const mergedTrains = [];
-
-	nowDataList.forEach((nowData) => {
-		nowData.trains.forEach((train) => {
-			if (!train || !train.cbango) {
-				mergedTrains.push(train);
-				return;
-			}
-			const cbango = String(train.cbango);
-			if (seenCbangoMap.has(cbango)) return;
-			seenCbangoMap.set(cbango, true);
-			mergedTrains.push(train);
-		});
-	});
-
-	return { trains: mergedTrains };
-}
-
-function render_modern_trains(trains) {
-	const layer = $("#modernTrainLayer");
-	layer.empty();
-
-	if (trains.length < 1) {
-		layer.append($("<div>", {
-			class: "modern-empty",
-			text: "現在表示できる列車はありません。"
-		}));
-		return;
 	}
 
-	trains
-		.slice()
-		.sort((a, b) => train_top_percent(a) - train_top_percent(b))
-		.forEach((train) => {
-			layer.append(create_modern_train_card(train));
+	function updateCurrentTime() {
+		const time = document.getElementById("modernCurrentTime");
+		const now = new Date();
+		const hours = String(now.getHours()).padStart(2, "0");
+		const minutes = String(now.getMinutes()).padStart(2, "0");
+		time.textContent = (now.getMonth() + 1) + "月" + now.getDate() + "日 " + hours + ":" + minutes + " 現在";
+	}
+
+	function renderTrains() {
+		const layer = document.getElementById("modernTrainLayer");
+		if (!layer) return;
+		layer.innerHTML = "";
+
+		trains.forEach(function(train, index) {
+			layer.appendChild(createTrainCard(train, index));
 		});
-}
-
-function create_modern_train_card(train) {
-	const direction = is_up_train(train) ? "up" : "down";
-	const typeClass = get_modern_type_class(train.type);
-	const card = $("<article>", {
-		class: "modern-train-card " + direction + " " + typeClass,
-		css: { top: train_top_percent(train) + "%" }
-	});
-
-	if (Number(train.chien || 0) > 0) {
-		card.append($("<div>", {
-			class: "modern-delay",
-			text: get_modern_delay_text(train.chien)
-		}));
 	}
 
-	card.append(create_modern_train_card_shape(direction));
-	const trainMark = create_modern_train_mark(train);
-	const trainNumber = $("<div>", {
-		class: "modern-train-no",
-		text: train.cbango || ""
-	});
-	const destinationText = get_modern_destination_text(train);
-	const bandTitle = get_modern_type_text(train.type) + " " + destinationText + " 行き";
-	const trainBand = $("<div>", {
-		class: "modern-train-band",
-		title: bandTitle
-	}).append($("<div>", {
-		class: "modern-train-main"
-	}).append($("<span>", {
-		class: "modern-train-type",
-		text: get_modern_type_text(train.type)
-	})).append($("<span>", {
-		class: "modern-train-separator",
-		text: "・"
-	})).append($("<span>", {
-		class: "modern-train-dest",
-		text: destinationText
-	}))).append($("<div>", {
-		class: "modern-train-cars",
-		text: get_modern_ryosu_text(train.ryosu)
-	}));
+	function createTrainCard(train, index) {
+		const card = document.createElement("button");
+		card.type = "button";
+		card.className = "modern-train-card " + train.direction;
+		card.style.top = train.top + "px";
+		card.style.marginTop = ((train.stack || 0) * 12) + "px";
+		card.dataset.trainNumber = train.number;
+		card.dataset.position = train.position;
+		card.setAttribute("aria-label", train.type + "・" + train.destination + " " + train.cars);
+		card.addEventListener("click", function() {
+			openTrainDetails(train);
+		});
 
-	if (direction === "up") {
-		card.append(trainMark);
-		card.append(trainNumber);
-		card.append(trainBand);
-	} else {
-		card.append(trainBand);
-		card.append(trainNumber);
-		card.append(trainMark);
-	}
-	card.append($("<div>", {
-		class: "modern-train-pos",
-		text: get_modern_position_text(train.pos)
-	}));
+		if (train.delay) {
+			const delay = document.createElement("div");
+			delay.className = "modern-delay";
+			delay.textContent = train.delay;
+			card.appendChild(delay);
+		}
 
-	card.on("click", () => {
-		if (!train.cbango) return;
-		location.href = build_page_url("./location.html", "rosen=53&cbango=" + encodeURIComponent(train.cbango));
-	});
+		card.appendChild(createTrainShape(train.direction, index));
 
-	return card;
-}
+		const icon = document.createElement("span");
+		icon.className = "modern-train-icon";
+		icon.setAttribute("aria-hidden", "true");
+		card.appendChild(icon);
 
-function create_modern_train_card_shape(direction) {
-	const svgNs = "http://www.w3.org/2000/svg";
-	const svg = document.createElementNS(svgNs, "svg");
-	svg.setAttribute("class", "modern-train-shape");
-	svg.setAttribute("viewBox", "0 0 100 140");
-	svg.setAttribute("aria-hidden", "true");
-	svg.setAttribute("focusable", "false");
+		const text = document.createElement("div");
+		text.className = "modern-train-text";
 
-	const defs = document.createElementNS(svgNs, "defs");
-	const clip = document.createElementNS(svgNs, "clipPath");
-	const clipId = "modernTrainClip" + direction + Math.random().toString(36).slice(2);
-	clip.setAttribute("id", clipId);
-	const bodyPath = document.createElementNS(svgNs, "path");
-	bodyPath.setAttribute("d", direction === "up" ? get_modern_card_up_path() : get_modern_card_down_path());
-	clip.appendChild(bodyPath);
-	defs.appendChild(clip);
-	svg.appendChild(defs);
+		const main = document.createElement("div");
+		main.className = "modern-train-main";
+		main.textContent = train.type + "・" + train.destination;
 
-	const shadow = document.createElementNS(svgNs, "path");
-	shadow.setAttribute("class", "modern-train-shape-shadow");
-	shadow.setAttribute("d", direction === "up" ? get_modern_card_up_path() : get_modern_card_down_path());
-	svg.appendChild(shadow);
+		const cars = document.createElement("div");
+		cars.className = "modern-train-cars";
+		cars.textContent = train.cars;
 
-	const body = document.createElementNS(svgNs, "path");
-	body.setAttribute("class", "modern-train-shape-body");
-	body.setAttribute("d", direction === "up" ? get_modern_card_up_path() : get_modern_card_down_path());
-	svg.appendChild(body);
+		text.appendChild(main);
+		text.appendChild(cars);
+		card.appendChild(text);
 
-	const band = document.createElementNS(svgNs, "rect");
-	band.setAttribute("class", "modern-train-shape-band");
-	band.setAttribute("x", "0");
-	band.setAttribute("width", "100");
-	band.setAttribute("height", "64");
-	band.setAttribute("y", direction === "up" ? "76" : "0");
-	band.setAttribute("clip-path", "url(#" + clipId + ")");
-	svg.appendChild(band);
-
-	return svg;
-}
-
-function get_modern_card_up_path() {
-	return "M50 0 C54 0 57 2 61 4 L84 18 C94 24 100 35 100 48 L100 118 Q100 140 78 140 L22 140 Q0 140 0 118 L0 48 C0 35 6 24 16 18 L39 4 C43 2 46 0 50 0 Z";
-}
-
-function get_modern_card_down_path() {
-	return "M22 0 L78 0 Q100 0 100 22 L100 92 C100 105 94 116 84 122 L61 136 C57 138 54 140 50 140 C46 140 43 138 39 136 L16 122 C6 116 0 105 0 92 L0 22 Q0 0 22 0 Z";
-}
-
-function create_modern_train_mark(train) {
-	const trainMark = $("<div>", {
-		class: "modern-train-mark",
-		"aria-hidden": "true"
-	});
-	trainMark.append($("<img>", {
-		class: "modern-train-icon",
-		src: get_modern_train_icon_src(train.type),
-		alt: ""
-	}));
-	return trainMark;
-}
-
-function update_modern_line_height() {
-	const stationCount = modernRouteLayout.stations.length;
-	const pointCount = modernRouteLayout.points.length;
-	const height = Math.max(
-		MODERN_LINE_MIN_HEIGHT,
-		220 + stationCount * 220,
-		220 + pointCount * 180
-	);
-	$(".modern-line").css("min-height", height + "px");
-}
-
-function modern_section_height_percent() {
-	const maxIndex = Math.max(1, modernRouteLayout.points.length - 1);
-	return (92 / maxIndex) * 0.94;
-}
-
-function station_top_percent(station) {
-	return position_index_to_percent(station.index);
-}
-
-function train_top_percent(train) {
-	return position_index_to_percent(get_modern_position_index(train.pos));
-}
-
-function position_index_to_percent(index) {
-	const maxIndex = Math.max(1, modernRouteLayout.points.length - 1);
-	const safeIndex = Math.max(0, Math.min(maxIndex, Number(index) || 0));
-	return 4 + (safeIndex / maxIndex) * 92;
-}
-
-function get_modern_position_index(pos) {
-	const key = get_modern_position_key(pos);
-	if (key && modernRouteLayout.positionIndexMap.has(key)) {
-		return modernRouteLayout.positionIndexMap.get(key);
+		return card;
 	}
 
-	const posNo = get_modern_pos_no(pos);
-	if (!Number.isFinite(posNo)) return Math.floor((modernRouteLayout.points.length - 1) / 2);
-	const fallbackIndex = modernRouteLayout.points.findIndex((point) => get_modern_pos_no(point.key) === posNo);
-	return fallbackIndex >= 0 ? fallbackIndex : Math.floor((modernRouteLayout.points.length - 1) / 2);
-}
+	function openTrainDetails(train) {
+		const details = document.getElementById("modernTrainDetails");
+		const status = details.querySelector(".modern-details-status");
+		document.getElementById("modernTrainDetailsType").textContent = train.type + "列車";
+		document.getElementById("modernTrainDetailsTitle").textContent = train.destination + " 行";
+		document.getElementById("modernTrainDetailsNumber").textContent = train.number;
+		document.getElementById("modernTrainDetailsCars").textContent = train.cars;
+		document.getElementById("modernTrainDetailsCongestion").textContent = train.congestion;
+		status.textContent = train.delay ? train.delay + "遅れ" : "定刻通り";
+		status.classList.toggle("is-delayed", Boolean(train.delay));
+		renderTrainStops(train.stops);
+		details.classList.add("is-open");
+		details.setAttribute("aria-hidden", "false");
+		document.body.classList.add("is-details-open");
+	}
 
-function get_modern_position_key(pos) {
-	const match = String(pos || "").match(/(R\d+P\d+)[UD]?/);
-	return match ? match[1] : "";
-}
+	function closeTrainDetails() {
+		const details = document.getElementById("modernTrainDetails");
+		details.classList.remove("is-open");
+		details.setAttribute("aria-hidden", "true");
+		document.body.classList.remove("is-details-open");
+	}
 
-function get_modern_pos_no(pos) {
-	const match = String(pos || "").match(/P(\d+)/);
-	if (!match) return NaN;
-	return Number(match[1]);
-}
+	function renderTrainStops(stops) {
+		const list = document.getElementById("modernTrainDetailsStops");
+		list.innerHTML = "";
+		stops.forEach(function(stop) {
+			const row = document.createElement("div");
+			row.className = "modern-stop-row";
+			const time = document.createElement("time");
+			time.textContent = stop[0];
+			const name = document.createElement("span");
+			name.textContent = stop[1];
+			row.appendChild(time);
+			row.appendChild(name);
+			list.appendChild(row);
+		});
+	}
 
-function is_up_train(train) {
-	const pos = String(train.pos || "");
-	if (pos.endsWith("U")) return true;
-	if (pos.endsWith("D")) return false;
-	const number = Number(String(train.cbango || "").match(/\d+/)?.[0] || 1);
-	return number % 2 === 0;
-}
+	function createTrainShape(direction, index) {
+		const svgNs = "http://www.w3.org/2000/svg";
+		const svg = document.createElementNS(svgNs, "svg");
+		const clipId = "modernTrainClip" + direction + index;
+		svg.setAttribute("class", "modern-train-shape");
+		svg.setAttribute("viewBox", "0 0 55 85");
+		svg.setAttribute("aria-hidden", "true");
+		svg.setAttribute("focusable", "false");
 
-function get_modern_type_text(type) {
-	const typeMap = {
-		"1": "特急",
-		"2": "快速",
-		"3": "普通",
-		"4": "新幹線",
-		"5": "区快",
-		"6": "臨時",
-		"7": "区快",
-		"8": "快速"
-	};
-	return typeMap[String(type)] || "列車";
-}
+		const defs = document.createElementNS(svgNs, "defs");
+		const clip = document.createElementNS(svgNs, "clipPath");
+		clip.setAttribute("id", clipId);
 
-function get_modern_type_class(type) {
-	if (String(type) === "1") return "type-limited";
-	if (String(type) === "2" || String(type) === "5" || String(type) === "7" || String(type) === "8") return "type-rapid";
-	if (String(type) === "3") return "type-local";
-	return "";
-}
+		const clipPath = document.createElementNS(svgNs, "path");
+		clipPath.setAttribute("d", direction === "up" ? upPath() : downPath());
+		clip.appendChild(clipPath);
+		defs.appendChild(clip);
+		svg.appendChild(defs);
 
-function get_modern_train_icon_src(type) {
-	const iconMap = {
-		"1": "./images/home/train_icon_red.svg",
-		"2": "./images/home/train_icon_orange.svg",
-		"3": "./images/home/train_icon.svg",
-		"4": "./images/home/train_icon_green.svg",
-		"5": "./images/home/train_icon_orange.svg",
-		"6": "./images/home/train_icon_blue.svg",
-		"7": "./images/home/train_icon_green.svg",
-		"8": "./images/home/train_icon_orange.svg"
-	};
-	return iconMap[String(type)] || "./images/home/train_icon.svg";
-}
+		const body = document.createElementNS(svgNs, "path");
+		body.setAttribute("class", "modern-train-shape-body");
+		body.setAttribute("d", direction === "up" ? upPath() : downPath());
+		svg.appendChild(body);
 
-function get_modern_ryosu_text(ryosu) {
-	const value = String(ryosu || "").trim();
-	return value ? value + "両" : "";
-}
+		const band = document.createElementNS(svgNs, "rect");
+		band.setAttribute("class", "modern-train-shape-band");
+		band.setAttribute("x", "0");
+		band.setAttribute("width", "55");
+		band.setAttribute("height", "26");
+		band.setAttribute("y", direction === "up" ? "59" : "0");
+		band.setAttribute("clip-path", "url(#" + clipId + ")");
+		svg.appendChild(band);
 
-function get_modern_destination_text(train) {
-	const simple = String(train.shuEkiSimple || "").trim();
-	const destinationMap = {
-		"札": "札幌",
-		"札幌": "札幌",
-		"Sapporo": "札幌",
-		"釧": "釧路",
-		"釧路": "釧路",
-		"Kushiro": "釧路",
-		"帯": "帯広",
-		"帯広": "帯広",
-		"Obihiro": "帯広",
-		"新": "新得",
-		"新得": "新得",
-		"Shintoku": "新得",
-		"南": "南千",
-		"南千歳": "南千",
-		"Minami-Chitose": "南千",
-		"千": "千歳",
-		"千歳": "千歳",
-		"池": "池田",
-		"池田": "池田",
-		"Ikeda": "池田",
-		"浦": "浦幌",
-		"浦幌": "浦幌",
-		"Urahoro": "浦幌",
-		"白": "白糠",
-		"白糠": "白糠",
-		"Shiranuka": "白糠",
-		"旭": "旭川",
-		"旭川": "旭川",
-		"Asahikawa": "旭川",
-		"函": "函館",
-		"函館": "函館",
-		"Hakodate": "函館",
-		"小": "小樽",
-		"小樽": "小樽",
-		"Otaru": "小樽",
-		"手": "手稲",
-		"手稲": "手稲",
-		"Teine": "手稲",
-		"岩": "岩見",
-		"岩見沢": "岩見",
-		"Iwamizawa": "岩見",
-		"苫": "苫小",
-		"苫小牧": "苫小",
-		"Tomakomai": "苫小",
-		"室": "室蘭",
-		"室蘭": "室蘭",
-		"Muroran": "室蘭",
-		"東": "東室",
-		"東室蘭": "東室",
-		"Higashi-Muroran": "東室",
-		"長": "長万",
-		"長万部": "長万",
-		"Oshamambe": "長万",
-		"倶": "倶知",
-		"倶知安": "倶知",
-		"Kutchan": "倶知",
-		"追": "追分",
-		"追分": "追分",
-		"Oiwake": "追分",
-		"夕": "夕張",
-		"夕張": "夕張",
-		"Yubari": "夕張",
-		"空": "空港",
-		"新千歳空港": "空港",
-		"New-Chitose-Airport": "空港",
-		"新夕張": "新夕",
-		"ト": "トマ",
-		"トマム": "トマ",
-		"Tomamu": "トマ",
-		"占": "占冠",
-		"占冠": "占冠",
-		"Shimukappu": "占冠"
-	};
-	if (destinationMap[simple]) return destinationMap[simple];
-	const stationText = get_modern_destination_from_station_name(simple);
-	if (stationText) return stationText;
-	const chars = Array.from(simple);
-	if (chars.length >= 2) return chars.slice(0, 2).join("");
-	return simple || "不明";
-}
+		return svg;
+	}
 
-function get_modern_destination_from_station_name(simple) {
-	if (!simple) return "";
-	const stations = modernRouteLayout && Array.isArray(modernRouteLayout.stations) ? modernRouteLayout.stations : [];
-	const matchedStation = stations.find((station) => {
-		const name = String(station.name || "");
-		return name && name.startsWith(simple);
-	});
-	if (!matchedStation) return "";
-	return Array.from(matchedStation.name).slice(0, 2).join("");
-}
+	function upPath() {
+		return "M27.5 1 C30 1 32 2 34.5 3.5 L47 11.5 C52 14.7 54 20 54 26 L54 70 C54 80 49 84 39 84 L16 84 C6 84 1 80 1 70 L1 26 C1 20 3 14.7 8 11.5 L20.5 3.5 C23 2 25 1 27.5 1 Z";
+	}
 
-function get_modern_delay_text(delay) {
-	const value = Number(delay || 0);
-	if (value >= 999) return "大幅遅れ";
-	return "+" + value + "分";
-}
-
-function get_modern_position_text(pos) {
-	const index = get_modern_position_index(pos);
-	const stations = modernRouteLayout.stations;
-	const previous = stations.slice().reverse().find((station) => station.index <= index);
-	const next = stations.find((station) => station.index > index);
-
-	if (previous && previous.index === index) return previous.name + " 付近";
-	if (previous && next) return previous.name + "〜" + next.name;
-	if (previous) return previous.name + " 付近";
-	if (next) return next.name + " 付近";
-	return "位置情報なし";
-}
-
-function update_modern_timestamp(extraText) {
-	const now = new Date();
-	const text =
-		now.getFullYear() + "年" +
-		(now.getMonth() + 1).toString().padStart(2, "0") + "月" +
-		now.getDate().toString().padStart(2, "0") + "日 " +
-		now.getHours().toString().padStart(2, "0") + ":" +
-		now.getMinutes().toString().padStart(2, "0") + ":" +
-		now.getSeconds().toString().padStart(2, "0") + " 現在";
-	$("#modernTimestamp").text(extraText ? text + " / " + extraText : text);
-}
+	function downPath() {
+		return "M16 1 L39 1 C49 1 54 5 54 15 L54 59 C54 65 52 70.3 47 73.5 L34.5 81.5 C32 83 30 84 27.5 84 C25 84 23 83 20.5 81.5 L8 73.5 C3 70.3 1 65 1 59 L1 15 C1 5 6 1 16 1 Z";
+	}
+}());

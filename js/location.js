@@ -3357,10 +3357,11 @@ function load_train_search_data() {
 				"shuEkiKey": daiya ? daiya.shuEkiKey : "",
 				"cbango": cbango
 			}, daiya, typeData, ekiData);
+			const detailType = daiya && String(daiya.senku || "") === "19" ? "4" : suppliedType;
 			const detailTrain = daiya ? {
 				"cbango": cbango,
 				"name": daiya.name || "",
-				"type": suppliedType,
+				"type": detailType,
 				"shuEki": daiya.shuEkiKey || "",
 				"ryosu": daiya.ryosu || "",
 				"senku": daiya.senku || "00",
