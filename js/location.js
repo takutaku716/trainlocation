@@ -144,6 +144,7 @@ let nextLocationAutoRefreshAt = null;
 let cachedTrainSearchData = null;
 let trainSearchDataPromise = null;
 let cachedTrainSearchLoadedAt = 0;
+const trainSearchTimetableCoreCache = new Map();
 const TRAIN_SEARCH_CACHE_TTL = 30000;
 let trainNumberListRows = [];
 let trainNumberListFilter = "all";
@@ -552,7 +553,8 @@ $(function ($) {
 		if (!isRunning) {
 			const searchTrain = find_train_search_result(cbango);
 			if (searchTrain && searchTrain.detailTrain) {
-				showTrainDetailDialog($("#trainDetail"), searchTrain.detailTrain);
+				load_train_search_detail_type(searchTrain.detailTrain)
+					.then((detailTrain) => showTrainDetailDialog($("#trainDetail"), detailTrain));
 				return;
 			}
 			show_train_not_running_message();
@@ -3165,6 +3167,41 @@ function find_train_search_result(cbango) {
 	return cachedTrainSearchData.trains.find((train) => normalize_train_search_cbango(train.cbango) === normalizedCbango);
 }
 
+/*
+ * 駅別時刻表の公式コアデータから、非走行列車の種別を取得する。
+ */
+function load_train_search_detail_type(detailTrain) {
+	const stationKey = String((detailTrain && detailTrain.typeLookupStation) || "");
+	if (!detailTrain || detailTrain.type || !stationKey) return Promise.resolve(detailTrain);
+
+	let corePromise = trainSearchTimetableCoreCache.get(stationKey);
+	if (!corePromise) {
+		const sourceUrl = "https://www3.jrhokkaido.co.jp/webunkou/json/timetable/core/" + encodeURIComponent(stationKey) + "_core.json";
+		const requestUrl = "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=" + encodeURIComponent(sourceUrl) + "&_=" + (Date.now() >>> 16);
+		corePromise = jqxhr_to_promise($.getJSON(requestUrl));
+		trainSearchTimetableCoreCache.set(stationKey, corePromise);
+		corePromise.catch(() => trainSearchTimetableCoreCache.delete(stationKey));
+	}
+
+	return corePromise.then((coreData) => {
+		const timetables = coreData && coreData.today && Array.isArray(coreData.today.timetable) ? coreData.today.timetable : [];
+		const targetCbango = normalize_train_search_cbango(detailTrain.cbango);
+		let matchedTrain;
+		timetables.some((timetable) => {
+			if (!timetable || !Array.isArray(timetable.trains)) return false;
+			matchedTrain = timetable.trains.find((train) => train && normalize_train_search_cbango(train.cbango) === targetCbango);
+			return !!matchedTrain;
+		});
+		if (!matchedTrain || matchedTrain.type === null || typeof matchedTrain.type === "undefined" || String(matchedTrain.type) === "") {
+			return detailTrain;
+		}
+		return Object.assign({}, detailTrain, {
+			"type": String(matchedTrain.type),
+			"typeLabel": String(matchedTrain.typeText || "")
+		});
+	}).catch(() => detailTrain);
+}
+
 function load_train_search_data() {
 	if (cachedTrainSearchData && (Date.now() - cachedTrainSearchLoadedAt) < TRAIN_SEARCH_CACHE_TTL) {
 		return Promise.resolve(cachedTrainSearchData);
@@ -3305,8 +3342,11 @@ function load_train_search_data() {
 				lang === "sc" ? expressNow.statusDetailSc :
 				lang === "kr" ? expressNow.statusDetailKr : ""
 			) : "";
+			const suppliedType = expressCoreTrain && expressCoreTrain.type !== null && typeof expressCoreTrain.type !== "undefined" && String(expressCoreTrain.type) !== "" ?
+				String(expressCoreTrain.type) :
+				(daiya && daiya.type !== null && typeof daiya.type !== "undefined" ? String(daiya.type) : "");
 			const resolvedType = resolve_train_search_type(
-				expressCoreTrain && typeof expressCoreTrain.type !== "undefined" ? String(expressCoreTrain.type) : (daiya && typeof daiya.type !== "undefined" ? String(daiya.type) : ""),
+				suppliedType,
 				daiya ? daiya.name : "",
 				typeData,
 				cbango,
@@ -3320,10 +3360,11 @@ function load_train_search_data() {
 			const detailTrain = daiya ? {
 				"cbango": cbango,
 				"name": daiya.name || "",
-				"type": resolvedType,
+				"type": suppliedType,
 				"shuEki": daiya.shuEkiKey || "",
 				"ryosu": daiya.ryosu || "",
-				"senku": daiya.senku || "00"
+				"senku": daiya.senku || "00",
+				"typeLookupStation": Array.isArray(daiya.stations) && daiya.stations[0] ? String(daiya.stations[0].key || "") : ""
 			} : null;
 			if (detailTrain && expressNow) {
 				detailTrain.runStatus = expressNow.runStatus;

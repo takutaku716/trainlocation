@@ -111,14 +111,8 @@ function showTrainDetailDialog(target, train, isError) {
 				typeLabel.removeClass("hide");
 				return;
 			}
-			// 未走行列車の検索結果から開く詳細ダイアログでは、種別は主要なものだけ文字表示する。
+			// 種別を判定できない場合だけ、従来どおりグレーの空欄を表示する。
 			if (!resshaTypeInfo) {
-				typeLabel.attr("data-type", "0");
-				typeLabel.text("");
-				typeLabel.removeClass("hide");
-				return;
-			}
-			if (String(type) !== "1" && String(type) !== "3" && String(type) !== "4") {
 				typeLabel.attr("data-type", "0");
 				typeLabel.text("");
 				typeLabel.removeClass("hide");
