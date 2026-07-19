@@ -145,7 +145,9 @@ let cachedTrainSearchData = null;
 let trainSearchDataPromise = null;
 let cachedTrainSearchLoadedAt = 0;
 const trainSearchTimetableCoreCache = new Map();
+const trainSearchTimetableNowCache = new Map();
 const TRAIN_SEARCH_CACHE_TTL = 30000;
+const TRAIN_SEARCH_TIMETABLE_NOW_CACHE_TTL = 30000;
 let trainNumberListRows = [];
 let trainNumberListFilter = "all";
 let preserveScrollAfterHashChange = false;
@@ -553,7 +555,7 @@ $(function ($) {
 		if (!isRunning) {
 			const searchTrain = find_train_search_result(cbango);
 			if (searchTrain && searchTrain.detailTrain) {
-				load_train_search_detail_type(searchTrain.detailTrain)
+				load_train_search_detail_data(searchTrain.detailTrain)
 					.then((detailTrain) => showTrainDetailDialog($("#trainDetail"), detailTrain));
 				return;
 			}
@@ -3168,37 +3170,72 @@ function find_train_search_result(cbango) {
 }
 
 /*
- * 駅別時刻表の公式コアデータから、非走行列車の種別を取得する。
+ * 駅別時刻表の公式データから、非走行列車の種別と運行状態を取得する。
  */
-function load_train_search_detail_type(detailTrain) {
+function load_train_search_detail_data(detailTrain) {
 	const stationKey = String((detailTrain && detailTrain.typeLookupStation) || "");
-	if (!detailTrain || detailTrain.type || !stationKey) return Promise.resolve(detailTrain);
+	if (!detailTrain || !stationKey) return Promise.resolve(detailTrain);
 
-	let corePromise = trainSearchTimetableCoreCache.get(stationKey);
-	if (!corePromise) {
-		const sourceUrl = "https://www3.jrhokkaido.co.jp/webunkou/json/timetable/core/" + encodeURIComponent(stationKey) + "_core.json";
-		const requestUrl = "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=" + encodeURIComponent(sourceUrl) + "&_=" + (Date.now() >>> 16);
-		corePromise = jqxhr_to_promise($.getJSON(requestUrl));
-		trainSearchTimetableCoreCache.set(stationKey, corePromise);
-		corePromise.catch(() => trainSearchTimetableCoreCache.delete(stationKey));
+	let corePromise = Promise.resolve(null);
+	if (!detailTrain.type) {
+		corePromise = trainSearchTimetableCoreCache.get(stationKey);
+		if (!corePromise) {
+			const sourceUrl = "https://www3.jrhokkaido.co.jp/webunkou/json/timetable/core/" + encodeURIComponent(stationKey) + "_core.json";
+			const requestUrl = "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=" + encodeURIComponent(sourceUrl) + "&_=" + (Date.now() >>> 16);
+			corePromise = jqxhr_to_promise($.getJSON(requestUrl));
+			trainSearchTimetableCoreCache.set(stationKey, corePromise);
+			corePromise.catch(() => trainSearchTimetableCoreCache.delete(stationKey));
+		}
 	}
 
-	return corePromise.then((coreData) => {
-		const timetables = coreData && coreData.today && Array.isArray(coreData.today.timetable) ? coreData.today.timetable : [];
+	let nowPromise = Promise.resolve(null);
+	if (detailTrain.status === null || typeof detailTrain.status === "undefined") {
+		const now = Date.now();
+		const cachedNow = trainSearchTimetableNowCache.get(stationKey);
+		if (cachedNow && now - cachedNow.loadedAt < TRAIN_SEARCH_TIMETABLE_NOW_CACHE_TTL) {
+			nowPromise = cachedNow.promise;
+		} else {
+			const sourceUrl = "https://www3.jrhokkaido.co.jp/webunkou/json/timetable/now/" + encodeURIComponent(stationKey) + "_now.json";
+			const requestUrl = "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=" + encodeURIComponent(sourceUrl) + "&_=" + (now >>> 10);
+			nowPromise = jqxhr_to_promise($.getJSON(requestUrl));
+			trainSearchTimetableNowCache.set(stationKey, { "promise": nowPromise, "loadedAt": now });
+			nowPromise.catch(() => trainSearchTimetableNowCache.delete(stationKey));
+		}
+	}
+
+	return Promise.all([corePromise, nowPromise]).then(([coreData, nowData]) => {
+		const resolvedDetail = Object.assign({}, detailTrain);
 		const targetCbango = normalize_train_search_cbango(detailTrain.cbango);
+		const timetables = coreData && coreData.today && Array.isArray(coreData.today.timetable) ? coreData.today.timetable : [];
 		let matchedTrain;
 		timetables.some((timetable) => {
 			if (!timetable || !Array.isArray(timetable.trains)) return false;
 			matchedTrain = timetable.trains.find((train) => train && normalize_train_search_cbango(train.cbango) === targetCbango);
 			return !!matchedTrain;
 		});
-		if (!matchedTrain || matchedTrain.type === null || typeof matchedTrain.type === "undefined" || String(matchedTrain.type) === "") {
-			return detailTrain;
+		if (matchedTrain && matchedTrain.type !== null && typeof matchedTrain.type !== "undefined" && String(matchedTrain.type) !== "") {
+			resolvedDetail.type = String(matchedTrain.type);
+			resolvedDetail.typeLabel = String(matchedTrain.typeText || "");
 		}
-		return Object.assign({}, detailTrain, {
-			"type": String(matchedTrain.type),
-			"typeLabel": String(matchedTrain.typeText || "")
-		});
+
+		const operationRows = nowData && Array.isArray(nowData.today) ? nowData.today : [];
+		const operation = operationRows.find((train) => train && normalize_train_search_cbango(train.cbango) === targetCbango);
+		if (operation) {
+			const lang = document.documentElement.dataset.lang;
+			resolvedDetail.runStatus = operation.runStatus;
+			resolvedDetail.yokuStatus = operation.yokuStatus;
+			resolvedDetail.yokuDetail = operation.yokuDetail;
+			resolvedDetail.status = Number(operation.status);
+			resolvedDetail.statusDetail =
+				lang === "ja" ? operation.statusDetail :
+				lang === "en" ? operation.statusDetailEn :
+				lang === "tc" ? operation.statusDetailTc :
+				lang === "sc" ? operation.statusDetailSc :
+				lang === "kr" ? operation.statusDetailKr : "";
+			resolvedDetail.chien = operation.chien;
+			resolvedDetail.pos = operation.pos;
+		}
+		return resolvedDetail;
 	}).catch(() => detailTrain);
 }
 
