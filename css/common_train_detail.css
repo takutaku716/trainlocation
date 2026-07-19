@@ -215,8 +215,8 @@
 			border-top: 1px solid #ccc;
 		}
 		.trainDetailDialog .train-info dl dd.unban-item .cbango {
-			color: #f00;
-			font-weight: bold;
+			color: #333;
+			font-weight: normal;
 		}
 /* 列車詳細情報ダイアログのダイヤデータ部分 */
 .trainDetailDialog .station-list {
