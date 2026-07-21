@@ -2906,12 +2906,29 @@ section#trainSearchDetail {
 			}
 
 			section#trainSearchDetail .dialog .train-search-list-action {
+				display: flex;
+				flex-wrap: wrap;
+				gap: 8px;
+				justify-content: flex-end;
 				margin-top: -4px;
-				text-align: right;
 			}
 			section#trainSearchDetail .dialog .train-search-list-action .common-button {
 				min-width: 160px;
 				padding: 8px 14px;
+			}
+			section#trainSearchDetail .dialog .train-search-list-action .common-button:disabled,
+			section#trainNumberListDetail .dialog .train-number-list-filter-btn:disabled {
+				background-color: #ddd;
+				border-color: #bbb;
+				color: #777;
+				cursor: wait;
+			}
+			section#trainSearchDetail .dialog .cancelled-train-fetch-info {
+				color: #555;
+				font-size: 13px;
+				margin-top: 8px;
+				min-height: 18px;
+				text-align: right;
 			}
 			section#trainSearchDetail .dialog .train-search-row label {
 				display: block;
@@ -3636,11 +3653,16 @@ section#refreshSettingDetail {
 		padding-right: 0;
 	}
 	section#trainSearchDetail .dialog .train-search-list-action {
-		text-align: left;
+		display: grid;
+		grid-template-columns: 1fr;
+		justify-content: stretch;
 	}
 	section#trainSearchDetail .dialog .train-search-list-action .common-button {
 		box-sizing: border-box;
 		width: 100%;
+	}
+	section#trainSearchDetail .dialog .cancelled-train-fetch-info {
+		text-align: left;
 	}
 
 	/* 北海道新幹線への路線のリンク */
