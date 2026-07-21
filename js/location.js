@@ -157,7 +157,9 @@ let cancelledTrainRows = null;
 let cancelledTrainFailures = [];
 let cancelledTrainFetchedAt = 0;
 let cancelledTrainStationCount = 0;
+let cancelledTrainCacheExpiryTimer = null;
 const CANCELLED_TRAIN_FETCH_CONCURRENCY = 4;
+const CANCELLED_TRAIN_CACHE_KEY = "cancelled_train_cache_v1";
 let preserveScrollAfterHashChange = false;
 let preservedScrollTop = 0;
 let suppressTrackScrollOnce = false;
@@ -232,6 +234,7 @@ function update_tracking_footer_controls() {
 window.onload = function(){
 	load_location_auto_refresh_settings();
 	load_tracking_scroll_setting();
+	restore_cancelled_train_cache();
 	// 現在表示中の路線を取得
 	let param_rosen = get_param_rosen();
 	// 走行位置を表示
@@ -3331,6 +3334,93 @@ function format_cancelled_train_fetch_time(timestamp) {
 	return String(date.getHours()).padStart(2, "0") + ":" + String(date.getMinutes()).padStart(2, "0");
 }
 
+function get_cancelled_train_cache_expiry(timestamp) {
+	const fetchedDate = new Date(timestamp);
+	const expiry = new Date(timestamp);
+	expiry.setHours(3, 0, 0, 0);
+	if (expiry <= fetchedDate) expiry.setDate(expiry.getDate() + 1);
+	return expiry.getTime();
+}
+
+function schedule_cancelled_train_cache_expiry(expiresAt) {
+	if (cancelledTrainCacheExpiryTimer) {
+		window.clearTimeout(cancelledTrainCacheExpiryTimer);
+		cancelledTrainCacheExpiryTimer = null;
+	}
+	const delay = Number(expiresAt) - Date.now();
+	if (delay <= 0) {
+		clear_cancelled_train_cache(false);
+		return;
+	}
+	cancelledTrainCacheExpiryTimer = window.setTimeout(() => {
+		clear_cancelled_train_cache(true);
+	}, delay);
+}
+
+function save_cancelled_train_cache() {
+	if (!Array.isArray(cancelledTrainRows) || !cancelledTrainFetchedAt) return;
+	const expiresAt = get_cancelled_train_cache_expiry(cancelledTrainFetchedAt);
+	const cache = {
+		"version": 1,
+		"rows": cancelledTrainRows,
+		"failures": cancelledTrainFailures,
+		"fetchedAt": cancelledTrainFetchedAt,
+		"stationCount": cancelledTrainStationCount,
+		"expiresAt": expiresAt
+	};
+	try {
+		window.localStorage.setItem(CANCELLED_TRAIN_CACHE_KEY, JSON.stringify(cache));
+	} catch (error) {
+		console.warn("運休列車キャッシュを保存できませんでした。", error);
+	}
+	schedule_cancelled_train_cache_expiry(expiresAt);
+}
+
+function clear_cancelled_train_cache(showMessage) {
+	try {
+		window.localStorage.removeItem(CANCELLED_TRAIN_CACHE_KEY);
+	} catch (error) {
+		console.warn("運休列車キャッシュを削除できませんでした。", error);
+	}
+	if (cancelledTrainCacheExpiryTimer) {
+		window.clearTimeout(cancelledTrainCacheExpiryTimer);
+		cancelledTrainCacheExpiryTimer = null;
+	}
+	cancelledTrainRows = null;
+	cancelledTrainFailures = [];
+	cancelledTrainFetchedAt = 0;
+	cancelledTrainStationCount = 0;
+	if (!showMessage) return;
+	const message = "午前3時になったため、運休列車のキャッシュを削除しました。";
+	$("#cancelledTrainFetchInfo").text(message);
+	if (trainNumberListMode === "cancelled" && $("#trainNumberListDetail").is(":visible")) {
+		$("#trainNumberListInfo").text(message);
+		$("#trainNumberListBody").html("<div class='train-search-empty'>再取得してください。</div>");
+	}
+}
+
+function restore_cancelled_train_cache() {
+	let cache;
+	try {
+		const stored = window.localStorage.getItem(CANCELLED_TRAIN_CACHE_KEY);
+		if (!stored) return;
+		cache = JSON.parse(stored);
+	} catch (error) {
+		clear_cancelled_train_cache(false);
+		return;
+	}
+	if (!cache || cache.version !== 1 || !Array.isArray(cache.rows) || Number(cache.expiresAt) <= Date.now()) {
+		clear_cancelled_train_cache(false);
+		return;
+	}
+	cancelledTrainRows = cache.rows;
+	cancelledTrainFailures = Array.isArray(cache.failures) ? cache.failures : [];
+	cancelledTrainFetchedAt = Number(cache.fetchedAt) || 0;
+	cancelledTrainStationCount = Number(cache.stationCount) || 0;
+	$("#cancelledTrainFetchInfo").text(get_cancelled_train_summary_text());
+	schedule_cancelled_train_cache_expiry(Number(cache.expiresAt));
+}
+
 function set_cancelled_train_fetch_controls(disabled) {
 	$("#cancelledTrainFetchBtn, #cancelledTrainRefreshBtn").prop("disabled", disabled);
 }
@@ -3380,6 +3470,7 @@ function fetch_cancelled_train_data(forceRefresh) {
 		cancelledTrainFailures = stationResults.filter((result) => result && result.error).map((result) => result.station);
 		cancelledTrainRows = build_cancelled_train_rows(stationResults, searchData);
 		cancelledTrainFetchedAt = Date.now();
+		save_cancelled_train_cache();
 		const summary = get_cancelled_train_summary_text();
 		$("#cancelledTrainFetchInfo").text(summary);
 		if (trainNumberListMode === "cancelled" && $("#trainNumberListDetail").is(":visible")) render_cancelled_train_list();
