@@ -3217,6 +3217,14 @@ section#trainNumberListDetail {
 			section#trainNumberListDetail .dialog .search-status-text {
 				line-height: 1.25;
 			}
+			section#trainNumberListDetail .dialog .unkou-label.cancelled-full .search-status-text {
+				color: #f00;
+				font-weight: bold;
+			}
+			section#trainNumberListDetail .dialog .unkou-label.cancelled-partial .search-status-text {
+				color: #f0f;
+				font-weight: bold;
+			}
 			section#trainNumberListDetail .dialog .search-status-section {
 				color: #555;
 				font-size: 11px;

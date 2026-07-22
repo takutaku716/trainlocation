@@ -158,6 +158,7 @@ let cancelledTrainFailures = [];
 let cancelledTrainFetchedAt = 0;
 let cancelledTrainStationCount = 0;
 let cancelledTrainCacheExpiryTimer = null;
+let cancelledTrainTestMode = false;
 const CANCELLED_TRAIN_FETCH_CONCURRENCY = 4;
 const CANCELLED_TRAIN_CACHE_KEY = "cancelled_train_cache_v1";
 let preserveScrollAfterHashChange = false;
@@ -235,6 +236,7 @@ window.onload = function(){
 	load_location_auto_refresh_settings();
 	load_tracking_scroll_setting();
 	restore_cancelled_train_cache();
+	setup_cancelled_train_test_mode();
 	// 現在表示中の路線を取得
 	let param_rosen = get_param_rosen();
 	// 走行位置を表示
@@ -3328,6 +3330,80 @@ function build_cancelled_train_rows(stationResults, searchData) {
 	});
 }
 
+function is_cancelled_train_test_mode() {
+	const host = String(window.location.hostname || "").toLowerCase();
+	if (host !== "127.0.0.1" && host !== "localhost") return false;
+	return new URLSearchParams(window.location.search).get("cancelledTest") === "1";
+}
+
+function build_cancelled_train_test_rows() {
+	return [
+		{
+			"cbango": "168M",
+			"type": "3",
+			"value": "01",
+			"name": "\u666e\u901a \u5c0f\u6a3d",
+			"status": "\u5168\u533a\u9593\u904b\u4f11",
+			"currentSection": "\u5ca9\u898b\u6ca2\uff5e\u5c0f\u6a3d \u9593",
+			"showStatusSection": true,
+			"baseName": "",
+			"goNumber": "",
+			"isRunning": false,
+			"detailTrain": null
+		},
+		{
+			"cbango": "154M",
+			"type": "3",
+			"value": "01",
+			"name": "\u666e\u901a \u624b\u7a32",
+			"status": "\u90e8\u5206\u904b\u4f11",
+			"currentSection": "\u672d\u5e4c\uff5e\u624b\u7a32 \u9593",
+			"showStatusSection": true,
+			"baseName": "",
+			"goNumber": "",
+			"isRunning": false,
+			"detailTrain": null
+		},
+		{
+			"cbango": "71D",
+			"type": "1",
+			"value": "01",
+			"name": "\u30aa\u30db\u30fc\u30c4\u30af1\u53f7 \u7db2\u8d70",
+			"status": "\u90e8\u5206\u904b\u4f11",
+			"currentSection": "\u65ed\u5ddd\uff5e\u7db2\u8d70 \u9593",
+			"showStatusSection": true,
+			"baseName": "\u30aa\u30db\u30fc\u30c4\u30af",
+			"goNumber": "1",
+			"isRunning": false,
+			"detailTrain": null
+		},
+		{
+			"cbango": "923D",
+			"type": "3",
+			"value": "01",
+			"name": "\u666e\u901a \u51fd\u9928",
+			"status": "\u5168\u533a\u9593\u904b\u4f11",
+			"currentSection": "\u68ee\uff5e\u51fd\u9928 \u9593",
+			"showStatusSection": true,
+			"baseName": "",
+			"goNumber": "",
+			"isRunning": false,
+			"detailTrain": null
+		}
+	];
+}
+
+function setup_cancelled_train_test_mode() {
+	if (!is_cancelled_train_test_mode()) return;
+	cancelledTrainTestMode = true;
+	cancelledTrainRows = build_cancelled_train_test_rows();
+	cancelledTrainFailures = [];
+	cancelledTrainFetchedAt = Date.now();
+	cancelledTrainStationCount = 83;
+	$("#cancelledTrainFetchInfo").text("\u3010\u30c6\u30b9\u30c8\u8868\u793a\u3011" + get_cancelled_train_summary_text());
+	window.setTimeout(() => open_train_number_list_dialog("cancelled"), 500);
+}
+
 function format_cancelled_train_fetch_time(timestamp) {
 	if (!timestamp) return "";
 	const date = new Date(timestamp);
@@ -3358,6 +3434,7 @@ function schedule_cancelled_train_cache_expiry(expiresAt) {
 }
 
 function save_cancelled_train_cache() {
+	if (cancelledTrainTestMode) return;
 	if (!Array.isArray(cancelledTrainRows) || !cancelledTrainFetchedAt) return;
 	const expiresAt = get_cancelled_train_cache_expiry(cancelledTrainFetchedAt);
 	const cache = {
@@ -3448,6 +3525,13 @@ function get_cancelled_train_summary_text() {
 }
 
 function fetch_cancelled_train_data(forceRefresh) {
+	if (cancelledTrainTestMode) {
+		cancelledTrainRows = build_cancelled_train_test_rows();
+		cancelledTrainFetchedAt = Date.now();
+		$("#cancelledTrainFetchInfo").text("\u3010\u30c6\u30b9\u30c8\u8868\u793a\u3011" + get_cancelled_train_summary_text());
+		if (trainNumberListMode === "cancelled" && $("#trainNumberListDetail").is(":visible")) render_cancelled_train_list();
+		return Promise.resolve(cancelledTrainRows);
+	}
 	if (cancelledTrainFetchPromise) return cancelledTrainFetchPromise;
 	if (!forceRefresh && cancelledTrainRows !== null) {
 		render_cancelled_train_list();
@@ -4046,6 +4130,10 @@ function build_train_search_result_items(results) {
 		const titleText = train.baseName || nameParts.title || train.name;
 		const numberText = train.baseName && train.goNumber ? train.goNumber + "号" : "";
 		const currentSection = train.currentSection && (train.isRunning || train.showStatusSection) ? train.currentSection : "";
+		const cancellationType = get_cancelled_train_status_type(train);
+		const statusClasses = [];
+		if (train.status && train.status.indexOf("遅れ") >= 0) statusClasses.push("chien");
+		if (cancellationType) statusClasses.push("cancelled-" + cancellationType);
 		html += "<div class='express-train-contents train-search-result-item' cbango='" + escape_train_search_html(train.cbango) + "' type='" + escape_train_search_html(train.type) + "' value='" + escape_train_search_html(train.value) + "' data-running='" + (train.isRunning === false ? "0" : "1") + "'>";
 		html += "<div class='search-result-main'>";
 		html += "<span class='search-result-cbango'>" + escape_train_search_html(train.cbango) + "</span>";
@@ -4057,7 +4145,7 @@ function build_train_search_result_items(results) {
 		html += "</span>";
 		html += "<span class='search-result-destination'>" + escape_train_search_html(nameParts.destination) + "</span>";
 		html += "</div>";
-		html += "<span class='unkou-label" + (train.status && train.status.indexOf("遅れ") >= 0 ? " chien" : "") + "'>";
+		html += "<span class='unkou-label" + (statusClasses.length ? " " + statusClasses.join(" ") : "") + "'>";
 		html += "<span class='search-status-text'>" + escape_train_search_html(train.status || "") + "</span>";
 		if (currentSection) {
 			html += "<span class='search-status-section'>" + escape_train_search_html(currentSection) + "</span>";
@@ -4068,8 +4156,41 @@ function build_train_search_result_items(results) {
 	return html;
 }
 
+function get_cancelled_train_status_type(train) {
+	if (!train) return "";
+	if (train.cancellationStatusType === "full" || train.cancellationStatusType === "partial") return train.cancellationStatusType;
+	if (train.detailTrain && train.detailTrain.status !== undefined && train.detailTrain.status !== null && train.detailTrain.status !== "") {
+		const statusCode = Number(train.detailTrain.status);
+		if (statusCode === 0) return "full";
+		if (statusCode === 2) return "partial";
+	}
+	const statusText = String(train.status || "");
+	if (statusText.indexOf("\u5168\u533a\u9593\u904b\u4f11") >= 0) return "full";
+	if (statusText.indexOf("\u90e8\u5206\u904b\u4f11") >= 0) return "partial";
+	return "";
+}
+
+function apply_cancelled_status_to_train_number_rows(trains) {
+	if (!Array.isArray(trains) || !Array.isArray(cancelledTrainRows) || !cancelledTrainRows.length) return trains || [];
+	const cancelledMap = new Map();
+	cancelledTrainRows.forEach((train) => {
+		if (!train || !train.cbango) return;
+		cancelledMap.set(normalize_train_search_cbango(train.cbango), train);
+	});
+	return trains.map((train) => {
+		const cancelledTrain = train && cancelledMap.get(normalize_train_search_cbango(train.cbango));
+		if (!cancelledTrain) return train;
+		return Object.assign({}, train, {
+			"status": cancelledTrain.status,
+			"currentSection": cancelledTrain.currentSection,
+			"showStatusSection": true,
+			"cancellationStatusType": get_cancelled_train_status_type(cancelledTrain)
+		});
+	});
+}
+
 function render_train_number_list(trains) {
-	const rows = (Array.isArray(trains) ? trains : [])
+	const rows = apply_cancelled_status_to_train_number_rows(Array.isArray(trains) ? trains : [])
 		.slice()
 		.sort((a, b) => normalize_train_search_cbango(a.cbango).localeCompare(normalize_train_search_cbango(b.cbango), "ja", { numeric: true }));
 
@@ -4094,7 +4215,8 @@ function render_train_number_list_filtered() {
 function render_cancelled_train_list() {
 	const rows = Array.isArray(cancelledTrainRows) ? cancelledTrainRows.slice() : [];
 	rows.sort((a, b) => normalize_train_search_cbango(a.cbango).localeCompare(normalize_train_search_cbango(b.cbango), "ja", { numeric: true }));
-	$("#trainNumberListInfo").text(get_cancelled_train_summary_text());
+	const summaryPrefix = cancelledTrainTestMode ? "\u3010\u30c6\u30b9\u30c8\u8868\u793a\u3011" : "";
+	$("#trainNumberListInfo").text(summaryPrefix + get_cancelled_train_summary_text());
 	if (!rows.length) {
 		const message = cancelledTrainFailures.length ?
 			"取得できた駅の範囲では、運休列車はありません。" :
