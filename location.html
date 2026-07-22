@@ -641,7 +641,16 @@
 						<div class="train-number-list-filter" role="group" aria-label="列番一覧の表示切替">
 							<button type="button" class="train-number-list-filter-btn active" data-filter="all">すべて</button>
 							<button type="button" class="train-number-list-filter-btn" data-filter="running">走行中</button>
+							<button type="button" class="train-number-list-filter-btn" data-filter="delayed">遅延列車</button>
 							<button id="cancelledTrainRefreshBtn" type="button" class="train-number-list-filter-btn" hidden>再取得</button>
+						</div>
+						<div id="trainNumberListDelayFilter" class="train-number-list-delay-filter" hidden>
+							<div class="train-number-list-delay-heading">
+								<label for="trainNumberListDelayRange">遅れ時間のしきい値</label>
+								<output id="trainNumberListDelayValue" for="trainNumberListDelayRange">1分以上</output>
+							</div>
+							<input id="trainNumberListDelayRange" type="range" min="1" max="360" step="1" value="1">
+							<div class="train-number-list-delay-scale" aria-hidden="true"><span>1分</span><span>360分</span></div>
 						</div>
 						<div id="trainNumberListInfo" class="train-number-list-info" aria-live="polite">読み込み中...</div>
 						<div id="trainNumberListBody" class="train-number-list-body"></div>

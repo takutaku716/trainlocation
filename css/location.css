@@ -3133,6 +3133,39 @@ section#trainNumberListDetail {
 			section#trainNumberListDetail .dialog .train-number-list-filter-btn.active:hover {
 				background: #6c4;
 			}
+			section#trainNumberListDetail .dialog .train-number-list-delay-filter {
+				margin: 0 10px 12px 10px;
+			}
+			section#trainNumberListDetail .dialog .train-number-list-delay-filter[hidden] {
+				display: none;
+			}
+			section#trainNumberListDetail .dialog .train-number-list-delay-heading {
+				align-items: center;
+				display: flex;
+				font-size: 14px;
+				font-weight: bold;
+				justify-content: space-between;
+				margin-bottom: 4px;
+			}
+			section#trainNumberListDetail .dialog .train-number-list-delay-heading output {
+				color: #d00;
+				font-variant-numeric: tabular-nums;
+			}
+			section#trainNumberListDetail .dialog #trainNumberListDelayRange {
+				accent-color: #5b3;
+				box-sizing: border-box;
+				cursor: pointer;
+				margin: 0;
+				width: 100%;
+			}
+			section#trainNumberListDetail .dialog .train-number-list-delay-scale {
+				color: #555;
+				display: flex;
+				font-size: 11px;
+				justify-content: space-between;
+				line-height: 1;
+				margin-top: 2px;
+			}
 			section#trainNumberListDetail .dialog .train-number-list-info {
 				font-size: 14px;
 				margin: 0 10px 10px 10px;
@@ -3627,10 +3660,17 @@ section#refreshSettingDetail {
 	section#trainSearchDetail .dialog .train-search-result-info,
 	section#trainSearchDetail .dialog .train-search-result,
 	section#trainNumberListDetail .dialog .train-number-list-filter,
+	section#trainNumberListDetail .dialog .train-number-list-delay-filter,
 	section#trainNumberListDetail .dialog .train-number-list-info,
 	section#trainNumberListDetail .dialog .train-number-list-body {
 		margin-left: 0;
 		margin-right: 0;
+	}
+	section#trainNumberListDetail .dialog .train-number-list-filter-btn {
+		flex: 1 1 0;
+		min-width: 0;
+		padding-left: 6px;
+		padding-right: 6px;
 	}
 	section#trainSearchDetail .dialog .train-search-controls {
 		display: grid;

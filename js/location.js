@@ -150,6 +150,7 @@ const TRAIN_SEARCH_CACHE_TTL = 30000;
 const TRAIN_SEARCH_TIMETABLE_NOW_CACHE_TTL = 30000;
 let trainNumberListRows = [];
 let trainNumberListFilter = "all";
+let trainNumberListDelayThreshold = 1;
 let trainNumberListMode = "numbers";
 let cancelledTrainStationMasterPromise = null;
 let cancelledTrainFetchPromise = null;
@@ -513,6 +514,14 @@ $(function ($) {
 		if (trainNumberListMode !== "numbers") return;
 		trainNumberListFilter = $(this).attr("data-filter") || "all";
 		render_train_number_list_filtered();
+	});
+
+	$(document).on("input change", "#trainNumberListDelayRange", function() {
+		trainNumberListDelayThreshold = Math.max(1, Number($(this).val()) || 1);
+		$("#trainNumberListDelayValue").text(trainNumberListDelayThreshold + "分以上");
+		if (trainNumberListMode === "numbers" && trainNumberListFilter === "delayed") {
+			render_train_number_list_filtered();
+		}
 	});
 
 	// 取得列番一覧ダイアログを閉じる
@@ -3141,11 +3150,15 @@ function close_train_search_dialog() {
 function open_train_number_list_dialog(mode) {
 	trainNumberListMode = mode === "cancelled" ? "cancelled" : "numbers";
 	trainNumberListFilter = "all";
+	trainNumberListDelayThreshold = 1;
 	trainNumberListRows = [];
 	const isCancelledMode = trainNumberListMode === "cancelled";
 	$("#trainNumberListTitle").text(isCancelledMode ? "運休列車一覧" : "取得した列番一覧");
 	$("#trainNumberListDetail .train-number-list-filter-btn[data-filter]").prop("hidden", isCancelledMode);
 	$("#cancelledTrainRefreshBtn").prop("hidden", !isCancelledMode);
+	$("#trainNumberListDelayRange").val(trainNumberListDelayThreshold);
+	$("#trainNumberListDelayValue").text(trainNumberListDelayThreshold + "分以上");
+	$("#trainNumberListDelayFilter").prop("hidden", true);
 	$("#trainNumberListDetail .train-number-list-filter-btn").removeClass("active");
 	if (!isCancelledMode) {
 		$("#trainNumberListDetail .train-number-list-filter-btn[data-filter='all']").addClass("active");
@@ -3792,6 +3805,7 @@ function load_train_search_data() {
 					"baseName": nameInfo.baseName,
 					"goNumber": nameInfo.goNumber,
 					"hasCustomName": !!nameInfo.baseName,
+					"delayMinutes": Math.max(0, Number(train.chien) || 0),
 					"isRunning": true,
 					"detailTrain": detailTrain
 				};
@@ -3858,6 +3872,7 @@ function load_train_search_data() {
 				"baseName": nameInfo.baseName,
 				"goNumber": nameInfo.goNumber,
 				"hasCustomName": !!nameInfo.baseName,
+				"delayMinutes": Math.max(0, Number(expressNow && expressNow.chien) || 0),
 				"isRunning": false,
 				"detailTrain": detailTrain
 			});
@@ -4189,16 +4204,39 @@ function apply_cancelled_status_to_train_number_rows(trains) {
 	});
 }
 
+function get_train_number_list_delay_minutes(train) {
+	if (!train) return 0;
+	const delayMinutes = Number(train.delayMinutes);
+	if (Number.isFinite(delayMinutes) && delayMinutes > 0) return delayMinutes;
+	const detailDelayMinutes = Number(train.detailTrain && train.detailTrain.chien);
+	return Number.isFinite(detailDelayMinutes) && detailDelayMinutes > 0 ? detailDelayMinutes : 0;
+}
+
+function get_train_number_list_delay_text(delayMinutes) {
+	const minutes = Math.max(0, Number(delayMinutes) || 0);
+	if (minutes >= 999) return "大幅遅れ";
+	const hours = Math.floor(minutes / 60);
+	const remainingMinutes = minutes % 60;
+	if (hours > 0 && remainingMinutes > 0) return hours + "時間" + remainingMinutes + "分遅れ";
+	if (hours > 0) return hours + "時間遅れ";
+	return minutes + "分遅れ";
+}
+
 function render_train_number_list(trains) {
 	const rows = apply_cancelled_status_to_train_number_rows(Array.isArray(trains) ? trains : [])
 		.slice()
 		.sort((a, b) => normalize_train_search_cbango(a.cbango).localeCompare(normalize_train_search_cbango(b.cbango), "ja", { numeric: true }));
 
 	const totalCount = trainNumberListRows.length;
-	const countText = trainNumberListFilter === "running" ? "走行中：" + rows.length + "件 / 全" + totalCount + "件" : "取得件数：" + rows.length + "件";
+	let countText = "取得件数：" + rows.length + "件";
+	if (trainNumberListFilter === "running") countText = "走行中：" + rows.length + "件 / 全" + totalCount + "件";
+	if (trainNumberListFilter === "delayed") countText = "遅延列車：" + rows.length + "件 / 全" + totalCount + "件（" + trainNumberListDelayThreshold + "分以上）";
 	$("#trainNumberListInfo").text(countText);
 	if (!rows.length) {
-		$("#trainNumberListBody").html("<div class='train-search-empty'>取得した列番はありません。</div>");
+		const emptyMessage = trainNumberListFilter === "delayed" ?
+			"設定したしきい値以上の遅延列車はありません。" :
+			"取得した列番はありません。";
+		$("#trainNumberListBody").html("<div class='train-search-empty'>" + emptyMessage + "</div>");
 		return;
 	}
 	$("#trainNumberListBody").html(build_train_search_result_items(rows));
@@ -4208,7 +4246,21 @@ function render_train_number_list(trains) {
 function render_train_number_list_filtered() {
 	$("#trainNumberListDetail .train-number-list-filter-btn").removeClass("active");
 	$("#trainNumberListDetail .train-number-list-filter-btn[data-filter='" + trainNumberListFilter + "']").addClass("active");
-	const rows = trainNumberListFilter === "running" ? trainNumberListRows.filter((train) => train && train.isRunning !== false) : trainNumberListRows;
+	$("#trainNumberListDelayFilter").prop("hidden", trainNumberListFilter !== "delayed");
+	let rows = trainNumberListRows;
+	if (trainNumberListFilter === "running") {
+		rows = trainNumberListRows.filter((train) => train && train.isRunning !== false);
+	}
+	if (trainNumberListFilter === "delayed") {
+		rows = trainNumberListRows
+			.filter((train) => get_train_number_list_delay_minutes(train) >= trainNumberListDelayThreshold)
+			.map((train) => {
+				if (String(train.status || "").indexOf("遅れ") >= 0) return train;
+				return Object.assign({}, train, {
+					"status": get_train_number_list_delay_text(get_train_number_list_delay_minutes(train))
+				});
+			});
+	}
 	render_train_number_list(rows);
 }
 
