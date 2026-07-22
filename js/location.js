@@ -151,6 +151,7 @@ const TRAIN_SEARCH_TIMETABLE_NOW_CACHE_TTL = 30000;
 let trainNumberListRows = [];
 let trainNumberListFilter = "all";
 let trainNumberListDelayThreshold = 1;
+let trainNumberListShowEndedDelayed = false;
 let trainNumberListMode = "numbers";
 let cancelledTrainStationMasterPromise = null;
 let cancelledTrainFetchPromise = null;
@@ -519,6 +520,13 @@ $(function ($) {
 	$(document).on("input change", "#trainNumberListDelayRange", function() {
 		trainNumberListDelayThreshold = Math.max(1, Number($(this).val()) || 1);
 		$("#trainNumberListDelayValue").text(trainNumberListDelayThreshold + "分以上");
+		if (trainNumberListMode === "numbers" && trainNumberListFilter === "delayed") {
+			render_train_number_list_filtered();
+		}
+	});
+
+	$(document).on("change", "#trainNumberListShowEndedDelayed", function() {
+		trainNumberListShowEndedDelayed = $(this).prop("checked");
 		if (trainNumberListMode === "numbers" && trainNumberListFilter === "delayed") {
 			render_train_number_list_filtered();
 		}
@@ -3151,6 +3159,7 @@ function open_train_number_list_dialog(mode) {
 	trainNumberListMode = mode === "cancelled" ? "cancelled" : "numbers";
 	trainNumberListFilter = "all";
 	trainNumberListDelayThreshold = 1;
+	trainNumberListShowEndedDelayed = false;
 	trainNumberListRows = [];
 	const isCancelledMode = trainNumberListMode === "cancelled";
 	$("#trainNumberListTitle").text(isCancelledMode ? "運休列車一覧" : "取得した列番一覧");
@@ -3158,6 +3167,7 @@ function open_train_number_list_dialog(mode) {
 	$("#cancelledTrainRefreshBtn").prop("hidden", !isCancelledMode);
 	$("#trainNumberListDelayRange").val(trainNumberListDelayThreshold);
 	$("#trainNumberListDelayValue").text(trainNumberListDelayThreshold + "分以上");
+	$("#trainNumberListShowEndedDelayed").prop("checked", trainNumberListShowEndedDelayed);
 	$("#trainNumberListDelayFilter").prop("hidden", true);
 	$("#trainNumberListDetail .train-number-list-filter-btn").removeClass("active");
 	if (!isCancelledMode) {
@@ -4230,7 +4240,11 @@ function render_train_number_list(trains) {
 	const totalCount = trainNumberListRows.length;
 	let countText = "取得件数：" + rows.length + "件";
 	if (trainNumberListFilter === "running") countText = "走行中：" + rows.length + "件 / 全" + totalCount + "件";
-	if (trainNumberListFilter === "delayed") countText = "遅延列車：" + rows.length + "件 / 全" + totalCount + "件（" + trainNumberListDelayThreshold + "分以上）";
+	if (trainNumberListFilter === "delayed") {
+		countText = "遅延列車：" + rows.length + "件 / 全" + totalCount + "件（" + trainNumberListDelayThreshold + "分以上";
+		if (trainNumberListShowEndedDelayed) countText += "・走行終了を含む";
+		countText += "）";
+	}
 	$("#trainNumberListInfo").text(countText);
 	if (!rows.length) {
 		const emptyMessage = trainNumberListFilter === "delayed" ?
@@ -4253,7 +4267,10 @@ function render_train_number_list_filtered() {
 	}
 	if (trainNumberListFilter === "delayed") {
 		rows = trainNumberListRows
-			.filter((train) => get_train_number_list_delay_minutes(train) >= trainNumberListDelayThreshold)
+			.filter((train) => {
+				if (!trainNumberListShowEndedDelayed && train && train.isRunning === false) return false;
+				return get_train_number_list_delay_minutes(train) >= trainNumberListDelayThreshold;
+			})
 			.map((train) => {
 				if (String(train.status || "").indexOf("遅れ") >= 0) return train;
 				return Object.assign({}, train, {

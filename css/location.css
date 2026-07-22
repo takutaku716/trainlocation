@@ -3166,6 +3166,20 @@ section#trainNumberListDetail {
 				line-height: 1;
 				margin-top: 2px;
 			}
+			section#trainNumberListDetail .dialog .train-number-list-ended-toggle {
+				align-items: center;
+				cursor: pointer;
+				display: inline-flex;
+				font-size: 13px;
+				gap: 7px;
+				margin-top: 10px;
+			}
+			section#trainNumberListDetail .dialog .train-number-list-ended-toggle input {
+				accent-color: #5b3;
+				height: 17px;
+				margin: 0;
+				width: 17px;
+			}
 			section#trainNumberListDetail .dialog .train-number-list-info {
 				font-size: 14px;
 				margin: 0 10px 10px 10px;
