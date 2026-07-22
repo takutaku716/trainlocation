@@ -592,7 +592,7 @@
 				<div class="dialog">
 					<h2 class="common-subtitle header">列車検索<span class="close"><img src="./images/home/close.svg" alt="閉じる"></span></h2>
 					<div id="trainSearchDetailMain">
-						<div class="train-search-message">列番または列車名で特急列車を検索できます。</div>
+						<div class="train-search-message">列番または列車名で列車を検索できます。</div>
 						<div class="train-search-form">
 							<div class="train-search-row">
 								<label for="trainSearchNumberInput">列番で検索</label>
@@ -619,7 +619,10 @@
 							</div>
 							<div class="train-search-list-action">
 								<button id="trainNumberListBtn" type="button" class="common-button">取得した列番一覧</button>
+								<button id="cancelledTrainListBtn" type="button" class="common-button">運休列車一覧</button>
+								<button id="cancelledTrainFetchBtn" type="button" class="common-button">運休列車取得</button>
 							</div>
+							<div id="cancelledTrainFetchInfo" class="cancelled-train-fetch-info" aria-live="polite"></div>
 						</div>
 						<div id="trainSearchResultInfo" class="train-search-result-info"></div>
 						<div id="trainSearchResult" class="train-search-result"></div>
@@ -633,13 +636,27 @@
 		<section id="trainNumberListDetail">
 			<div class="dialog-outer">
 				<div class="dialog">
-					<h2 class="common-subtitle header">取得した列番一覧<span class="close"><img src="./images/home/close.svg" alt="閉じる"></span></h2>
+					<h2 class="common-subtitle header"><span id="trainNumberListTitle">取得した列番一覧</span><span class="close"><img src="./images/home/close.svg" alt="閉じる"></span></h2>
 					<div id="trainNumberListMain">
 						<div class="train-number-list-filter" role="group" aria-label="列番一覧の表示切替">
 							<button type="button" class="train-number-list-filter-btn active" data-filter="all">すべて</button>
 							<button type="button" class="train-number-list-filter-btn" data-filter="running">走行中</button>
+							<button type="button" class="train-number-list-filter-btn" data-filter="delayed">遅延列車</button>
+							<button id="cancelledTrainRefreshBtn" type="button" class="train-number-list-filter-btn" hidden>再取得</button>
 						</div>
-						<div id="trainNumberListInfo" class="train-number-list-info">読み込み中...</div>
+						<div id="trainNumberListDelayFilter" class="train-number-list-delay-filter" hidden>
+							<div class="train-number-list-delay-heading">
+								<label for="trainNumberListDelayRange">遅れ時間のしきい値</label>
+								<output id="trainNumberListDelayValue" for="trainNumberListDelayRange">1分以上</output>
+							</div>
+							<input id="trainNumberListDelayRange" type="range" min="1" max="360" step="1" value="1">
+							<div class="train-number-list-delay-scale" aria-hidden="true"><span>1分</span><span>360分</span></div>
+							<label class="train-number-list-ended-toggle" for="trainNumberListShowEndedDelayed">
+								<input id="trainNumberListShowEndedDelayed" type="checkbox">
+								<span>走行終了した列車を表示</span>
+							</label>
+						</div>
+						<div id="trainNumberListInfo" class="train-number-list-info" aria-live="polite">読み込み中...</div>
 						<div id="trainNumberListBody" class="train-number-list-body"></div>
 					</div>
 				</div>

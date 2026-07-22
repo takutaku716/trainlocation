@@ -2906,12 +2906,29 @@ section#trainSearchDetail {
 			}
 
 			section#trainSearchDetail .dialog .train-search-list-action {
+				display: flex;
+				flex-wrap: wrap;
+				gap: 8px;
+				justify-content: flex-end;
 				margin-top: -4px;
-				text-align: right;
 			}
 			section#trainSearchDetail .dialog .train-search-list-action .common-button {
 				min-width: 160px;
 				padding: 8px 14px;
+			}
+			section#trainSearchDetail .dialog .train-search-list-action .common-button:disabled,
+			section#trainNumberListDetail .dialog .train-number-list-filter-btn:disabled {
+				background-color: #ddd;
+				border-color: #bbb;
+				color: #777;
+				cursor: wait;
+			}
+			section#trainSearchDetail .dialog .cancelled-train-fetch-info {
+				color: #555;
+				font-size: 13px;
+				margin-top: 8px;
+				min-height: 18px;
+				text-align: right;
 			}
 			section#trainSearchDetail .dialog .train-search-row label {
 				display: block;
@@ -3116,6 +3133,53 @@ section#trainNumberListDetail {
 			section#trainNumberListDetail .dialog .train-number-list-filter-btn.active:hover {
 				background: #6c4;
 			}
+			section#trainNumberListDetail .dialog .train-number-list-delay-filter {
+				margin: 0 10px 12px 10px;
+			}
+			section#trainNumberListDetail .dialog .train-number-list-delay-filter[hidden] {
+				display: none;
+			}
+			section#trainNumberListDetail .dialog .train-number-list-delay-heading {
+				align-items: center;
+				display: flex;
+				font-size: 14px;
+				font-weight: bold;
+				justify-content: space-between;
+				margin-bottom: 4px;
+			}
+			section#trainNumberListDetail .dialog .train-number-list-delay-heading output {
+				color: #d00;
+				font-variant-numeric: tabular-nums;
+			}
+			section#trainNumberListDetail .dialog #trainNumberListDelayRange {
+				accent-color: #5b3;
+				box-sizing: border-box;
+				cursor: pointer;
+				margin: 0;
+				width: 100%;
+			}
+			section#trainNumberListDetail .dialog .train-number-list-delay-scale {
+				color: #555;
+				display: flex;
+				font-size: 11px;
+				justify-content: space-between;
+				line-height: 1;
+				margin-top: 2px;
+			}
+			section#trainNumberListDetail .dialog .train-number-list-ended-toggle {
+				align-items: center;
+				cursor: pointer;
+				display: inline-flex;
+				font-size: 13px;
+				gap: 7px;
+				margin-top: 10px;
+			}
+			section#trainNumberListDetail .dialog .train-number-list-ended-toggle input {
+				accent-color: #5b3;
+				height: 17px;
+				margin: 0;
+				width: 17px;
+			}
 			section#trainNumberListDetail .dialog .train-number-list-info {
 				font-size: 14px;
 				margin: 0 10px 10px 10px;
@@ -3199,6 +3263,14 @@ section#trainNumberListDetail {
 			}
 			section#trainNumberListDetail .dialog .search-status-text {
 				line-height: 1.25;
+			}
+			section#trainNumberListDetail .dialog .unkou-label.cancelled-full .search-status-text {
+				color: #f00;
+				font-weight: bold;
+			}
+			section#trainNumberListDetail .dialog .unkou-label.cancelled-partial .search-status-text {
+				color: #f0f;
+				font-weight: bold;
 			}
 			section#trainNumberListDetail .dialog .search-status-section {
 				color: #555;
@@ -3602,10 +3674,17 @@ section#refreshSettingDetail {
 	section#trainSearchDetail .dialog .train-search-result-info,
 	section#trainSearchDetail .dialog .train-search-result,
 	section#trainNumberListDetail .dialog .train-number-list-filter,
+	section#trainNumberListDetail .dialog .train-number-list-delay-filter,
 	section#trainNumberListDetail .dialog .train-number-list-info,
 	section#trainNumberListDetail .dialog .train-number-list-body {
 		margin-left: 0;
 		margin-right: 0;
+	}
+	section#trainNumberListDetail .dialog .train-number-list-filter-btn {
+		flex: 1 1 0;
+		min-width: 0;
+		padding-left: 6px;
+		padding-right: 6px;
 	}
 	section#trainSearchDetail .dialog .train-search-controls {
 		display: grid;
@@ -3636,11 +3715,16 @@ section#refreshSettingDetail {
 		padding-right: 0;
 	}
 	section#trainSearchDetail .dialog .train-search-list-action {
-		text-align: left;
+		display: grid;
+		grid-template-columns: 1fr;
+		justify-content: stretch;
 	}
 	section#trainSearchDetail .dialog .train-search-list-action .common-button {
 		box-sizing: border-box;
 		width: 100%;
+	}
+	section#trainSearchDetail .dialog .cancelled-train-fetch-info {
+		text-align: left;
 	}
 
 	/* 北海道新幹線への路線のリンク */
