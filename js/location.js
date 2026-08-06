@@ -87,6 +87,9 @@ const JR_SHINKANSEN_LOCATION_SOURCE_MAP = {
 		centralSuspensionUrl: "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://traininfo.jr-central.co.jp/shinkansen/var/train_info/suspension_info.json",
 		centralMasterUrl: "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://traininfo.jr-central.co.jp/shinkansen/common/data/common_ja.json",
 		centralTrainInfoUrlBase: "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://traininfo.jr-central.co.jp/shinkansen/var/train_info/",
+		officialTrainNumberUrl: (location.hostname === "127.0.0.1" || location.hostname === "localhost") ?
+			"http://127.0.0.1:8787/jreast-shinkansen/train-numbers" :
+			"https://trainlocation-jrkyushu-timetable-cache.densha716.workers.dev/jreast-shinkansen/train-numbers",
 		kyushuUrl: "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://george-doredore.jrkyushu.co.jp/jrqSEN29.html"
 	},
 	"60": {
@@ -95,6 +98,7 @@ const JR_SHINKANSEN_LOCATION_SOURCE_MAP = {
 	}
 };
 const jrShinkansenStaticSourceDataCache = new Map();
+const jrEastShinkansenTrainNumberDataCache = new Map();
 const jrKyushuTimetableDataCache = new Map();
 const JR_KYUSHU_TIMETABLE_WORKER_BASE = "https://trainlocation-jrkyushu-timetable-cache.densha716.workers.dev";
 
@@ -1125,18 +1129,21 @@ function load_jr_shinkansen_location_now_data(_param_rosen, _now) {
 		jqxhr_to_promise(get_dokotre_location_request(source.centralUrl, _now)).catch(() => null),
 		load_jr_shinkansen_static_source_data(source, _now).catch(() => ({ centralMasterJson: null })),
 		jqxhr_to_promise(get_external_text_request(source.kyushuUrl, _now)).catch(() => ""),
-		load_jr_shinkansen_central_suspension_data(source, _now).catch(() => null)
+		load_jr_shinkansen_central_suspension_data(source, _now).catch(() => null),
+		load_jr_shinkansen_official_train_number_map(source).catch(() => ({}))
 	]).then((results) => {
 		const centralLocationJson = results[0];
 		const centralMasterJson = results[1].centralMasterJson;
 		const kyushuHtml = results[2];
 		const centralSuspensionJson = results[3];
+		const officialTrainNumberMap = results[4];
 		return load_jr_shinkansen_central_train_info_map(source, centralLocationJson, _now)
 			.then((centralTrainInfoMap) => {
 				const baseOptions = {
 					senku: source.senku || _param_rosen,
 					centralTrainInfoMap: centralTrainInfoMap,
-					centralSuspensionJson: centralSuspensionJson
+					centralSuspensionJson: centralSuspensionJson,
+					officialTrainNumberMap: officialTrainNumberMap
 				};
 				const preliminary = window.JrShinkansenLocationAdapter.normalize(centralLocationJson, centralMasterJson, kyushuHtml, baseOptions);
 				return load_jr_shinkansen_kyushu_timetable_map(source, preliminary.location, _now)
@@ -1159,6 +1166,20 @@ function load_jr_shinkansen_location_now_data(_param_rosen, _now) {
 function load_jr_shinkansen_central_suspension_data(source, _now) {
 	if (!source || !source.centralSuspensionUrl) return Promise.resolve(null);
 	return jqxhr_to_promise(get_dokotre_location_request(source.centralSuspensionUrl, _now));
+}
+
+function load_jr_shinkansen_official_train_number_map(source) {
+	if (!source || !source.officialTrainNumberUrl) return Promise.resolve({});
+	const serviceDate = get_jrkyushu_timetable_service_date();
+	const cacheKey = String(source.senku || "") + "|" + serviceDate;
+	if (jrEastShinkansenTrainNumberDataCache.has(cacheKey)) {
+		return jrEastShinkansenTrainNumberDataCache.get(cacheKey);
+	}
+	const requestUrl = source.officialTrainNumberUrl + "?date=" + encodeURIComponent(serviceDate);
+	const loadPromise = jqxhr_to_promise($.getJSON(requestUrl))
+		.then((data) => data && data.maps ? data.maps : {});
+	jrEastShinkansenTrainNumberDataCache.set(cacheKey, loadPromise);
+	return loadPromise;
 }
 
 function load_jr_shinkansen_kyushu_timetable_map(source, normalizedLocation, _now) {

@@ -223,12 +223,13 @@
 		rawTrains.forEach((rawTrain) => {
 			const trainNumber = String(rawTrain.trainNumber || rawTrain.train || "").trim();
 			if (!trainNumber) return;
-			const displayTrainNumber = normalizeShinkansenTrainNumber(trainNumber);
 			const trainName = trainNameMap[String(rawTrain.train)] || "";
+			const sourceTrainNumber = normalizeShinkansenTrainNumber(trainNumber);
+			const displayTrainNumber = resolveCentralOfficialTrainNumber(trainName, trainNumber, bound, options) || sourceTrainNumber;
 			const kyushuDestinationMap = options && options.kyushuDestinationMap ? options.kyushuDestinationMap : {};
-			const destination = getCentralDestination(rawTrain, centralTrainInfoMap) || kyushuDestinationMap[displayTrainNumber] || fallbackDestination;
+			const destination = getCentralDestination(rawTrain, centralTrainInfoMap) || kyushuDestinationMap[displayTrainNumber] || kyushuDestinationMap[sourceTrainNumber] || fallbackDestination;
 			const timetable = mergeKyushuTimetable(
-				displayTrainNumber,
+				sourceTrainNumber,
 				convertCentralTrainInfoTimetable(rawTrain, centralTrainInfoMap),
 				options && options.kyushuTimetableMap
 			);
@@ -261,6 +262,25 @@
 				}
 			}));
 		});
+	}
+
+	function resolveCentralOfficialTrainNumber(trainName, rawTrainNumber, bound, options) {
+		const maps = options && options.officialTrainNumberMap ? options.officialTrainNumberMap : {};
+		const direction = String(bound) === "1" ? "U" : "D";
+		const directionMap = maps && maps[direction] ? maps[direction] : {};
+		const nameKey = normalizeOfficialTrainName(trainName, rawTrainNumber);
+		if (!nameKey) return "";
+		const mapped = directionMap[nameKey];
+		const candidates = Array.isArray(mapped) ? mapped : (mapped ? [mapped] : []);
+		if (candidates.length !== 1) return "";
+		return normalizeShinkansenTrainNumber(candidates[0]);
+	}
+
+	function normalizeOfficialTrainName(trainName, rawTrainNumber) {
+		const name = String(trainName || "").replace(/[\u00a0\u3000\s]+/g, "");
+		const numberMatch = String(rawTrainNumber || "").match(/\d+/);
+		if (!name || !numberMatch) return "";
+		return name + String(Number(numberMatch[0]));
 	}
 
 	function getCentralPartialSuspension(rawTrain, bound, options) {

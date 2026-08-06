@@ -1,7 +1,10 @@
 const JST_OFFSET_MS = 9 * 60 * 60 * 1000;
 const CACHE_KEY_PREFIX = "jrkyushu:timetable";
+const JREAST_TRAIN_NUMBER_CACHE_KEY_PREFIX = "jreast:shinkansen:train-numbers";
+const JREAST_TIMETABLE_BASE_URL = "https://timetables.jreast.co.jp";
 const MAX_DETAIL_FETCHES = 500;
 const DETAIL_BATCH_SIZE = 15;
+const japaneseHolidayCache = new Map();
 
 const STATION_SOURCES = [
 	{ code: "28283", group: "kyushu", name: "hakata" },
@@ -45,6 +48,15 @@ export default {
 		if (url.pathname.endsWith("/health")) {
 			return jsonResponse({ ok: true });
 		}
+		if (url.pathname.endsWith("/cleanup")) {
+			return cleanupTimetableCache(env, url);
+		}
+		if (url.pathname.endsWith("/inspect")) {
+			return inspectTimetableCache(env, url);
+		}
+		if (url.pathname.endsWith("/jreast-shinkansen/train-numbers")) {
+			return getJreastShinkansenTrainNumbers(env, url);
+		}
 		const trainNumber = getTimetableTrainNumber(url.pathname);
 		if (trainNumber) {
 			return getTimetableResponse(env, trainNumber, url.searchParams.get("date"));
@@ -75,6 +87,318 @@ async function getTimetableResponse(env, trainNumber, requestedDate) {
 	const value = await env.JRKYUSHU_TIMETABLE_KV.get(trainKey(serviceDate, trainNumber));
 	if (!value) return jsonResponse({ ok: false, error: "Not Found" }, { status: 404 });
 	return new Response(value, { headers: JSON_HEADERS });
+}
+
+async function getJreastShinkansenTrainNumbers(env, url) {
+	if (!env.JRKYUSHU_TIMETABLE_KV) {
+		return jsonResponse({ ok: false, error: "JRKYUSHU_TIMETABLE_KV is not configured" }, { status: 500 });
+	}
+	const serviceDate = getRequestedServiceDate(url.searchParams.get("date"));
+	const timetableMonth = serviceDate.ym.slice(2);
+	const monthlyData = await getJreastMonthlyTrainNumberData(env, timetableMonth);
+	const calendarType = isJreastHolidaySchedule(serviceDate) ? "holiday" : "weekday";
+	const selectedPages = monthlyData.pages && monthlyData.pages[calendarType] ? monthlyData.pages[calendarType] : {};
+	const maps = {
+		U: buildJreastActiveTrainNumberMap(selectedPages.U || [], serviceDate),
+		D: buildJreastActiveTrainNumberMap(selectedPages.D || [], serviceDate)
+	};
+	return jsonResponse({
+		ok: true,
+		date: serviceDate.ymd,
+		month: timetableMonth,
+		calendarType,
+		fetchedAt: monthlyData.fetchedAt || "",
+		counts: {
+			U: Object.keys(maps.U).length,
+			D: Object.keys(maps.D).length
+		},
+		maps
+	}, {
+		headers: {
+			"cache-control": "public, max-age=3600",
+			"access-control-allow-origin": "*"
+		}
+	});
+}
+
+async function getJreastMonthlyTrainNumberData(env, timetableMonth) {
+	const key = JREAST_TRAIN_NUMBER_CACHE_KEY_PREFIX + ":" + timetableMonth;
+	const cached = await env.JRKYUSHU_TIMETABLE_KV.get(key, "json");
+	if (cached && cached.version === 1 && cached.pages) return cached;
+
+	const pageDefinitions = [
+		{ calendarType: "weekday", direction: "D", file: "001d1.html" },
+		{ calendarType: "holiday", direction: "D", file: "001d2.html" },
+		{ calendarType: "weekday", direction: "U", file: "001u1.html" },
+		{ calendarType: "holiday", direction: "U", file: "001u2.html" }
+	];
+	const results = await Promise.all(pageDefinitions.map(async (definition) => {
+		const sourceUrl = JREAST_TIMETABLE_BASE_URL + "/" + timetableMonth + "/timetable-v/" + definition.file;
+		const html = await fetchText(sourceUrl);
+		return Object.assign({}, definition, {
+			sourceUrl,
+			entries: parseJreastShinkansenTimetablePage(html)
+		});
+	}));
+	const pages = {
+		weekday: { U: [], D: [] },
+		holiday: { U: [], D: [] }
+	};
+	const sources = {};
+	for (const result of results) {
+		pages[result.calendarType][result.direction] = result.entries;
+		sources[result.calendarType + result.direction] = result.sourceUrl;
+	}
+	const value = {
+		version: 1,
+		month: timetableMonth,
+		fetchedAt: new Date().toISOString(),
+		sources,
+		pages
+	};
+	await env.JRKYUSHU_TIMETABLE_KV.put(key, JSON.stringify(value), {
+		expirationTtl: 120 * 24 * 60 * 60
+	});
+	return value;
+}
+
+function parseJreastShinkansenTimetablePage(html) {
+	const rows = extractJreastTimetableRows(html);
+	const numberRow = rows.find((row) => row[0] === "列車番号") || [];
+	const nameRow = rows.find((row) => row[0] === "列車名") || [];
+	const operationRow = rows.find((row) => row[0] === "運転日") || [];
+	const length = Math.min(numberRow.length, nameRow.length);
+	const entries = [];
+	for (let index = 0; index < length; index += 1) {
+		const trainNumber = normalizeTrainNumber(numberRow[index]);
+		const trainName = normalizeJreastShinkansenTrainName(nameRow[index]);
+		if (!/^\d+A$/.test(trainNumber) || !trainName) continue;
+		entries.push({
+			trainNumber,
+			trainName,
+			operation: normalizeJreastOperationText(operationRow[index] || "全日")
+		});
+	}
+	if (entries.length < 1) throw new Error("JR East timetable train rows were not found");
+	return entries;
+}
+
+function extractJreastTimetableRows(html) {
+	const rows = [];
+	const rowPattern = /<tr\b[^>]*>([\s\S]*?)<\/tr>/gi;
+	let rowMatch;
+	while ((rowMatch = rowPattern.exec(String(html || ""))) !== null) {
+		const cells = [];
+		const cellPattern = /<(?:th|td)\b[^>]*>([\s\S]*?)<\/(?:th|td)>/gi;
+		let cellMatch;
+		while ((cellMatch = cellPattern.exec(rowMatch[1])) !== null) {
+			cells.push(normalizeJreastCellText(cellMatch[1]));
+		}
+		if (cells.length) rows.push(cells);
+	}
+	return rows;
+}
+
+function normalizeJreastCellText(html) {
+	return decodeHtmlEntities(stripHtml(html))
+		.replace(/[\u00a0\u3000\s]+/g, " ")
+		.trim();
+}
+
+function decodeHtmlEntities(text) {
+	return String(text || "")
+		.replace(/&#(\d+);/g, (_, code) => String.fromCodePoint(Number(code)))
+		.replace(/&#x([0-9a-f]+);/gi, (_, code) => String.fromCodePoint(parseInt(code, 16)))
+		.replace(/&nbsp;/gi, " ")
+		.replace(/&amp;/gi, "&")
+		.replace(/&lt;/gi, "<")
+		.replace(/&gt;/gi, ">")
+		.replace(/&quot;/gi, "\"")
+		.replace(/&#39;|&apos;/gi, "'");
+}
+
+function normalizeJreastShinkansenTrainName(value) {
+	const text = String(value || "")
+		.replace(/[\u00a0\u3000\s]+/g, "")
+		.replace(/号$/g, "");
+	const match = text.match(/(のぞみ|ひかり|こだま|みずほ|さくら|つばめ)(\d+)/);
+	return match ? match[1] + String(Number(match[2])) : "";
+}
+
+function normalizeJreastOperationText(value) {
+	return String(value || "")
+		.replace(/[\u00a0\u3000\s]+/g, "")
+		.replace(/^◆/g, "") || "全日";
+}
+
+function buildJreastActiveTrainNumberMap(entries, serviceDate) {
+	const candidates = new Map();
+	for (const entry of entries) {
+		if (!entry || !entry.trainName || !isJreastOperationActive(entry.operation, serviceDate)) continue;
+		if (!candidates.has(entry.trainName)) candidates.set(entry.trainName, []);
+		const values = candidates.get(entry.trainName);
+		if (!values.includes(entry.trainNumber)) values.push(entry.trainNumber);
+	}
+	const result = {};
+	for (const [trainName, trainNumbers] of candidates.entries()) {
+		result[trainName] = trainNumbers.length === 1 ? trainNumbers[0] : trainNumbers;
+	}
+	return result;
+}
+
+function isJreastOperationActive(operationText, serviceDate) {
+	const text = normalizeJreastOperationText(operationText);
+	if (!text || text === "全日") return true;
+	const parts = text.split(/・?但し、?/);
+	const main = parts[0] || "";
+	const exception = parts.slice(1).join("・") || "";
+	const dateKey = serviceDate.ymd;
+	const mainDates = extractJreastOperationDates(main, serviceDate).has(dateKey);
+	let active = true;
+	if (main.indexOf("時変") >= 0) {
+		active = mainDates;
+	} else if (main.indexOf("運休") >= 0) {
+		const holidayCondition = main.indexOf("休日") >= 0 && isJapanesePublicHolidayOrSunday(serviceDate);
+		const saturdayCondition = main.indexOf("土曜") >= 0 && serviceDate.dayOfWeek === 6;
+		active = !(holidayCondition || saturdayCondition || mainDates);
+	} else if (main.indexOf("運転") >= 0) {
+		active = mainDates;
+	}
+	if (exception) {
+		const exceptionDates = extractJreastOperationDates(exception, serviceDate).has(dateKey);
+		if (exception.indexOf("運転") >= 0 && exceptionDates) active = true;
+		if (exception.indexOf("運休") >= 0 && exceptionDates) active = false;
+	}
+	return active;
+}
+
+function extractJreastOperationDates(text, serviceDate) {
+	const dates = new Set();
+	const tokens = [];
+	const pattern = /(\d{1,2})月|(\d{1,2})(?:日)?(?=～|・|運転|運休|時変|$)|([～・])/g;
+	let match;
+	while ((match = pattern.exec(String(text || ""))) !== null) {
+		if (match[1]) tokens.push({ type: "month", value: Number(match[1]) });
+		else if (match[2]) tokens.push({ type: "day", value: Number(match[2]) });
+		else tokens.push({ type: match[3] === "～" ? "range" : "separator" });
+	}
+	let currentMonth = serviceDate.month;
+	let previousDate = null;
+	let rangePending = false;
+	for (const token of tokens) {
+		if (token.type === "month") {
+			currentMonth = token.value;
+			continue;
+		}
+		if (token.type === "range") {
+			rangePending = true;
+			continue;
+		}
+		if (token.type === "separator") continue;
+		if (token.type !== "day") continue;
+		const currentDate = makeJreastOperationDate(serviceDate, currentMonth, token.value);
+		if (rangePending && previousDate) addJreastDateRange(dates, previousDate, currentDate);
+		else dates.add(formatDateParts(currentDate));
+		previousDate = currentDate;
+		rangePending = false;
+	}
+	return dates;
+}
+
+function makeJreastOperationDate(serviceDate, month, day) {
+	let year = serviceDate.year;
+	if (serviceDate.month >= 11 && month <= 2) year += 1;
+	if (serviceDate.month <= 2 && month >= 11) year -= 1;
+	return { year, month, day };
+}
+
+function addJreastDateRange(output, start, end) {
+	let cursor = Date.UTC(start.year, start.month - 1, start.day);
+	const endTime = Date.UTC(end.year, end.month - 1, end.day);
+	if (endTime < cursor || endTime - cursor > 120 * 24 * 60 * 60 * 1000) return;
+	while (cursor <= endTime) {
+		const date = new Date(cursor);
+		output.add(formatDateParts({
+			year: date.getUTCFullYear(),
+			month: date.getUTCMonth() + 1,
+			day: date.getUTCDate()
+		}));
+		cursor += 24 * 60 * 60 * 1000;
+	}
+}
+
+async function cleanupTimetableCache(env, url) {
+	if (!env.JRKYUSHU_TIMETABLE_KV) {
+		return jsonResponse({ ok: false, error: "JRKYUSHU_TIMETABLE_KV is not configured" }, { status: 500 });
+	}
+	if (url.searchParams.get("confirm") !== "delete") {
+		return jsonResponse({ ok: false, error: "confirm=delete is required" }, { status: 400 });
+	}
+	if (env.TIMETABLE_REFRESH_TOKEN) {
+		const token = url.searchParams.get("token") || "";
+		if (token !== env.TIMETABLE_REFRESH_TOKEN) return jsonResponse({ ok: false, error: "Unauthorized" }, { status: 401 });
+	}
+	const date = normalizeDate(url.searchParams.get("date"));
+	if (!date) return jsonResponse({ ok: false, error: "date=YYYY-MM-DD is required" }, { status: 400 });
+
+	const prefix = CACHE_KEY_PREFIX + ":" + date + ":";
+	const cursor = url.searchParams.get("cursor") || undefined;
+	const list = await env.JRKYUSHU_TIMETABLE_KV.list({ prefix, cursor, limit: 50 });
+	const keys = Array.isArray(list.keys) ? list.keys.map((key) => key.name).filter(Boolean) : [];
+	for (const key of keys) {
+		await env.JRKYUSHU_TIMETABLE_KV.delete(key);
+	}
+	return jsonResponse({
+		ok: true,
+		date,
+		prefix,
+		deleted: keys.length,
+		keys,
+		cursor: list.cursor || "",
+		listComplete: !!list.list_complete,
+		nextUrl: buildCleanupNextUrl(url, list)
+	});
+}
+
+function buildCleanupNextUrl(url, list) {
+	if (!list || list.list_complete || !list.cursor) return "";
+	const nextUrl = new URL(url.toString());
+	nextUrl.searchParams.set("cursor", list.cursor);
+	return nextUrl.toString();
+}
+
+async function inspectTimetableCache(env, url) {
+	if (!env.JRKYUSHU_TIMETABLE_KV) {
+		return jsonResponse({ ok: false, error: "JRKYUSHU_TIMETABLE_KV is not configured" }, { status: 500 });
+	}
+	const date = normalizeDate(url.searchParams.get("date"));
+	const trainNumber = normalizeTrainNumber(url.searchParams.get("train") || "");
+	const key = url.searchParams.get("key") || (date && trainNumber ? trainKey(date, trainNumber) : "");
+	if (!key) return jsonResponse({ ok: false, error: "key or date+train is required" }, { status: 400 });
+
+	const value = await env.JRKYUSHU_TIMETABLE_KV.getWithMetadata(key);
+	const listPrefix = key;
+	const listed = await env.JRKYUSHU_TIMETABLE_KV.list({ prefix: listPrefix, limit: 1 });
+	const listEntry = listed.keys && listed.keys.length ? listed.keys[0] : null;
+	const expiration = listEntry && listEntry.expiration ? Number(listEntry.expiration) : 0;
+	return jsonResponse({
+		ok: true,
+		key,
+		exists: value.value !== null,
+		expiration,
+		expirationJst: expiration ? formatJstDateTime(expiration * 1000) : "",
+		metadata: value.metadata || null
+	});
+}
+
+function formatJstDateTime(timestamp) {
+	const date = new Date(timestamp + JST_OFFSET_MS);
+	return date.getUTCFullYear() + "-" +
+		String(date.getUTCMonth() + 1).padStart(2, "0") + "-" +
+		String(date.getUTCDate()).padStart(2, "0") + " " +
+		String(date.getUTCHours()).padStart(2, "0") + ":" +
+		String(date.getUTCMinutes()).padStart(2, "0") + ":" +
+		String(date.getUTCSeconds()).padStart(2, "0") + " JST";
 }
 
 function getTimetableTrainNumber(pathname) {
@@ -116,7 +440,7 @@ async function refreshTimetableCache(env, meta = {}) {
 			const html = await fetchText(entry.detailUrl);
 			const detail = parseTrainDetail(html, entry, serviceDate);
 			if (!detail || !detail.trainNumber || !Array.isArray(detail.stations) || detail.stations.length < 1) continue;
-			await env.JRKYUSHU_TIMETABLE_KV.put(trainKey(serviceDate.ymd, detail.trainNumber), JSON.stringify(detail));
+			await putTimetableValue(env, trainKey(serviceDate.ymd, detail.trainNumber), detail, serviceDate);
 			trains.push({
 				trainNumber: detail.trainNumber,
 				trainName: detail.trainName,
@@ -148,9 +472,9 @@ async function refreshTimetableCache(env, meta = {}) {
 		trains: state.trains,
 		errors: state.errors
 	};
-	await env.JRKYUSHU_TIMETABLE_KV.put(refreshStateKey(), JSON.stringify(state));
-	await env.JRKYUSHU_TIMETABLE_KV.put(indexKey(serviceDate.ymd), JSON.stringify(index));
-	if (state.completed) await env.JRKYUSHU_TIMETABLE_KV.put(latestKey(), JSON.stringify(index));
+	await putTimetableValue(env, refreshStateKey(), state, serviceDate);
+	await putTimetableValue(env, indexKey(serviceDate.ymd), index, serviceDate);
+	if (state.completed) await putTimetableValue(env, latestKey(), index, serviceDate);
 	return {
 		ok: true,
 		...index,
@@ -179,7 +503,7 @@ async function discoverRefreshState(env, serviceDate, meta) {
 		trains: [],
 		errors: []
 	};
-	await env.JRKYUSHU_TIMETABLE_KV.put(refreshStateKey(), JSON.stringify(state));
+	await putTimetableValue(env, refreshStateKey(), state, serviceDate);
 	return state;
 }
 
@@ -381,17 +705,138 @@ function buildNextRefreshUrl(requestUrl, state) {
 	return url.toString();
 }
 
+async function putTimetableValue(env, key, value, serviceDate) {
+	await env.JRKYUSHU_TIMETABLE_KV.put(key, JSON.stringify(value), {
+		expiration: getTimetableExpirationEpochSeconds(serviceDate)
+	});
+}
+
+function getTimetableExpirationEpochSeconds(serviceDate) {
+	const ymd = typeof serviceDate === "string" ? serviceDate : serviceDate && serviceDate.ymd;
+	const match = String(ymd || "").match(/^(\d{4})-(\d{2})-(\d{2})$/);
+	if (!match) return Math.floor(Date.now() / 1000) + 2 * 24 * 60 * 60;
+	const expiresAtUtcMs = Date.UTC(Number(match[1]), Number(match[2]) - 1, Number(match[3]) + 1, 15, 0, 0);
+	const minExpiresAt = Date.now() + 60 * 1000;
+	return Math.floor(Math.max(expiresAtUtcMs, minExpiresAt) / 1000);
+}
+
+function getRequestedServiceDate(requestedDate) {
+	const normalized = normalizeDate(requestedDate);
+	if (!normalized) return getServiceDate();
+	const parts = normalized.split("-").map(Number);
+	return makeServiceDateParts(parts[0], parts[1], parts[2]);
+}
+
+function makeServiceDateParts(year, month, day) {
+	const timestamp = Date.UTC(year, month - 1, day);
+	const date = new Date(timestamp);
+	const normalizedYear = date.getUTCFullYear();
+	const normalizedMonth = date.getUTCMonth() + 1;
+	const normalizedDay = date.getUTCDate();
+	return {
+		year: normalizedYear,
+		month: normalizedMonth,
+		day: normalizedDay,
+		dayOfWeek: date.getUTCDay(),
+		ymd: formatDateParts({ year: normalizedYear, month: normalizedMonth, day: normalizedDay }),
+		ym: String(normalizedYear) + String(normalizedMonth).padStart(2, "0")
+	};
+}
+
+function formatDateParts(parts) {
+	return String(parts.year) + "-" +
+		String(parts.month).padStart(2, "0") + "-" +
+		String(parts.day).padStart(2, "0");
+}
+
+function isJreastHolidaySchedule(serviceDate) {
+	return serviceDate.dayOfWeek === 0 || serviceDate.dayOfWeek === 6 || isJapanesePublicHoliday(serviceDate);
+}
+
+function isJapanesePublicHolidayOrSunday(serviceDate) {
+	return serviceDate.dayOfWeek === 0 || isJapanesePublicHoliday(serviceDate);
+}
+
+function isJapanesePublicHoliday(serviceDate) {
+	return getJapanesePublicHolidaySet(serviceDate.year).has(serviceDate.ymd);
+}
+
+function getJapanesePublicHolidaySet(year) {
+	if (japaneseHolidayCache.has(year)) return japaneseHolidayCache.get(year);
+	const holidays = new Set();
+	const add = (month, day) => holidays.add(formatDateParts({ year, month, day }));
+	add(1, 1);
+	add(1, getNthWeekdayOfMonth(year, 1, 1, 2));
+	add(2, 11);
+	if (year >= 2020) add(2, 23);
+	add(3, getVernalEquinoxDay(year));
+	add(4, 29);
+	add(5, 3);
+	add(5, 4);
+	add(5, 5);
+	add(7, getNthWeekdayOfMonth(year, 7, 1, 3));
+	if (year >= 2016) add(8, 11);
+	add(9, getNthWeekdayOfMonth(year, 9, 1, 3));
+	add(9, getAutumnalEquinoxDay(year));
+	add(10, getNthWeekdayOfMonth(year, 10, 1, 2));
+	add(11, 3);
+	add(11, 23);
+
+	for (let cursor = Date.UTC(year, 0, 2); cursor <= Date.UTC(year, 11, 30); cursor += 24 * 60 * 60 * 1000) {
+		const date = new Date(cursor);
+		const key = formatDateParts({ year, month: date.getUTCMonth() + 1, day: date.getUTCDate() });
+		if (holidays.has(key)) continue;
+		const previous = new Date(cursor - 24 * 60 * 60 * 1000);
+		const next = new Date(cursor + 24 * 60 * 60 * 1000);
+		const previousKey = formatDateParts({ year, month: previous.getUTCMonth() + 1, day: previous.getUTCDate() });
+		const nextKey = formatDateParts({ year, month: next.getUTCMonth() + 1, day: next.getUTCDate() });
+		if (holidays.has(previousKey) && holidays.has(nextKey)) holidays.add(key);
+	}
+
+	const baseHolidays = Array.from(holidays);
+	for (const key of baseHolidays) {
+		const date = new Date(key + "T00:00:00Z");
+		if (date.getUTCDay() !== 0) continue;
+		let cursor = date.getTime() + 24 * 60 * 60 * 1000;
+		let substitute = new Date(cursor);
+		let substituteKey = formatDateParts({
+			year: substitute.getUTCFullYear(),
+			month: substitute.getUTCMonth() + 1,
+			day: substitute.getUTCDate()
+		});
+		while (holidays.has(substituteKey)) {
+			cursor += 24 * 60 * 60 * 1000;
+			substitute = new Date(cursor);
+			substituteKey = formatDateParts({
+				year: substitute.getUTCFullYear(),
+				month: substitute.getUTCMonth() + 1,
+				day: substitute.getUTCDate()
+			});
+		}
+		holidays.add(substituteKey);
+	}
+
+	japaneseHolidayCache.set(year, holidays);
+	return holidays;
+}
+
+function getNthWeekdayOfMonth(year, month, weekday, nth) {
+	const firstDay = new Date(Date.UTC(year, month - 1, 1)).getUTCDay();
+	return 1 + ((7 + weekday - firstDay) % 7) + (nth - 1) * 7;
+}
+
+function getVernalEquinoxDay(year) {
+	return Math.floor(20.8431 + 0.242194 * (year - 1980) - Math.floor((year - 1980) / 4));
+}
+
+function getAutumnalEquinoxDay(year) {
+	return Math.floor(23.2488 + 0.242194 * (year - 1980) - Math.floor((year - 1980) / 4));
+}
+
 function getServiceDate(now = new Date()) {
 	const jst = new Date(now.getTime() + JST_OFFSET_MS);
 	if (jst.getUTCHours() < 4) jst.setUTCDate(jst.getUTCDate() - 1);
-	const year = jst.getUTCFullYear();
-	const month = String(jst.getUTCMonth() + 1).padStart(2, "0");
-	const day = String(jst.getUTCDate()).padStart(2, "0");
-	return {
-		ymd: year + "-" + month + "-" + day,
-		ym: String(year) + month,
-		day
-	};
+	return makeServiceDateParts(jst.getUTCFullYear(), jst.getUTCMonth() + 1, jst.getUTCDate());
 }
 
 function trainKey(date, trainNumber) {
