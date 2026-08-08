@@ -229,7 +229,7 @@
 			const kyushuDestinationMap = options && options.kyushuDestinationMap ? options.kyushuDestinationMap : {};
 			const destination = getCentralDestination(rawTrain, centralTrainInfoMap) || kyushuDestinationMap[displayTrainNumber] || kyushuDestinationMap[sourceTrainNumber] || fallbackDestination;
 			const timetable = mergeKyushuTimetable(
-				sourceTrainNumber,
+				displayTrainNumber,
 				convertCentralTrainInfoTimetable(rawTrain, centralTrainInfoMap),
 				options && options.kyushuTimetableMap
 			);
