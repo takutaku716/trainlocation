@@ -562,3 +562,16 @@ function set_side_menu(_isTop) {
 		}
 	}
 }
+$(function() {
+	$(document).on("click", ".jrwest-area-label", function(event) {
+		event.preventDefault();
+		event.stopPropagation();
+		const target = $(this).next(".jrwest-area-lines");
+		const willOpen = target.css("display") === "none";
+		const groupList = $(this).closest(".rosen-name-list");
+		groupList.find(".jrwest-area-lines").not(target).stop(true, true).slideUp(100);
+		groupList.find(".jrwest-area-label").not(this).removeClass("open");
+		target.stop(true, true).slideToggle(100);
+		$(this).toggleClass("open", willOpen);
+	});
+});

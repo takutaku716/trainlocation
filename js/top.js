@@ -9,7 +9,8 @@ const AREA_ROSEN_KEYS = {
 	"donan": ["1", "2", "3", "4", "16"],												// 道南エリア
 	"dohoku": ["17", "18", "19", "51"],													// 道北エリア
 	"doto": ["35", "36", "40", "41", "42", "37", "38", "39"],							// 道東エリア
-	"shin": ["51", "52", "53", "54", "55", "56", "57"]												// 新幹線
+	"shin": ["51", "52", "53", "54", "55", "56", "57"],												// 新幹線
+	"jrwest": ["61", "62", "63"]													// JR西日本
 };
 
 // 各路線に属するデータキー
@@ -37,6 +38,9 @@ const ROSEN_NUM_KEYS = {
 	"52": ["1", "2", "3", "4", "10", "22", "23", "24", "25", "26", "30", "31", "32"],	// [札幌～函館間]
 	"53": ["10", "31", "32", "35", "36", "40", "41", "42"],	// [札幌～釧路間]
 	"58": ["57"],							// [盛岡～秋田間]
+	"61": [],								// [米原～姫路間]
+	"62": [],								// [敦賀～米原間]
+	"63": [],								// [京都～敦賀間]
 };
 
 /*
@@ -204,18 +208,18 @@ $(function ($) {
 	});
 
 	//rosen-name-listのマウスホバーで路線を選択
-	$(document).on("mouseover", ".rosen-name-list div", function () {
+	$(document).on("mouseover", ".rosen-name-list .rosen-name-contents", function () {
 
 		let val = $(this).attr("value");
-		let selectAreaName =  $(this)[0].parentElement.classList[1];
+		let selectAreaName = $(this).closest(".rosen-name-list").attr("class").split(" ")[1];
 		// 路線図の路線選択
 		selectRosen(val, selectAreaName);
 	});
 
 	//rosen-name-listでマウスが離れたとき路線選択を解除
-	$(document).on("mouseleave", ".rosen-name-list div", function () {
+	$(document).on("mouseleave", ".rosen-name-list .rosen-name-contents", function () {
 
-		let selectAreaName =  $(this)[0].parentElement.classList[1];
+		let selectAreaName = $(this).closest(".rosen-name-list").attr("class").split(" ")[1];
 		// 路線図の路線選択削除
 		allSelectClear();
 		selectArea(selectAreaName);
@@ -367,8 +371,10 @@ function selectRosen(rosen, selectAreaName) {
 	// スマホ表示中ならば、各エリアのマップに変更
 	if (window.innerWidth <= 1000) {
 		var mapName = "areaMap" + rosenToArea(rosen, selectAreaName);
-		selectMap = $(document.getElementById(mapName).contentDocument);
+		var mapElement = document.getElementById(mapName);
+		selectMap = mapElement && mapElement.contentDocument ? $(mapElement.contentDocument) : $();
 	}
+	if (!selectMap[0]) return;
 
 	var rosenNumList = ROSEN_NUM_KEYS[rosen] || [];
 	if (window.innerWidth <= 1000 && selectAreaName && AREA_ROSEN_KEYS[selectAreaName]) {
@@ -395,8 +401,10 @@ function selectArea(area) {
 	// スマホ表示中ならば、各エリアのマップに変更
 	if (window.innerWidth <= 1000) {
 		var mapName = "areaMap" + area;
-		selectMap = $(document.getElementById(mapName).contentDocument);
+		var mapElement = document.getElementById(mapName);
+		selectMap = mapElement && mapElement.contentDocument ? $(mapElement.contentDocument) : $();
 	}
+	if (!selectMap[0]) return;
 
 	var areaRosenList = AREA_ROSEN_KEYS[area];
 	var dataStatus = "1";
@@ -508,6 +516,8 @@ function rosenToArea(rosen, selectAreaName) {
 		area = "doto";
 	} else if (["15", "54", "55", "56", "57", "58", "59", "60"].includes(rosen)) {				// 新幹線
 		area = "shin";
+	} else if (["61", "62", "63"].includes(rosen)) {				// JR西日本
+		area = "jrwest";
 	}
 	return area;
 }

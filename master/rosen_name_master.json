@@ -464,5 +464,62 @@
 		},
 		"kigo": "K",
 		"area": "5"
+	},
+	{
+		"rosen": "61",
+		"rosenName": {
+			"ja": "琵琶湖線・JR京都線・JR神戸線",
+			"en": "Biwako Line/JR Kyoto Line/JR Kobe Line",
+			"tc": "琵琶湖線・JR京都線・JR神戶線",
+			"sc": "琵琶湖线・JR京都线・JR神户线",
+			"kr": "비와코선・JR 교토선・JR 고베선"
+		},
+		"kukanName": {
+			"ja": "[米原～姫路間]",
+			"en": "[Maibara～Himeji]",
+			"tc": "[米原～姬路間]",
+			"sc": "[米原～姬路间]",
+			"kr": "[마이바라～히메지]"
+		},
+		"kigo": "A",
+		"area": "7"
+	},
+	{
+		"rosen": "62",
+		"rosenName": {
+			"ja": "北陸線",
+			"en": "Hokuriku Line",
+			"tc": "北陸線",
+			"sc": "北陆线",
+			"kr": "호쿠리쿠선"
+		},
+		"kukanName": {
+			"ja": "[敦賀～米原間]",
+			"en": "[Tsuruga～Maibara]",
+			"tc": "[敦賀～米原間]",
+			"sc": "[敦贺～米原间]",
+			"kr": "[쓰루가～마이바라]"
+		},
+		"kigo": "A",
+		"area": "7"
+	},
+	{
+		"rosen": "63",
+		"rosenName": {
+			"ja": "湖西線・北陸線",
+			"en": "Kosei Line/Hokuriku Line",
+			"tc": "湖西線・北陸線",
+			"sc": "湖西线・北陆线",
+			"kr": "고세이선・호쿠리쿠선"
+		},
+		"kukanName": {
+			"ja": "[京都～敦賀間]",
+			"en": "[Kyoto～Tsuruga]",
+			"tc": "[京都～敦賀間]",
+			"sc": "[京都～敦贺间]",
+			"kr": "[교토～쓰루가]"
+		},
+		"kigo": "B",
+		"area": "7"
 	}
 ]

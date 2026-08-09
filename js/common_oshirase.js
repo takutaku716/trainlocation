@@ -69,8 +69,8 @@ function disp_oshirase(_rosen) {
 		else load_oshirase_html(areaName, "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/trainlocation/CMUNKOU/inc_location_area_shin_" + lang + ".html");
 	}
 
-	// 結合表示用・JR東日本変換表示用の仮想路線コードでは、路線別お知らせを表示しない
-	if (["51", "52", "53", "54", "55", "56", "57", "58", "59", "60"].includes(_rosen)) return;
+	// 外部データ変換表示用の仮想路線コードでは、北海道向けの路線別お知らせを表示しない
+	if (["51", "52", "53", "54", "55", "56", "57", "58", "59", "60", "61", "62", "63"].includes(_rosen)) return;
 
 	// 路線のお知らせの表示
 	if (lang == "ja") {

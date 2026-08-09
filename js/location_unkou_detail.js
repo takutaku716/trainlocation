@@ -108,7 +108,7 @@ $(function ($) {
 			$("#cbangoIcon").removeClass("hide");
 			$("#cbangoDetail").removeClass("hide");
 
-			if (dataset.source === "jreast" || dataset.source === "dokotre" || dataset.source === "jrshinkansen") {
+			if (dataset.source === "jreast" || dataset.source === "dokotre" || dataset.source === "jrshinkansen" || dataset.source === "jrwest") {
 				$("#unkouDetailMain").hide();
 				$.getJSON("./original/location_master" + (lang === "ja" ? "" : "_" + lang) + ".json?" + now)
 					.done(function(posNameMasterBase) {
@@ -240,6 +240,7 @@ function create_jreast_daiya(_dataset) {
 		const timetableText =
 			_dataset.source === "dokotre" ? _dataset.dokotre_timetable :
 			_dataset.source === "jrshinkansen" ? _dataset.jrshinkansen_timetable :
+			_dataset.source === "jrwest" ? _dataset.jrwest_timetable :
 			_dataset.jreast_timetable;
 		timetable = JSON.parse(timetableText || "[]");
 	} catch (_error) {

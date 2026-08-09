@@ -101,6 +101,116 @@ const jrShinkansenStaticSourceDataCache = new Map();
 const jrEastShinkansenTrainNumberDataCache = new Map();
 const jrKyushuTimetableDataCache = new Map();
 const JR_KYUSHU_TIMETABLE_WORKER_BASE = "https://trainlocation-jrkyushu-timetable-cache.densha716.workers.dev";
+const JRWEST_LOCATION_SOURCE_MAP = {
+	"61": {
+		senku: "61",
+		currentTimeUrl: "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www.train-guide.westjr.co.jp/api/v3/currenttime.txt",
+		sources: [
+			{
+				areaId: "kinki",
+				lineId: "hokurikubiwako",
+				stationCodes: [
+					"0382", "0384", "0385", "0386", "0387", "0388", "0389", "0390", "0391",
+					"0392", "0393", "0394", "0395", "0396", "0397", "0398", "0399", "0400",
+					"0401", "0402"
+				],
+				areaMasterUrl: "https://www.train-guide.westjr.co.jp/api/v3/area_kinki_master.json",
+				stationUrl: "https://www.train-guide.westjr.co.jp/api/v3/hokurikubiwako_st.json",
+				locationUrl: "https://www.train-guide.westjr.co.jp/api/v3/hokurikubiwako.json"
+			},
+			{
+				areaId: "kinki",
+				lineId: "kyoto",
+				stationCodes: [
+					"0402", "0404", "0464", "0405", "0406", "0407", "0461", "0408", "0409",
+					"0466", "0410", "0411", "0412", "0413", "0414", "0415", "0416"
+				],
+				areaMasterUrl: "https://www.train-guide.westjr.co.jp/api/v3/area_kinki_master.json",
+				stationUrl: "https://www.train-guide.westjr.co.jp/api/v3/kyoto_st.json",
+				locationUrl: "https://www.train-guide.westjr.co.jp/api/v3/kyoto.json"
+			},
+			{
+				areaId: "kinki",
+				lineId: "kobesanyo",
+				stationCodes: [
+					"0415", "0416", "0417", "0419", "0420", "0421", "0422", "0460", "0423", "0424",
+					"0425", "0426", "0427", "0428", "0429", "0430", "0431", "0432", "0433", "0434",
+					"0435", "0462", "0436", "0437", "0438", "0439", "0440", "0441", "0442", "0443",
+					"0444", "0445", "0446", "0447", "0448", "0449", "0450", "0451", "0465", "0452"
+				],
+				areaMasterUrl: "https://www.train-guide.westjr.co.jp/api/v3/area_kinki_master.json",
+				stationUrl: "https://www.train-guide.westjr.co.jp/api/v3/kobesanyo_st.json",
+				locationUrl: "https://www.train-guide.westjr.co.jp/api/v3/kobesanyo.json"
+			}
+		]
+	},
+	"62": {
+		senku: "62",
+		currentTimeUrl: "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www.train-guide.westjr.co.jp/api/v3/currenttime.txt",
+		sources: [
+			{
+				areaId: "hokuriku",
+				lineId: "hokuriku",
+				positionPrefix: "JWH",
+				stationCodes: ["0450", "0449", "0448"],
+				areaMasterUrl: "https://www.train-guide.westjr.co.jp/api/v3/area_hokuriku_master.json",
+				stationUrl: "https://www.train-guide.westjr.co.jp/api/v3/hokuriku_st.json",
+				locationUrl: "https://www.train-guide.westjr.co.jp/api/v3/hokuriku.json"
+			},
+			{
+				areaId: "kinki",
+				lineId: "hokurikubiwako",
+				stationCodes: [
+					"0509", "0508", "0507", "0506", "0505", "0504", "0503", "0502", "0501", "0382"
+				],
+				areaMasterUrl: "https://www.train-guide.westjr.co.jp/api/v3/area_kinki_master.json",
+				stationUrl: "https://www.train-guide.westjr.co.jp/api/v3/hokurikubiwako_st.json",
+				locationUrl: "https://www.train-guide.westjr.co.jp/api/v3/hokurikubiwako.json"
+			}
+		]
+	},
+	"63": {
+		senku: "63",
+		currentTimeUrl: "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www.train-guide.westjr.co.jp/api/v3/currenttime.txt",
+		sources: [
+			{
+				areaId: "hokuriku",
+				lineId: "hokuriku",
+				positionPrefix: "JWH",
+				stationCodes: ["0450", "0449"],
+				areaMasterUrl: "https://www.train-guide.westjr.co.jp/api/v3/area_hokuriku_master.json",
+				stationUrl: "https://www.train-guide.westjr.co.jp/api/v3/hokuriku_st.json",
+				locationUrl: "https://www.train-guide.westjr.co.jp/api/v3/hokuriku.json"
+			},
+			{
+				areaId: "kinki",
+				lineId: "kosei",
+				stationCodes: [
+					"0510", "0509", "0919", "0618", "0617", "0616", "0615", "0614",
+					"0613", "0612", "0611", "0610", "0609", "0608", "0607", "0606",
+					"0605", "0604", "0603", "0602", "0601", "0401", "0402"
+				],
+				areaMasterUrl: "https://www.train-guide.westjr.co.jp/api/v3/area_kinki_master.json",
+				stationUrl: "https://www.train-guide.westjr.co.jp/api/v3/kosei_st.json",
+				locationUrl: "https://www.train-guide.westjr.co.jp/api/v3/kosei.json"
+			},
+			{
+				areaId: "kinki",
+				lineId: "kosei",
+				stationCodes: [
+					"0510", "0509", "0919", "0618", "0617", "0616", "0615", "0614",
+					"0613", "0612", "0611", "0610", "0609", "0608", "0607", "0606",
+					"0605", "0604", "0603", "0602", "0601", "0401", "0402"
+				],
+				areaMasterUrl: "https://www.train-guide.westjr.co.jp/api/v3/area_kinki_master.json",
+				stationUrl: "https://www.train-guide.westjr.co.jp/api/v3/kosei_st.json",
+				locationUrl: "https://www.train-guide.westjr.co.jp/api/v3/koseihokurikubiwako.json"
+			}
+		]
+	}
+};
+const jrWestStaticSourceDataCache = new Map();
+const jrWestStaticJsonDataCache = new Map();
 
 function get_mainte_json_request(fileName, cacheKey) {
 	const cloudflareApiBase = "https://trainlocation.pages.dev";
@@ -680,7 +790,7 @@ $(function ($) {
 
 	// 区間をクリックしたときの動き
 	$(document).on("click"
-	, ".rosen-name-list div, .hoka-rosen-link a, .up-rosen-link a, .down-rosen-link a, .shin-link a"
+	, ".rosen-name-list .rosen-name-contents, .hoka-rosen-link a, .up-rosen-link a, .down-rosen-link a, .shin-link a"
 	,  function() {
 		$("#sideMenu .side-menu-outer").hide();
 
@@ -908,6 +1018,10 @@ function is_jr_shinkansen_location_rosen(_rosen) {
 	return Object.prototype.hasOwnProperty.call(JR_SHINKANSEN_LOCATION_SOURCE_MAP, String(_rosen || ""));
 }
 
+function is_jrwest_location_rosen(_rosen) {
+	return Object.prototype.hasOwnProperty.call(JRWEST_LOCATION_SOURCE_MAP, String(_rosen || ""));
+}
+
 function is_location_auto_refresh_allowed(_rosen) {
 	return !is_jreast_location_rosen(_rosen);
 }
@@ -998,6 +1112,9 @@ function load_location_now_data(_param_rosen, _now) {
 	}
 	if (is_jr_shinkansen_location_rosen(_param_rosen)) {
 		return load_jr_shinkansen_location_now_data(_param_rosen, _now);
+	}
+	if (is_jrwest_location_rosen(_param_rosen)) {
+		return load_jrwest_location_now_data(_param_rosen, _now);
 	}
 
 	const sourceRosens = get_location_json_source_list(_param_rosen);
@@ -1118,6 +1235,73 @@ function get_dokotre_static_source_cache_key(source) {
 		source && source.mappingUrl || "",
 		source && source.detailDiagramUrl || ""
 	].join("|");
+}
+
+function load_jrwest_location_now_data(_param_rosen, _now) {
+	const source = JRWEST_LOCATION_SOURCE_MAP[String(_param_rosen || "")];
+	if (!source || !window.JrWestLocationAdapter) {
+		return Promise.reject(new Error("JR West location adapter is not loaded"));
+	}
+	const sources = Array.isArray(source.sources) ? source.sources : [source];
+	return jqxhr_to_promise(get_external_text_request(source.currentTimeUrl, _now)).catch(() => "")
+		.then((currentTimeText) => Promise.all(sources.map((entry) => {
+			return load_jrwest_location_source(entry, source.senku || _param_rosen, currentTimeText, _now)
+				.then((nowData) => ({ rosen: source.senku || _param_rosen, sourceType: "jrwest", nowData: nowData }))
+				.catch(() => null);
+		})))
+		.then((nowDataResults) => {
+			const successDataList = nowDataResults.filter((entry) => entry && entry.nowData && Array.isArray(entry.nowData.trains));
+			if (successDataList.length < 1) throw new Error("JR West location now json load failed");
+			return merge_location_now_data(successDataList);
+		});
+}
+
+function load_jrwest_location_source(source, senku, currentTimeText, _now) {
+	return Promise.all([
+		load_jrwest_static_source_data(source, _now),
+		jqxhr_to_promise(get_dokotre_location_request(source.locationUrl, _now))
+	]).then((results) => {
+		return window.JrWestLocationAdapter.normalize(
+			results[1],
+			results[0].stationJson,
+			results[0].areaMasterJson,
+			currentTimeText,
+			{
+				senku: senku,
+				lineId: source.lineId,
+				stationCodes: source.stationCodes,
+				positionPrefix: source.positionPrefix
+			}
+		);
+	});
+}
+
+function load_jrwest_static_source_data(source, _now) {
+	const cacheKey = [source.areaId, source.lineId, source.areaMasterUrl, source.stationUrl].join("|");
+	if (jrWestStaticSourceDataCache.has(cacheKey)) {
+		return jrWestStaticSourceDataCache.get(cacheKey);
+	}
+	const loadPromise = Promise.all([
+		load_jrwest_static_json(source.areaMasterUrl, _now),
+		load_jrwest_static_json(source.stationUrl, _now)
+	]).then((results) => ({ areaMasterJson: results[0], stationJson: results[1] }))
+		.catch((error) => {
+			jrWestStaticSourceDataCache.delete(cacheKey);
+			throw error;
+		});
+	jrWestStaticSourceDataCache.set(cacheKey, loadPromise);
+	return loadPromise;
+}
+
+function load_jrwest_static_json(url, _now) {
+	if (jrWestStaticJsonDataCache.has(url)) return jrWestStaticJsonDataCache.get(url);
+	const loadPromise = jqxhr_to_promise(get_dokotre_location_request(url, _now))
+		.catch((error) => {
+			jrWestStaticJsonDataCache.delete(url);
+			throw error;
+		});
+	jrWestStaticJsonDataCache.set(url, loadPromise);
+	return loadPromise;
 }
 
 function load_jr_shinkansen_location_now_data(_param_rosen, _now) {
@@ -1480,7 +1664,7 @@ function set_station_list(_param_rosen, _scrollKey, _callback) {
 	.done(function(rosenNameData, maintenanceData, typeData, ekiData, rosen, maintenance) {
 
 		// 現在日付を設定。外部JSON変換路線はJSON内部の配信時刻を使用する。
-		if (is_jreast_location_rosen(_param_rosen) || is_dokotre_location_rosen(_param_rosen) || is_jr_shinkansen_location_rosen(_param_rosen)) $("#timestamp").text("");
+		if (is_jreast_location_rosen(_param_rosen) || is_dokotre_location_rosen(_param_rosen) || is_jr_shinkansen_location_rosen(_param_rosen) || is_jrwest_location_rosen(_param_rosen)) $("#timestamp").text("");
 		else update_location_timestamp();
 
 		// 路線名を設定
@@ -1526,7 +1710,7 @@ function set_station_list(_param_rosen, _scrollKey, _callback) {
 			cachedEkiData = ekiData[0];
 			$("#stationList").html(rosen[0]);
 			set_jr_shinkansen_station_border_colors(_param_rosen);
-			if (is_jreast_location_rosen(_param_rosen) || is_dokotre_location_rosen(_param_rosen) || is_jr_shinkansen_location_rosen(_param_rosen)) setTimestamp(nowData);
+			if (is_jreast_location_rosen(_param_rosen) || is_dokotre_location_rosen(_param_rosen) || is_jr_shinkansen_location_rosen(_param_rosen) || is_jrwest_location_rosen(_param_rosen)) setTimestamp(nowData);
 			update_location_data_stale_warning(nowData);
 			// 列車アイコンを描画する
 			create_ressha_icon(_param_rosen, nowData, typeData[0], ekiData[0]);
@@ -1637,7 +1821,7 @@ function redraw_location_positions(_param_rosen, _nowData) {
 	clear_location_positions(_param_rosen);
 	create_ressha_icon(_param_rosen, _nowData, cachedResshaTypeData, cachedEkiData);
 	ressha_pos_sort();
-	if (is_jreast_location_rosen(_param_rosen) || is_dokotre_location_rosen(_param_rosen) || is_jr_shinkansen_location_rosen(_param_rosen)) setTimestamp(_nowData);
+	if (is_jreast_location_rosen(_param_rosen) || is_dokotre_location_rosen(_param_rosen) || is_jr_shinkansen_location_rosen(_param_rosen) || is_jrwest_location_rosen(_param_rosen)) setTimestamp(_nowData);
 	else update_location_timestamp();
 	update_location_data_stale_warning(_nowData);
 	restore_selected_train_marker(trackingScrollEnabled);
@@ -2704,6 +2888,7 @@ function create_ressha_detail(_objItem, _nowRow, _typeData, _ekiData) {
 			_objItem.dataset.jreast_timetable = _nowRow.jrEast && Array.isArray(_nowRow.jrEast.timetable) ? JSON.stringify(_nowRow.jrEast.timetable) : "[]";
 			_objItem.dataset.dokotre_timetable = _nowRow.dokotre && Array.isArray(_nowRow.dokotre.timetable) ? JSON.stringify(_nowRow.dokotre.timetable) : "[]";
 			_objItem.dataset.jrshinkansen_timetable = _nowRow.jrShinkansen && Array.isArray(_nowRow.jrShinkansen.timetable) ? JSON.stringify(_nowRow.jrShinkansen.timetable) : "[]";
+			_objItem.dataset.jrwest_timetable = _nowRow.jrWest && Array.isArray(_nowRow.jrWest.timetable) ? JSON.stringify(_nowRow.jrWest.timetable) : "[]";
 			_objItem.dataset.jrshinkansenIcon = _nowRow.jrShinkansen && _nowRow.jrShinkansen.trainIcon ? _nowRow.jrShinkansen.trainIcon : "";
 		}
 
