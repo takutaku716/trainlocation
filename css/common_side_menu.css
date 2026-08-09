@@ -481,6 +481,26 @@ input[type=radio] {
 	background: #f8405c;
 }
 
+.side-menu .rosen-name-contents[value="68"] .jrwest-line-symbol {
+	background: #003c88;
+}
+
+.side-menu .rosen-name-contents[value="69"] .jrwest-line-symbol {
+	background: #00b17b;
+}
+
+.side-menu .rosen-name-contents[value="70"] .jrwest-line-symbol {
+	background: #467088;
+}
+
+.side-menu .rosen-name-contents[value="71"] .jrwest-line-symbol {
+	background: #0072ba;
+}
+
+.side-menu .rosen-name-contents[value="72"] .jrwest-line-symbol {
+	background: #63d2d3;
+}
+
 /* firefoxでのレイアウト調整 */
 @-moz-document url-prefix(){
 	[data-lang="en"] .side-menu .area-contents .rosen-name-list .rosen-name-contents[value="01"] .rosen-name-label .main {

@@ -276,11 +276,15 @@
 		let direction = Number(train.direction) === 0 ? "U" : "D";
 		const destinationCode = toText(train.dest && train.dest.code);
 		const destinationLine = toText(train.dest && train.dest.line);
-		if (toText(options && options.lineId) === "hanwahagoromo" && destinationLine === "hagoromo") {
+		const isHagoromoBranch = toText(options && options.lineId) === "hanwahagoromo" && destinationLine === "hagoromo";
+		if (isHagoromoBranch) {
 			if (destinationCode === "2651") direction = "D";
 			if (destinationCode === "2613") direction = "U";
 		}
 		const position = resolvePosition(train.pos, direction, context);
+		if (isHagoromoBranch && position.key.indexOf(context.positionPrefix) === 0) {
+			position.key = context.positionPrefix + "H" + position.key.slice(context.positionPrefix.length);
+		}
 		if (!position.key) return null;
 		const destinationName = toText(typeof train.dest === "object" && train.dest ? train.dest.text : train.dest) || "行先取得不可";
 		const typeInfo = mapTrainType(train, options);

@@ -597,5 +597,100 @@
 		},
 		"kigo": "O",
 		"area": "7"
+	},
+	{
+		"rosen": "68",
+		"rosenName": {
+			"ja": "JRゆめ咲線",
+			"en": "JR Yumesaki Line",
+			"tc": "JR夢咲線",
+			"sc": "JR梦咲线",
+			"kr": "JR 유메사키선"
+		},
+		"kukanName": {
+			"ja": "[西九条～桜島間]",
+			"en": "[Nishikujo～Sakurajima]",
+			"tc": "[西九條～櫻島間]",
+			"sc": "[西九条～樱岛间]",
+			"kr": "[니시쿠조～사쿠라지마]"
+		},
+		"kigo": "P",
+		"area": "7"
+	},
+	{
+		"rosen": "69",
+		"rosenName": {
+			"ja": "大和路線",
+			"en": "Yamatoji Line",
+			"tc": "大和路線",
+			"sc": "大和路线",
+			"kr": "야마토지선"
+		},
+		"kukanName": {
+			"ja": "[JR難波～加茂間]",
+			"en": "[JR-Namba～Kamo]",
+			"tc": "[JR難波～加茂間]",
+			"sc": "[JR难波～加茂间]",
+			"kr": "[JR 난바～가모]"
+		},
+		"kigo": "Q",
+		"area": "7"
+	},
+	{
+		"rosen": "70",
+		"rosenName": {
+			"ja": "おおさか東線",
+			"en": "Osaka Higashi Line",
+			"tc": "大阪東線",
+			"sc": "大阪东线",
+			"kr": "오사카히가시선"
+		},
+		"kukanName": {
+			"ja": "[大阪～久宝寺間]",
+			"en": "[Osaka～Kyuhoji]",
+			"tc": "[大阪～久寶寺間]",
+			"sc": "[大阪～久宝寺间]",
+			"kr": "[오사카～규호지]"
+		},
+		"kigo": "F",
+		"area": "7"
+	},
+	{
+		"rosen": "71",
+		"rosenName": {
+			"ja": "関西空港線",
+			"en": "Kansai Airport Line",
+			"tc": "關西機場線",
+			"sc": "关西机场线",
+			"kr": "간사이 공항선"
+		},
+		"kukanName": {
+			"ja": "[日根野～関西空港間]",
+			"en": "[Hineno～Kansai-airport]",
+			"tc": "[日根野～關西機場間]",
+			"sc": "[日根野～关西机场间]",
+			"kr": "[히네노～간사이 공항]"
+		},
+		"kigo": "S",
+		"area": "7"
+	},
+	{
+		"rosen": "72",
+		"rosenName": {
+			"ja": "宇野みなと線",
+			"en": "Uno-minato Line",
+			"tc": "宇野港線",
+			"sc": "宇野港线",
+			"kr": "우노미나토선"
+		},
+		"kukanName": {
+			"ja": "[茶屋町～宇野間]",
+			"en": "[Chayamachi～Uno]",
+			"tc": "[茶屋町～宇野間]",
+			"sc": "[茶屋町～宇野间]",
+			"kr": "[차야마치～우노]"
+		},
+		"kigo": "L",
+		"area": "7"
 	}
 ]

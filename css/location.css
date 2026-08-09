@@ -2094,74 +2094,92 @@ header {
 									}
 
 			/* 阪和線の鳳から分岐する羽衣線 */
-			#stationList .hoka-line-area.airport.jrwest-hagoromo .honsen > .eki-panel:first-child {
-				min-height: 125px;
-			}
-
-			#stationList .hoka-line-area.airport.jrwest-hagoromo .honsen .eki-panel.eki {
-				min-height: 118px;
-			}
-
-			#stationList .hoka-line-area.airport.jrwest-hagoromo {
+			#stationList .hoka-line-area.jrwest-hagoromo {
+				display: block;
 				position: relative;
 			}
 
-			#stationList .hoka-line-area.airport.jrwest-hagoromo .hoka-line-panel {
-				background: linear-gradient(to bottom, #fff 0 125px, #f0f0f0 125px 248px, #fff 248px 100%);
+			#stationList .hoka-line-area.jrwest-hagoromo .hagoromo-main-panel {
+				width: 100%;
 			}
 
-			#stationList .hoka-line-area.airport.jrwest-hagoromo .hoka-line-panel .eki-panel.eki {
+			#stationList .hoka-line-area.jrwest-hagoromo .hagoromo-branch-panel {
+				left: 0;
+				overflow: hidden;
+				pointer-events: none;
+				position: absolute;
+				top: -129px;
+				width: 50%;
+				z-index: 20;
+			}
+
+			#stationList .hoka-line-area.jrwest-hagoromo .hagoromo-branch-panel > .eki-panel,
+			#stationList .hoka-line-area.jrwest-hagoromo .hagoromo-main-panel > .eki-panel {
+				box-sizing: content-box;
+			}
+
+			#stationList .hoka-line-area.jrwest-hagoromo .hagoromo-branch-panel > .eki-panel.eki,
+			#stationList .hoka-line-area.jrwest-hagoromo .hagoromo-main-panel > .eki-panel.eki {
+				height: 118px;
+				min-height: 118px;
+			}
+
+			#stationList .hoka-line-area.jrwest-hagoromo .hagoromo-branch-panel > .eki-panel.eki {
 				background-color: transparent;
 				border-color: transparent;
 			}
 
-			#stationList .hoka-line-area.airport.jrwest-hagoromo .hoka-line-panel .senro-img {
-				display: none;
-			}
-
-			#stationList .hoka-line-area.airport.jrwest-hagoromo .hagoromo-connector {
-				background: repeating-linear-gradient(90deg, #000 0 24px, #fff 24px 48px);
-				border-bottom: 2px solid #000;
-				border-top: 2px solid #000;
-				box-sizing: border-box;
-				height: 16px;
-				left: calc(50% - 102px);
-				position: absolute;
-				top: 0;
-				width: 102px;
-				z-index: 19;
-			}
-
-			#stationList .hoka-line-area.airport.jrwest-hagoromo .hagoromo-branch-rail {
-				background: repeating-linear-gradient(180deg, #000 0 24px, #fff 24px 48px);
+			#stationList .hoka-line-area.jrwest-hagoromo .hagoromo-branch-track {
+				background: repeating-linear-gradient(
+					to bottom,
+					#000 0,
+					#000 24px,
+					#fff 24px,
+					#fff 48px
+				);
 				border-left: 2px solid #000;
 				border-right: 2px solid #000;
+				bottom: 84px;
 				box-sizing: border-box;
-				height: 161px;
-				left: calc(100% - 92px);
+				left: 50%;
+				pointer-events: none;
 				position: absolute;
-				top: 0;
-				width: 16px;
+				top: 50px;
+				transform: translateX(-50%);
+				width: 18px;
 				z-index: 17;
 			}
 
-			#stationList .hoka-line-area.airport.jrwest-hagoromo .hoka-line-panel .stalist-eki-link {
-				z-index: 20;
+			#stationList .hoka-line-area.jrwest-hagoromo .hagoromo-branch-panel .stalist-eki-link {
+				pointer-events: auto;
+				z-index: 21;
 			}
 
-			#stationList .hoka-line-area.airport.jrwest-hagoromo .hoka-line-panel .stalist-eki-link a,
-			#stationList .hoka-line-area.airport.jrwest-hagoromo .hoka-line-panel .stalist-eki-contents {
-				box-sizing: border-box;
+			#stationList .hoka-line-area.jrwest-hagoromo .hagoromo-branch-panel .ressha-icon {
+				pointer-events: auto;
+			}
+
+			#stationList .hoka-line-area.jrwest-hagoromo .hagoromo-branch-panel .stalist-eki-contents {
 				justify-content: center;
-				padding-left: 0;
-				padding-right: 0;
+			}
+
+			#stationList .hoka-line-area.jrwest-hagoromo .hagoromo-branch-panel .stalist-eki-contents div {
 				text-align: center;
 				width: 100%;
 			}
 
-			#stationList .hoka-line-area.airport.jrwest-hagoromo .hoka-line-panel .stalist-eki-contents div {
-				text-align: center;
-				width: 100%;
+			@media (max-width: 640px) {
+				#stationList .eki-panel.hagoromo-main-otori .stalist-eki-link,
+				#stationList .hoka-line-area.jrwest-hagoromo .stalist-eki-link {
+					min-width: 0;
+					width: calc(25vw - 4px);
+				}
+
+				#stationList .eki-panel.hagoromo-main-otori .stalist-eki-link a,
+				#stationList .hoka-line-area.jrwest-hagoromo .stalist-eki-link a {
+					padding-left: 2px;
+					padding-right: 2px;
+				}
 			}
 
 

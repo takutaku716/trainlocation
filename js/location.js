@@ -291,6 +291,129 @@ const JRWEST_LOCATION_SOURCE_MAP = {
 				locationUrl: "https://www.train-guide.westjr.co.jp/api/v3/osakaloop.json"
 			}
 		]
+	},
+	"68": {
+		senku: "68",
+		currentTimeUrl: "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www.train-guide.westjr.co.jp/api/v3/currenttime.txt",
+		sources: [
+			{
+				areaId: "kinki",
+				lineId: "yumesaki",
+				stationCodes: ["2503", "2551", "2552", "2553"],
+				areaMasterUrl: "https://www.train-guide.westjr.co.jp/api/v3/area_kinki_master.json",
+				stationUrl: "https://www.train-guide.westjr.co.jp/api/v3/yumesaki_st.json",
+				locationUrl: "https://www.train-guide.westjr.co.jp/api/v3/yumesaki.json"
+			}
+		]
+	},
+	"69": {
+		senku: "69",
+		currentTimeUrl: "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www.train-guide.westjr.co.jp/api/v3/currenttime.txt",
+		sources: [
+			{
+				areaId: "kinki",
+				lineId: "yamatoji",
+				stationCodes: [
+					"3002", "2508", "2509", "2510", "3003", "3005", "3008", "3009",
+					"3010", "3011", "3012", "3013", "3014", "3015", "3016", "3017",
+					"3018", "3019", "3020", "3022", "3023", "3024"
+				],
+				areaMasterUrl: "https://www.train-guide.westjr.co.jp/api/v3/area_kinki_master.json",
+				stationUrl: "https://www.train-guide.westjr.co.jp/api/v3/yamatoji_st.json",
+				locationUrl: "https://www.train-guide.westjr.co.jp/api/v3/yamatoji.json"
+			},
+			{
+				areaId: "kinki",
+				lineId: "yamatoji",
+				stationCodes: [
+					"3002", "2508", "2509", "2510", "3003", "3005", "3008", "3009",
+					"3010", "3011", "3012", "3013", "3014", "3015", "3016", "3017",
+					"3018", "3019", "3020", "3022", "3023", "3024"
+				],
+				areaMasterUrl: "https://www.train-guide.westjr.co.jp/api/v3/area_kinki_master.json",
+				stationUrl: "https://www.train-guide.westjr.co.jp/api/v3/yamatoji_st.json",
+				locationUrl: "https://www.train-guide.westjr.co.jp/api/v3/yamatojiosakahigashi.json"
+			}
+		]
+	},
+	"70": {
+		senku: "70",
+		currentTimeUrl: "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www.train-guide.westjr.co.jp/api/v3/currenttime.txt",
+		sources: [
+			{
+				areaId: "kinki",
+				lineId: "osakahigashi",
+				stationCodes: [
+					"1401", "0415", "1204", "1206", "1207", "1208", "1301", "1302",
+					"8006", "8005", "8004", "8003", "8007", "8001", "3009"
+				],
+				areaMasterUrl: "https://www.train-guide.westjr.co.jp/api/v3/area_kinki_master.json",
+				stationUrl: "https://www.train-guide.westjr.co.jp/api/v3/osakahigashi_st.json",
+				locationUrl: "https://www.train-guide.westjr.co.jp/api/v3/osakahigashi.json"
+			},
+			{
+				areaId: "kinki",
+				lineId: "osakahigashi",
+				stationCodes: [
+					"1401", "0415", "1204", "1206", "1207", "1208", "1301", "1302",
+					"8006", "8005", "8004", "8003", "8007", "8001", "3009"
+				],
+				areaMasterUrl: "https://www.train-guide.westjr.co.jp/api/v3/area_kinki_master.json",
+				stationUrl: "https://www.train-guide.westjr.co.jp/api/v3/osakahigashi_st.json",
+				locationUrl: "https://www.train-guide.westjr.co.jp/api/v3/osakahigashigakkentoshi.json"
+			},
+			{
+				areaId: "kinki",
+				lineId: "osakahigashi",
+				stationCodes: [
+					"1401", "0415", "1204", "1206", "1207", "1208", "1301", "1302",
+					"8006", "8005", "8004", "8003", "8007", "8001", "3009"
+				],
+				areaMasterUrl: "https://www.train-guide.westjr.co.jp/api/v3/area_kinki_master.json",
+				stationUrl: "https://www.train-guide.westjr.co.jp/api/v3/osakahigashi_st.json",
+				locationUrl: "https://www.train-guide.westjr.co.jp/api/v3/osakahigashiyamatoji.json"
+			},
+			{
+				areaId: "kinki",
+				lineId: "osakahigashi",
+				stationCodes: [
+					"1401", "0415", "1204", "1206", "1207", "1208", "1301", "1302",
+					"8006", "8005", "8004", "8003", "8007", "8001", "3009"
+				],
+				areaMasterUrl: "https://www.train-guide.westjr.co.jp/api/v3/area_kinki_master.json",
+				stationUrl: "https://www.train-guide.westjr.co.jp/api/v3/osakahigashi_st.json",
+				locationUrl: "https://www.train-guide.westjr.co.jp/api/v3/osakahigashikyoto.json"
+			}
+		]
+	},
+	"71": {
+		senku: "71",
+		currentTimeUrl: "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www.train-guide.westjr.co.jp/api/v3/currenttime.txt",
+		sources: [
+			{
+				areaId: "kinki",
+				lineId: "kansaiairport",
+				stationCodes: ["2625", "2701", "2702"],
+				areaMasterUrl: "https://www.train-guide.westjr.co.jp/api/v3/area_kinki_master.json",
+				stationUrl: "https://www.train-guide.westjr.co.jp/api/v3/kansaiairport_st.json",
+				locationUrl: "https://www.train-guide.westjr.co.jp/api/v3/kansaiairport.json"
+			}
+		]
+	},
+	"72": {
+		senku: "72",
+		currentTimeUrl: "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www.train-guide.westjr.co.jp/api/v3/currenttime.txt",
+		sources: [
+			{
+				areaId: "okayama",
+				lineId: "unominato",
+				positionPrefix: "JWO",
+				stationCodes: ["0252", "0258", "0259", "0260", "0261", "0262", "0263", "0264"],
+				areaMasterUrl: "https://www.train-guide.westjr.co.jp/api/v3/area_okayama_master.json",
+				stationUrl: "https://www.train-guide.westjr.co.jp/api/v3/unominato_st.json",
+				locationUrl: "https://www.train-guide.westjr.co.jp/api/v3/unominato.json"
+			}
+		]
 	}
 };
 const jrWestStaticSourceDataCache = new Map();

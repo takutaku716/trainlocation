@@ -212,6 +212,38 @@ const hagoromoDirections = adapter.normalize(
         type: "10",
         displayType: "普通",
         dest: { text: "鳳", code: "2613", line: "hagoromo" }
+      },
+      {
+        no: "949H",
+        direction: 0,
+        pos: "2613",
+        type: "10",
+        displayType: "普通",
+        dest: { text: "東羽衣", code: "2651", line: "hagoromo" }
+      },
+      {
+        no: "950H",
+        direction: 0,
+        pos: "2613",
+        type: "10",
+        displayType: "普通",
+        dest: { text: "鳳", code: "2613", line: "hagoromo" }
+      },
+      {
+        no: "951H",
+        direction: 0,
+        pos: "2651",
+        type: "10",
+        displayType: "普通",
+        dest: { text: "東羽衣", code: "2651", line: "hagoromo" }
+      },
+      {
+        no: "952H",
+        direction: 0,
+        pos: "2651",
+        type: "10",
+        displayType: "普通",
+        dest: { text: "鳳", code: "2613", line: "hagoromo" }
       }
     ]
   },
@@ -235,15 +267,73 @@ const hagoromoDirections = adapter.normalize(
 assert.deepStrictEqual(
   hagoromoDirections.trains.map(train => [train.cbango, train.pos, train.posName]),
   [
-    ["947H", "JW2613_2651D", "鳳→東羽衣 間"],
-    ["948H", "JW2613_2651U", "東羽衣→鳳 間"]
+    ["947H", "JWH2613_2651D", "鳳→東羽衣 間"],
+    ["948H", "JWH2613_2651U", "東羽衣→鳳 間"],
+    ["949H", "JWH2613D", "鳳"],
+    ["950H", "JWH2613U", "鳳"],
+    ["951H", "JWH2651D", "東羽衣"],
+    ["952H", "JWH2651U", "東羽衣"]
   ],
   "Hagoromo branch direction follows destination"
 );
 assert.deepStrictEqual(
   hagoromoDirections.trains.map(train => train.jrWest.lineColorIconCode),
-  ["", ""],
+  ["", "", "", "", "", ""],
   "Hagoromo branch uses the generic train icon"
+);
+
+const yumesakiPositions = adapter.normalize(
+  {
+    update: "2026-08-10T12:00:00+09:00",
+    trains: [
+      {
+        no: "YUME-D",
+        direction: 1,
+        pos: "2503_2551",
+        type: "10",
+        displayType: "普通",
+        dest: { text: "桜島", code: "2553", line: "yumesaki" }
+      },
+      {
+        no: "YUME-U",
+        direction: 0,
+        pos: "2552_2553",
+        type: "10",
+        displayType: "普通",
+        dest: { text: "西九条", code: "2503", line: "yumesaki" }
+      }
+    ]
+  },
+  {
+    stations: [
+      { info: { code: "2503", name: "西九条" } },
+      { info: { code: "2551", name: "安治川口" } },
+      { info: { code: "2552", name: "ユニバーサルシティ" } },
+      { info: { code: "2553", name: "桜島" } }
+    ]
+  },
+  {},
+  "2026-08-10T12:00:00+09:00",
+  {
+    areaId: "kinki",
+    lineId: "yumesaki",
+    senku: "68",
+    stationCodes: ["2503", "2551", "2552", "2553"]
+  }
+);
+
+assert.deepStrictEqual(
+  yumesakiPositions.trains.map(train => [train.pos, train.posName]),
+  [
+    ["JW2503_2551D", "西九条→安治川口 間"],
+    ["JW2552_2553U", "桜島→ユニバーサルシティ 間"]
+  ],
+  "Yumesaki positions follow the official direction"
+);
+assert.deepStrictEqual(
+  yumesakiPositions.trains.map(train => train.jrWest.lineColorIconCode),
+  ["kkp", "kkp"],
+  "Yumesaki trains use the line color icon"
 );
 
 const osakaLoopPositions = adapter.normalize(
