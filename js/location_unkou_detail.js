@@ -23,7 +23,14 @@ $(function ($) {
 			// ヘッダータイトル
 			$("#headerTitle").text(DETAILED_TRAIN_INFORMATION_DIALOG_TITLES[lang]);
 			// 列車種別名
-			if (lang == "ja") $("#resshaTypeName").text(dataset.ressha_type_name);
+			if (lang == "ja") {
+				const typeName = dataset.ressha_type_name || "";
+				const typeNameLength = Array.from(typeName).length;
+				$("#resshaTypeName")
+					.text(typeName)
+					.toggleClass("long-label", typeNameLength >= 6)
+					.toggleClass("very-long-label", typeNameLength >= 9);
+			}
 			// 行先
 			$("#shuEki").html(dataset.shu_eki);
 			// 両数
@@ -114,7 +121,7 @@ $(function ($) {
 					.done(function(posNameMasterBase) {
 						const posKey = String(dataset.pos || "").trim();
 						$("#posDetailText").text(posNameMasterBase[posKey] || dataset.pos_name || posKey || "");
-						$("#aisho").text(dataset.aisho || dataset.ressha_type_name || "");
+						$("#aisho").text(get_detail_train_name_text(dataset));
 						create_jreast_daiya(dataset);
 						$('#resshaDetailMessage').empty();
 						$('#resshaDetailMessage').hide();
@@ -126,7 +133,7 @@ $(function ($) {
 					.fail(function() {
 						const posKey = String(dataset.pos || "").trim();
 						$("#posDetailText").text(dataset.pos_name || posKey || "");
-						$("#aisho").text(dataset.aisho || dataset.ressha_type_name || "");
+						$("#aisho").text(get_detail_train_name_text(dataset));
 						create_jreast_daiya(dataset);
 						$('#resshaDetailMessage').empty();
 						$('#resshaDetailMessage').hide();
@@ -229,6 +236,12 @@ $(function ($) {
 		location.hash = "rosen=" + rosen + "&cbango=" + cbango;
 	});
 });
+
+function get_detail_train_name_text(_dataset) {
+	const baseText = _dataset.aisho || _dataset.ressha_type_name || "";
+	const typeChange = _dataset.source === "jrwest" ? (_dataset.jrwest_type_change || "") : "";
+	return [baseText, typeChange].filter(Boolean).join("　");
+}
 
 /*
  * JR東日本形式の時刻表データを表示する

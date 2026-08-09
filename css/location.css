@@ -2093,6 +2093,78 @@ header {
 										margin: 1px 1px 1px 4px;
 									}
 
+			/* 阪和線の鳳から分岐する羽衣線 */
+			#stationList .hoka-line-area.airport.jrwest-hagoromo .honsen > .eki-panel:first-child {
+				min-height: 125px;
+			}
+
+			#stationList .hoka-line-area.airport.jrwest-hagoromo .honsen .eki-panel.eki {
+				min-height: 118px;
+			}
+
+			#stationList .hoka-line-area.airport.jrwest-hagoromo {
+				position: relative;
+			}
+
+			#stationList .hoka-line-area.airport.jrwest-hagoromo .hoka-line-panel {
+				background: linear-gradient(to bottom, #fff 0 125px, #f0f0f0 125px 248px, #fff 248px 100%);
+			}
+
+			#stationList .hoka-line-area.airport.jrwest-hagoromo .hoka-line-panel .eki-panel.eki {
+				background-color: transparent;
+				border-color: transparent;
+			}
+
+			#stationList .hoka-line-area.airport.jrwest-hagoromo .hoka-line-panel .senro-img {
+				display: none;
+			}
+
+			#stationList .hoka-line-area.airport.jrwest-hagoromo .hagoromo-connector {
+				background: repeating-linear-gradient(90deg, #000 0 24px, #fff 24px 48px);
+				border-bottom: 2px solid #000;
+				border-top: 2px solid #000;
+				box-sizing: border-box;
+				height: 16px;
+				left: calc(50% - 102px);
+				position: absolute;
+				top: 0;
+				width: 102px;
+				z-index: 19;
+			}
+
+			#stationList .hoka-line-area.airport.jrwest-hagoromo .hagoromo-branch-rail {
+				background: repeating-linear-gradient(180deg, #000 0 24px, #fff 24px 48px);
+				border-left: 2px solid #000;
+				border-right: 2px solid #000;
+				box-sizing: border-box;
+				height: 161px;
+				left: calc(100% - 92px);
+				position: absolute;
+				top: 0;
+				width: 16px;
+				z-index: 17;
+			}
+
+			#stationList .hoka-line-area.airport.jrwest-hagoromo .hoka-line-panel .stalist-eki-link {
+				z-index: 20;
+			}
+
+			#stationList .hoka-line-area.airport.jrwest-hagoromo .hoka-line-panel .stalist-eki-link a,
+			#stationList .hoka-line-area.airport.jrwest-hagoromo .hoka-line-panel .stalist-eki-contents {
+				box-sizing: border-box;
+				justify-content: center;
+				padding-left: 0;
+				padding-right: 0;
+				text-align: center;
+				width: 100%;
+			}
+
+			#stationList .hoka-line-area.airport.jrwest-hagoromo .hoka-line-panel .stalist-eki-contents div {
+				text-align: center;
+				width: 100%;
+			}
+
+
 #fujishiro1Long, #fujishiro2Long, #goryokakuLong {
 	display: none;
 }
@@ -2388,6 +2460,15 @@ section#resshaDetail {
 		background-color: #789;
 		color: #fff;
 	}
+		section#resshaDetail .dialog #resshaTypeName.long-label {
+			font-size: 12px;
+			line-height: 1.15;
+			overflow-wrap: anywhere;
+			white-space: normal;
+		}
+		section#resshaDetail .dialog #resshaTypeName.very-long-label {
+			font-size: 11px;
+		}
 		/* 列車詳細ダイアログの列車種別（赤） */
 		section#resshaDetail[dataResshaTypeColor='1'] .dialog #resshaTypeName {
 			background-color: #f00;

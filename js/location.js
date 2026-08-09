@@ -207,6 +207,90 @@ const JRWEST_LOCATION_SOURCE_MAP = {
 				locationUrl: "https://www.train-guide.westjr.co.jp/api/v3/koseihokurikubiwako.json"
 			}
 		]
+	},
+	"64": {
+		senku: "64",
+		currentTimeUrl: "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www.train-guide.westjr.co.jp/api/v3/currenttime.txt",
+		sources: [
+			{
+				areaId: "okayama",
+				lineId: "setoohashi",
+				positionPrefix: "JWO",
+				stationCodes: [
+					"0245", "0246", "0247", "0248", "0249", "0250",
+					"0251", "0252", "0253", "0254", "0255", "0256"
+				],
+				areaMasterUrl: "https://www.train-guide.westjr.co.jp/api/v3/area_okayama_master.json",
+				stationUrl: "https://www.train-guide.westjr.co.jp/api/v3/setoohashi_st.json",
+				locationUrl: "https://www.train-guide.westjr.co.jp/api/v3/setoohashi.json"
+			}
+		]
+	},
+	"65": {
+		senku: "65",
+		currentTimeUrl: "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www.train-guide.westjr.co.jp/api/v3/currenttime.txt",
+		sources: [
+			{
+				areaId: "kinki",
+				lineId: "gakkentoshi",
+				stationCodes: [
+					"3023", "1322", "1321", "1320", "1319", "1318", "1317", "1316",
+					"1315", "1314", "1313", "1312", "1311", "1310", "1309", "1308",
+					"1307", "1306", "1305", "1304", "1303", "1302", "1301", "2517"
+				],
+				areaMasterUrl: "https://www.train-guide.westjr.co.jp/api/v3/area_kinki_master.json",
+				stationUrl: "https://www.train-guide.westjr.co.jp/api/v3/gakkentoshi_st.json",
+				locationUrl: "https://www.train-guide.westjr.co.jp/api/v3/gakkentoshi.json"
+			},
+			{
+				areaId: "kinki",
+				lineId: "tozai",
+				stationCodes: [
+					"2517", "1501", "1502", "1503", "1504", "1505", "1506", "1508", "0419"
+				],
+				areaMasterUrl: "https://www.train-guide.westjr.co.jp/api/v3/area_kinki_master.json",
+				stationUrl: "https://www.train-guide.westjr.co.jp/api/v3/tozai_st.json",
+				locationUrl: "https://www.train-guide.westjr.co.jp/api/v3/tozai.json"
+			}
+		]
+	},
+	"66": {
+		senku: "66",
+		currentTimeUrl: "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www.train-guide.westjr.co.jp/api/v3/currenttime.txt",
+		sources: [
+			{
+				areaId: "kinki",
+				lineId: "hanwahagoromo",
+				stationCodes: [
+					"2510", "2601", "2602", "2603", "2604", "2605", "2606", "2607",
+					"2608", "2609", "2610", "2611", "6061", "2613", "2651", "2614",
+					"2615", "2616", "2617", "2618", "2619", "2620", "2621", "2622",
+					"2623", "2624", "2625", "3701", "3702", "3703", "3704", "3705",
+					"3706", "3707", "3708", "3709"
+				],
+				areaMasterUrl: "https://www.train-guide.westjr.co.jp/api/v3/area_kinki_master.json",
+				stationUrl: "https://www.train-guide.westjr.co.jp/api/v3/hanwahagoromo_st.json",
+				locationUrl: "https://www.train-guide.westjr.co.jp/api/v3/hanwahagoromo.json"
+			}
+		]
+	},
+	"67": {
+		senku: "67",
+		currentTimeUrl: "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www.train-guide.westjr.co.jp/api/v3/currenttime.txt",
+		sources: [
+			{
+				areaId: "kinki",
+				lineId: "osakaloop",
+				stationCodes: [
+					"0416", "2501", "2502", "2503", "2504", "2506", "2507", "2508",
+					"2509", "2510", "2511", "2512", "2513", "2514", "2515", "2516",
+					"2517", "2518", "2519"
+				],
+				areaMasterUrl: "https://www.train-guide.westjr.co.jp/api/v3/area_kinki_master.json",
+				stationUrl: "https://www.train-guide.westjr.co.jp/api/v3/osakaloop_st.json",
+				locationUrl: "https://www.train-guide.westjr.co.jp/api/v3/osakaloop.json"
+			}
+		]
 	}
 };
 const jrWestStaticSourceDataCache = new Map();
@@ -281,6 +365,9 @@ let preserveScrollAfterHashChange = false;
 let preservedScrollTop = 0;
 let suppressTrackScrollOnce = false;
 let trackingScrollEnabled = true;
+let osakaLoopScrollState = null;
+let osakaLoopScrollFrame = null;
+let osakaLoopResizeTimer = null;
 
 function preserve_scroll_after_hash_change() {
 	preserveScrollAfterHashChange = true;
@@ -446,6 +533,7 @@ window.onresize = function () {
 
 	// ページの最後が駅で終わっている路線（08、13）でサブフッターの表示があった場合、下に余白を追加する
 	eki_end_margin();
+	recalculate_osaka_loop_scroll();
 };
 
 window.onscroll = function () {
@@ -468,7 +556,9 @@ window.onhashchange = function () {
 
 		if (param_id) {
 			// 繝上ャ繧ｷ繝･縺ｫ鬧・D縺悟ｭ伜惠縺励◆蝣ｴ蜷医∝ｯｾ雎｡縺ｮ鬧・∪縺ｧ繧ｹ繧ｯ繝ｭ繝ｼ繝ｫ
-			let pos = $("div[key='" + param_id + "']").offset().top - 380;
+			let target = get_preferred_station_element(param_id);
+			if (!target.length) return;
+			let pos = target.offset().top - 380;
 			$("body,html").scrollTop(pos);
 		}
 
@@ -574,7 +664,11 @@ $(function ($) {
 	// 駅選択をクリックしたときの動き
 	$(document).on("click", ".header-btn.eki", function() {
 		// テンプレートのhtmlから駅を取得
-		let list = $("#stationList .eki-panel .eki-contents a");
+		let stationListScope = $("#stationList");
+		if (get_param_rosen() === "67") {
+			stationListScope = stationListScope.children(".osaka-loop-cycle[data-loop-cycle='1']");
+		}
+		let list = stationListScope.find(".eki-panel .eki-contents a");
 		// 取得した駅からボタンをダイアログに表示する内容を作成
 		let html = "<ul>";
 		for(let row of list){
@@ -677,7 +771,7 @@ $(function ($) {
 		// 駅コードを取得
 		let id = this.children[1].getAttribute("value");
 		// 対象の駅までスクロール
-		let target = $("div[key='" + id + "']").first();
+		let target = get_preferred_station_element(id);
 		if (target.length == 0) return;
 		let pos = target.offset().top - 380;
 		$("body,html").animate({scrollTop: pos});
@@ -759,7 +853,7 @@ $(function ($) {
 		if (trackingScrollEnabled) {
 			const param_cbango = get_param_cbango();
 			if (!param_cbango) return;
-			const ressha = $("div[data-cbango='" + param_cbango + "']");
+			const ressha = get_preferred_train_element(param_cbango);
 			if (ressha.length) {
 				scroll_selected_train_into_view(ressha);
 			}
@@ -1639,8 +1733,138 @@ function format_location_timestamp_jst() {
 		now.getUTCSeconds() + "秒現在";
 }
 
+function prepare_osaka_loop_cycles(_param_rosen) {
+	if (String(_param_rosen) !== "67") return;
+	const stationList = $("#stationList");
+	const sourceCycle = stationList.children(".osaka-loop-cycle").first();
+	if (sourceCycle.length !== 1 || stationList.children(".osaka-loop-cycle").length !== 1) return;
+
+	sourceCycle.attr("data-loop-cycle", "1");
+	const previousCycle = sourceCycle.clone(false).attr("data-loop-cycle", "0");
+	const nextCycle = sourceCycle.clone(false).attr("data-loop-cycle", "2");
+	sourceCycle.before(previousCycle);
+	sourceCycle.after(nextCycle);
+}
+
+function get_osaka_loop_anchor_offset() {
+	const subHeader = document.querySelector(".sub-header");
+	if (!subHeader) return 0;
+	return Math.max(0, subHeader.getBoundingClientRect().bottom + 8);
+}
+
+function measure_osaka_loop_scroll() {
+	const cycles = $("#stationList").children(".osaka-loop-cycle");
+	if (cycles.length !== 3) return null;
+	const middleTop = cycles.eq(1).offset().top;
+	const nextTop = cycles.eq(2).offset().top;
+	const cycleHeight = nextTop - middleTop;
+	if (!(cycleHeight > 0)) return null;
+	return {
+		middleTop: middleTop,
+		nextTop: nextTop,
+		cycleHeight: cycleHeight,
+		anchorOffset: get_osaka_loop_anchor_offset()
+	};
+}
+
+function normalize_osaka_loop_scroll() {
+	if (!osakaLoopScrollState || isDialogDisp) return;
+	const state = osakaLoopScrollState;
+	let target = window.scrollY;
+	let anchorPosition = target + state.anchorOffset;
+	while (anchorPosition < state.middleTop) {
+		target += state.cycleHeight;
+		anchorPosition += state.cycleHeight;
+	}
+	while (anchorPosition >= state.nextTop) {
+		target -= state.cycleHeight;
+		anchorPosition -= state.cycleHeight;
+	}
+	if (Math.abs(target - window.scrollY) < 1) return;
+	window.scrollTo(0, target);
+	window.sessionStorage.setItem("scrollY", Math.max(0, target - 50));
+}
+
+function setup_osaka_loop_infinite_scroll(_param_rosen) {
+	teardown_osaka_loop_infinite_scroll();
+	if (String(_param_rosen) !== "67") return;
+
+	window.requestAnimationFrame(function() {
+		const measured = measure_osaka_loop_scroll();
+		if (!measured) return;
+		osakaLoopScrollState = measured;
+		if (window.scrollY <= 1) {
+			window.scrollTo(0, Math.max(0, measured.middleTop - measured.anchorOffset));
+		} else {
+			normalize_osaka_loop_scroll();
+		}
+		osakaLoopScrollState.handler = function() {
+			if (osakaLoopScrollFrame !== null) return;
+			osakaLoopScrollFrame = window.requestAnimationFrame(function() {
+				osakaLoopScrollFrame = null;
+				normalize_osaka_loop_scroll();
+			});
+		};
+		window.addEventListener("scroll", osakaLoopScrollState.handler, { passive: true });
+	});
+}
+
+function recalculate_osaka_loop_scroll() {
+	if (!osakaLoopScrollState) return;
+	clearTimeout(osakaLoopResizeTimer);
+	osakaLoopResizeTimer = setTimeout(function() {
+		if (!osakaLoopScrollState) return;
+		const oldState = osakaLoopScrollState;
+		const oldPosition = window.scrollY + oldState.anchorOffset - oldState.middleTop;
+		const progress = ((oldPosition % oldState.cycleHeight) + oldState.cycleHeight) % oldState.cycleHeight;
+		const measured = measure_osaka_loop_scroll();
+		if (!measured) return;
+		measured.handler = oldState.handler;
+		osakaLoopScrollState = measured;
+		window.scrollTo(0, Math.max(0, measured.middleTop + progress - measured.anchorOffset));
+	}, 80);
+}
+
+function teardown_osaka_loop_infinite_scroll() {
+	if (osakaLoopScrollState && osakaLoopScrollState.handler) {
+		window.removeEventListener("scroll", osakaLoopScrollState.handler);
+	}
+	if (osakaLoopScrollFrame !== null) {
+		window.cancelAnimationFrame(osakaLoopScrollFrame);
+		osakaLoopScrollFrame = null;
+	}
+	clearTimeout(osakaLoopResizeTimer);
+	osakaLoopResizeTimer = null;
+	osakaLoopScrollState = null;
+}
+
+function get_preferred_station_element(_key) {
+	const key = String(_key || "");
+	let scope = $("#stationList");
+	if (get_param_rosen() === "67") {
+		const middleCycle = scope.children(".osaka-loop-cycle[data-loop-cycle='1']");
+		if (middleCycle.length) scope = middleCycle;
+	}
+	return scope.find("[key]").filter(function() {
+		return String($(this).attr("key")) === key;
+	}).first();
+}
+
+function get_preferred_train_element(_cbango) {
+	const cbango = String(_cbango || "");
+	let scope = $("#stationList");
+	if (get_param_rosen() === "67") {
+		const middleCycle = scope.children(".osaka-loop-cycle[data-loop-cycle='1']");
+		if (middleCycle.length) scope = middleCycle;
+	}
+	return scope.find(".ressha[data-cbango]").filter(function() {
+		return String($(this).attr("data-cbango")) === cbango;
+	}).first();
+}
+
 function set_station_list(_param_rosen, _scrollKey, _callback) {
 	stop_location_auto_refresh();
+	teardown_osaka_loop_infinite_scroll();
 	// お知らせ欄作成
 	disp_oshirase(_param_rosen);
 
@@ -1709,6 +1933,7 @@ function set_station_list(_param_rosen, _scrollKey, _callback) {
 			cachedResshaTypeData = typeData[0];
 			cachedEkiData = ekiData[0];
 			$("#stationList").html(rosen[0]);
+			prepare_osaka_loop_cycles(_param_rosen);
 			set_jr_shinkansen_station_border_colors(_param_rosen);
 			if (is_jreast_location_rosen(_param_rosen) || is_dokotre_location_rosen(_param_rosen) || is_jr_shinkansen_location_rosen(_param_rosen) || is_jrwest_location_rosen(_param_rosen)) setTimestamp(nowData);
 			update_location_data_stale_warning(nowData);
@@ -1865,7 +2090,7 @@ function update_location_timestamp() {
 function restore_selected_train_marker(_follow = false) {
 	const param_cbango = get_param_cbango();
 	if (!param_cbango) return;
-	const ressha = $("div[data-cbango='" + param_cbango + "']");
+	const ressha = get_preferred_train_element(param_cbango);
 	if (!ressha.length) {
 		clear_tracked_train_selection(true);
 		return;
@@ -2085,7 +2310,9 @@ function set_post_station_list(_param_rosen, _scrollKey) {
 			let param_id = get_param_id();
 			if (param_id) {
 				// ハッシュに駅IDが存在した場合、対象の駅までスクロール
-				let pos = $("div[key='" + param_id + "']").offset().top - 380;
+				let target = get_preferred_station_element(param_id);
+				if (!target.length) return;
+				let pos = target.offset().top - 380;
 				$("body,html").animate({scrollTop: pos});
 				window.sessionStorage.setItem("scrollY", pos - 50);
 			} else {
@@ -2114,6 +2341,7 @@ function set_post_station_list(_param_rosen, _scrollKey) {
 	scrollKey = "";
 	isSideMenuClick = false;
 	update_tracking_footer_controls();
+	setup_osaka_loop_infinite_scroll(_param_rosen);
 
 	// ローディングアニメーションを非表示にする
 	loading_animation_hidden();
@@ -2127,7 +2355,7 @@ function set_disp_scroll(_param_rosen, _scrollKey) {
 	let doc = $("a[value='" + befRosen + "']");
 	if (_scrollKey && _scrollKey != "") {
 		// 駅の箇所までスクロール
-		doc = $("div[key='" + _scrollKey + "']");
+		doc = get_preferred_station_element(_scrollKey);
 	}
 
 	if (isSideMenuClick) {
@@ -2693,6 +2921,22 @@ function set_jr_shinkansen_train_icon(_iconArea, _nowRow) {
 	}
 }
 
+function set_jrwest_train_icon(_iconArea, _nowRow) {
+	const iconCode = _nowRow.jrWest && _nowRow.jrWest.lineColorIconCode ? _nowRow.jrWest.lineColorIconCode : "";
+	if (!/^[a-z0-9]+$/.test(iconCode)) return;
+	_iconArea.style.backgroundImage = "url(./images/home/jrwest/train_icon_" + iconCode + ".svg)";
+}
+
+function get_train_type_simple_label(_nowRow, _type, _lang) {
+	if (_nowRow.jrWest && _nowRow.jrWest.typeSimple) {
+		return _nowRow.jrWest.typeSimple;
+	}
+	if (_type && _type.typeSimple) {
+		return _type.typeSimple[_lang] || _type.typeSimple.ja || "";
+	}
+	return "";
+}
+
 function create_html_up_ressha_icon(_nowRow, _typeData, _ekiData) {
 	let lang = document.documentElement.dataset.lang;
 	let objItem = document.createElement("div");
@@ -2704,13 +2948,15 @@ function create_html_up_ressha_icon(_nowRow, _typeData, _ekiData) {
 	let iconArea = document.createElement("div");
 	iconArea.classList.add("icon-img");
 	set_jr_shinkansen_train_icon(iconArea, _nowRow);
+	set_jrwest_train_icon(iconArea, _nowRow);
 	// 新幹線以外には列車種別の文字をアイコンに入れる
 	if(_nowRow.type != "4") {
 		let objSbt = document.createElement("span");
 		objSbt.classList.add("ressha-sbt");
-		if (typeof type !== "undefined") {
-			objSbt.textContent = type.typeSimple[lang];
-			objSbt.setAttribute("sbt", type.typeSimple[lang]);
+		const simpleLabel = get_train_type_simple_label(_nowRow, type, lang);
+		if (simpleLabel) {
+			objSbt.textContent = simpleLabel;
+			objSbt.setAttribute("sbt", simpleLabel);
 		}
 		iconArea.appendChild(objSbt);
 	} else {
@@ -2811,13 +3057,15 @@ function create_html_down_ressha_icon(_nowRow, _typeData, _ekiData) {
 	let iconArea = document.createElement("div");
 	iconArea.classList.add("icon-img");
 	set_jr_shinkansen_train_icon(iconArea, _nowRow);
+	set_jrwest_train_icon(iconArea, _nowRow);
 	// 新幹線以外には列車種別の文字をアイコンに入れる
 	if(_nowRow.type != "4") {
 		let objSbt = document.createElement("span");
 		objSbt.classList.add("ressha-sbt");
-		if (typeof type !== "undefined") {
-			objSbt.textContent = type.typeSimple[lang];
-			objSbt.setAttribute("sbt", type.typeSimple[lang]);
+		const simpleLabel = get_train_type_simple_label(_nowRow, type, lang);
+		if (simpleLabel) {
+			objSbt.textContent = simpleLabel;
+			objSbt.setAttribute("sbt", simpleLabel);
 		}
 		iconArea.appendChild(objSbt);
 	} else {
@@ -2889,6 +3137,7 @@ function create_ressha_detail(_objItem, _nowRow, _typeData, _ekiData) {
 			_objItem.dataset.dokotre_timetable = _nowRow.dokotre && Array.isArray(_nowRow.dokotre.timetable) ? JSON.stringify(_nowRow.dokotre.timetable) : "[]";
 			_objItem.dataset.jrshinkansen_timetable = _nowRow.jrShinkansen && Array.isArray(_nowRow.jrShinkansen.timetable) ? JSON.stringify(_nowRow.jrShinkansen.timetable) : "[]";
 			_objItem.dataset.jrwest_timetable = _nowRow.jrWest && Array.isArray(_nowRow.jrWest.timetable) ? JSON.stringify(_nowRow.jrWest.timetable) : "[]";
+			_objItem.dataset.jrwest_type_change = _nowRow.jrWest && _nowRow.jrWest.typeChange ? _nowRow.jrWest.typeChange : "";
 			_objItem.dataset.jrshinkansenIcon = _nowRow.jrShinkansen && _nowRow.jrShinkansen.trainIcon ? _nowRow.jrShinkansen.trainIcon : "";
 		}
 
@@ -3256,7 +3505,7 @@ function ressha_run_check() {
 	if (!suppressTrackScrollOnce) $("body,html").scrollTop(0);
 
 	let param_cbango = get_param_cbango();
-	let ressha = $("div[data-cbango='" + param_cbango + "']");
+	let ressha = get_preferred_train_element(param_cbango);
 	if (ressha.length > 0) {
 		let pos = ressha.offset().top - 260;
 		// リロードされた場合アニメーションを行わない

@@ -521,5 +521,81 @@
 		},
 		"kigo": "B",
 		"area": "7"
+	},
+	{
+		"rosen": "64",
+		"rosenName": {
+			"ja": "瀬戸大橋線",
+			"en": "Seto-Ohashi Line",
+			"tc": "瀨戶大橋線",
+			"sc": "濑户大桥线",
+			"kr": "세토대교선"
+		},
+		"kukanName": {
+			"ja": "[岡山～児島間]",
+			"en": "[Okayama～Kojima]",
+			"tc": "[岡山～兒島間]",
+			"sc": "[冈山～儿岛间]",
+			"kr": "[오카야마～고지마]"
+		},
+		"kigo": "M",
+		"area": "7"
+	},
+	{
+		"rosen": "65",
+		"rosenName": {
+			"ja": "JR東西線・学研都市線",
+			"en": "JR Tozai Line/Gakkentoshi Line",
+			"tc": "JR東西線・學研都市線",
+			"sc": "JR东西线・学研都市线",
+			"kr": "JR 도자이선・갓켄토시선"
+		},
+		"kukanName": {
+			"ja": "[尼崎～木津間]",
+			"en": "[Amagasaki～Kizu]",
+			"tc": "[尼崎～木津間]",
+			"sc": "[尼崎～木津间]",
+			"kr": "[아마가사키～기즈]"
+		},
+		"kigo": "H",
+		"area": "7"
+	},
+	{
+		"rosen": "66",
+		"rosenName": {
+			"ja": "阪和線・羽衣線",
+			"en": "Hanwa Line/Hagoromo Line",
+			"tc": "阪和線・羽衣線",
+			"sc": "阪和线・羽衣线",
+			"kr": "한와선・하고로모선"
+		},
+		"kukanName": {
+			"ja": "[天王寺～和歌山・鳳～東羽衣間]",
+			"en": "[Tennoji～Wakayama/Otori～Higashi-Hagoromo]",
+			"tc": "[天王寺～和歌山・鳳～東羽衣間]",
+			"sc": "[天王寺～和歌山・凤～东羽衣间]",
+			"kr": "[덴노지～와카야마・오토리～히가시하고로모]"
+		},
+		"kigo": "R",
+		"area": "7"
+	},
+	{
+		"rosen": "67",
+		"rosenName": {
+			"ja": "大阪環状線",
+			"en": "Osaka Loop Line",
+			"tc": "大阪環狀線",
+			"sc": "大阪环状线",
+			"kr": "오사카 순환선"
+		},
+		"kukanName": {
+			"ja": "[大阪～天王寺～大阪間]",
+			"en": "[Osaka～Tennoji～Osaka]",
+			"tc": "[大阪～天王寺～大阪間]",
+			"sc": "[大阪～天王寺～大阪间]",
+			"kr": "[오사카～덴노지～오사카]"
+		},
+		"kigo": "O",
+		"area": "7"
 	}
 ]

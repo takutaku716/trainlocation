@@ -7,6 +7,197 @@
 }(typeof self !== "undefined" ? self : this, function() {
 	"use strict";
 
+	const KINKI_TYPE_LABELS = {
+		"01": "特急", "02": "特急", "03": "寝台特急",
+		"06": "新快速", "07": "新快速", "08": "快速", "09": "快速",
+		"10": "普通", "11": "普通", "16": "ライナー", "17": "特別快速",
+		"18": "区間快速", "19": "臨時", "20": "特急", "21": "寝台特急",
+		"24": "新快速", "25": "快速", "26": "普通", "27": "特別快速",
+		"28": "区間快速", "29": "丹波路快速", "30": "関空快速",
+		"31": "紀州路快速", "32": "大和路快速", "35": "特急",
+		"37": "関空/紀州路快速", "38": "みやこ路快速", "39": "直通快速",
+		"40": "B快速", "41": "シャトル",
+		"42": "新快速", "43": "新快速", "44": "新快速", "45": "新快速",
+		"46": "新快速", "47": "快速", "48": "快速", "49": "快速",
+		"50": "快速", "51": "快速", "52": "普通", "53": "普通",
+		"54": "普通", "55": "普通", "56": "普通", "57": "直通快速",
+		"58": "直通快速", "59": "区間快速", "60": "区間快速",
+		"61": "大和路快速", "62": "大和路快速", "63": "快速", "64": "快速",
+		"65": "普通", "66": "普通", "67": "丹波路快速", "68": "丹波路快速",
+		"69": "みやこ路快速", "70": "みやこ路快速", "71": "新快速",
+		"72": "新快速"
+	};
+
+	const WIDE_AREA_TYPE_LABELS = {
+		"01": "新快速",
+		"02": "直通快速",
+		"03": "快速",
+		"04": "特別快速",
+		"05": "丹波路快速",
+		"06": "紀州路快速",
+		"07": "みやこ路快速",
+		"08": "ライナー",
+		"09": "区間快速",
+		"10": "普通",
+		"11": "シャトル",
+		"12": "特急",
+		"13": "急行",
+		"14": "寝台特急",
+		"15": "SL",
+		"16": "観光列車",
+		"17": "瑞風",
+		"18": "臨時",
+		"19": "臨時特急"
+	};
+
+	const KINKI_TYPE_LINES = new Set([
+		"hokurikubiwako", "kyoto", "kobesanyo", "ako", "kosei",
+		"osakahigashi", "takarazuka", "tozai", "gakkentoshi",
+		"osakaloop", "yumesaki", "yamatoji", "hanwahagoromo",
+		"kansaiairport"
+	]);
+
+	const WIDE_AREA_TYPE_LINES = new Set([
+		"hokuriku", "kusatsu", "nara", "sagano", "sanin1", "sanin2",
+		"fukuchiyama", "bantan", "maizuru", "wakayama2", "wakayama1",
+		"manyomahoroba", "kansai", "kinokuni", "unominato", "setoohashi",
+		"ako2", "sanyo1", "tsuyama", "hakubi1", "fukuen1", "kabe",
+		"sanyo2", "sanyo3", "geibi1", "kure", "yamaguchi", "sanin3",
+		"imbi1", "sanin4", "hakubi2"
+	]);
+
+	const LINE_COLOR_ICON_CODES = {
+		"hokuriku": "hk1",
+		"hokurikubiwako": "kka",
+		"kyoto": "kka",
+		"kobesanyo": "kka",
+		"ako": "kka",
+		"kosei": "kkb",
+		"kusatsu": "kkc",
+		"nara": "kkd",
+		"sagano": "kke",
+		"sanin1": "kke",
+		"sanin2": "kke",
+		"osakahigashi": "kkf",
+		"takarazuka": "kkg",
+		"fukuchiyama": "kkg",
+		"tozai": "kkh",
+		"gakkentoshi": "kkh",
+		"bantan": "kkj",
+		"maizuru": "kkl",
+		"osakaloop": "kko",
+		"yumesaki": "kkp",
+		"yamatoji": "kkq",
+		"hanwahagoromo": "kkr",
+		"kansaiairport": "kks",
+		"wakayama2": "kkt",
+		"wakayama1": "kkt",
+		"manyomahoroba": "kku",
+		"kansai": "kkv",
+		"kinokuni": "kkw",
+		"unominato": "okl",
+		"setoohashi": "okm",
+		"ako2": "okn",
+		"sanyo1": "oks",
+		"tsuyama": "okt",
+		"hakubi1": "okv",
+		"fukuen1": "okz",
+		"kabe": "hyb",
+		"sanyo2": "hyg",
+		"sanyo3": "hy1",
+		"geibi1": "hyp",
+		"kure": "hyy",
+		"yamaguchi": "hy3",
+		"sanin3": "sia",
+		"imbi1": "sib",
+		"sanin4": "sid",
+		"hakubi2": "siv"
+	};
+
+	const KINKI_DESTINATION_COLOR_ICON_CODES = {
+		"hokuriku": "kka",
+		"kyoto": "kka",
+		"kobesanyo": "kka",
+		"sanyo": "kka",
+		"ako": "kka",
+		"kosei": "kkb",
+		"kusatsu": "kkc",
+		"nara": "kkd",
+		"sagano": "kke",
+		"sanin": "kke",
+		"osakahigashi": "kkf",
+		"takarazuka": "kkg",
+		"fukuchiyama": "kkg",
+		"tozai": "kkh",
+		"gakkentoshi": "kkh",
+		"bantan": "kkj",
+		"maizuru": "kkl",
+		"osakaloop": "kko",
+		"yumesaki": "kkp",
+		"yamatoji": "kkq",
+		"hanwa": "kkr",
+		"hanwahagoromo": "kkr",
+		"kansaiairport": "kks",
+		"wakayama": "kkt",
+		"manyomahoroba": "kku",
+		"kansai": "kkv",
+		"kinokuni": "kkw"
+	};
+
+	const TYPE_PRESENTATIONS = {
+		"特急": { type: "1", semanticType: "limited_express", simpleLabel: "特" },
+		"臨時特急": { type: "1", semanticType: "special_limited_express", simpleLabel: "臨" },
+		"急行": { type: "1", semanticType: "express", simpleLabel: "急" },
+		"寝台特急": { type: "1", semanticType: "sleeper", simpleLabel: "寝" },
+		"瑞風": { type: "1", semanticType: "mizukaze", simpleLabel: "瑞" },
+		"ライナー": { type: "6", semanticType: "liner", simpleLabel: "ラ" },
+		"新快速": { type: "8", semanticType: "special_rapid", simpleLabel: "新" },
+		"直通快速": { type: "8", semanticType: "direct_rapid", simpleLabel: "直" },
+		"丹波路快速": { type: "8", semanticType: "tambaji_rapid", simpleLabel: "丹" },
+		"紀州路快速": { type: "8", semanticType: "kishuji_rapid", simpleLabel: "紀" },
+		"みやこ路快速": { type: "8", semanticType: "miyakoji_rapid", simpleLabel: "都" },
+		"大和路快速": { type: "8", semanticType: "yamatoji_rapid", simpleLabel: "大" },
+		"関空快速": { type: "8", semanticType: "kansai_airport_rapid", simpleLabel: "関" },
+		"関空/紀州路快速": { type: "8", semanticType: "kansai_airport_kishuji_rapid", simpleLabel: "併" },
+		"B快速": { type: "8", semanticType: "b_rapid", simpleLabel: "B" },
+		"特別快速": { type: "8", semanticType: "special_rapid_service", simpleLabel: "特" },
+		"区間快速": { type: "9", semanticType: "section_rapid", simpleLabel: "区" },
+		"快速": { type: "8", semanticType: "rapid", simpleLabel: "快" },
+		"シャトル": { type: "8", semanticType: "shuttle", simpleLabel: "シ" },
+		"SL": { type: "7", semanticType: "steam_locomotive", simpleLabel: "S" },
+		"観光列車": { type: "7", semanticType: "sightseeing", simpleLabel: "観" },
+		"臨時": { type: "7", semanticType: "special", simpleLabel: "臨" },
+		"普通": { type: "3", semanticType: "local", simpleLabel: "普" },
+		"回送": { type: "3", semanticType: "out_of_service", simpleLabel: "回" }
+	};
+
+	const DISPLAY_TYPE_ALIASES = [
+		["関空/紀州路快速", ["関空/紀州路快速", "関空・紀州路快速"]],
+		["臨時特急", ["臨時特急"]],
+		["丹波路快速", ["丹波路快速"]],
+		["紀州路快速", ["紀州路快速"]],
+		["みやこ路快速", ["みやこ路快速"]],
+		["大和路快速", ["大和路快速"]],
+		["関空快速", ["関空快速"]],
+		["直通快速", ["直通快速"]],
+		["新快速", ["新快速", "新快"]],
+		["特別快速", ["特別快速"]],
+		["区間快速", ["区間快速"]],
+		["B快速", ["B快速"]],
+		["快速", ["快速"]],
+		["シャトル", ["シャトル"]],
+		["急行", ["急行"]],
+		["寝台特急", ["寝台特急", "寝台"]],
+		["SL", ["SL"]],
+		["観光列車", ["観光列車"]],
+		["瑞風", ["瑞風"]],
+		["臨時", ["臨時"]],
+		["特急", ["特急"]],
+		["ライナー", ["ライナー"]],
+		["普通", ["普通"]],
+		["回送", ["回送"]]
+	];
+
 	const DESTINATION_SIMPLE_NAMES = {
 		"京都": "京",
 		"大阪": "阪",
@@ -65,6 +256,7 @@
 				return {
 					code: toText(row && row.info && row.info.code),
 					name: toText(row && row.info && row.info.name),
+					notDisplayType: Number(row && row.info && row.info.notDisplayType),
 					index: index
 				};
 			})
@@ -81,11 +273,18 @@
 
 	function convertTrain(train, context, currentTime, threshold, options) {
 		if (!train) return null;
-		const direction = Number(train.direction) === 0 ? "U" : "D";
+		let direction = Number(train.direction) === 0 ? "U" : "D";
+		const destinationCode = toText(train.dest && train.dest.code);
+		const destinationLine = toText(train.dest && train.dest.line);
+		if (toText(options && options.lineId) === "hanwahagoromo" && destinationLine === "hagoromo") {
+			if (destinationCode === "2651") direction = "D";
+			if (destinationCode === "2613") direction = "U";
+		}
 		const position = resolvePosition(train.pos, direction, context);
 		if (!position.key) return null;
 		const destinationName = toText(typeof train.dest === "object" && train.dest ? train.dest.text : train.dest) || "行先取得不可";
-		const typeInfo = mapTrainType(train);
+		const typeInfo = mapTrainType(train, options);
+		const lineColorIconCode = getLineColorIconCode(train, options, typeInfo);
 		const longTimeStopping = isLongTimeStopping(train, currentTime, threshold);
 		return {
 			cbango: toText(train.no),
@@ -121,7 +320,14 @@
 				direction: Number(train.direction),
 				rawPosition: toText(train.pos),
 				displayType: toText(train.displayType),
-				typeCode: toText(train.type),
+				typeCode: typeInfo.typeCode,
+				typeClassSystem: typeInfo.classSystem,
+				semanticType: typeInfo.semanticType,
+				typeSimple: typeInfo.simpleLabel,
+				lineColorIconCode: lineColorIconCode,
+				codeTypeLabel: typeInfo.codeLabel,
+				displayTypeLabel: typeInfo.displayLabel,
+				typeChange: toText(train.typeChange),
 				stopTime: toText(train.stopTime),
 				longTimeStopping: longTimeStopping,
 				timetable: []
@@ -137,6 +343,13 @@
 			const code = stationCodes[0];
 			if (!context.displayStationCodes.has(code)) return { key: "", name: "" };
 			const station = context.stationByCode.get(code);
+			const nonDisplaySection = resolveNonDisplaySection(station, direction, context);
+			if (nonDisplaySection) {
+				return {
+					key: makeStationPositionKey(nonDisplaySection.positionCode, direction, context.positionPrefix),
+					name: nonDisplaySection.name
+				};
+			}
 			return {
 				key: makeStationPositionKey(code, direction, context.positionPrefix),
 				name: station ? station.name : code
@@ -157,6 +370,29 @@
 		};
 	}
 
+	function resolveNonDisplaySection(station, direction, context) {
+		if (!station || station.notDisplayType !== 5) return null;
+		let firstIndex = station.index;
+		let lastIndex = station.index;
+		while (firstIndex > 0 && context.allStations[firstIndex - 1].notDisplayType === 5) firstIndex -= 1;
+		while (lastIndex < context.allStations.length - 1 && context.allStations[lastIndex + 1].notDisplayType === 5) lastIndex += 1;
+
+		const previousStation = context.allStations[firstIndex - 1];
+		const nextStation = context.allStations[lastIndex + 1];
+		if (
+			!previousStation || !nextStation ||
+			!context.displayStationCodes.has(previousStation.code) ||
+			!context.displayStationCodes.has(nextStation.code)
+		) return null;
+
+		const from = direction === "U" ? nextStation : previousStation;
+		const to = direction === "U" ? previousStation : nextStation;
+		return {
+			positionCode: context.allStations[firstIndex].code,
+			name: from.name + "→" + to.name + " 間"
+		};
+	}
+
 	function makeStationPositionKey(code, direction, prefix) {
 		return (prefix || "JW") + code + direction;
 	}
@@ -165,14 +401,93 @@
 		return (prefix || "JW") + firstCode + "_" + secondCode + direction;
 	}
 
-	function mapTrainType(train) {
-		const displayType = toText(train && train.displayType);
-		if (/特急/.test(displayType)) return { type: "1", label: displayType.replace(/[○●]/g, "") || "特急" };
-		if (/新快/.test(displayType)) return { type: "8", label: "新快速" };
-		if (/快速/.test(displayType)) return { type: "8", label: "快速" };
-		if (/普通/.test(displayType)) return { type: "3", label: "普通" };
-		if (/回送/.test(displayType)) return { type: "3", label: "回送" };
-		return { type: "3", label: displayType.replace(/[○●]/g, "") || "普通" };
+	function mapTrainType(train, options) {
+		const classSystem = getTrainTypeClassSystem(options);
+		const typeCode = normalizeTypeCode(train && train.type);
+		const typeTable = classSystem === "kinki" ? KINKI_TYPE_LABELS : WIDE_AREA_TYPE_LABELS;
+		const codeLabel = typeTable[typeCode] || "";
+		const displayLabel = normalizeDisplayTypeLabel(train && train.displayType);
+		const label = codeLabel || displayLabel;
+		const presentation = TYPE_PRESENTATIONS[label];
+
+		if (!label || !presentation) {
+			return {
+				type: "unknown",
+				label: label,
+				semanticType: "unknown",
+				simpleLabel: "",
+				classSystem: classSystem,
+				typeCode: typeCode,
+				codeLabel: codeLabel,
+				displayLabel: displayLabel
+			};
+		}
+
+		return {
+			type: presentation.type,
+			label: label,
+			semanticType: presentation.semanticType,
+			simpleLabel: presentation.simpleLabel,
+			classSystem: classSystem,
+			typeCode: typeCode,
+			codeLabel: codeLabel,
+			displayLabel: displayLabel
+		};
+	}
+
+	function getLineColorIconCode(train, options, typeInfo) {
+		const settings = options || {};
+		const normalizedType = typeInfo || mapTrainType(train, settings);
+		if (
+			normalizedType.semanticType === "limited_express" ||
+			normalizedType.semanticType === "special_limited_express" ||
+			normalizedType.semanticType === "sleeper"
+		) {
+			return "";
+		}
+		const destinationLine = toText(
+			train && typeof train.dest === "object" && train.dest ? train.dest.line : ""
+		);
+		if (!destinationLine) return "";
+		if (
+			normalizedType.classSystem === "kinki" &&
+			KINKI_DESTINATION_COLOR_ICON_CODES[destinationLine]
+		) {
+			return KINKI_DESTINATION_COLOR_ICON_CODES[destinationLine];
+		}
+		return LINE_COLOR_ICON_CODES[destinationLine] || "";
+	}
+
+	function getTrainTypeClassSystem(options) {
+		const settings = options || {};
+		if (settings.classSystem === "kinki" || settings.classSystem === "wide_area") {
+			return settings.classSystem;
+		}
+		const lineId = toText(settings.lineId);
+		if (KINKI_TYPE_LINES.has(lineId)) return "kinki";
+		if (WIDE_AREA_TYPE_LINES.has(lineId)) return "wide_area";
+		return toText(settings.areaId) === "kinki" ? "kinki" : "wide_area";
+	}
+
+	function normalizeTypeCode(value) {
+		const text = toText(value);
+		if (!text) return "";
+		return /^\d+$/.test(text) ? text.padStart(2, "0") : text;
+	}
+
+	function normalizeDisplayTypeLabel(value) {
+		const raw = toText(value).replace(/[○●]/g, "").trim();
+		if (!raw) return "";
+		const compact = raw
+			.replace(/\s+/g, "")
+			.replace(/／/g, "/")
+			.replace(/Ｂ/g, "B");
+		for (const entry of DISPLAY_TYPE_ALIASES) {
+			if (entry[1].some(function(alias) { return compact.indexOf(alias) >= 0; })) {
+				return entry[0];
+			}
+		}
+		return raw;
 	}
 
 	function getLongTimeStoppingThreshold(areaMasterJson, lineId) {
@@ -240,6 +555,9 @@
 		normalize: normalize,
 		buildContext: buildContext,
 		resolvePosition: resolvePosition,
-		isLongTimeStopping: isLongTimeStopping
+		isLongTimeStopping: isLongTimeStopping,
+		mapTrainType: mapTrainType,
+		getTrainTypeClassSystem: getTrainTypeClassSystem,
+		getLineColorIconCode: getLineColorIconCode
 	};
 }));
