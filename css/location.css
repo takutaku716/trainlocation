@@ -2159,6 +2159,11 @@ header {
 				pointer-events: auto;
 			}
 
+			#stationList .hoka-line-area.jrwest-hagoromo .hagoromo-branch-panel > .eki-panel.eki .ressha-icon {
+				flex: 0 0 72px;
+				width: 72px;
+			}
+
 			#stationList .hoka-line-area.jrwest-hagoromo .hagoromo-branch-panel .stalist-eki-contents {
 				justify-content: center;
 			}

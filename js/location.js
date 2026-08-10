@@ -2688,10 +2688,18 @@ function create_ressha_icon(_param_rosen, _nowData, _typeData, _ekiData) {
 					} else {
 						$(create_html_down_ressha_icon(nowRow, _typeData, _ekiData)).prependTo("." + nowRow.pos);
 					}
-				} else {
-					$("." + nowRow.pos).append(create_html_down_ressha_icon(nowRow, _typeData, _ekiData));
-				}
-			} else if ($("." + pos).offset().left < width / 2 + add) {
+			} else {
+				$("." + nowRow.pos).append(create_html_down_ressha_icon(nowRow, _typeData, _ekiData));
+			}
+		} else if (String(_param_rosen) === "66" && pos.indexOf("JWH") === 0) {
+			// 羽衣線は左側の別枠に描画するため、画面上の左右ではなくpos末尾の方向を使う。
+			if (pos.slice(-1) === "U") {
+				$("." + nowRow.pos).append(create_html_up_ressha_icon(nowRow, _typeData, _ekiData));
+				$("." + nowRow.pos).addClass("up");
+			} else {
+				$("." + nowRow.pos).append(create_html_down_ressha_icon(nowRow, _typeData, _ekiData));
+			}
+		} else if ($("." + pos).offset().left < width / 2 + add) {
 				// アイコン表示位置が画面半分より左の場合
 				$("." + nowRow.pos).append(create_html_up_ressha_icon(nowRow, _typeData, _ekiData));
 				$("." + nowRow.pos).addClass("up");
