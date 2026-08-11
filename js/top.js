@@ -1,6 +1,10 @@
 // スクロールの高さ保持用
 let scrollY = 0;
 
+const JRWEST_ROUTE_IDS = (window.JrWestRouteCatalog && Array.isArray(window.JrWestRouteCatalog.routeIds))
+	? window.JrWestRouteCatalog.routeIds.map(String)
+	: ["61", "62", "63", "64", "65", "66", "67", "68", "69", "70", "71", "72"];
+
 // 各エリアに属するデータキー
 const AREA_ROSEN_KEYS = {
 	"spo": ["7", "8", "9", "10", "11", "12", "26", "30", "31", "32", "33", "34"],		// 札幌近郊
@@ -10,7 +14,7 @@ const AREA_ROSEN_KEYS = {
 	"dohoku": ["17", "18", "19", "51"],													// 道北エリア
 	"doto": ["35", "36", "40", "41", "42", "37", "38", "39"],							// 道東エリア
 	"shin": ["51", "52", "53", "54", "55", "56", "57"],												// 新幹線
-	"jrwest": ["61", "62", "63", "64", "65", "66", "67", "68", "69", "70", "71", "72"],			// JR西日本
+	"jrwest": JRWEST_ROUTE_IDS,			// JR西日本
 	"jrshikoku": ["64", "73", "76", "77", "78", "79", "80", "81", "82"],		// JR四国
 	"jrcentral": ["75", "74", "83", "84", "85", "86", "87", "88", "89", "90", "91", "92", "93", "94", "95"]		// JR東海
 };
@@ -70,6 +74,10 @@ const ROSEN_NUM_KEYS = {
 	"94": [],								// 美濃赤坂線
 	"95": [],								// 伊勢鉄道
 };
+
+JRWEST_ROUTE_IDS.forEach(function (rosen) {
+	if (!Object.prototype.hasOwnProperty.call(ROSEN_NUM_KEYS, rosen)) ROSEN_NUM_KEYS[rosen] = [];
+});
 
 /*
  * 画面ロード時
@@ -546,7 +554,7 @@ function rosenToArea(rosen, selectAreaName) {
 		area = "shin";
 	} else if (["64"].includes(rosen)) {						// JR西日本・JR四国にまたがる路線
 		area = selectAreaName == "jrshikoku" ? "jrshikoku" : "jrwest";
-	} else if (["61", "62", "63", "65", "66", "67", "68", "69", "70", "71", "72"].includes(rosen)) {	// JR西日本
+	} else if (JRWEST_ROUTE_IDS.includes(rosen)) {	// JR西日本
 		area = "jrwest";
 	} else if (["73", "76", "77", "78", "79", "80", "81", "82"].includes(rosen)) {						// JR四国
 		area = "jrshikoku";

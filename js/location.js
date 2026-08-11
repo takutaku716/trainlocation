@@ -414,7 +414,8 @@ const JRWEST_LOCATION_SOURCE_MAP = {
 				locationUrl: "https://www.train-guide.westjr.co.jp/api/v3/unominato.json"
 			}
 		]
-	}
+	},
+	...((typeof window !== "undefined" && window.JrWestRemainingRouteSources) || {})
 };
 const jrWestStaticSourceDataCache = new Map();
 const jrWestStaticJsonDataCache = new Map();
@@ -4085,11 +4086,7 @@ function ressha_run_check() {
  * ハッシュから路線を取得
  */
 function get_param_rosen() {
-	let params = location.hash.slice(1).split('&');
-	if (params.length > 0) {
-		if (params[0].indexOf("rosen=") >= 0) return params[0].slice(-2);
-		else return "";
-	}
+	return new URLSearchParams(location.hash.slice(1)).get("rosen") || "";
 }
 
 /*

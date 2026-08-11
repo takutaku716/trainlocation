@@ -236,11 +236,7 @@ function enable_test_mode() {
 }
 
 function get_current_hash_rosen() {
-	const params = location.hash.slice(1).split("&");
-	if (params.length > 0 && params[0].indexOf("rosen=") >= 0) {
-		return params[0].slice(-2);
-	}
-	return "";
+	return new URLSearchParams(location.hash.slice(1)).get("rosen") || "";
 }
 
 function update_guide_test_mode_button() {
