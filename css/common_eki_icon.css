@@ -78,6 +78,27 @@ span.eki-icon {
 	span.eki-icon.icon-B {
 		border-color: #e0429b;
 	}
+	/* JR四国 */
+	span.eki-icon.jrshikoku-eki-icon.jrshikoku-icon-Y,
+	span.eki-icon.jrshikoku-eki-icon.jrshikoku-icon-U {
+		border-color: #f8b500;
+	}
+	span.eki-icon.jrshikoku-eki-icon.jrshikoku-icon-S {
+		border-color: #a4b0da;
+	}
+	span.eki-icon.jrshikoku-eki-icon.jrshikoku-icon-D,
+	span.eki-icon.jrshikoku-eki-icon.jrshikoku-icon-K {
+		border-color: #df5280;
+	}
+	span.eki-icon.jrshikoku-eki-icon.jrshikoku-icon-T {
+		border-color: #8cc220;
+	}
+	span.eki-icon.jrshikoku-eki-icon.jrshikoku-icon-B {
+		border-color: #145c7d;
+	}
+	span.eki-icon.jrshikoku-eki-icon.jrshikoku-icon-N {
+		border-color: #8a2155;
+	}
 	/* 枝番用 */
 	span.eki-icon .eda {
 		font-size: 12px;

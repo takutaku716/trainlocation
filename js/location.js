@@ -418,6 +418,88 @@ const JRWEST_LOCATION_SOURCE_MAP = {
 };
 const jrWestStaticSourceDataCache = new Map();
 const jrWestStaticJsonDataCache = new Map();
+const JRSHIKOKU_API_BASE = (location.hostname === "127.0.0.1" || location.hostname === "localhost")
+	? "http://127.0.0.1:8766"
+	: "https://trainlocation.pages.dev";
+const JRSHIKOKU_LOCATION_SOURCE_MAP = {
+	"64": {
+		senku: "64",
+		lineId: "seto",
+		liveUrl: JRSHIKOKU_API_BASE + "/api/jrshikoku/location",
+		timetableUrl: JRSHIKOKU_API_BASE + "/api/jrshikoku/timetable"
+	},
+	"73": {
+		senku: "73",
+		lineId: "yosan",
+		liveUrl: JRSHIKOKU_API_BASE + "/api/jrshikoku/location",
+		timetableUrl: JRSHIKOKU_API_BASE + "/api/jrshikoku/timetable"
+	},
+	"76": {
+		senku: "76",
+		lineId: "uwajima",
+		liveUrl: JRSHIKOKU_API_BASE + "/api/jrshikoku/location",
+		timetableUrl: JRSHIKOKU_API_BASE + "/api/jrshikoku/timetable"
+	},
+	"77": {
+		senku: "77",
+		lineId: "uwajima2",
+		liveUrl: JRSHIKOKU_API_BASE + "/api/jrshikoku/location",
+		timetableUrl: JRSHIKOKU_API_BASE + "/api/jrshikoku/timetable"
+	},
+	"78": {
+		senku: "78",
+		lineId: "dosan",
+		liveUrl: JRSHIKOKU_API_BASE + "/api/jrshikoku/location",
+		timetableUrl: JRSHIKOKU_API_BASE + "/api/jrshikoku/timetable"
+	},
+	"79": {
+		senku: "79",
+		lineId: "dosan2",
+		liveUrl: JRSHIKOKU_API_BASE + "/api/jrshikoku/location",
+		timetableUrl: JRSHIKOKU_API_BASE + "/api/jrshikoku/timetable"
+	},
+	"80": {
+		senku: "80",
+		lineId: "koutoku",
+		liveUrl: JRSHIKOKU_API_BASE + "/api/jrshikoku/location",
+		timetableUrl: JRSHIKOKU_API_BASE + "/api/jrshikoku/timetable"
+	},
+	"81": {
+		senku: "81",
+		lineId: "tokushima",
+		liveUrl: JRSHIKOKU_API_BASE + "/api/jrshikoku/location",
+		timetableUrl: JRSHIKOKU_API_BASE + "/api/jrshikoku/timetable"
+	},
+	"82": {
+		senku: "82",
+		lineId: "naruto",
+		liveUrl: JRSHIKOKU_API_BASE + "/api/jrshikoku/location",
+		timetableUrl: JRSHIKOKU_API_BASE + "/api/jrshikoku/timetable"
+	}
+};
+const jrShikokuStaticSourceDataCache = new Map();
+const JRCENTRAL_LOCATION_SOURCE_MAP = {
+	"74": {
+		senku: "74",
+		lineName: "東海道線(豊橋～米原)",
+		stationSet: "tokaido_toyohashi_maibara",
+		positionPrefix: "JTC",
+		liveUrl: "https://traininfo.jr-central.co.jp/zairaisen/data/zaisenichi.json"
+	},
+	"75": {
+		senku: "75",
+		lineName: "東海道線(熱海～豊橋)",
+		stationSet: "tokaido_atami_toyohashi",
+		positionPrefix: "JTC",
+		liveUrl: "https://traininfo.jr-central.co.jp/zairaisen/data/zaisenichi.json"
+	}
+};
+const JRCENTRAL_TIMETABLE_URL = "https://traininfo.jr-central.co.jp/zairaisen/data/kobetsujikoku.json";
+const JRCENTRAL_TIMETABLE_CACHE_NAME = "jrcentral-timetable-v1";
+let jrCentralTimetableDataPromise = null;
+let jrCentralTimetableDataExpiresAt = 0;
+let jrCentralTimetableCacheExpiryTimer = null;
+let jrCentralTimetableCacheInitializedFor = "";
 
 function get_mainte_json_request(fileName, cacheKey) {
 	const cloudflareApiBase = "https://trainlocation.pages.dev";
@@ -1239,6 +1321,14 @@ function is_jrwest_location_rosen(_rosen) {
 	return Object.prototype.hasOwnProperty.call(JRWEST_LOCATION_SOURCE_MAP, String(_rosen || ""));
 }
 
+function is_jrshikoku_location_rosen(_rosen) {
+	return Object.prototype.hasOwnProperty.call(JRSHIKOKU_LOCATION_SOURCE_MAP, String(_rosen || ""));
+}
+
+function is_jrcentral_location_rosen(_rosen) {
+	return Object.prototype.hasOwnProperty.call(JRCENTRAL_LOCATION_SOURCE_MAP, String(_rosen || ""));
+}
+
 function is_location_auto_refresh_allowed(_rosen) {
 	return !is_jreast_location_rosen(_rosen);
 }
@@ -1256,6 +1346,132 @@ function get_dokotre_location_request(_url, _now) {
 	const url = _url + separator + "cache=" + _now;
 	const proxyPrefix = "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=";
 	return $.getJSON(url.indexOf(proxyPrefix) === 0 ? url : proxyPrefix + url);
+}
+
+function get_jrcentral_timetable_cache_info(_now = new Date()) {
+	const now = new Date(_now);
+	const boundary = new Date(now);
+	boundary.setHours(4, 0, 0, 0);
+	let serviceDate = new Date(now);
+	let expiresAt = boundary;
+	if (now >= boundary) {
+		expiresAt = new Date(boundary);
+		expiresAt.setDate(expiresAt.getDate() + 1);
+	} else {
+		serviceDate.setDate(serviceDate.getDate() - 1);
+	}
+	const pad = (value) => String(value).padStart(2, "0");
+	return {
+		serviceDate: serviceDate.getFullYear() + "-" + pad(serviceDate.getMonth() + 1) + "-" + pad(serviceDate.getDate()),
+		expiresAt: expiresAt.getTime()
+	};
+}
+
+function get_jrcentral_timetable_cache_request(_serviceDate) {
+	return new Request(new URL("./__jrcentral_timetable_cache__/" + _serviceDate + ".json", location.href).toString());
+}
+
+async function get_jrcentral_timetable_cache(_cacheInfo) {
+	if (!("caches" in window)) return null;
+	const cache = await caches.open(JRCENTRAL_TIMETABLE_CACHE_NAME);
+	const targetRequest = get_jrcentral_timetable_cache_request(_cacheInfo.serviceDate);
+	const requests = await cache.keys();
+	await Promise.all(requests.map(async (request) => {
+		if (request.url === targetRequest.url) return;
+		await cache.delete(request);
+	}));
+	const cachedResponse = await cache.match(targetRequest);
+	if (!cachedResponse) return { cache: cache, request: targetRequest, response: null };
+	const expiresAt = Number(cachedResponse.headers.get("x-expires-at") || 0);
+	if (!expiresAt || expiresAt <= Date.now()) {
+		await cache.delete(targetRequest);
+		return { cache: cache, request: targetRequest, response: null };
+	}
+	return { cache: cache, request: targetRequest, response: cachedResponse };
+}
+
+function parse_jrcentral_timetable_json(_text) {
+	return JSON.parse(String(_text || "").replace(/^\uFEFF/, ""));
+}
+
+async function fetch_jrcentral_timetable_json(_cacheInfo, _cacheContext) {
+	const cacheToken = String(_cacheInfo.serviceDate || "").replace(/-/g, "");
+	const sourceUrl = JRCENTRAL_TIMETABLE_URL + "?cache=" + cacheToken;
+	const proxyUrl = "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=" + sourceUrl;
+	const response = await fetch(proxyUrl, { cache: "no-store" });
+	if (!response.ok) throw new Error("JR Central timetable request failed: " + response.status);
+	const text = await response.text();
+	const json = parse_jrcentral_timetable_json(text);
+	if (!json || !Array.isArray(json.train_info)) throw new Error("JR Central timetable response is invalid");
+	if (_cacheContext && _cacheContext.cache) {
+		const cachedResponse = new Response(text, {
+			headers: {
+				"content-type": "application/json; charset=utf-8",
+				"x-expires-at": String(_cacheInfo.expiresAt)
+			}
+		});
+		try {
+			await _cacheContext.cache.put(_cacheContext.request, cachedResponse);
+		} catch (_error) {
+			// 容量制限などで保存できない場合も、今回取得した時刻データはそのまま使用する。
+		}
+	}
+	return json;
+}
+
+function schedule_jrcentral_timetable_cache_expiry(_expiresAt) {
+	if (jrCentralTimetableCacheExpiryTimer) clearTimeout(jrCentralTimetableCacheExpiryTimer);
+	const delay = Math.max(0, Number(_expiresAt || 0) - Date.now());
+	jrCentralTimetableCacheExpiryTimer = setTimeout(() => {
+		jrCentralTimetableDataPromise = null;
+		jrCentralTimetableDataExpiresAt = 0;
+		jrCentralTimetableCacheExpiryTimer = null;
+		jrCentralTimetableCacheInitializedFor = "";
+		if ("caches" in window) caches.delete(JRCENTRAL_TIMETABLE_CACHE_NAME).catch(() => {});
+	}, Math.min(delay, 2147483647));
+}
+
+function initialize_jrcentral_timetable_cache() {
+	const cacheInfo = get_jrcentral_timetable_cache_info();
+	if (jrCentralTimetableCacheInitializedFor === cacheInfo.serviceDate) return;
+	jrCentralTimetableCacheInitializedFor = cacheInfo.serviceDate;
+	get_jrcentral_timetable_cache(cacheInfo).catch(() => {});
+	schedule_jrcentral_timetable_cache_expiry(cacheInfo.expiresAt);
+}
+
+function load_jrcentral_timetable_json() {
+	const cacheInfo = get_jrcentral_timetable_cache_info();
+	if (jrCentralTimetableDataPromise && jrCentralTimetableDataExpiresAt > Date.now()) {
+		return jrCentralTimetableDataPromise;
+	}
+	jrCentralTimetableDataExpiresAt = cacheInfo.expiresAt;
+	jrCentralTimetableDataPromise = get_jrcentral_timetable_cache(cacheInfo)
+		.then(async (cacheContext) => {
+			if (cacheContext && cacheContext.response) {
+				return parse_jrcentral_timetable_json(await cacheContext.response.text());
+			}
+			return fetch_jrcentral_timetable_json(cacheInfo, cacheContext);
+		})
+		.catch((error) => {
+			jrCentralTimetableDataPromise = null;
+			jrCentralTimetableDataExpiresAt = 0;
+			throw error;
+		});
+	schedule_jrcentral_timetable_cache_expiry(cacheInfo.expiresAt);
+	return jrCentralTimetableDataPromise;
+}
+
+function prepare_jrcentral_timetable_dataset(_dataset) {
+	if (!_dataset || _dataset.source !== "jrcentral") return Promise.resolve();
+	const trainIdentificationKey = String(_dataset.jrcentral_train_key || "").trim();
+	if (!trainIdentificationKey || !window.JrCentralLocationAdapter || typeof window.JrCentralLocationAdapter.convertTimetable !== "function") {
+		_dataset.jrcentral_timetable = "[]";
+		return Promise.resolve();
+	}
+	return load_jrcentral_timetable_json().then((json) => {
+		const timetable = window.JrCentralLocationAdapter.convertTimetable(json, trainIdentificationKey);
+		_dataset.jrcentral_timetable = JSON.stringify(timetable);
+	});
 }
 
 function get_dokotre_mapping_request(_url, _now) {
@@ -1321,6 +1537,9 @@ function merge_location_now_data(_nowDataList) {
 }
 
 function load_location_now_data(_param_rosen, _now) {
+	if (String(_param_rosen || "") === "64") {
+		return load_combined_jrwest_jrshikoku_location_now_data(_param_rosen, _now);
+	}
 	if (is_jreast_location_rosen(_param_rosen)) {
 		return load_combined_jreast_location_now_data(_param_rosen, _now);
 	}
@@ -1333,6 +1552,12 @@ function load_location_now_data(_param_rosen, _now) {
 	if (is_jrwest_location_rosen(_param_rosen)) {
 		return load_jrwest_location_now_data(_param_rosen, _now);
 	}
+	if (is_jrshikoku_location_rosen(_param_rosen)) {
+		return load_jrshikoku_location_now_data(_param_rosen, _now);
+	}
+	if (is_jrcentral_location_rosen(_param_rosen)) {
+		return load_jrcentral_location_now_data(_param_rosen, _now);
+	}
 
 	const sourceRosens = get_location_json_source_list(_param_rosen);
 	return Promise.all(
@@ -1344,6 +1569,21 @@ function load_location_now_data(_param_rosen, _now) {
 	).then((nowDataResults) => {
 		const successDataList = nowDataResults.filter((entry) => entry && entry.nowData && Array.isArray(entry.nowData.trains));
 		if (successDataList.length < 1) throw new Error("location now json load failed");
+		return merge_location_now_data(successDataList);
+	});
+}
+
+function load_combined_jrwest_jrshikoku_location_now_data(_param_rosen, _now) {
+	return Promise.all([
+		load_jrshikoku_location_now_data(_param_rosen, _now)
+			.then((nowData) => ({ rosen: _param_rosen, sourceType: "jrshikoku", nowData: nowData }))
+			.catch(() => null),
+		load_jrwest_location_now_data(_param_rosen, _now)
+			.then((nowData) => ({ rosen: _param_rosen, sourceType: "jrwest", nowData: nowData }))
+			.catch(() => null)
+	]).then((nowDataResults) => {
+		const successDataList = nowDataResults.filter((entry) => entry && entry.nowData && Array.isArray(entry.nowData.trains));
+		if (successDataList.length < 1) throw new Error("Seto-Ohashi location now json load failed");
 		return merge_location_now_data(successDataList);
 	});
 }
@@ -1519,6 +1759,59 @@ function load_jrwest_static_json(url, _now) {
 		});
 	jrWestStaticJsonDataCache.set(url, loadPromise);
 	return loadPromise;
+}
+
+function load_jrshikoku_location_now_data(_param_rosen, _now) {
+	const source = JRSHIKOKU_LOCATION_SOURCE_MAP[String(_param_rosen || "")];
+	if (!source || !window.JrShikokuLocationAdapter) {
+		return Promise.reject(new Error("JR Shikoku location adapter is not loaded"));
+	}
+	return Promise.all([
+		jqxhr_to_promise(get_external_text_request(source.liveUrl, _now)),
+		load_jrshikoku_timetable_data(source, _now)
+	]).then((results) => {
+		return window.JrShikokuLocationAdapter.normalize(results[0], results[1], {
+			senku: source.senku || _param_rosen,
+			lineId: source.lineId || "yosan"
+		});
+	});
+}
+
+function load_jrcentral_location_now_data(_param_rosen, _now) {
+	const source = JRCENTRAL_LOCATION_SOURCE_MAP[String(_param_rosen || "")];
+	if (!source || !window.JrCentralLocationAdapter) {
+		return Promise.reject(new Error("JR Central location adapter is not loaded"));
+	}
+	initialize_jrcentral_timetable_cache();
+	return jqxhr_to_promise(get_dokotre_location_request(source.liveUrl, _now))
+		.then((rawData) => window.JrCentralLocationAdapter.normalize(rawData, {
+			senku: source.senku || _param_rosen,
+			lineName: source.lineName,
+			stationSet: source.stationSet,
+			positionPrefix: source.positionPrefix
+		}));
+}
+
+function load_jrshikoku_timetable_data(source, _now) {
+	const cacheKey = source && source.timetableUrl ? source.timetableUrl : "jrshikoku-timetable";
+	if (jrShikokuStaticSourceDataCache.has(cacheKey)) {
+		return jrShikokuStaticSourceDataCache.get(cacheKey);
+	}
+	const loadPromise = jqxhr_to_promise(get_external_text_request(source.timetableUrl, get_jrshikoku_service_date_key()))
+		.catch((error) => {
+			jrShikokuStaticSourceDataCache.delete(cacheKey);
+			throw error;
+		});
+	jrShikokuStaticSourceDataCache.set(cacheKey, loadPromise);
+	return loadPromise;
+}
+
+function get_jrshikoku_service_date_key() {
+	const jst = new Date(Date.now() + 9 * 60 * 60 * 1000);
+	if (jst.getUTCHours() < 4) jst.setUTCDate(jst.getUTCDate() - 1);
+	return jst.getUTCFullYear() + "-" +
+		String(jst.getUTCMonth() + 1).padStart(2, "0") + "-" +
+		String(jst.getUTCDate()).padStart(2, "0");
 }
 
 function load_jr_shinkansen_location_now_data(_param_rosen, _now) {
@@ -1989,7 +2282,7 @@ function set_station_list(_param_rosen, _scrollKey, _callback) {
 	stop_location_auto_refresh();
 	teardown_osaka_loop_infinite_scroll();
 	// お知らせ欄作成
-	disp_oshirase(_param_rosen);
+	if (!is_jrcentral_location_rosen(_param_rosen)) disp_oshirase(_param_rosen);
 
 	// 各区間のhtmlを読み込み
 	const lang = document.documentElement.dataset.lang;
@@ -2011,7 +2304,7 @@ function set_station_list(_param_rosen, _scrollKey, _callback) {
 	.done(function(rosenNameData, maintenanceData, typeData, ekiData, rosen, maintenance) {
 
 		// 現在日付を設定。外部JSON変換路線はJSON内部の配信時刻を使用する。
-		if (is_jreast_location_rosen(_param_rosen) || is_dokotre_location_rosen(_param_rosen) || is_jr_shinkansen_location_rosen(_param_rosen) || is_jrwest_location_rosen(_param_rosen)) $("#timestamp").text("");
+		if (is_jreast_location_rosen(_param_rosen) || is_dokotre_location_rosen(_param_rosen) || is_jr_shinkansen_location_rosen(_param_rosen) || is_jrwest_location_rosen(_param_rosen) || is_jrshikoku_location_rosen(_param_rosen) || is_jrcentral_location_rosen(_param_rosen)) $("#timestamp").text("");
 		else update_location_timestamp();
 
 		// 路線名を設定
@@ -2058,7 +2351,7 @@ function set_station_list(_param_rosen, _scrollKey, _callback) {
 			$("#stationList").html(rosen[0]);
 			prepare_osaka_loop_cycles(_param_rosen);
 			set_jr_shinkansen_station_border_colors(_param_rosen);
-			if (is_jreast_location_rosen(_param_rosen) || is_dokotre_location_rosen(_param_rosen) || is_jr_shinkansen_location_rosen(_param_rosen) || is_jrwest_location_rosen(_param_rosen)) setTimestamp(nowData);
+			if (is_jreast_location_rosen(_param_rosen) || is_dokotre_location_rosen(_param_rosen) || is_jr_shinkansen_location_rosen(_param_rosen) || is_jrwest_location_rosen(_param_rosen) || is_jrshikoku_location_rosen(_param_rosen) || is_jrcentral_location_rosen(_param_rosen)) setTimestamp(nowData);
 			update_location_data_stale_warning(nowData);
 			// 列車アイコンを描画する
 			create_ressha_icon(_param_rosen, nowData, typeData[0], ekiData[0]);
@@ -2169,7 +2462,7 @@ function redraw_location_positions(_param_rosen, _nowData) {
 	clear_location_positions(_param_rosen);
 	create_ressha_icon(_param_rosen, _nowData, cachedResshaTypeData, cachedEkiData);
 	ressha_pos_sort();
-	if (is_jreast_location_rosen(_param_rosen) || is_dokotre_location_rosen(_param_rosen) || is_jr_shinkansen_location_rosen(_param_rosen) || is_jrwest_location_rosen(_param_rosen)) setTimestamp(_nowData);
+	if (is_jreast_location_rosen(_param_rosen) || is_dokotre_location_rosen(_param_rosen) || is_jr_shinkansen_location_rosen(_param_rosen) || is_jrwest_location_rosen(_param_rosen) || is_jrshikoku_location_rosen(_param_rosen) || is_jrcentral_location_rosen(_param_rosen)) setTimestamp(_nowData);
 	else update_location_timestamp();
 	update_location_data_stale_warning(_nowData);
 	restore_selected_train_marker(trackingScrollEnabled);
@@ -3058,9 +3351,22 @@ function set_jrwest_train_icon(_iconArea, _nowRow) {
 	_iconArea.style.backgroundImage = "url(./images/home/jrwest/train_icon_" + iconCode + ".svg)";
 }
 
+function set_jrcentral_train_icon(_iconArea, _nowRow) {
+	const iconCode = _nowRow.jrCentral && _nowRow.jrCentral.lineColorIconCode ? _nowRow.jrCentral.lineColorIconCode : "";
+	if (!/^[a-z0-9_]+$/.test(iconCode)) return;
+	_iconArea.style.backgroundImage = "url(./images/home/jrcentral/train_icon_" + iconCode + ".svg)";
+	_iconArea.classList.add("jrcentral-icon", "jrcentral-icon-" + iconCode);
+}
+
 function get_train_type_simple_label(_nowRow, _type, _lang) {
 	if (_nowRow.jrWest && _nowRow.jrWest.typeSimple) {
 		return _nowRow.jrWest.typeSimple;
+	}
+	if (_nowRow.jrShikoku && _nowRow.jrShikoku.typeSimple) {
+		return _nowRow.jrShikoku.typeSimple;
+	}
+	if (_nowRow.jrCentral && _nowRow.jrCentral.typeSimple) {
+		return _nowRow.jrCentral.typeSimple;
 	}
 	if (_type && _type.typeSimple) {
 		return _type.typeSimple[_lang] || _type.typeSimple.ja || "";
@@ -3080,6 +3386,7 @@ function create_html_up_ressha_icon(_nowRow, _typeData, _ekiData) {
 	iconArea.classList.add("icon-img");
 	set_jr_shinkansen_train_icon(iconArea, _nowRow);
 	set_jrwest_train_icon(iconArea, _nowRow);
+	set_jrcentral_train_icon(iconArea, _nowRow);
 	// 新幹線以外には列車種別の文字をアイコンに入れる
 	if(_nowRow.type != "4") {
 		let objSbt = document.createElement("span");
@@ -3189,6 +3496,7 @@ function create_html_down_ressha_icon(_nowRow, _typeData, _ekiData) {
 	iconArea.classList.add("icon-img");
 	set_jr_shinkansen_train_icon(iconArea, _nowRow);
 	set_jrwest_train_icon(iconArea, _nowRow);
+	set_jrcentral_train_icon(iconArea, _nowRow);
 	// 新幹線以外には列車種別の文字をアイコンに入れる
 	if(_nowRow.type != "4") {
 		let objSbt = document.createElement("span");
@@ -3269,6 +3577,9 @@ function create_ressha_detail(_objItem, _nowRow, _typeData, _ekiData) {
 			_objItem.dataset.jrshinkansen_timetable = _nowRow.jrShinkansen && Array.isArray(_nowRow.jrShinkansen.timetable) ? JSON.stringify(_nowRow.jrShinkansen.timetable) : "[]";
 			_objItem.dataset.jrwest_timetable = _nowRow.jrWest && Array.isArray(_nowRow.jrWest.timetable) ? JSON.stringify(_nowRow.jrWest.timetable) : "[]";
 			_objItem.dataset.jrwest_type_change = _nowRow.jrWest && _nowRow.jrWest.typeChange ? _nowRow.jrWest.typeChange : "";
+			_objItem.dataset.jrshikoku_timetable = _nowRow.jrShikoku && Array.isArray(_nowRow.jrShikoku.timetable) ? JSON.stringify(_nowRow.jrShikoku.timetable) : "[]";
+			_objItem.dataset.jrcentral_timetable = _nowRow.jrCentral && Array.isArray(_nowRow.jrCentral.timetable) ? JSON.stringify(_nowRow.jrCentral.timetable) : "[]";
+			_objItem.dataset.jrcentral_train_key = _nowRow.jrCentral && _nowRow.jrCentral.trainIdentificationKey ? _nowRow.jrCentral.trainIdentificationKey : "";
 			_objItem.dataset.jrshinkansenIcon = _nowRow.jrShinkansen && _nowRow.jrShinkansen.trainIcon ? _nowRow.jrShinkansen.trainIcon : "";
 		}
 
@@ -3405,7 +3716,8 @@ function create_ressha_detail(_objItem, _nowRow, _typeData, _ekiData) {
 
 		// 行先
 		const jreastDestination = _nowRow.shuEkiName || _nowRow.shuEkiSimple || "";
-		if (lang == "ja") _objItem.dataset.shu_eki = jreastDestination === "行先取得不可" ? jreastDestination : (typeof findEki !== "undefined" ? findEki.ja + " 行き" : (jreastDestination ? jreastDestination + " 行き" : "行き"));
+		const jrWestVia = _nowRow.jrWest && _nowRow.jrWest.via ? _nowRow.jrWest.via + "経由 " : "";
+		if (lang == "ja") _objItem.dataset.shu_eki = jreastDestination === "行先取得不可" ? jreastDestination : jrWestVia + (typeof findEki !== "undefined" ? findEki.ja + " 行き" : (jreastDestination ? jreastDestination + " 行き" : "行き"));
 		if (lang == "en") _objItem.dataset.shu_eki = typeof findEki !== "undefined" ? "For " + findEki.en : (jreastDestination ? "For " + jreastDestination : "For ");
 		if (lang == "tc") _objItem.dataset.shu_eki = typeof findEki !== "undefined" ? "開往" + findEki.tc : (jreastDestination ? "開往" + jreastDestination : "開往");
 		if (lang == "sc") _objItem.dataset.shu_eki = typeof findEki !== "undefined" ? "开往" + findEki.sc : (jreastDestination ? "开往" + jreastDestination : "开往");

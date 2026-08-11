@@ -158,10 +158,10 @@
 		"みやこ路快速": { type: "8", semanticType: "miyakoji_rapid", simpleLabel: "都" },
 		"大和路快速": { type: "8", semanticType: "yamatoji_rapid", simpleLabel: "大" },
 		"関空快速": { type: "8", semanticType: "kansai_airport_rapid", simpleLabel: "関" },
-		"関空/紀州路快速": { type: "8", semanticType: "kansai_airport_kishuji_rapid", simpleLabel: "併" },
+		"関空/紀州路快速": { type: "8", semanticType: "kansai_airport_kishuji_rapid", simpleLabel: "関紀" },
 		"B快速": { type: "8", semanticType: "b_rapid", simpleLabel: "B" },
 		"特別快速": { type: "8", semanticType: "special_rapid_service", simpleLabel: "特" },
-		"区間快速": { type: "9", semanticType: "section_rapid", simpleLabel: "区" },
+		"区間快速": { type: "9", semanticType: "section_rapid", simpleLabel: "区快" },
 		"快速": { type: "8", semanticType: "rapid", simpleLabel: "快" },
 		"シャトル": { type: "8", semanticType: "shuttle", simpleLabel: "シ" },
 		"SL": { type: "7", semanticType: "steam_locomotive", simpleLabel: "S" },
@@ -287,6 +287,7 @@
 		}
 		if (!position.key) return null;
 		const destinationName = toText(typeof train.dest === "object" && train.dest ? train.dest.text : train.dest) || "行先取得不可";
+		const viaName = resolveViaName(train);
 		const typeInfo = mapTrainType(train, options);
 		const lineColorIconCode = getLineColorIconCode(train, options, typeInfo);
 		const longTimeStopping = isLongTimeStopping(train, currentTime, threshold);
@@ -331,6 +332,7 @@
 				lineColorIconCode: lineColorIconCode,
 				codeTypeLabel: typeInfo.codeLabel,
 				displayTypeLabel: typeInfo.displayLabel,
+				via: viaName,
 				typeChange: toText(train.typeChange),
 				stopTime: toText(train.stopTime),
 				longTimeStopping: longTimeStopping,
@@ -548,6 +550,15 @@
 	function toNumber(value) {
 		const number = Number(value || 0);
 		return Number.isFinite(number) ? number : 0;
+	}
+
+	function resolveViaName(train) {
+		const directVia = toText(train && train.via).replace(/経由$/, "").trim();
+		if (directVia) return directVia;
+
+		const typeChange = toText(train && train.typeChange);
+		const match = typeChange.match(/([A-Za-z0-9一-龠々ヶぁ-んァ-ヶー・]+線)経由/);
+		return match ? match[1] : "";
 	}
 
 	function toText(value) {

@@ -13,6 +13,32 @@ $(function ($) {
 	let lang = document.documentElement.dataset.lang;
 	// 列車のアイコンをクリックしたときの動き
 	$(document).on("click", ".ressha-icon .ressha", function() {
+		const clickedItem = this;
+		const clickedDataset = clickedItem.dataset;
+		if (clickedDataset.source === "jrcentral" && clickedDataset.jrcentral_timetable_loaded !== "1") {
+			if (clickedDataset.jrcentral_timetable_loading === "1") return;
+			clickedDataset.jrcentral_timetable_loading = "1";
+			loading_animation_display();
+			prepare_jrcentral_timetable_dataset(clickedDataset)
+				.catch(function() {
+					clickedDataset.jrcentral_timetable = "[]";
+				})
+				.then(function() {
+					const trainKey = clickedDataset.jrcentral_train_key || "";
+					const targetItem = clickedItem.isConnected ? clickedItem : Array.from(document.querySelectorAll(".ressha-icon .ressha")).find(function(item) {
+						return item.dataset.source === "jrcentral" && item.dataset.jrcentral_train_key === trainKey;
+					});
+					if (!targetItem) {
+						loading_animation_hidden();
+						return;
+					}
+					targetItem.dataset.jrcentral_timetable = clickedDataset.jrcentral_timetable || "[]";
+					targetItem.dataset.jrcentral_timetable_loading = "0";
+					targetItem.dataset.jrcentral_timetable_loaded = "1";
+					$(targetItem).trigger("click");
+				});
+			return;
+		}
 		let lang = document.documentElement.dataset.lang;
 		// ローディングアニメーションを表示
 		loading_animation_display();
@@ -115,7 +141,7 @@ $(function ($) {
 			$("#cbangoIcon").removeClass("hide");
 			$("#cbangoDetail").removeClass("hide");
 
-			if (dataset.source === "jreast" || dataset.source === "dokotre" || dataset.source === "jrshinkansen" || dataset.source === "jrwest") {
+			if (dataset.source === "jreast" || dataset.source === "dokotre" || dataset.source === "jrshinkansen" || dataset.source === "jrwest" || dataset.source === "jrshikoku" || dataset.source === "jrcentral") {
 				$("#unkouDetailMain").hide();
 				$.getJSON("./original/location_master" + (lang === "ja" ? "" : "_" + lang) + ".json?" + now)
 					.done(function(posNameMasterBase) {
@@ -254,6 +280,8 @@ function create_jreast_daiya(_dataset) {
 			_dataset.source === "dokotre" ? _dataset.dokotre_timetable :
 			_dataset.source === "jrshinkansen" ? _dataset.jrshinkansen_timetable :
 			_dataset.source === "jrwest" ? _dataset.jrwest_timetable :
+			_dataset.source === "jrshikoku" ? _dataset.jrshikoku_timetable :
+			_dataset.source === "jrcentral" ? _dataset.jrcentral_timetable :
 			_dataset.jreast_timetable;
 		timetable = JSON.parse(timetableText || "[]");
 	} catch (_error) {

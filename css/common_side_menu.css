@@ -461,6 +461,34 @@ input[type=radio] {
 	margin-left: 4px;
 }
 
+.side-menu .jrshikoku-line-symbol {
+	align-items: center;
+	background: #f39800;
+	color: #fff;
+	display: inline-flex;
+	flex: 0 0 21px;
+	font-size: 15px;
+	font-weight: bold;
+	height: 21px;
+	justify-content: center;
+	line-height: 1;
+	margin-left: 4px;
+}
+
+.side-menu .jrcentral-line-symbol {
+	align-items: center;
+	background: #ff7e1c;
+	color: #fff;
+	display: inline-flex;
+	flex: 0 0 27px;
+	font-size: 13px;
+	font-weight: bold;
+	height: 21px;
+	justify-content: center;
+	line-height: 1;
+	margin-left: 4px;
+}
+
 .side-menu .rosen-name-contents[value="63"] .jrwest-line-symbol {
 	background: #00acd1;
 }
