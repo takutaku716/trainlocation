@@ -3457,6 +3457,13 @@ function get_train_type_simple_label(_nowRow, _type, _lang) {
 	return "";
 }
 
+function get_train_number_display_label(_nowRow) {
+	if (Object.prototype.hasOwnProperty.call(_nowRow, "displayTrainNumber")) {
+		return _nowRow.displayTrainNumber || "";
+	}
+	return _nowRow.cbango || "";
+}
+
 function create_html_up_ressha_icon(_nowRow, _typeData, _ekiData) {
 	let lang = document.documentElement.dataset.lang;
 	let objItem = document.createElement("div");
@@ -3487,7 +3494,7 @@ function create_html_up_ressha_icon(_nowRow, _typeData, _ekiData) {
 
 	let objCbango = document.createElement("span");
 	objCbango.classList.add("cbango-label");
-	objCbango.textContent = _nowRow.cbango;
+	objCbango.textContent = get_train_number_display_label(_nowRow);
 	iconArea.appendChild(objCbango);
 
 	// 遅延を設定
@@ -3597,7 +3604,7 @@ function create_html_down_ressha_icon(_nowRow, _typeData, _ekiData) {
 
 	let objCbango = document.createElement("span");
 	objCbango.classList.add("cbango-label");
-	objCbango.textContent = _nowRow.cbango;
+	objCbango.textContent = get_train_number_display_label(_nowRow);
 	iconArea.appendChild(objCbango);
 
 	// 列車アイコンの矢印を設定
@@ -3651,6 +3658,7 @@ function create_ressha_detail(_objItem, _nowRow, _typeData, _ekiData) {
 		// 列車番号
 		{
 			_objItem.dataset.cbango = _nowRow.cbango;
+			_objItem.dataset.display_cbango = get_train_number_display_label(_nowRow);
 			_objItem.dataset.source = _nowRow.source || "";
 			_objItem.dataset.source_rosen = _nowRow.sourceRosen || "";
 			_objItem.dataset.aisho = _nowRow.jrEast && _nowRow.jrEast.nickname ? _nowRow.jrEast.nickname : (_nowRow.name || "");

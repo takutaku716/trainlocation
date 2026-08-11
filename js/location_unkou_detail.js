@@ -137,7 +137,7 @@ $(function ($) {
 			let now = Date.now() >>> 16;
 			//運行番号
 			// 運行番号（列車番号のラベルと数値を分けて制御）
-			$("#cbangoDetail").text(dataset.cbango);
+			$("#cbangoDetail").text(Object.prototype.hasOwnProperty.call(dataset, "display_cbango") ? dataset.display_cbango : dataset.cbango);
 			$("#cbangoIcon").removeClass("hide");
 			$("#cbangoDetail").removeClass("hide");
 

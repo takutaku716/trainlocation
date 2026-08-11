@@ -250,8 +250,8 @@
 		const stationContext = buildStationContext(lineConfig);
 		const rows = Array.isArray(liveJson) ? liveJson : [];
 		const timestampRow = rows.find(function(row) { return row && row.GetDateTime; });
-		const trains = rows.map(function(row) {
-			return convertTrain(row, timetableMap, stationContext, settings, lineConfig);
+		const trains = rows.map(function(row, rowIndex) {
+			return convertTrain(row, timetableMap, stationContext, settings, lineConfig, rowIndex);
 		}).filter(Boolean);
 		const time = formatTimestamp(timestampRow && timestampRow.GetDateTime);
 		const result = { trains: trains };
@@ -300,19 +300,19 @@
 		};
 	}
 
-	function convertTrain(row, timetableMap, context, settings, lineConfig) {
+	function convertTrain(row, timetableMap, context, settings, lineConfig, rowIndex) {
 		if (!row || row.GetDateTime) return null;
 		const trainNumber = toText(row.TrainNum);
-		if (!trainNumber) return null;
 		const timetable = timetableMap.get(trainNumber) || [];
 		if (!matchesLine(row, lineConfig, timetable)) return null;
 		const direction = Number(row.Direction) === 0 ? "U" : "D";
 		const position = resolvePosition(row.Pos, direction, context);
 		if (!position) return null;
-		const type = mapTrainType(row.Type);
+		const type = mapShikokuTrainType(trainNumber, row.Type);
 		const destination = timetable.length > 0 ? timetable[timetable.length - 1].stationName : "行先取得不可";
 		return {
-			cbango: trainNumber,
+			cbango: trainNumber || buildFreightTrainId(row, rowIndex),
+			displayTrainNumber: trainNumber,
 			type: type.type,
 			typeLabel: type.label,
 			pos: position.pos,
@@ -426,6 +426,33 @@
 		return { type: "3", label: "普通", simple: "普", name: name };
 	}
 
+	function mapShikokuTrainType(trainNumber, rawType) {
+		const normalizedNumber = toText(trainNumber).toUpperCase();
+		if (!normalizedNumber) {
+			return { type: "3", label: "貨物", simple: "貨", name: "" };
+		}
+		const suffix = normalizedNumber.slice(-1);
+		if (["A", "B", "R", "E"].indexOf(suffix) >= 0) {
+			return { type: "3", label: "回送", simple: "回", name: "" };
+		}
+		if (suffix === "H") {
+			return { type: "3", label: "試運転", simple: "試", name: "" };
+		}
+		if (suffix === "T") {
+			return { type: "3", label: "単機", simple: "単", name: "" };
+		}
+		return mapTrainType(rawType);
+	}
+
+	function buildFreightTrainId(row, rowIndex) {
+		const parts = [
+			toText(row && row.Line) || "line",
+			toText(row && row.Index) || String(rowIndex || 0),
+			toText(row && row.Direction) || "0"
+		];
+		return "JRSHIKOKU-FREIGHT-" + parts.join("-");
+	}
+
 	function buildTimetableMap(rawJson) {
 		let rows = rawJson;
 		if (typeof rows === "string") {
@@ -516,6 +543,7 @@
 		normalize: normalize,
 		resolvePosition: resolvePosition,
 		mapTrainType: mapTrainType,
+		mapShikokuTrainType: mapShikokuTrainType,
 		buildTimetableMap: buildTimetableMap,
 		stations: YOSAN_STATIONS,
 		lineConfigs: LINE_CONFIGS
