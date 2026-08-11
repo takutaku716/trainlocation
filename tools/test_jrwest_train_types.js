@@ -75,7 +75,8 @@ const requestedSimpleLabels = {
   "臨時特急": "臨",
   "大和路快速": "大",
   "関空快速": "関",
-  "関空/紀州路快速": "併",
+  "関空/紀州路快速": "関紀",
+  "区間快速": "区快",
   "B快速": "B"
 };
 
@@ -130,6 +131,7 @@ const normalized = adapter.normalize(
       pos: "0402",
       type: "03",
       displayType: "",
+      via: "湖西線",
       typeChange: "高槻－明石間快速",
       dest: { text: "大阪", code: "0416" }
     }]
@@ -143,7 +145,37 @@ const normalized = adapter.normalize(
 assert.strictEqual(normalized.trains[0].typeLabel, "寝台特急", "Normalized detail label");
 assert.strictEqual(normalized.trains[0].jrWest.semanticType, "sleeper", "Normalized icon type");
 assert.strictEqual(normalized.trains[0].jrWest.lineColorIconCode, "", "Normalized generic icon");
+assert.strictEqual(normalized.trains[0].jrWest.via, "湖西線", "Normalized via line");
 assert.strictEqual(normalized.trains[0].jrWest.typeChange, "高槻－明石間快速", "Normalized type change");
+
+const typeChangeViaText = "「うれしート」（有料座席） 学研都市線経由";
+const typeChangeVia = adapter.normalize(
+  {
+    update: "2026-08-10T13:41:04+09:00",
+    trains: [{
+      no: "5548M",
+      direction: 0,
+      pos: "1321_1322",
+      type: "63",
+      displayType: "う快速○",
+      via: "",
+      typeChange: typeChangeViaText,
+      dest: { text: "奈良", code: "3020", line: "yamatoji" }
+    }]
+  },
+  {
+    stations: [
+      { info: { code: "1321", name: "放出" } },
+      { info: { code: "1322", name: "鴫野" } }
+    ]
+  },
+  {},
+  "2026-08-10T13:41:04+09:00",
+  { areaId: "kinki", lineId: "gakkentoshi", senku: "65", stationCodes: ["1321", "1322"] }
+).trains[0];
+
+assert.strictEqual(typeChangeVia.jrWest.via, "学研都市線", "Via line extracted from typeChange");
+assert.strictEqual(typeChangeVia.jrWest.typeChange, typeChangeViaText, "typeChange guidance remains unchanged");
 
 const setoStationNames = [
   "岡山", "大元", "備前西市", "妹尾", "備中箕島", "早島",

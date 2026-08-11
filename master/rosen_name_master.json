@@ -532,11 +532,11 @@
 			"kr": "세토대교선"
 		},
 		"kukanName": {
-			"ja": "[岡山～児島間]",
-			"en": "[Okayama～Kojima]",
-			"tc": "[岡山～兒島間]",
-			"sc": "[冈山～儿岛间]",
-			"kr": "[오카야마～고지마]"
+			"ja": "[岡山～宇多津間]",
+			"en": "[Okayama～Utazu]",
+			"tc": "[岡山～宇多津間]",
+			"sc": "[冈山～宇多津间]",
+			"kr": "[오카야마～우타즈]"
 		},
 		"kigo": "M",
 		"area": "7"
@@ -692,5 +692,195 @@
 		},
 		"kigo": "L",
 		"area": "7"
+	},
+	{
+		"rosen": "73",
+		"rosenName": {
+			"ja": "予讃線",
+			"en": "Yosan Line",
+			"tc": "予讚線",
+			"sc": "予赞线",
+			"kr": "요산선"
+		},
+		"kukanName": {
+			"ja": "[高松～松山間]",
+			"en": "[Takamatsu～Matsuyama]",
+			"tc": "[高松～松山間]",
+			"sc": "[高松～松山间]",
+			"kr": "[다카마쓰～마쓰야마]"
+		},
+		"kigo": "Y",
+		"area": "8"
+	},
+	{
+		"rosen": "74",
+		"rosenName": {
+			"ja": "東海道線",
+			"en": "Tokaido Line",
+			"tc": "東海道線",
+			"sc": "东海道线",
+			"kr": "도카이도선"
+		},
+		"kukanName": {
+			"ja": "[豊橋～米原間]",
+			"en": "[Toyohashi～Maibara]",
+			"tc": "[豐橋～米原間]",
+			"sc": "[丰桥～米原间]",
+			"kr": "[도요하시～마이바라]"
+		},
+		"kigo": "CA",
+		"area": "9"
+	},
+	{
+		"rosen": "75",
+		"rosenName": {
+			"ja": "東海道線",
+			"en": "Tokaido Line",
+			"tc": "東海道線",
+			"sc": "东海道线",
+			"kr": "도카이도선"
+		},
+		"kukanName": {
+			"ja": "[熱海～豊橋間]",
+			"en": "[Atami～Toyohashi]",
+			"tc": "[熱海～豐橋間]",
+			"sc": "[热海～丰桥间]",
+			"kr": "[아타미～도요하시]"
+		},
+		"kigo": "CA",
+		"area": "9"
+	},
+	{
+		"rosen": "76",
+		"rosenName": {
+			"ja": "予讃線・内子線",
+			"en": "Yosan and Uchiko Lines",
+			"tc": "予讚線・內子線",
+			"sc": "予赞线・内子线",
+			"kr": "요산선・우치코선"
+		},
+		"kukanName": {
+			"ja": "[松山～宇和島間]",
+			"en": "[Matsuyama～Uwajima]",
+			"tc": "[松山～宇和島間]",
+			"sc": "[松山～宇和岛间]",
+			"kr": "[마쓰야마～우와지마]"
+		},
+		"kigo": "U",
+		"area": "8"
+	},
+	{
+		"rosen": "77",
+		"rosenName": {
+			"ja": "予讃線（伊予灘線）",
+			"en": "Yosan Line (Iyonada Line)",
+			"tc": "予讚線（伊予灘線）",
+			"sc": "予赞线（伊予滩线）",
+			"kr": "요산선(이요나다선)"
+		},
+		"kukanName": {
+			"ja": "[松山～宇和島間]",
+			"en": "[Matsuyama～Uwajima]",
+			"tc": "[松山～宇和島間]",
+			"sc": "[松山～宇和岛间]",
+			"kr": "[마쓰야마～우와지마]"
+		},
+		"kigo": "S",
+		"area": "8"
+	},
+	{
+		"rosen": "78",
+		"rosenName": {
+			"ja": "土讃線",
+			"en": "Dosan Line",
+			"tc": "土讚線",
+			"sc": "土赞线",
+			"kr": "도산선"
+		},
+		"kukanName": {
+			"ja": "[多度津～高知間]",
+			"en": "[Tadotsu～Kochi]",
+			"tc": "[多度津～高知間]",
+			"sc": "[多度津～高知间]",
+			"kr": "[다도쓰～고치]"
+		},
+		"kigo": "D",
+		"area": "8"
+	},
+	{
+		"rosen": "79",
+		"rosenName": {
+			"ja": "土讃線",
+			"en": "Dosan Line",
+			"tc": "土讚線",
+			"sc": "土赞线",
+			"kr": "도산선"
+		},
+		"kukanName": {
+			"ja": "[高知～窪川間]",
+			"en": "[Kochi～Kubokawa]",
+			"tc": "[高知～窪川間]",
+			"sc": "[高知～洼川间]",
+			"kr": "[고치～구보카와]"
+		},
+		"kigo": "K",
+		"area": "8"
+	},
+	{
+		"rosen": "80",
+		"rosenName": {
+			"ja": "高徳線",
+			"en": "Kotoku Line",
+			"tc": "高德線",
+			"sc": "高德线",
+			"kr": "고토쿠선"
+		},
+		"kukanName": {
+			"ja": "[高松～徳島間]",
+			"en": "[Takamatsu～Tokushima]",
+			"tc": "[高松～德島間]",
+			"sc": "[高松～德岛间]",
+			"kr": "[다카마쓰～도쿠시마]"
+		},
+		"kigo": "T",
+		"area": "8"
+	},
+	{
+		"rosen": "81",
+		"rosenName": {
+			"ja": "徳島線",
+			"en": "Tokushima Line",
+			"tc": "德島線",
+			"sc": "德岛线",
+			"kr": "도쿠시마선"
+		},
+		"kukanName": {
+			"ja": "[徳島～阿波池田間]",
+			"en": "[Tokushima～Awa-Ikeda]",
+			"tc": "[德島～阿波池田間]",
+			"sc": "[德岛～阿波池田间]",
+			"kr": "[도쿠시마～아와이케다]"
+		},
+		"kigo": "B",
+		"area": "8"
+	},
+	{
+		"rosen": "82",
+		"rosenName": {
+			"ja": "鳴門線",
+			"en": "Naruto Line",
+			"tc": "鳴門線",
+			"sc": "鸣门线",
+			"kr": "나루토선"
+		},
+		"kukanName": {
+			"ja": "[徳島～鳴門間]",
+			"en": "[Tokushima～Naruto]",
+			"tc": "[德島～鳴門間]",
+			"sc": "[德岛～鸣门间]",
+			"kr": "[도쿠시마～나루토]"
+		},
+		"kigo": "N",
+		"area": "8"
 	}
 ]

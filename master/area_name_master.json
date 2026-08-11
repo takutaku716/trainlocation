@@ -5,5 +5,7 @@
 {"area":"04","name":{"ja":"道北エリア","en":"Northern Hokkaido area","tc":"道北區域","sc":"道北区域","kr":"홋카이도 북부지역"}},
 {"area":"05","name":{"ja":"道東エリア","en":"Eastern Hokkaido area","tc":"道東區域","sc":"道东区域","kr":"홋카이도 동부지역"}},
 {"area":"06","name":{"ja":"北海道新幹線","en":"Hokkaido Shinkansen","tc":"北海道新幹線","sc":"北海道新干线","kr":"홋카이도 신칸센"}},
-{"area":"07","name":{"ja":"JR西日本","en":"JR West","tc":"JR西日本","sc":"JR西日本","kr":"JR서일본"}}
+{"area":"07","name":{"ja":"JR西日本","en":"JR West","tc":"JR西日本","sc":"JR西日本","kr":"JR서일본"}},
+{"area":"08","name":{"ja":"JR四国","en":"JR Shikoku","tc":"JR四國","sc":"JR四国","kr":"JR시코쿠"}},
+{"area":"09","name":{"ja":"JR東海","en":"JR Central","tc":"JR東海","sc":"JR东海","kr":"JR도카이"}}
 ]
