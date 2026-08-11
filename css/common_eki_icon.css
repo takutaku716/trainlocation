@@ -99,6 +99,57 @@ span.eki-icon {
 	span.eki-icon.jrshikoku-eki-icon.jrshikoku-icon-N {
 		border-color: #8a2155;
 	}
+	/* JR東海：路線記号と駅番号を上下に分けた矩形 */
+	span.eki-icon.jrcentral-eki-icon {
+		background-color: #fff;
+		border: 2px solid var(--jrcentral-line-color);
+		border-radius: 0;
+		box-sizing: border-box;
+		color: #111;
+		flex-flow: column;
+		font-size: 12px;
+		gap: 0;
+		letter-spacing: 0;
+		line-height: 1;
+		margin: 0;
+		max-height: 36px;
+		max-width: 32px;
+		min-height: 36px;
+		min-width: 32px;
+		overflow: hidden;
+		padding: 0;
+	}
+	span.eki-icon.jrcentral-eki-icon .kigo {
+		align-items: center;
+		background-color: var(--jrcentral-line-color);
+		color: #fff;
+		display: flex;
+		font-size: 12px;
+		height: 17px;
+		justify-content: center;
+		line-height: 1;
+		width: 100%;
+	}
+	span.eki-icon.jrcentral-eki-icon .number {
+		align-items: center;
+		background-color: #fff;
+		color: #111;
+		display: flex;
+		font-size: 12px;
+		height: 15px;
+		justify-content: center;
+		line-height: 1;
+		width: 100%;
+	}
+	span.eki-icon.jrcentral-eki-icon.jrcentral-icon-CA { --jrcentral-line-color: #ff7e1c; }
+	span.eki-icon.jrcentral-eki-icon.jrcentral-icon-CF { --jrcentral-line-color: #406f90; }
+	span.eki-icon.jrcentral-eki-icon.jrcentral-icon-CJ { --jrcentral-line-color: #05a88a; }
+	span.eki-icon.jrcentral-eki-icon.jrcentral-icon-CG { --jrcentral-line-color: #a61e2b; }
+	span.eki-icon.jrcentral-eki-icon.jrcentral-icon-CE { --jrcentral-line-color: #76432c; }
+	span.eki-icon.jrcentral-eki-icon.jrcentral-icon-CD { --jrcentral-line-color: #719cdf; }
+	span.eki-icon.jrcentral-eki-icon.jrcentral-icon-CI { --jrcentral-line-color: #b1a548; }
+	span.eki-icon.jrcentral-eki-icon.jrcentral-icon-CB { --jrcentral-line-color: #3d733d; }
+	span.eki-icon.jrcentral-eki-icon.jrcentral-icon-CC { --jrcentral-line-color: #6b3174; }
 	/* 枝番用 */
 	span.eki-icon .eda {
 		font-size: 12px;

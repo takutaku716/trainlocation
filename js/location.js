@@ -492,6 +492,58 @@ const JRCENTRAL_LOCATION_SOURCE_MAP = {
 		stationSet: "tokaido_atami_toyohashi",
 		positionPrefix: "JTC",
 		liveUrl: "https://traininfo.jr-central.co.jp/zairaisen/data/zaisenichi.json"
+	},
+	"83": {
+		senku: "83", lineName: "中央線", stationSet: "chuo", positionPrefix: "JTC83",
+		liveUrl: "https://traininfo.jr-central.co.jp/zairaisen/data/zaisenichi.json"
+	},
+	"84": {
+		senku: "84", lineName: "関西線", stationSet: "kansai", positionPrefix: "JTC84",
+		liveUrl: "https://traininfo.jr-central.co.jp/zairaisen/data/zaisenichi.json"
+	},
+	"85": {
+		senku: "85", lineName: "紀勢線", stationSet: "kisei", positionPrefix: "JTC85",
+		liveUrl: "https://traininfo.jr-central.co.jp/zairaisen/data/zaisenichi.json"
+	},
+	"86": {
+		senku: "86", lineName: "高山線", stationSet: "takayama", positionPrefix: "JTC86",
+		liveUrl: "https://traininfo.jr-central.co.jp/zairaisen/data/zaisenichi.json"
+	},
+	"87": {
+		senku: "87", lineName: "武豊線", stationSet: "taketoyo", positionPrefix: "JTC87",
+		liveUrl: "https://traininfo.jr-central.co.jp/zairaisen/data/zaisenichi.json"
+	},
+	"88": {
+		senku: "88", lineName: "飯田線", stationSet: "iida", positionPrefix: "JTC88",
+		liveUrl: "https://traininfo.jr-central.co.jp/zairaisen/data/zaisenichi.json"
+	},
+	"89": {
+		senku: "89", lineName: "太多線", stationSet: "taita", positionPrefix: "JTC89",
+		liveUrl: "https://traininfo.jr-central.co.jp/zairaisen/data/zaisenichi.json"
+	},
+	"90": {
+		senku: "90", lineName: "御殿場線", stationSet: "gotemba", positionPrefix: "JTC90",
+		liveUrl: "https://traininfo.jr-central.co.jp/zairaisen/data/zaisenichi.json"
+	},
+	"91": {
+		senku: "91", lineName: "身延線", stationSet: "minobu", positionPrefix: "JTC91",
+		liveUrl: "https://traininfo.jr-central.co.jp/zairaisen/data/zaisenichi.json"
+	},
+	"92": {
+		senku: "92", lineName: "参宮線", stationSet: "sangu", positionPrefix: "JTC92",
+		liveUrl: "https://traininfo.jr-central.co.jp/zairaisen/data/zaisenichi.json"
+	},
+	"93": {
+		senku: "93", lineName: "名松線", stationSet: "meisho", positionPrefix: "JTC93",
+		liveUrl: "https://traininfo.jr-central.co.jp/zairaisen/data/zaisenichi.json"
+	},
+	"94": {
+		senku: "94", lineName: "美濃赤坂線", stationSet: "mino_akasaka", positionPrefix: "JTC94",
+		liveUrl: "https://traininfo.jr-central.co.jp/zairaisen/data/zaisenichi.json"
+	},
+	"95": {
+		senku: "95", lineName: "伊勢鉄道", stationSet: "ise_railway", positionPrefix: "JTC95",
+		liveUrl: "https://traininfo.jr-central.co.jp/zairaisen/data/zaisenichi.json"
 	}
 };
 const JRCENTRAL_TIMETABLE_URL = "https://traininfo.jr-central.co.jp/zairaisen/data/kobetsujikoku.json";
@@ -543,6 +595,10 @@ let locationSleepPreventEnabled = false;
 let locationWakeLock = null;
 // 次回自動更新予定時刻
 let nextLocationAutoRefreshAt = null;
+// バックグラウンドからの復帰判定
+let locationPageWasBackgrounded = false;
+let lastLocationForegroundRefreshAt = 0;
+const LOCATION_FOREGROUND_REFRESH_DEBOUNCE = 1000;
 // 列車検索用キャッシュ
 let cachedTrainSearchData = null;
 let trainSearchDataPromise = null;
@@ -1073,7 +1129,10 @@ $(function ($) {
 	document.addEventListener("visibilitychange", handle_page_visibility_change);
 	document.addEventListener("pointerdown", handle_location_wake_lock_user_activation);
 	document.addEventListener("keydown", handle_location_wake_lock_user_activation);
-	window.addEventListener("pagehide", release_location_wake_lock);
+	window.addEventListener("blur", mark_location_page_backgrounded);
+	window.addEventListener("focus", handle_page_window_focus);
+	window.addEventListener("pagehide", handle_location_page_hide);
+	window.addEventListener("pageshow", handle_location_page_show);
 	window.addEventListener("beforeunload", release_location_wake_lock);
 
 	// サイドメニューの閉じるボタンをクリックしたときの動き
@@ -2663,30 +2722,53 @@ function apply_location_auto_refresh_settings(_enabled, _interval, _sleepPrevent
  * ページの表示状態に応じて自動更新を停止・再開する
  */
 function handle_page_visibility_change() {
-	const currentRosen = get_param_rosen();
 	if (document.visibilityState === "hidden") {
+		locationPageWasBackgrounded = true;
 		release_location_wake_lock();
 		stop_location_auto_refresh(true);
 		return;
 	}
 	update_location_wake_lock();
-	if (document.visibilityState === "visible" && locationAutoRefreshEnabled && currentRosen) {
-		if (!is_location_auto_refresh_allowed(currentRosen)) {
-			stop_location_auto_refresh();
-			return;
-		}
-		if (!nextLocationAutoRefreshAt) {
-			start_location_auto_refresh(currentRosen);
-			return;
-		}
-		const remaining = nextLocationAutoRefreshAt.getTime() - Date.now();
-		if (remaining <= 0) {
-			refresh_location_positions(currentRosen);
-			start_location_auto_refresh(currentRosen);
-		} else {
-			start_location_auto_refresh(currentRosen, remaining);
-		}
+	resume_location_after_background();
+}
+
+function mark_location_page_backgrounded() {
+	locationPageWasBackgrounded = true;
+}
+
+function handle_page_window_focus() {
+	resume_location_after_background();
+}
+
+function handle_location_page_hide() {
+	locationPageWasBackgrounded = true;
+	release_location_wake_lock();
+	stop_location_auto_refresh(true);
+}
+
+function handle_location_page_show(_event) {
+	if (_event && _event.persisted) locationPageWasBackgrounded = true;
+	update_location_wake_lock();
+	resume_location_after_background();
+}
+
+function resume_location_after_background() {
+	if (!locationPageWasBackgrounded || document.visibilityState !== "visible") return;
+	const currentRosen = get_param_rosen();
+	if (!locationAutoRefreshEnabled || !currentRosen) return;
+	if (!is_location_auto_refresh_allowed(currentRosen)) {
+		locationPageWasBackgrounded = false;
+		stop_location_auto_refresh();
+		return;
 	}
+
+	locationPageWasBackgrounded = false;
+	const now = Date.now();
+	if (now - lastLocationForegroundRefreshAt >= LOCATION_FOREGROUND_REFRESH_DEBOUNCE) {
+		lastLocationForegroundRefreshAt = now;
+		refresh_location_positions(currentRosen);
+	}
+	start_location_auto_refresh(currentRosen);
 }
 
 /*

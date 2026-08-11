@@ -648,6 +648,23 @@ header {
 						justify-content: center;
 					}
 
+					/* JR東海：縦型駅番号を左に置き、駅名は駅枠の中央に配置 */
+					#stationList .eki-panel .eki-contents .stalist-eki-link .jrcentral-station-row {
+						justify-content: center;
+						min-height: 36px;
+						position: relative;
+						width: 100%;
+					}
+					#stationList .eki-panel .eki-contents .stalist-eki-link .jrcentral-station-row .jrcentral-eki-icon {
+						left: 0;
+						position: absolute;
+					}
+					#stationList .eki-panel .eki-contents .stalist-eki-link .jrcentral-station-row .jrcentral-station-name {
+						text-align: center;
+						transform: translateX(2.5px);
+						width: 100%;
+					}
+
 					/* 駅名 */
 					#stationList .eki-panel .eki-contents .stalist-eki-link .stalist-eki-contents div {
 						text-decoration: underline;

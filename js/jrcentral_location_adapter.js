@@ -1,10 +1,10 @@
 (function(root, factory) {
 	if (typeof module === "object" && module.exports) {
-		module.exports = factory();
+		module.exports = factory(require("./jrcentral_station_sets.js"));
 	} else {
-		root.JrCentralLocationAdapter = factory();
+		root.JrCentralLocationAdapter = factory(root.JrCentralStationSets);
 	}
-}(typeof self !== "undefined" ? self : this, function() {
+}(typeof self !== "undefined" ? self : this, function(generatedStationSets) {
 	"use strict";
 
 	const TOKAIDO_TOYOHASHI_MAIBARA_STATIONS = [
@@ -48,7 +48,8 @@
 
 	const STATION_SETS = {
 		tokaido_toyohashi_maibara: TOKAIDO_TOYOHASHI_MAIBARA_STATIONS,
-		tokaido_atami_toyohashi: TOKAIDO_ATAMI_TOYOHASHI_STATIONS
+		tokaido_atami_toyohashi: TOKAIDO_ATAMI_TOYOHASHI_STATIONS,
+		...(generatedStationSets || {})
 	};
 
 	const DESTINATION_SIMPLE_NAMES = {
@@ -275,9 +276,9 @@
 		convertTimetable: convertTimetable,
 		mapTrainType: mapTrainType,
 		stations: TOKAIDO_TOYOHASHI_MAIBARA_STATIONS.slice(),
-		stationSets: {
-			tokaido_toyohashi_maibara: TOKAIDO_TOYOHASHI_MAIBARA_STATIONS.slice(),
-			tokaido_atami_toyohashi: TOKAIDO_ATAMI_TOYOHASHI_STATIONS.slice()
-		}
+		stationSets: Object.keys(STATION_SETS).reduce(function(result, key) {
+			result[key] = STATION_SETS[key].slice();
+			return result;
+		}, {})
 	};
 }));
