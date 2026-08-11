@@ -194,9 +194,9 @@
 		if (label === "新快速") return { type: "8", label: label, simple: "新快", semanticType: "new_rapid", iconCode: "new_rapid" };
 		if (label === "快速みえ") return { type: "8", label: label, simple: "みえ", semanticType: "rapid_mie", iconCode: "rapid_mie" };
 		if (label === "快速") return { type: "8", label: label, simple: "快", semanticType: "rapid", iconCode: "rapid" };
-		if (label === "HL" || label === "ＨＬ" || label.indexOf("ホームライナー") >= 0) return { type: "1", label: "ホームライナー", simple: "ラ", semanticType: "liner", iconCode: "" };
-		if (label === "臨時") return { type: "6", label: label, simple: "臨", semanticType: "special", iconCode: "" };
-		return { type: "0", label: label || "普通", simple: "普", semanticType: "local", iconCode: "" };
+		if (label === "HL" || label === "ＨＬ" || label.indexOf("ホームライナー") >= 0) return { type: "6", label: "ホームライナー", simple: "ラ", semanticType: "liner", iconCode: "" };
+		if (label === "臨時") return { type: "7", label: label, simple: "臨", semanticType: "special", iconCode: "" };
+		return { type: "3", label: label || "普通", simple: "普", semanticType: "local", iconCode: "" };
 	}
 
 	function getDestination(row) {

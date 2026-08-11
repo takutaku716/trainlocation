@@ -3435,6 +3435,19 @@ function set_jrwest_train_icon(_iconArea, _nowRow) {
 }
 
 function set_jrcentral_train_icon(_iconArea, _nowRow) {
+	const semanticType = _nowRow.jrCentral && _nowRow.jrCentral.semanticType ? _nowRow.jrCentral.semanticType : "";
+	const genericIconMap = {
+		local: "./images/home/train_icon.svg",
+		limited_express: "./images/home/train_icon_red.svg",
+		express: "./images/home/train_icon_red.svg",
+		liner: "./images/home/train_icon_red.svg",
+		special: "./images/home/train_icon_white.svg"
+	};
+	if (genericIconMap[semanticType]) {
+		_iconArea.style.backgroundImage = "url(" + genericIconMap[semanticType] + ")";
+		_iconArea.classList.add("jrcentral-icon", "jrcentral-icon-" + semanticType);
+		return;
+	}
 	const iconCode = _nowRow.jrCentral && _nowRow.jrCentral.lineColorIconCode ? _nowRow.jrCentral.lineColorIconCode : "";
 	if (!/^[a-z0-9_]+$/.test(iconCode)) return;
 	_iconArea.style.backgroundImage = "url(./images/home/jrcentral/train_icon_" + iconCode + ".svg)";
