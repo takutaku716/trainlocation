@@ -41,7 +41,7 @@ function nonInterlockedPanel(config, group, stationByCode) {
 	const to = stationByCode.get(group.to);
 	const links = group.stations.map((code) => {
 		const station = stationByCode.get(code);
-		return `<a href="${OFFICIAL_URL}" target="_blank" rel="noopener"><div class="stalist-eki-contents">${stationNumberIcon(station[0])}<div key="${escapeHtml(station[0])}">${escapeHtml(station[1])}</div></div></a>`;
+		return `<a href="${OFFICIAL_URL}" target="_blank" rel="noopener"><div class="stalist-eki-contents">${stationNumberIcon(station[0])}<div key="${escapeHtml(station[0])}" class="margin-left05">${escapeHtml(station[1])}</div></div></a>`;
 	}).join("");
 	const countClass = ["", "one-eki", "two-eki", "three-eki", "four-eki", "five-eki"][Math.min(group.stations.length, 5)];
 	const pos = `${config.positionPrefix}${from[0]}_${to[0]}`;
@@ -118,6 +118,12 @@ function updateExistingRouteIcons(fileName) {
 	).replace(
 		/<div class="stalist-eki-contents non-icon">(?=<span class="eki-icon jrshikoku-eki-icon)/g,
 		'<div class="stalist-eki-contents">'
+	).replace(
+		/<div class="stalist-eki-contents jrshikoku-station-row">/g,
+		'<div class="stalist-eki-contents">'
+	).replace(
+		/class="jrshikoku-station-name"/g,
+		'class="margin-left05"'
 	);
 	fs.writeFileSync(filePath, updated, "utf8");
 }
