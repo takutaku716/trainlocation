@@ -1,56 +1,97 @@
-const fs = require("fs");
-const http = require("http");
-const path = require("path");
+const http = require('http');
+const fs = require('fs');
+const path = require('path');
 
-const root = path.resolve(__dirname, "..");
-const port = Number(process.argv[2] || 8765);
-const host = "127.0.0.1";
-const contentTypes = {
-  ".css": "text/css; charset=utf-8",
-  ".gif": "image/gif",
-  ".html": "text/html; charset=utf-8",
-  ".ico": "image/x-icon",
-  ".jpeg": "image/jpeg",
-  ".jpg": "image/jpeg",
-  ".js": "text/javascript; charset=utf-8",
-  ".json": "application/json; charset=utf-8",
-  ".png": "image/png",
-  ".svg": "image/svg+xml",
-  ".webp": "image/webp",
-  ".woff": "font/woff",
-  ".woff2": "font/woff2"
+const root = path.resolve(__dirname, '..');
+const jrShikokuSources = {
+  '/api/jrshikoku/location': 'https://train.jr-shikoku.co.jp/g?arg1=train&arg2=train',
+  '/api/jrshikoku/timetable': 'https://train.jr-shikoku.co.jp/g?arg1=station&arg2=traintimeinfo&arg3=dia',
+};
+const mimeTypes = {
+  '.css': 'text/css; charset=utf-8',
+  '.html': 'text/html; charset=utf-8',
+  '.js': 'text/javascript; charset=utf-8',
+  '.json': 'application/json; charset=utf-8',
+  '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.png': 'image/png',
+  '.svg': 'image/svg+xml',
 };
 
-function send(response, statusCode, body, contentType) {
-  response.statusCode = statusCode;
-  response.setHeader("Cache-Control", "no-cache");
-  response.setHeader("Content-Type", contentType || "text/plain; charset=utf-8");
-  response.end(body);
+async function proxyJrShikoku(requestPath, response) {
+  try {
+    const upstream = await fetch(jrShikokuSources[requestPath], {
+      headers: {
+        accept: 'application/json,text/plain,*/*',
+        referer: 'https://train.jr-shikoku.co.jp/',
+        'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/127 Safari/537.36',
+      },
+      signal: AbortSignal.timeout(15000),
+    });
+    const text = (await upstream.text()).replace(/^\uFEFF/, '');
+    if (!upstream.ok || !text.trim()) throw new Error(`upstream status ${upstream.status}`);
+    response.writeHead(200, {
+      'Access-Control-Allow-Origin': '*',
+      'Cache-Control': requestPath.endsWith('/location') ? 'no-store' : 'public, max-age=3600',
+      'Content-Type': 'application/json; charset=utf-8',
+    });
+    response.end(text);
+  } catch (error) {
+    response.writeHead(502, {
+      'Access-Control-Allow-Origin': '*',
+      'Cache-Control': 'no-store',
+      'Content-Type': 'application/json; charset=utf-8',
+    });
+    response.end(JSON.stringify({ ok: false, error: `JR Shikoku proxy failed: ${error.message}` }));
+  }
 }
 
-http.createServer((request, response) => {
+const server = http.createServer(async (request, response) => {
   let requestPath;
   try {
-    requestPath = decodeURIComponent(new URL(request.url, `http://${host}:${port}`).pathname);
+    requestPath = decodeURIComponent((request.url || '/').split('?')[0]);
   } catch {
-    send(response, 400, "Bad Request");
+    response.writeHead(400);
+    response.end('Bad Request');
     return;
   }
 
-  const relativePath = requestPath === "/" ? "index.html" : requestPath.replace(/^\/+/, "");
-  const filePath = path.resolve(root, relativePath);
-  if (filePath !== root && !filePath.startsWith(root + path.sep)) {
-    send(response, 403, "Forbidden");
+  if (request.method === 'OPTIONS' && jrShikokuSources[requestPath]) {
+    response.writeHead(204, {
+      'Access-Control-Allow-Headers': 'content-type',
+      'Access-Control-Allow-Methods': 'GET, OPTIONS',
+      'Access-Control-Allow-Origin': '*',
+    });
+    response.end();
+    return;
+  }
+  if (request.method === 'GET' && jrShikokuSources[requestPath]) {
+    await proxyJrShikoku(requestPath, response);
     return;
   }
 
-  fs.readFile(filePath, (error, data) => {
-    if (error) {
-      send(response, error.code === "ENOENT" ? 404 : 500, error.code === "ENOENT" ? "Not Found" : "Server Error");
-      return;
-    }
-    send(response, 200, data, contentTypes[path.extname(filePath).toLowerCase()] || "application/octet-stream");
+  if (requestPath === '/') requestPath = '/index.html';
+  const filePath = path.resolve(root, `.${requestPath}`);
+  if (!filePath.startsWith(`${root}${path.sep}`) || !fs.existsSync(filePath)) {
+    response.writeHead(404);
+    response.end('Not Found');
+    return;
+  }
+
+  const stat = fs.statSync(filePath);
+  if (!stat.isFile()) {
+    response.writeHead(404);
+    response.end('Not Found');
+    return;
+  }
+
+  response.writeHead(200, {
+    'Cache-Control': 'no-store',
+    'Content-Type': mimeTypes[path.extname(filePath).toLowerCase()] || 'application/octet-stream',
   });
-}).listen(port, host, () => {
-  console.log(`Local server: http://${host}:${port}/`);
+  fs.createReadStream(filePath).pipe(response);
+});
+
+server.listen(8765, '127.0.0.1', () => {
+  console.log('Local server: http://127.0.0.1:8765/');
 });

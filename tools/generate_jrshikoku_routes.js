@@ -7,8 +7,13 @@ const OFFICIAL_URL = "https://train.jr-shikoku.co.jp/";
 const ROUTES = {
 	uwajima: { rosen: "76", up: "松山方面", down: "宇和島方面" },
 	uwajima2: { rosen: "77", up: "松山方面", down: "宇和島方面" },
-	dosan: { rosen: "78", up: "多度津方面", down: "高知方面" },
-	dosan2: { rosen: "79", up: "高知方面", down: "窪川方面" },
+	dosan: {
+		rosen: "78",
+		up: "多度津方面",
+		down: "高知方面",
+		branches: [{ before: "D40", name: "ごめん・なはり線", direction: "安芸・奈半利方面" }]
+	},
+	kubokawa: { rosen: "79", up: "高知方面", down: "窪川方面" },
 	koutoku: { rosen: "80", up: "高松方面", down: "徳島方面" },
 	tokushima: { rosen: "81", up: "徳島方面", down: "阿波池田方面" },
 	naruto: { rosen: "82", up: "鳴門方面", down: "徳島方面" }
@@ -36,7 +41,7 @@ function betweenPanel(config, from, to) {
 	return `<div class="eki-panel"><div class="eki-contents"><div class="ressha-contents"><div class="ressha-icon ${config.positionPrefix}${from[0]}_${to[0]}U"></div><div class="ressha-icon ${config.positionPrefix}${from[0]}_${to[0]}D"></div></div></div><svg class="senro-img"><use xlink:href="#senro"></use></svg></div>`;
 }
 
-function nonInterlockedPanel(config, group, stationByCode) {
+function nonInterlockedPanel(config, group, stationByCode, branches) {
 	const from = stationByCode.get(group.from);
 	const to = stationByCode.get(group.to);
 	const links = group.stations.map((code) => {
@@ -45,7 +50,9 @@ function nonInterlockedPanel(config, group, stationByCode) {
 	}).join("");
 	const countClass = ["", "one-eki", "two-eki", "three-eki", "four-eki", "five-eki"][Math.min(group.stations.length, 5)];
 	const pos = `${config.positionPrefix}${from[0]}_${to[0]}`;
-	return `<div class="eki-panel hirendo"><div class="eki-contents"><div class="hirendo-msg">この区間は実際の<br>走行位置と異なる<br>場合があります</div><div class="hirendo-contents"><div class="ressha-contents"><div class="hirendo-ressha-panel ${countClass}"><div class="ressha-icon ${pos}U"></div></div></div><div class="stalist-eki-link ${countClass}">${links}</div><div class="ressha-contents"><div class="hirendo-ressha-panel ${countClass}"><div class="ressha-icon ${pos}D"></div></div></div></div></div><svg class="senro-img"><use xlink:href="#senro"></use></svg></div>`;
+	const branchList = Array.isArray(branches) ? branches : [];
+	const branchMarkup = branchList.map((branch) => `<svg class="senro-img hoka-rosen hirendo two-row right non-service"><use xlink:href="#senroHoka"></use></svg><span class="hoka-rosen-link hirendo two-row right"><div>${escapeHtml(branch.name)}<br>${escapeHtml(branch.direction)}</div></span>`).join("");
+	return `<div class="eki-panel hirendo${branchList.length > 0 ? " hoka-rosen-under" : ""}"><div class="eki-contents"><div class="hirendo-msg">この区間は実際の<br>走行位置と異なる<br>場合があります</div><div class="hirendo-contents"><div class="ressha-contents"><div class="hirendo-ressha-panel ${countClass}"><div class="ressha-icon ${pos}U"></div></div></div><div class="stalist-eki-link ${countClass}">${links}</div><div class="ressha-contents"><div class="hirendo-ressha-panel ${countClass}"><div class="ressha-icon ${pos}D"></div></div></div></div></div><svg class="senro-img"><use xlink:href="#senro"></use></svg>${branchMarkup}</div>`;
 }
 
 function trackSymbol() {
@@ -53,7 +60,16 @@ function trackSymbol() {
 	for (let y = 0; y < 300; y += 10) {
 		rects.push(`\t\t<rect width="6" height="10" x="1" y="${y}" fill="${y % 20 === 0 ? "#fff" : "#000"}" stroke="#000"></rect>`);
 	}
-	return `<svg style="display:none" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" role="img">\n\t<symbol id="senro" viewBox="0 0 8 300">\n${rects.join("\n")}\n\t</symbol>\n</svg>`;
+	const horizontalRects = [];
+	let x = 2;
+	let isWhite = true;
+	while (x < 450) {
+		const width = Math.min(isWhite ? 12 : 11, 450 - x);
+		horizontalRects.push(`\t\t<rect width="${width}" height="6" x="${x}" y="0" fill="${isWhite ? "#fff" : "#000"}" stroke="#000"></rect>`);
+		x += width;
+		isWhite = !isWhite;
+	}
+	return `<svg style="display:none" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" role="img">\n\t<symbol id="senro" viewBox="0 0 8 300">\n${rects.join("\n")}\n\t</symbol>\n\t<symbol id="senroHoka" viewBox="0 0 450 6">\n${horizontalRects.join("\n")}\n\t</symbol>\n</svg>`;
 }
 
 function renderRoute(lineId, route, config) {
@@ -67,12 +83,13 @@ function renderRoute(lineId, route, config) {
 		""
 	];
 	visibleStations.forEach((station, index) => {
+		const branches = Array.isArray(route.branches) ? route.branches : [];
 		rows.push(stationPanel(config, station, index === visibleStations.length - 1));
 		if (index === visibleStations.length - 1) return;
 		const next = visibleStations[index + 1];
 		const group = groupByFrom.get(station[0]);
 		rows.push(group && group.to === next[0]
-			? nonInterlockedPanel(config, group, stationByCode)
+			? nonInterlockedPanel(config, group, stationByCode, branches.filter((branch) => branch.before === group.to))
 			: betweenPanel(config, station, next));
 		rows.push("");
 	});
