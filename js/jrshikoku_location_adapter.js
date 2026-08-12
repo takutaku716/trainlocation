@@ -58,7 +58,7 @@
 		["D40", "後免"], ["D41", "土佐大津"], ["D42", "布師田"], ["D43", "土佐一宮"],
 		["D44", "薊野"], ["D45", "高知"]
 	];
-	const DOSAN2_STATIONS = [
+	const KUBOKAWA_STATIONS = [
 		["K00", "高知"], ["K01", "入明"], ["K02", "円行寺口"], ["K03", "旭"],
 		["K04", "高知商業前"], ["K05", "朝倉"], ["K06", "枝川"], ["K07", "伊野"],
 		["K08", "波川"], ["K08-1", "小村神社前"], ["K09", "日下"], ["K10", "岡花"],
@@ -136,7 +136,7 @@
 		{ from: "D37", to: "D40", stations: ["D38", "D39"] },
 		{ from: "D41", to: "D43", stations: ["D42"] }
 	];
-	const DOSAN2_NON_INTERLOCKED_GROUPS = [
+	const KUBOKAWA_NON_INTERLOCKED_GROUPS = [
 		{ from: "K00", to: "K03", stations: ["K01", "K02"] },
 		{ from: "K03", to: "K05", stations: ["K04"] },
 		{ from: "K05", to: "K07", stations: ["K06"] },
@@ -205,10 +205,10 @@
 			positionPrefix: "JSD",
 			stationPositionPrefixes: {}
 		},
-		dosan2: {
-			lineId: "dosan2",
-			stations: DOSAN2_STATIONS,
-			nonInterlockedGroups: DOSAN2_NON_INTERLOCKED_GROUPS,
+		kubokawa: {
+			lineId: "kubokawa",
+			stations: KUBOKAWA_STATIONS,
+			nonInterlockedGroups: KUBOKAWA_NON_INTERLOCKED_GROUPS,
 			positionPrefix: "JSK",
 			stationPositionPrefixes: {}
 		},

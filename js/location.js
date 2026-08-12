@@ -455,7 +455,7 @@ const JRSHIKOKU_LOCATION_SOURCE_MAP = {
 	},
 	"79": {
 		senku: "79",
-		lineId: "dosan2",
+		lineId: "kubokawa",
 		liveUrl: JRSHIKOKU_API_BASE + "/api/jrshikoku/location",
 		timetableUrl: JRSHIKOKU_API_BASE + "/api/jrshikoku/timetable"
 	},
