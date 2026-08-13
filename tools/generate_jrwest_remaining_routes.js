@@ -16,6 +16,11 @@ const AREA_PREFIXES = {
 	sanin: "JWS"
 };
 
+function scopePositionPrefix(prefix, rosen) {
+	const page = String(rosen || "");
+	return page && !String(prefix).endsWith(page) ? String(prefix) + page : String(prefix);
+}
+
 const ROUTES = [
 	{ rosen: "96", name: "赤穂線", range: "相生～岡山間", symbol: "N", parts: [
 		{ area: "kinki", line: "ako", start: "相生", end: "播州赤穂" },
@@ -219,7 +224,7 @@ async function prepareRoute(route) {
 		const lineInfo = areaMaster.lines && areaMaster.lines[part.line];
 		if (!lineInfo) throw new Error(`Line not found in area master: ${part.area}/${part.line}`);
 		const sliced = sliceStations(stationJson, part.start, part.end);
-		const prefix = part.prefix || AREA_PREFIXES[part.area] || "JW";
+		const prefix = scopePositionPrefix(part.prefix || AREA_PREFIXES[part.area] || "JW", route.rosen);
 		parts.push({
 			...part,
 			prefix,
@@ -242,7 +247,7 @@ async function prepareRoute(route) {
 		extraSources.push({
 			areaId: source.area,
 			lineId: source.line,
-			positionPrefix: source.prefix || AREA_PREFIXES[source.area] || "JW",
+			positionPrefix: scopePositionPrefix(source.prefix || AREA_PREFIXES[source.area] || "JW", route.rosen),
 			stationCodes: sliced.map((station) => String(station.info.code)),
 			areaMasterUrl,
 			stationUrl,

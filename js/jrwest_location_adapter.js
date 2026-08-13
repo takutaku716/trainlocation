@@ -566,6 +566,13 @@
 		return String(value).trim();
 	}
 
+	function scopePositionPrefix(positionPrefix, senku) {
+		const prefix = toText(positionPrefix) || "JW";
+		const page = toText(senku);
+		if (!page || prefix.endsWith(page)) return prefix;
+		return prefix + page;
+	}
+
 	return {
 		normalize: normalize,
 		buildContext: buildContext,
@@ -573,6 +580,7 @@
 		isLongTimeStopping: isLongTimeStopping,
 		mapTrainType: mapTrainType,
 		getTrainTypeClassSystem: getTrainTypeClassSystem,
-		getLineColorIconCode: getLineColorIconCode
+		getLineColorIconCode: getLineColorIconCode,
+		scopePositionPrefix: scopePositionPrefix
 	};
 }));

@@ -1790,7 +1790,7 @@ function load_jrwest_location_source(source, senku, currentTimeText, _now) {
 				senku: senku,
 				lineId: source.lineId,
 				stationCodes: source.stationCodes,
-				positionPrefix: source.positionPrefix
+				positionPrefix: window.JrWestLocationAdapter.scopePositionPrefix(source.positionPrefix, senku)
 			}
 		);
 	});
