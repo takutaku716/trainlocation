@@ -109,6 +109,7 @@ const JRWEST_LOCATION_SOURCE_MAP = {
 			{
 				areaId: "kinki",
 				lineId: "hokurikubiwako",
+				positionPrefix: "JW61",
 				stationCodes: [
 					"0382", "0384", "0385", "0386", "0387", "0388", "0389", "0390", "0391",
 					"0392", "0393", "0394", "0395", "0396", "0397", "0398", "0399", "0400",
@@ -121,6 +122,7 @@ const JRWEST_LOCATION_SOURCE_MAP = {
 			{
 				areaId: "kinki",
 				lineId: "kyoto",
+				positionPrefix: "JW61",
 				stationCodes: [
 					"0402", "0404", "0464", "0405", "0406", "0407", "0461", "0408", "0409",
 					"0466", "0410", "0411", "0412", "0413", "0414", "0415", "0416"
@@ -132,6 +134,7 @@ const JRWEST_LOCATION_SOURCE_MAP = {
 			{
 				areaId: "kinki",
 				lineId: "kobesanyo",
+				positionPrefix: "JW61",
 				stationCodes: [
 					"0415", "0416", "0417", "0419", "0420", "0421", "0422", "0460", "0423", "0424",
 					"0425", "0426", "0427", "0428", "0429", "0430", "0431", "0432", "0433", "0434",

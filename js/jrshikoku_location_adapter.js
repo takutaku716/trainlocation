@@ -224,7 +224,8 @@
 			stations: TOKUSHIMA_STATIONS,
 			nonInterlockedGroups: TOKUSHIMA_NON_INTERLOCKED_GROUPS,
 			positionPrefix: "JSB",
-			stationPositionPrefixes: {}
+			stationPositionPrefixes: {},
+			timetableDirectionStationCodes: ["T00", "B01"]
 		},
 		naruto: {
 			lineId: "naruto",
@@ -305,7 +306,7 @@
 		const trainNumber = toText(row.TrainNum);
 		const timetable = timetableMap.get(trainNumber) || [];
 		if (!matchesLine(row, lineConfig, timetable)) return null;
-		const direction = Number(row.Direction) === 0 ? "U" : "D";
+		const direction = resolveDirection(row.Direction, row.Pos, context, lineConfig, timetable);
 		const position = resolvePosition(row.Pos, direction, context);
 		if (!position) return null;
 		const type = mapShikokuTrainType(trainNumber, row.Type);
@@ -340,6 +341,27 @@
 		};
 	}
 
+	function resolveDirection(rawDirection, rawPosition, context, lineConfig, timetable) {
+		const sourceDirection = Number(rawDirection) === 0 ? "U" : "D";
+		const timetableCodes = Array.isArray(lineConfig && lineConfig.timetableDirectionStationCodes)
+			? lineConfig.timetableDirectionStationCodes
+			: [];
+		if (timetableCodes.length === 0 || !Array.isArray(timetable) || timetable.length === 0) return sourceDirection;
+		const station = context.byName.get(normalizePositionText(rawPosition));
+		if (!station || timetableCodes.indexOf(station.code) < 0) return sourceDirection;
+		const timetableIndex = timetable.findIndex(function(row) { return row.stationName === station.name; });
+		if (timetableIndex < 0) return sourceDirection;
+		for (let index = timetableIndex + 1; index < timetable.length; index += 1) {
+			const next = context.byName.get(timetable[index].stationName);
+			if (next && next.index !== station.index) return next.index > station.index ? "D" : "U";
+		}
+		for (let index = timetableIndex - 1; index >= 0; index -= 1) {
+			const previous = context.byName.get(timetable[index].stationName);
+			if (previous && previous.index !== station.index) return station.index > previous.index ? "D" : "U";
+		}
+		return sourceDirection;
+	}
+
 	function matchesLine(row, lineConfig, timetable) {
 		if (lineConfig.matchByPosition) return true;
 		const rowLine = toText(row.Line);
@@ -359,7 +381,7 @@
 		const raw = toText(rawPosition);
 		if (!raw) return null;
 		if (raw.indexOf("予告窓") >= 0) return null;
-		const cleaned = raw.replace(/[（(](?:上り|下り)[）)]/g, "").replace(/\s+/g, "").trim();
+		const cleaned = normalizePositionText(raw);
 		const station = context.byName.get(cleaned);
 		if (station) {
 			const stationGroup = context.groups.find(function(group) {
@@ -401,6 +423,10 @@
 			pos: context.positionPrefix + left[0] + "_" + right[0] + direction,
 			name: displayFrom + "→" + displayTo + " 間"
 		};
+	}
+
+	function normalizePositionText(value) {
+		return toText(value).replace(/[（(](?:上り|下り)[）)]/g, "").replace(/\s+/g, "").trim();
 	}
 
 	function getNonInterlockedPositionName(group, direction) {

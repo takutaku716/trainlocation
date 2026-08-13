@@ -13,7 +13,12 @@ const ROUTES = {
 		down: "高知方面",
 		branches: [{ before: "D40", name: "ごめん・なはり線", direction: "安芸・奈半利方面" }]
 	},
-	kubokawa: { rosen: "79", up: "高知方面", down: "窪川方面" },
+	kubokawa: {
+		rosen: "79",
+		up: "高知方面",
+		down: "窪川方面",
+		terminalContinuation: { name: "予土線・中村線", direction: "宇和島・宿毛方面" }
+	},
 	koutoku: { rosen: "80", up: "高松方面", down: "徳島方面" },
 	tokushima: { rosen: "81", up: "徳島方面", down: "阿波池田方面" },
 	naruto: { rosen: "82", up: "鳴門方面", down: "徳島方面" }
@@ -32,9 +37,15 @@ function stationNumberIcon(code) {
 	return `<span class="eki-icon jrshikoku-eki-icon jrshikoku-icon-${escapeHtml(match[1])}"><span class="kigo">${escapeHtml(match[1])}</span><span${numberClass}>${escapeHtml(match[2])}</span></span>`;
 }
 
-function stationPanel(config, station, isEnd) {
+function stationPanel(config, station, isEnd, nonServiceContinuation) {
 	const prefix = config.stationPositionPrefixes[station[0]] || config.positionPrefix;
-	return `<div class="eki-panel eki${isEnd ? " end" : ""}"><div class="eki-contents"><div class="stalist-eki-link"><a href="${OFFICIAL_URL}" target="_blank" rel="noopener"><div class="stalist-eki-contents">${stationNumberIcon(station[0])}<div key="${escapeHtml(station[0])}" class="margin-left05">${escapeHtml(station[1])}</div></div></a></div><div class="ressha-contents"><div class="ressha-icon ${prefix}${station[0]}U"></div><div class="ressha-icon ${prefix}${station[0]}D"></div></div></div>${isEnd ? "" : '<svg class="senro-img"><use xlink:href="#senro"></use></svg>'}</div>`;
+	const trackClass = nonServiceContinuation ? "senro-img non-service" : "senro-img";
+	return `<div class="eki-panel eki${isEnd ? " end" : ""}"><div class="eki-contents"><div class="stalist-eki-link"><a href="${OFFICIAL_URL}" target="_blank" rel="noopener"><div class="stalist-eki-contents">${stationNumberIcon(station[0])}<div key="${escapeHtml(station[0])}" class="margin-left05">${escapeHtml(station[1])}</div></div></a></div><div class="ressha-contents"><div class="ressha-icon ${prefix}${station[0]}U"></div><div class="ressha-icon ${prefix}${station[0]}D"></div></div></div>${isEnd ? "" : `<svg class="${trackClass}"><use xlink:href="#senro"></use></svg>`}</div>`;
+}
+
+function terminalContinuation(continuation) {
+	return `<div class="eki-panel end non-service-continuation"><div class="eki-contents"><div class="ressha-contents"><div class="ressha-icon"></div><div class="ressha-icon"></div></div></div></div>
+<div class="down-rosen-link non-service"><div><span class="rosen-link-nolink"><span>${escapeHtml(continuation.name)}<br>${escapeHtml(continuation.direction)}</span></span></div></div>`;
 }
 
 function betweenPanel(config, from, to) {
@@ -84,7 +95,8 @@ function renderRoute(lineId, route, config) {
 	];
 	visibleStations.forEach((station, index) => {
 		const branches = Array.isArray(route.branches) ? route.branches : [];
-		rows.push(stationPanel(config, station, index === visibleStations.length - 1));
+		const isLast = index === visibleStations.length - 1;
+		rows.push(stationPanel(config, station, isLast && !route.terminalContinuation, isLast && Boolean(route.terminalContinuation)));
 		if (index === visibleStations.length - 1) return;
 		const next = visibleStations[index + 1];
 		const group = groupByFrom.get(station[0]);
@@ -93,6 +105,7 @@ function renderRoute(lineId, route, config) {
 			: betweenPanel(config, station, next));
 		rows.push("");
 	});
+	if (route.terminalContinuation) rows.push("", terminalContinuation(route.terminalContinuation), "");
 	rows.push(trackSymbol(), "");
 	return rows.join("\n");
 }
