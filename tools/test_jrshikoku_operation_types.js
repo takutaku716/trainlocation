@@ -39,7 +39,9 @@ const tokushimaDirection = adapter.normalize([
 	{ GetDateTime: "2026/08/13 21:45:00" },
 	{ TrainNum: "1001D", Pos: "徳島", Direction: 0, Type: "normal:", Line: "tokushima", delay: "0" },
 	{ TrainNum: "1002D", Pos: "佐古", Direction: 1, Type: "normal:", Line: "tokushima", delay: "0" },
-	{ TrainNum: "1004D", Pos: "佐古～蔵本", Direction: 0, Type: "normal:", Line: "tokushima", delay: "0" }
+	{ TrainNum: "1004D", Pos: "佐古～蔵本", Direction: 0, Type: "normal:", Line: "tokushima", delay: "0" },
+	{ TrainNum: "9495D", Pos: "徳島", Direction: 0, Type: "normal:", Line: "tokushima", delay: "入線" },
+	{ TrainNum: "9998D", Pos: "佐古", Direction: 0, Type: "normal:", Line: "tokushima", delay: "2" }
 ], [
 	{ "1001D": "徳島,発,21:52#佐古,発,21:56#蔵本,着,21:59#" },
 	{ "1002D": "蔵本,発,21:40#佐古,発,21:44#徳島,着,21:46#" }
@@ -48,5 +50,7 @@ const tokushimaDirection = adapter.normalize([
 assert.strictEqual(tokushimaDirection.trains[0].pos, "JSBT00D");
 assert.strictEqual(tokushimaDirection.trains[1].pos, "JSBB01U");
 assert.strictEqual(tokushimaDirection.trains[2].pos, "JSBB01_B02U");
+assert.strictEqual(tokushimaDirection.trains[3].pos, "JSBT00D");
+assert.strictEqual(tokushimaDirection.trains[4].pos, "JSBB01D");
 
 console.log("JR Shikoku operation type tests passed.");

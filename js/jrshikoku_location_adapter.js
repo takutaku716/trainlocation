@@ -346,11 +346,13 @@
 		const timetableCodes = Array.isArray(lineConfig && lineConfig.timetableDirectionStationCodes)
 			? lineConfig.timetableDirectionStationCodes
 			: [];
-		if (timetableCodes.length === 0 || !Array.isArray(timetable) || timetable.length === 0) return sourceDirection;
+		if (timetableCodes.length === 0) return sourceDirection;
 		const station = context.byName.get(normalizePositionText(rawPosition));
 		if (!station || timetableCodes.indexOf(station.code) < 0) return sourceDirection;
+		const fallbackDirection = sourceDirection === "U" ? "D" : "U";
+		if (!Array.isArray(timetable) || timetable.length === 0) return fallbackDirection;
 		const timetableIndex = timetable.findIndex(function(row) { return row.stationName === station.name; });
-		if (timetableIndex < 0) return sourceDirection;
+		if (timetableIndex < 0) return fallbackDirection;
 		for (let index = timetableIndex + 1; index < timetable.length; index += 1) {
 			const next = context.byName.get(timetable[index].stationName);
 			if (next && next.index !== station.index) return next.index > station.index ? "D" : "U";
@@ -359,7 +361,7 @@
 			const previous = context.byName.get(timetable[index].stationName);
 			if (previous && previous.index !== station.index) return station.index > previous.index ? "D" : "U";
 		}
-		return sourceDirection;
+		return fallbackDirection;
 	}
 
 	function matchesLine(row, lineConfig, timetable) {
