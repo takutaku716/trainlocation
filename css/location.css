@@ -457,6 +457,50 @@ header {
 			max-height: 185px;
 			padding: 0 0 5px 0;
 		}
+		/* 始端駅から上へ続く縦線を表示しない分岐駅 */
+		#stationList .eki-panel.no-upper-track > .senro-img:not(.hoka-rosen) {
+			display: none;
+		}
+		#stationList .eki-panel.no-upper-track::after {
+			content: "";
+			position: absolute;
+			z-index: 17;
+			top: 128px;
+			left: 50%;
+			width: 17px;
+			height: 44px;
+			box-sizing: border-box;
+			border-right: 1px solid #000;
+			border-left: 1px solid #000;
+			background: repeating-linear-gradient(to bottom, #000 0 22px, #fff 22px 44px);
+			transform: translateX(-50%);
+		}
+		#stationList .eki-panel.connect-upper-track > .senro-img {
+			top: 228px;
+		}
+		#stationList .eki-panel.non-service-continuation {
+			background-color: #fff;
+		}
+		#stationList .eki-panel.non-service-continuation::before {
+			content: "";
+			position: absolute;
+			top: -3px;
+			bottom: 0;
+			left: 50%;
+			width: 17px;
+			transform: translateX(-50%);
+			box-sizing: border-box;
+			border-left: 2px solid #777;
+			border-right: 2px solid #777;
+			background: repeating-linear-gradient(
+				to bottom,
+				#fff 0,
+				#fff 22px,
+				#777 22px,
+				#777 44px
+			);
+			z-index: 17;
+		}
 		/* TID非対象の駅 */
 		#stationList .eki-panel.hirendo {
 			border: 3px dashed #777;
@@ -1279,6 +1323,9 @@ header {
 				#stationList .eki-panel .senro-img.hoka-rosen.non-service {
 					opacity: 0.5;
 				}
+				#stationList .eki-panel .senro-img.non-service {
+					opacity: 0.5;
+				}
 
 		/* 別路線のリンク */
 		#stationList .eki-panel .hoka-rosen-link {
@@ -1467,6 +1514,11 @@ header {
 				font-weight: bold;
 				display: inline-grid;
 				justify-items: center;
+			}
+
+			#stationList .down-rosen-link.non-service .rosen-link-nolink {
+				color: #666;
+				opacity: 0.7;
 			}
 
 			#stationList .down-rosen-link a {

@@ -456,7 +456,7 @@
 
 	function mapShikokuTrainType(trainNumber, rawType) {
 		const normalizedNumber = toText(trainNumber).toUpperCase();
-		if (!normalizedNumber) {
+		if (!normalizedNumber || /^\d+$/.test(normalizedNumber)) {
 			return { type: "3", label: "貨物", simple: "貨", name: "" };
 		}
 		const suffix = normalizedNumber.slice(-1);

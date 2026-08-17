@@ -547,6 +547,11 @@ input[type=radio] {
 	background: #63d2d3;
 }
 
+.side-menu .jrwest-line-symbol.no-symbol {
+	flex-basis: 8px;
+	width: 8px;
+}
+
 /* firefoxでのレイアウト調整 */
 @-moz-document url-prefix(){
 	[data-lang="en"] .side-menu .area-contents .rosen-name-list .rosen-name-contents[value="01"] .rosen-name-label .main {
