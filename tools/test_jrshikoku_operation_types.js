@@ -27,10 +27,11 @@ const normalized = adapter.normalize([
 	{ GetDateTime: "2026/08/12 12:00:00" },
 	{ Index: "10", TrainNum: "101A", Pos: "高松", Direction: 0, Type: "normal:", Line: "yosan", delay: "0" },
 	{ Index: "11", TrainNum: "", Pos: "鬼無", Direction: 1, Type: "normal:", Line: "yosan", delay: "0" },
-	{ Index: "12", TrainNum: "3078", Pos: "本山～観音寺", Direction: 0, Type: "normal", Line: "yosan", delay: "0" }
+	{ Index: "12", TrainNum: "3078", Pos: "本山～観音寺", Direction: 0, Type: "normal", Line: "yosan", delay: "0" },
+	{ Index: "41", TrainNum: "3072", Pos: "鬼無～高松（タ）", PosNum: 346, Direction: 0, Type: "normal", Line: "yosan", delay: "0" }
 ], [], { senku: "73", lineId: "yosan" });
 
-assert.strictEqual(normalized.trains.length, 3);
+assert.strictEqual(normalized.trains.length, 4);
 assert.strictEqual(normalized.trains[0].typeLabel, "回送");
 assert.strictEqual(normalized.trains[0].displayTrainNumber, "101A");
 assert.strictEqual(normalized.trains[1].typeLabel, "貨物");
@@ -38,6 +39,9 @@ assert.strictEqual(normalized.trains[1].displayTrainNumber, "");
 assert.match(normalized.trains[1].cbango, /^JRSHIKOKU-FREIGHT-/);
 assert.strictEqual(normalized.trains[2].typeLabel, "貨物");
 assert.strictEqual(normalized.trains[2].displayTrainNumber, "3078");
+assert.strictEqual(normalized.trains[3].typeLabel, "貨物");
+assert.strictEqual(normalized.trains[3].pos, "JSYFT346");
+assert.strictEqual(normalized.trains[3].posName, "鬼無→高松貨物(タ) 間");
 
 const tokushimaDirection = adapter.normalize([
 	{ GetDateTime: "2026/08/13 21:45:00" },

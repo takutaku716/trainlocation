@@ -7,6 +7,7 @@ function set_unko_info(_param_rosen) {
 	if (set_merged_unko_info(_param_rosen, now, lang)) return;
 	if (set_dokotre_unko_info(_param_rosen, now, lang)) return;
 	if (set_jr_shinkansen_unko_info(_param_rosen, now, lang)) return;
+	if (set_jrcentral_unko_info(_param_rosen, now, lang)) return;
 
 	if (_param_rosen == "01" || _param_rosen == "02" || _param_rosen == "03") {
 		// 札幌近郊
@@ -294,6 +295,83 @@ function set_unko_info(_param_rosen) {
 	} else {
 		$("#unkouInfo").hide();
 	}
+}
+
+const JRCENTRAL_UNKO_INFO_URL = "https://traininfo.jr-central.co.jp/zairaisen/data/trainInfo/json/unkou.json";
+const JRCENTRAL_UNKO_LINE_MAP = {
+	"74": ["東海道線", "ひだ", "しらさぎ"],
+	"75": ["東海道線", "ふじかわ"],
+	"83": ["中央線", "しなの"],
+	"84": ["関西線", "南紀", "みえ"],
+	"85": ["紀勢線", "南紀", "みえ"],
+	"86": ["高山線", "ひだ"],
+	"87": ["武豊線"],
+	"88": ["飯田線", "伊那路"],
+	"89": ["太多線"],
+	"90": ["御殿場線", "ふじさん"],
+	"91": ["身延線", "ふじかわ"],
+	"92": ["参宮線", "みえ"],
+	"93": ["名松線"],
+	"94": ["美濃赤坂線"],
+	"95": ["伊勢鉄道", "南紀", "みえ"]
+};
+
+function set_jrcentral_unko_info(_param_rosen, _now, _lang) {
+	const lineNames = JRCENTRAL_UNKO_LINE_MAP[String(_param_rosen || "")];
+	if (!lineNames) return false;
+	const adapter = typeof JrCentralOperationInfoAdapter !== "undefined" ? JrCentralOperationInfoAdapter : null;
+	$("#unkouInfo").hide();
+	if (!adapter) return true;
+
+	get_jrcentral_unko_info_request(_now)
+		.done((data) => {
+			const notices = adapter.getNotices(data, lineNames, _lang);
+			if (notices.length < 1) {
+				$("#unkouInfo").hide();
+				return;
+			}
+
+			const areaName = "JR東海";
+			const lineName = lineNames[0];
+			$("#unkouInfo").show();
+			$("#titleAreaName").text(areaName);
+			$("#senkuList").show();
+			$("#commonSenkuOperation").show();
+			$("#senkuListAreaName").text(areaName);
+			$("#gaikyoAreaName").text(lineName);
+			create_gaikyo(notices.map((notice) => convert_jrcentral_unko_gaikyo(notice, _lang)));
+			$("#commonSenkuOperation").html("<ul>" + create_jrcentral_unko_list(lineName, notices) + "</ul>");
+		})
+		.fail(() => {
+			$("#unkouInfo").hide();
+		});
+	return true;
+}
+
+function get_jrcentral_unko_info_request(now) {
+	const isLocal = location.hostname === "127.0.0.1" || location.hostname === "localhost";
+	const url = isLocal ? "/api/jrcentral/operation?_=" + now :
+		"https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=" +
+		encodeURIComponent(JRCENTRAL_UNKO_INFO_URL) + "&_=" + now;
+	return $.ajax({ "url": url, "dataType": "text", "cache": false });
+}
+
+function convert_jrcentral_unko_gaikyo(notice, lang) {
+	return {
+		"time": escape_dokotre_info_html(JrCentralOperationInfoAdapter.formatDate(notice.updatedAt, lang)),
+		"title": escape_dokotre_info_html(notice.title),
+		"honbun": escape_dokotre_info_html(notice.body).replace(/\r?\n/g, "<br>"),
+		"eikyo": { "spo": 0, "doo": 0, "donan": 0, "dohoku": 0, "doto": 0 }
+	};
+}
+
+function create_jrcentral_unko_list(lineName, notices) {
+	const status = notices.some((notice) => notice.severity === "suspend") ? "2" : "1";
+	let html = "<li><div class='common-button'>";
+	html += "<span class='name'>" + escape_dokotre_info_html(lineName) + "</span>";
+	html += "<img class='unkou-icon' alt='' src='" + get_dokotre_info_icon(status) + "'/>";
+	html += "</div></li>";
+	return html;
 }
 
 let jrShinkansenUnkoInfoGroups = [];

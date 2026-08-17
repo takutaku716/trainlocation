@@ -3,9 +3,19 @@ const fs = require('fs');
 const path = require('path');
 
 const root = path.resolve(__dirname, '..');
-const jrShikokuSources = {
-  '/api/jrshikoku/location': 'https://train.jr-shikoku.co.jp/g?arg1=train&arg2=train',
-  '/api/jrshikoku/timetable': 'https://train.jr-shikoku.co.jp/g?arg1=station&arg2=traintimeinfo&arg3=dia',
+const proxySources = {
+  '/api/jrshikoku/location': {
+    url: 'https://train.jr-shikoku.co.jp/g?arg1=train&arg2=train',
+    referer: 'https://train.jr-shikoku.co.jp/',
+  },
+  '/api/jrshikoku/timetable': {
+    url: 'https://train.jr-shikoku.co.jp/g?arg1=station&arg2=traintimeinfo&arg3=dia',
+    referer: 'https://train.jr-shikoku.co.jp/',
+  },
+  '/api/jrcentral/operation': {
+    url: 'https://traininfo.jr-central.co.jp/zairaisen/data/trainInfo/json/unkou.json',
+    referer: 'https://traininfo.jr-central.co.jp/zairaisen/',
+  },
 };
 const mimeTypes = {
   '.css': 'text/css; charset=utf-8',
@@ -18,21 +28,53 @@ const mimeTypes = {
   '.svg': 'image/svg+xml',
 };
 
-async function proxyJrShikoku(requestPath, response) {
+async function proxyUpstream(requestPath, request, response) {
   try {
-    const upstream = await fetch(jrShikokuSources[requestPath], {
+    const freightPreview = String(request.headers.referer || '').includes('previewFreight=1');
+    if (freightPreview && requestPath === '/api/jrshikoku/location') {
+      response.writeHead(200, {
+        'Access-Control-Allow-Origin': '*',
+        'Cache-Control': 'no-store',
+        'Content-Type': 'application/json; charset=utf-8',
+      });
+      response.end(JSON.stringify([
+        { GetDateTime: new Date().toISOString() },
+        {
+          Index: 41,
+          TrainNum: '3072',
+          Pos: '鬼無～高松（タ）',
+          PosNum: 346,
+          delay: 0,
+          Direction: 0,
+          Type: 'normal',
+          Line: 'yosan',
+        },
+      ]));
+      return;
+    }
+    if (freightPreview && requestPath === '/api/jrshikoku/timetable') {
+      response.writeHead(200, {
+        'Access-Control-Allow-Origin': '*',
+        'Cache-Control': 'no-store',
+        'Content-Type': 'application/json; charset=utf-8',
+      });
+      response.end('[]');
+      return;
+    }
+    const source = proxySources[requestPath];
+    const upstream = await fetch(source.url, {
       headers: {
         accept: 'application/json,text/plain,*/*',
-        referer: 'https://train.jr-shikoku.co.jp/',
+        referer: source.referer,
         'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/127 Safari/537.36',
       },
       signal: AbortSignal.timeout(15000),
     });
-    const text = (await upstream.text()).replace(/^\uFEFF/, '');
+    let text = (await upstream.text()).replace(/^\uFEFF/, '');
     if (!upstream.ok || !text.trim()) throw new Error(`upstream status ${upstream.status}`);
     response.writeHead(200, {
       'Access-Control-Allow-Origin': '*',
-      'Cache-Control': requestPath.endsWith('/location') ? 'no-store' : 'public, max-age=3600',
+      'Cache-Control': requestPath.endsWith('/timetable') ? 'public, max-age=3600' : 'no-store',
       'Content-Type': 'application/json; charset=utf-8',
     });
     response.end(text);
@@ -42,7 +84,7 @@ async function proxyJrShikoku(requestPath, response) {
       'Cache-Control': 'no-store',
       'Content-Type': 'application/json; charset=utf-8',
     });
-    response.end(JSON.stringify({ ok: false, error: `JR Shikoku proxy failed: ${error.message}` }));
+    response.end(JSON.stringify({ ok: false, error: `Upstream proxy failed: ${error.message}` }));
   }
 }
 
@@ -56,7 +98,7 @@ const server = http.createServer(async (request, response) => {
     return;
   }
 
-  if (request.method === 'OPTIONS' && jrShikokuSources[requestPath]) {
+  if (request.method === 'OPTIONS' && proxySources[requestPath]) {
     response.writeHead(204, {
       'Access-Control-Allow-Headers': 'content-type',
       'Access-Control-Allow-Methods': 'GET, OPTIONS',
@@ -65,8 +107,8 @@ const server = http.createServer(async (request, response) => {
     response.end();
     return;
   }
-  if (request.method === 'GET' && jrShikokuSources[requestPath]) {
-    await proxyJrShikoku(requestPath, response);
+  if (request.method === 'GET' && proxySources[requestPath]) {
+    await proxyUpstream(requestPath, request, response);
     return;
   }
 
@@ -92,6 +134,7 @@ const server = http.createServer(async (request, response) => {
   fs.createReadStream(filePath).pipe(response);
 });
 
-server.listen(8765, '127.0.0.1', () => {
-  console.log('Local server: http://127.0.0.1:8765/');
+const port = Number(process.argv[2]) || 8765;
+server.listen(port, '127.0.0.1', () => {
+  console.log(`Local server: http://127.0.0.1:${port}/`);
 });

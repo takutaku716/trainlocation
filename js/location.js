@@ -2413,6 +2413,7 @@ function set_station_list(_param_rosen, _scrollKey, _callback) {
 			cachedEkiData = ekiData[0];
 			$("#stationList").html(rosen[0]);
 			prepare_osaka_loop_cycles(_param_rosen);
+			prepare_jrshikoku_forecast_windows(_param_rosen);
 			set_jr_shinkansen_station_border_colors(_param_rosen);
 			if (is_jreast_location_rosen(_param_rosen) || is_dokotre_location_rosen(_param_rosen) || is_jr_shinkansen_location_rosen(_param_rosen) || is_jrwest_location_rosen(_param_rosen) || is_jrshikoku_location_rosen(_param_rosen) || is_jrcentral_location_rosen(_param_rosen)) setTimestamp(nowData);
 			update_location_data_stale_warning(nowData);
@@ -3029,7 +3030,9 @@ function create_ressha_icon(_param_rosen, _nowData, _typeData, _ekiData) {
 		if (windowWidth > 1000) add = 325;
 
 		if (pos != "" && $("." + pos).length > 0) {
-			if (pos == "R9P11U" || pos == "R9P10U" || pos == "R9P9U" || pos == "R1P160U") {
+			if (nowRow.jrShikoku && nowRow.jrShikoku.isForecastWindow) {
+				$("." + nowRow.pos).append(create_html_jrshikoku_forecast_row(nowRow, _typeData, _ekiData));
+			} else if (pos == "R9P11U" || pos == "R9P10U" || pos == "R9P9U" || pos == "R1P160U") {
 				// 新函館北斗駅左側（R9P11U）
 				// 新函館北斗～仁山間左側（R9P10U）
 				// 仁山駅左側（R9P9U）
@@ -3111,6 +3114,56 @@ function create_ressha_icon(_param_rosen, _nowData, _typeData, _ekiData) {
 
 	// 函館駅周辺の高さを設定
 	if (["09", "52"].includes(_param_rosen)) set_hakodate_height();
+}
+
+/*
+ * JR四国の予告窓を、対象駅の直前に専用枠として追加する。
+ */
+function prepare_jrshikoku_forecast_windows(_param_rosen) {
+	if (!is_jrshikoku_location_rosen(_param_rosen) || !window.JrShikokuLocationAdapter) return;
+	const definitions = Array.isArray(window.JrShikokuLocationAdapter.forecastPositions)
+		? window.JrShikokuLocationAdapter.forecastPositions.filter(function(definition) {
+			return definition.rosen === String(_param_rosen);
+		})
+		: [];
+	if (definitions.length === 0) return;
+
+	const groupedDefinitions = new Map();
+	definitions.forEach(function(definition) {
+		if (!groupedDefinitions.has(definition.hostStationCode)) groupedDefinitions.set(definition.hostStationCode, []);
+		groupedDefinitions.get(definition.hostStationCode).push(definition);
+	});
+
+	groupedDefinitions.forEach(function(rows, stationCode) {
+		if ($("#stationList .jrshikoku-forecast-table[data-station-code='" + stationCode + "']").length > 0) return;
+		const stationNameElement = $("#stationList [key]").filter(function() {
+			return String($(this).attr("key")) === stationCode;
+		}).first();
+		const stationPanel = stationNameElement.closest(".eki-panel");
+		if (stationPanel.length === 0) return;
+
+		rows.sort(function(left, right) { return Number(left.slot) - Number(right.slot); });
+		const baseName = String(rows[0].name || "予告窓").replace(/予告窓[①②]?$/, "");
+		const table = $("<div class='jrshikoku-forecast-table'></div>")
+			.attr("data-station-code", stationCode)
+			.addClass("side-" + (rows[0].side === "left" ? "left" : "right"));
+		table.append($("<div class='jrshikoku-forecast-heading'></div>").text(baseName + "予告"));
+		rows.forEach(function(definition) {
+			table.append($("<div class='ressha-icon jrshikoku-forecast-row'></div>").addClass(definition.pos));
+		});
+		stationPanel.append(table);
+	});
+}
+
+function create_html_jrshikoku_forecast_row(_nowRow, _typeData, _ekiData) {
+	const objItem = document.createElement("div");
+	objItem.classList.add("ressha", "jrshikoku-forecast-train");
+	const arrow = Number(_nowRow.jrShikoku && _nowRow.jrShikoku.rawDirection) === 0 ? "↑" : "↓";
+	const trainNumber = get_train_number_display_label(_nowRow) || "?";
+	const destination = _nowRow.shuEkiSimple || "?";
+	objItem.textContent = arrow + " " + trainNumber + "／" + destination;
+	create_ressha_detail(objItem, _nowRow, _typeData, _ekiData);
+	return objItem.outerHTML;
 }
 
 /*

@@ -457,6 +457,174 @@ header {
 			max-height: 185px;
 			padding: 0 0 5px 0;
 		}
+		/* JR四国：進入方向に表示する予告窓 */
+		#stationList .jrshikoku-forecast-table {
+			background: #fff;
+			border: 2px solid #5b3;
+			box-sizing: border-box;
+			color: #222;
+			font-size: 15px;
+			min-width: 142px;
+			position: absolute;
+			top: 50%;
+			transform: translateY(-50%);
+			z-index: 21;
+		}
+		#stationList .jrshikoku-forecast-table.side-right {
+			left: calc(50% + 86px);
+		}
+		#stationList .jrshikoku-forecast-table.side-left {
+			right: calc(50% + 86px);
+		}
+		#stationList .jrshikoku-forecast-heading,
+		#stationList .jrshikoku-forecast-row {
+			align-items: center;
+			box-sizing: border-box;
+			display: flex;
+			height: 36px;
+			justify-content: center;
+			padding: 0 8px;
+			white-space: nowrap;
+		}
+		#stationList .jrshikoku-forecast-heading {
+			background: #5b3;
+			border-bottom: 2px solid #3a4;
+			color: #fff;
+			font-size: 14px;
+		}
+		#stationList .jrshikoku-forecast-row + .jrshikoku-forecast-row {
+			border-top: 1px solid #9c8;
+		}
+		#stationList .jrshikoku-forecast-row .jrshikoku-forecast-train {
+			align-items: center;
+			cursor: pointer;
+			display: flex;
+			height: 100%;
+			justify-content: center;
+			width: 100%;
+		}
+		#stationList .jrshikoku-forecast-row .jrshikoku-forecast-train:hover,
+		#stationList .jrshikoku-forecast-row .jrshikoku-forecast-train:focus {
+			background: #edf8e8;
+		}
+		@media (max-width: 550px) {
+			#stationList .jrshikoku-forecast-table {
+				font-size: 12px;
+				min-width: 0;
+				width: min(142px, calc(50vw - 88px));
+			}
+			#stationList .jrshikoku-forecast-table.side-right {
+				left: calc(50% + 82px);
+			}
+			#stationList .jrshikoku-forecast-table.side-left {
+				right: calc(50% + 82px);
+			}
+			#stationList .jrshikoku-forecast-heading,
+			#stationList .jrshikoku-forecast-row {
+				padding-left: 2px;
+				padding-right: 2px;
+			}
+			#stationList .jrshikoku-forecast-heading {
+				font-size: 12px;
+			}
+		}
+		@media (max-width: 390px) {
+			#stationList .jrshikoku-forecast-table,
+			#stationList .jrshikoku-forecast-heading {
+				font-size: 10px;
+			}
+		}
+		/* JR四国：香西～鬼無間の高松貨物ターミナル分岐 */
+		#stationList .jrshikoku-freight-terminal-panel {
+			--freight-branch-offset: clamp(92px, 18vw, 112px);
+			background-color: #fff;
+			border-color: transparent;
+			box-sizing: border-box;
+			height: 180px;
+			min-height: 180px;
+			overflow: visible;
+		}
+		#stationList .jrshikoku-freight-main-track,
+		#stationList .jrshikoku-freight-branch-track {
+			background: repeating-linear-gradient(to bottom, #000 0, #000 24px, #fff 24px, #fff 48px);
+			border-left: 2px solid #000;
+			border-right: 2px solid #000;
+			box-sizing: border-box;
+			position: absolute;
+			top: -12px;
+			width: 18px;
+			z-index: 17;
+		}
+		#stationList .jrshikoku-freight-main-track {
+			bottom: -12px;
+			left: calc(50% + 2px);
+			transform: translateX(-50%);
+			width: 17px;
+		}
+		#stationList .jrshikoku-freight-branch-track {
+			bottom: 18px;
+			left: calc(50% - var(--freight-branch-offset));
+			transform: translateX(-50%);
+		}
+		#stationList .jrshikoku-freight-branch-track > span {
+			background: repeating-linear-gradient(to right, #000 0, #000 24px, #fff 24px, #fff 48px);
+			border-bottom: 2px solid #000;
+			border-top: 2px solid #000;
+			bottom: 0;
+			box-sizing: border-box;
+			height: 18px;
+			left: 8px;
+			position: absolute;
+			width: var(--freight-branch-offset);
+		}
+		#stationList .jrshikoku-freight-terminal-contents {
+			bottom: 122px;
+			left: calc(50% - var(--freight-branch-offset));
+			position: absolute;
+			transform: translateX(-50%);
+			width: 180px;
+			z-index: 19;
+		}
+		#stationList .jrshikoku-freight-terminal-panel .stalist-eki-link {
+			box-sizing: border-box;
+			margin: 0;
+			min-width: 160px;
+			width: 180px;
+		}
+		#stationList .jrshikoku-freight-terminal-panel .stalist-eki-contents {
+			justify-content: center;
+		}
+		#stationList .jrshikoku-freight-terminal-panel .ressha-contents {
+			bottom: auto;
+			height: 70px;
+			left: 138px;
+			min-height: 70px;
+			overflow: visible;
+			position: absolute;
+			top: 52px;
+			width: 52px;
+		}
+		#stationList .jrshikoku-freight-terminal-panel .ressha-contents .ressha-icon,
+		#stationList .jrshikoku-freight-terminal-panel .ressha-contents .ressha-icon.up {
+			margin: 0;
+			top: 0;
+			width: 52px;
+		}
+		@media (max-width: 390px) {
+			#stationList .jrshikoku-freight-terminal-panel {
+				--freight-branch-offset: 88px;
+			}
+			#stationList .jrshikoku-freight-terminal-contents,
+			#stationList .jrshikoku-freight-terminal-panel .stalist-eki-link {
+				width: 152px;
+			}
+			#stationList .jrshikoku-freight-terminal-panel .stalist-eki-link {
+				min-width: 152px;
+			}
+			#stationList .jrshikoku-freight-terminal-panel .ressha-contents {
+				left: 124px;
+			}
+		}
 		/* 始端駅から上へ続く縦線を表示しない分岐駅 */
 		#stationList .eki-panel.no-upper-track > .senro-img:not(.hoka-rosen) {
 			display: none;
