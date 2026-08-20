@@ -292,6 +292,7 @@ const hagoromoDirections = adapter.normalize(
     areaId: "kinki",
     lineId: "hanwahagoromo",
     senku: "66",
+    positionPrefix: "JW66",
     stationCodes: ["2613", "2651", "2614"]
   }
 );
@@ -299,14 +300,14 @@ const hagoromoDirections = adapter.normalize(
 assert.deepStrictEqual(
   hagoromoDirections.trains.map(train => [train.cbango, train.pos, train.posName]),
   [
-    ["947H", "JWH2613_2651D", "鳳→東羽衣 間"],
-    ["948H", "JWH2613_2651U", "東羽衣→鳳 間"],
-    ["949H", "JWH2613D", "鳳"],
-    ["950H", "JWH2613U", "鳳"],
-    ["951H", "JWH2651D", "東羽衣"],
-    ["952H", "JWH2651U", "東羽衣"]
+    ["947H", "JWH662613_2651D", "鳳→東羽衣 間"],
+    ["948H", "JWH662613_2651U", "東羽衣→鳳 間"],
+    ["949H", "JWH662613D", "鳳"],
+    ["950H", "JWH662613U", "鳳"],
+    ["951H", "JWH662651D", "東羽衣"],
+    ["952H", "JWH662651U", "東羽衣"]
   ],
-  "Hagoromo branch direction follows destination"
+  "Hagoromo branch direction and route-scoped prefix match the page slots"
 );
 assert.deepStrictEqual(
   hagoromoDirections.trains.map(train => train.jrWest.lineColorIconCode),

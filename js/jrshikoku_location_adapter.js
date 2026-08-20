@@ -1,10 +1,10 @@
 (function(root, factory) {
 	if (typeof module === "object" && module.exports) {
-		module.exports = factory();
+		module.exports = factory(require("./jrshikoku_position_map.js"));
 	} else {
-		root.JrShikokuLocationAdapter = factory();
+		root.JrShikokuLocationAdapter = factory(root.JrShikokuPositionMap);
 	}
-}(typeof self !== "undefined" ? self : this, function() {
+}(typeof self !== "undefined" ? self : this, function(positionMap) {
 	"use strict";
 
 	const YOSAN_STATIONS = [
@@ -168,31 +168,28 @@
 		{ from: "N10", to: "N04", stations: ["N09", "N08", "N07", "N06", "N05"] }
 	];
 	const FORECAST_POSITIONS = {
-		"293": { pos: "JSYF293", name: "鬼無予告窓①", lineId: "yosan", rosen: "73", hostStationCode: "Y02", side: "right", slot: 1 },
-		"294": { pos: "JSYF294", name: "鬼無予告窓②", lineId: "yosan", rosen: "73", hostStationCode: "Y02", side: "right", slot: 2 },
+		"293": { pos: "JSYF293", name: "鬼無予告窓①", lineId: "yosan", rosen: "73", hostStationCode: "YFT", side: "right", slot: 1 },
+		"294": { pos: "JSYF294", name: "鬼無予告窓②", lineId: "yosan", rosen: "73", hostStationCode: "YFT", side: "right", slot: 2 },
 		"246": { pos: "JSYF246", name: "児島予告窓①", lineId: "seto", rosen: "64", hostStationCode: "0256", side: "right", slot: 1 },
 		"93": { pos: "JSYF93", name: "児島予告窓②", lineId: "seto", rosen: "64", hostStationCode: "0256", side: "right", slot: 2 },
 		"45": { pos: "JSYF45", name: "多度津予告窓①", lineId: "yosan", rosen: "73", hostStationCode: "Y12", side: "left", slot: 1 },
 		"303": { pos: "JSYF303", name: "多度津予告窓②", lineId: "yosan", rosen: "73", hostStationCode: "Y12", side: "left", slot: 2 },
-		"185": { pos: "JSYF185", name: "北宇和島～宮野下方予告窓", lineId: "uwajima", rosen: "76", hostStationCode: "U27", side: "right", slot: 1,
-			additionalDisplays: [{ lineId: "uwajima2", rosen: "77", hostStationCode: "U27", side: "right", slot: 1 }] },
+		"185": { pos: "JSYF185", name: "北宇和島～宮野下方予告窓", lineId: "uwajima", rosen: "76", hostStationCode: "GYODO", side: "right", slot: 1,
+			additionalDisplays: [{ lineId: "uwajima2", rosen: "77", hostStationCode: "GYODO", side: "right", slot: 1 }] },
 		"68": { pos: "JSYF68", name: "佃予告窓①", lineId: "dosan", rosen: "78", hostStationCode: "D21", side: "right", slot: 1 },
 		"69": { pos: "JSYF69", name: "佃予告窓②", lineId: "dosan", rosen: "78", hostStationCode: "D21", side: "right", slot: 2 },
 		"669": { pos: "JSYF669", name: "佃予告窓①", lineId: "tokushima", rosen: "81", hostStationCode: "B24", side: "left", slot: 1 },
 		"670": { pos: "JSYF670", name: "佃予告窓②", lineId: "tokushima", rosen: "81", hostStationCode: "B24", side: "left", slot: 2 },
-		"176": { pos: "JSYF176", name: "後免予告窓①", lineId: "dosan", rosen: "78", hostStationCode: "D40", side: "right", slot: 1 },
-		"177": { pos: "JSYF177", name: "後免予告窓②", lineId: "dosan", rosen: "78", hostStationCode: "D40", side: "right", slot: 2 },
-		"197": { pos: "JSYF197", name: "土佐一宮予告窓①", lineId: "dosan", rosen: "78", hostStationCode: "D43", side: "right", slot: 1 },
-		"198": { pos: "JSYF198", name: "土佐一宮予告窓②", lineId: "dosan", rosen: "78", hostStationCode: "D43", side: "right", slot: 2 },
+		"176": { pos: "JSYF176", name: "後免予告窓①", lineId: "dosan", rosen: "78", hostStationCode: "GN37", side: "right", slot: 1 },
+		"177": { pos: "JSYF177", name: "後免予告窓②", lineId: "dosan", rosen: "78", hostStationCode: "GN37", side: "right", slot: 2 },
+		"197": { pos: "JSYF197", name: "土佐一宮予告窓①", lineId: "dosan", rosen: "78", hostStationCode: "KDEPOT", side: "right", slot: 1 },
+		"198": { pos: "JSYF198", name: "土佐一宮予告窓②", lineId: "dosan", rosen: "78", hostStationCode: "KDEPOT", side: "right", slot: 2 },
 		"227": { pos: "JSYF227", name: "三津浜予告窓①", lineId: "yosan", rosen: "73", hostStationCode: "Y54", side: "right", slot: 1 },
 		"228": { pos: "JSYF228", name: "三津浜予告窓②", lineId: "yosan", rosen: "73", hostStationCode: "Y54", side: "right", slot: 2 },
-		"34": { pos: "JSYF34", name: "北伊予予告窓①", lineId: "uwajima", rosen: "76", hostStationCode: "U02", side: "left", slot: 1,
-			additionalDisplays: [{ lineId: "uwajima2", rosen: "77", hostStationCode: "U02", side: "left", slot: 1 }] },
-		"35": { pos: "JSYF35", name: "北伊予予告窓②", lineId: "uwajima", rosen: "76", hostStationCode: "U02", side: "left", slot: 2,
-			additionalDisplays: [{ lineId: "uwajima2", rosen: "77", hostStationCode: "U02", side: "left", slot: 2 }] }
-	};
-	const SPECIAL_POSITIONS = {
-		"346": { pos: "JSYFT346", name: "鬼無→高松貨物(タ) 間", lineId: "yosan" }
+		"34": { pos: "JSYF34", name: "北伊予予告窓①", lineId: "uwajima", rosen: "76", hostStationCode: "UDEPOT", side: "left", slot: 1,
+			additionalDisplays: [{ lineId: "uwajima2", rosen: "77", hostStationCode: "UDEPOT", side: "left", slot: 1 }] },
+		"35": { pos: "JSYF35", name: "北伊予予告窓②", lineId: "uwajima", rosen: "76", hostStationCode: "UDEPOT", side: "left", slot: 2,
+			additionalDisplays: [{ lineId: "uwajima2", rosen: "77", hostStationCode: "UDEPOT", side: "left", slot: 2 }] }
 	};
 	const LINE_CONFIGS = {
 		yosan: {
@@ -328,16 +325,50 @@
 		};
 	}
 
+	function buildPositionMapKey(line, posNum) {
+		const sourceLine = toText(line);
+		const positionNumber = toText(posNum);
+		if (!sourceLine || !positionNumber) return "";
+		return sourceLine + ":" + positionNumber;
+	}
+
+	function getPositionRecord(line, posNum) {
+		const key = buildPositionMapKey(line, posNum);
+		if (!key || !positionMap || !positionMap.records) return null;
+		return positionMap.records[key] || null;
+	}
+
+	function buildSourcePositionKey(line, posNum) {
+		const sourceLine = toText(line).replace(/[^A-Za-z0-9_-]/g, "_");
+		const positionNumber = toText(posNum).replace(/[^A-Za-z0-9_-]/g, "_");
+		if (!sourceLine || !positionNumber) return "";
+		return "JSP_" + sourceLine + "_" + positionNumber;
+	}
+
+	function getPositionProjection(record, senku, direction) {
+		if (!record || !record.projections) return null;
+		const projection = record.projections[String(senku || "")];
+		if (!projection) return null;
+		const renderPosition = projection[direction] || projection.U || projection.D;
+		if (!renderPosition) return null;
+		return {
+			renderPosition: renderPosition,
+			name: toText(projection.name) || toText(record.name),
+			kind: toText(projection.kind)
+		};
+	}
+
 	function convertTrain(row, timetableMap, context, settings, lineConfig, rowIndex) {
 		if (!row || row.GetDateTime) return null;
 		const trainNumber = toText(row.TrainNum);
 		const timetable = timetableMap.get(trainNumber) || [];
-		const forecastPosition = resolveForecastPosition(row.Pos, row.PosNum, lineConfig);
-		const specialPosition = resolveSpecialPosition(row.PosNum, lineConfig);
-		if (!forecastPosition && !specialPosition && !matchesLine(row, lineConfig, timetable)) return null;
-		const direction = resolveDirection(row.Direction, row.Pos, context, lineConfig, timetable);
-		const position = forecastPosition || specialPosition || resolvePosition(row.Pos, direction, context);
-		if (!position) return null;
+		const positionRecord = getPositionRecord(row.Line, row.PosNum);
+		if (!positionRecord) return null;
+		const direction = resolveDirection(row.Direction, positionRecord.name, context, lineConfig, timetable);
+		const projection = getPositionProjection(positionRecord, settings.senku, direction);
+		if (!projection) return null;
+		const sourcePositionKey = buildSourcePositionKey(positionRecord.line, positionRecord.posNum);
+		if (!sourcePositionKey) return null;
 		const type = mapShikokuTrainType(trainNumber, row.Type);
 		const destination = timetable.length > 0 ? timetable[timetable.length - 1].stationName : "行先取得不可";
 		return {
@@ -345,8 +376,8 @@
 			displayTrainNumber: trainNumber,
 			type: type.type,
 			typeLabel: type.label,
-			pos: position.pos,
-			posName: position.name,
+			pos: sourcePositionKey,
+			posName: projection.name,
 			chien: parseDelay(row.delay),
 			shuEkiSimple: getDestinationSimpleName(destination),
 			shuEkiName: destination,
@@ -364,21 +395,25 @@
 			jrShikoku: {
 				timetable: timetable,
 				typeSimple: type.simple,
+				renderPosition: projection.renderPosition,
+				sourcePositionKey: sourcePositionKey,
+				sourceLine: positionRecord.line,
 				rawPosition: toText(row.Pos),
-				positionNumber: toText(row.PosNum),
+				positionNumber: positionRecord.posNum,
 				rawDirection: Number(row.Direction) === 0 ? 0 : 1,
-				isForecastWindow: Boolean(position.isForecastWindow)
+				positionKind: projection.kind,
+				isForecastWindow: projection.kind === "forecast"
 			}
 		};
 	}
 
-	function resolveDirection(rawDirection, rawPosition, context, lineConfig, timetable) {
+	function resolveDirection(rawDirection, positionName, context, lineConfig, timetable) {
 		const sourceDirection = Number(rawDirection) === 0 ? "U" : "D";
 		const timetableCodes = Array.isArray(lineConfig && lineConfig.timetableDirectionStationCodes)
 			? lineConfig.timetableDirectionStationCodes
 			: [];
 		if (timetableCodes.length === 0) return sourceDirection;
-		const station = context.byName.get(normalizePositionText(rawPosition));
+		const station = context.byName.get(normalizePositionText(positionName));
 		if (!station || timetableCodes.indexOf(station.code) < 0) return sourceDirection;
 		const fallbackDirection = sourceDirection === "U" ? "D" : "U";
 		if (!Array.isArray(timetable) || timetable.length === 0) return fallbackDirection;
@@ -395,100 +430,8 @@
 		return fallbackDirection;
 	}
 
-	function matchesLine(row, lineConfig, timetable) {
-		if (lineConfig.matchByPosition) return true;
-		const rowLine = toText(row.Line);
-		if (rowLine === lineConfig.lineId) return true;
-		if (!Array.isArray(lineConfig.additionalLineIds) || lineConfig.additionalLineIds.indexOf(rowLine) < 0) return false;
-		const requiredStations = Array.isArray(lineConfig.additionalLineTimetableStations)
-			? lineConfig.additionalLineTimetableStations
-			: [];
-		if (requiredStations.length === 0) return true;
-		return timetable.some(function(row) {
-			return requiredStations.indexOf(row.stationName) >= 0;
-		});
-	}
-
-	function resolveForecastPosition(rawPosition, rawPositionNumber, lineConfig) {
-		const raw = toText(rawPosition);
-		const baseDefinition = FORECAST_POSITIONS[toText(rawPositionNumber)];
-		if (!baseDefinition || !lineConfig) return null;
-		const definitions = [baseDefinition].concat(baseDefinition.additionalDisplays || []);
-		const displayDefinition = definitions.find(function(definition) {
-			return definition.lineId === lineConfig.lineId;
-		});
-		if (!displayDefinition) return null;
-		if (raw && raw.indexOf("予告窓") < 0) return null;
-		return {
-			pos: displayDefinition.pos || baseDefinition.pos,
-			name: displayDefinition.name || baseDefinition.name,
-			isForecastWindow: true
-		};
-	}
-
-	function resolveSpecialPosition(rawPositionNumber, lineConfig) {
-		const definition = SPECIAL_POSITIONS[toText(rawPositionNumber)];
-		if (!definition || !lineConfig || definition.lineId !== lineConfig.lineId) return null;
-		return { pos: definition.pos, name: definition.name };
-	}
-
-	function resolvePosition(rawPosition, direction, context) {
-		context = context || buildStationContext();
-		const raw = toText(rawPosition);
-		if (!raw) return null;
-		if (raw.indexOf("予告窓") >= 0) return null;
-		const cleaned = normalizePositionText(raw);
-		const station = context.byName.get(cleaned);
-		if (station) {
-			const stationGroup = context.groups.find(function(group) {
-				return group.stations.some(function(row) { return row.code === station.code; });
-			});
-			if (stationGroup) {
-				return {
-					pos: context.positionPrefix + stationGroup.from.code + "_" + stationGroup.to.code + direction,
-					name: getNonInterlockedPositionName(stationGroup, direction)
-				};
-			}
-			const stationPrefix = context.stationPositionPrefixes[station.code] || context.positionPrefix;
-			return { pos: stationPrefix + station.code + direction, name: station.name };
-		}
-		const parts = cleaned.split(/[～〜~]/).map(function(value) { return value.trim(); }).filter(Boolean);
-		if (parts.length < 2) return null;
-		const from = context.byName.get(parts[0]);
-		const to = context.byName.get(parts[parts.length - 1]);
-		if (!from || !to || from.index === to.index) return null;
-		const lowIndex = Math.min(from.index, to.index);
-		const highIndex = Math.max(from.index, to.index);
-		const nonInterlockedGroup = context.groups.find(function(group) {
-			return group.from.index <= lowIndex && group.to.index >= highIndex &&
-				lowIndex < group.to.index && highIndex > group.from.index;
-		});
-		if (nonInterlockedGroup) {
-			return {
-				pos: context.positionPrefix + nonInterlockedGroup.from.code + "_" + nonInterlockedGroup.to.code + direction,
-				name: getNonInterlockedPositionName(nonInterlockedGroup, direction)
-			};
-		}
-		const segmentIndex = direction === "D" ? lowIndex : highIndex - 1;
-		const left = context.stations[segmentIndex];
-		const right = context.stations[segmentIndex + 1];
-		if (!left || !right) return null;
-		const displayFrom = direction === "D" ? from.name : to.name;
-		const displayTo = direction === "D" ? to.name : from.name;
-		return {
-			pos: context.positionPrefix + left[0] + "_" + right[0] + direction,
-			name: displayFrom + "→" + displayTo + " 間"
-		};
-	}
-
 	function normalizePositionText(value) {
 		return toText(value).replace(/[（(](?:上り|下り)[）)]/g, "").replace(/\s+/g, "").trim();
-	}
-
-	function getNonInterlockedPositionName(group, direction) {
-		const displayFrom = direction === "D" ? group.from.name : group.to.name;
-		const displayTo = direction === "D" ? group.to.name : group.from.name;
-		return displayFrom + "→" + displayTo + " 間";
 	}
 
 	function mapTrainType(rawType) {
@@ -623,7 +566,9 @@
 
 	return {
 		normalize: normalize,
-		resolvePosition: resolvePosition,
+		getPositionRecord: getPositionRecord,
+		getPositionProjection: getPositionProjection,
+		buildSourcePositionKey: buildSourcePositionKey,
 		mapTrainType: mapTrainType,
 		mapShikokuTrainType: mapShikokuTrainType,
 		buildTimetableMap: buildTimetableMap,

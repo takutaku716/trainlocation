@@ -30,7 +30,23 @@ const mimeTypes = {
 
 async function proxyUpstream(requestPath, request, response) {
   try {
-    const freightPreview = String(request.headers.referer || '').includes('previewFreight=1');
+    const requestReferer = String(request.headers.referer || '');
+    const freightPreview = requestReferer.includes('previewFreight=1');
+    const forecastPreview = requestReferer.includes('previewForecast=1');
+    if (forecastPreview && requestPath === '/api/jrshikoku/location') {
+      response.writeHead(200, {
+        'Access-Control-Allow-Origin': '*',
+        'Cache-Control': 'no-store',
+        'Content-Type': 'application/json; charset=utf-8',
+      });
+      response.end(JSON.stringify([
+        { GetDateTime: '2026/08/18 12:00:00' },
+        { Index: 1, TrainNum: '54D', Pos: '', PosNum: 45, delay: 0, Direction: 0, Type: 'normal', Line: 'yosan' },
+        { Index: 2, TrainNum: '1250M', Pos: '', PosNum: 303, delay: 0, Direction: 0, Type: 'normal', Line: 'yosan' },
+        { Index: 3, TrainNum: '1248M', Pos: '多度津', PosNum: 0, delay: 0, Direction: 0, Type: 'normal', Line: 'yosan' },
+      ]));
+      return;
+    }
     if (freightPreview && requestPath === '/api/jrshikoku/location') {
       response.writeHead(200, {
         'Access-Control-Allow-Origin': '*',
@@ -38,7 +54,7 @@ async function proxyUpstream(requestPath, request, response) {
         'Content-Type': 'application/json; charset=utf-8',
       });
       response.end(JSON.stringify([
-        { GetDateTime: new Date().toISOString() },
+        { GetDateTime: '2026/08/18 12:00:00' },
         {
           Index: 41,
           TrainNum: '3072',
@@ -59,6 +75,19 @@ async function proxyUpstream(requestPath, request, response) {
         'Content-Type': 'application/json; charset=utf-8',
       });
       response.end('[]');
+      return;
+    }
+    if (forecastPreview && requestPath === '/api/jrshikoku/timetable') {
+      response.writeHead(200, {
+        'Access-Control-Allow-Origin': '*',
+        'Cache-Control': 'no-store',
+        'Content-Type': 'application/json; charset=utf-8',
+      });
+      response.end(JSON.stringify([
+        { '54D': '多度津,発,12:00#岡山,着,12:30#' },
+        { '1250M': '多度津,発,12:05#高松,着,12:45#' },
+        { '1248M': '多度津,発,11:55#高松,着,12:35#' },
+      ]));
       return;
     }
     const source = proxySources[requestPath];

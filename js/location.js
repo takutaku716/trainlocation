@@ -1560,6 +1560,15 @@ function jqxhr_to_promise(_jqxhr) {
 
 const LOCATION_DATA_STALE_THRESHOLD_MS = 5 * 60 * 1000;
 
+function get_location_train_merge_key(_row) {
+	if (!_row || !_row.cbango) return "";
+	const cbango = String(_row.cbango);
+	if (_row.jrShikoku && _row.jrShikoku.isForecastWindow) {
+		return ["jrshikoku-forecast", cbango, String(_row.pos || "")].join("|");
+	}
+	return cbango;
+}
+
 function merge_location_now_data(_nowDataList) {
 	const seenCbangoMap = new Map();
 	const mergedTrains = [];
@@ -1586,9 +1595,9 @@ function merge_location_now_data(_nowDataList) {
 				mergedTrains.push(row);
 				return;
 			}
-			const cbango = String(row.cbango);
-			if (seenCbangoMap.has(cbango)) return;
-			seenCbangoMap.set(cbango, true);
+			const mergeKey = get_location_train_merge_key(row);
+			if (seenCbangoMap.has(mergeKey)) return;
+			seenCbangoMap.set(mergeKey, true);
 			mergedTrains.push(row);
 		});
 	});
@@ -2336,9 +2345,11 @@ function get_preferred_train_element(_cbango) {
 		const middleCycle = scope.children(".osaka-loop-cycle[data-loop-cycle='1']");
 		if (middleCycle.length) scope = middleCycle;
 	}
-	return scope.find(".ressha[data-cbango]").filter(function() {
+	const candidates = scope.find(".ressha[data-cbango]").filter(function() {
 		return String($(this).attr("data-cbango")) === cbango;
-	}).first();
+	});
+	const actualTrain = candidates.not(".jrshikoku-forecast-train").first();
+	return actualTrain.length ? actualTrain : candidates.first();
 }
 
 function set_station_list(_param_rosen, _scrollKey, _callback) {
@@ -3024,86 +3035,88 @@ function set_responsive() {
 function create_ressha_icon(_param_rosen, _nowData, _typeData, _ekiData) {
 	_nowData.trains.forEach(nowRow => {
 		let windowWidth = window.innerWidth;
-		let pos = nowRow.pos;
+		let pos = nowRow.jrShikoku && nowRow.jrShikoku.renderPosition
+			? nowRow.jrShikoku.renderPosition
+			: nowRow.pos;
 		let width = $("#stationList").width();
 		let add = 0;
 		if (windowWidth > 1000) add = 325;
 
 		if (pos != "" && $("." + pos).length > 0) {
 			if (nowRow.jrShikoku && nowRow.jrShikoku.isForecastWindow) {
-				$("." + nowRow.pos).append(create_html_jrshikoku_forecast_row(nowRow, _typeData, _ekiData));
+				$("." + pos).append(create_html_jrshikoku_forecast_row(nowRow, _typeData, _ekiData));
 			} else if (pos == "R9P11U" || pos == "R9P10U" || pos == "R9P9U" || pos == "R1P160U") {
 				// 新函館北斗駅左側（R9P11U）
 				// 新函館北斗～仁山間左側（R9P10U）
 				// 仁山駅左側（R9P9U）
 				// 新千歳空港～南千歳間左側（R1P160U）の場合
-				$("." + nowRow.pos).append(create_html_up_ressha_icon(nowRow, _typeData, _ekiData));
-				$("." + nowRow.pos).addClass("up");
+				$("." + pos).append(create_html_up_ressha_icon(nowRow, _typeData, _ekiData));
+				$("." + pos).addClass("up");
 			} else if (pos == "R9P11D" || pos == "R9P10D" || pos == "R9P9D" || pos == "R1P160D") {
 				// 新函館北斗駅右側（R9P11D）
 				// 新函館北斗～仁山間右側（R9P10D）
 				// 仁山駅右側（R9P9D）
 				// 新千歳空港～南千歳間右側（R1P160D）
-				if ($("." + nowRow.pos).children(".ressha").length < 4) {
-					$(create_html_down_ressha_icon(nowRow, _typeData, _ekiData)).prependTo("." + nowRow.pos);
+				if ($("." + pos).children(".ressha").length < 4) {
+					$(create_html_down_ressha_icon(nowRow, _typeData, _ekiData)).prependTo("." + pos);
 				} else {
-					$("." + nowRow.pos).append(create_html_down_ressha_icon(nowRow, _typeData, _ekiData));
+					$("." + pos).append(create_html_down_ressha_icon(nowRow, _typeData, _ekiData));
 				}
 			} else if (pos == "R9P26U") {
 				// 藤城線（R9P26U）
-				if ($("." + nowRow.pos).children(".ressha").length < 4) {
-					$(create_html_up_ressha_icon(nowRow, _typeData, _ekiData)).prependTo("." + nowRow.pos);
-					$("." + nowRow.pos).addClass("up");
+				if ($("." + pos).children(".ressha").length < 4) {
+					$(create_html_up_ressha_icon(nowRow, _typeData, _ekiData)).prependTo("." + pos);
+					$("." + pos).addClass("up");
 				} else {
-					$("." + nowRow.pos).append(create_html_up_ressha_icon(nowRow, _typeData, _ekiData));
-					$("." + nowRow.pos).addClass("up");
+					$("." + pos).append(create_html_up_ressha_icon(nowRow, _typeData, _ekiData));
+					$("." + pos).addClass("up");
 				}
 			} else if (pos == "R1P119U") {
 				// 新千歳空港駅左側（R1P119U）の場合
-				$("." + nowRow.pos).append(create_html_up_ressha_icon(nowRow, _typeData, _ekiData));
-				$("." + nowRow.pos).addClass("up");
+				$("." + pos).append(create_html_up_ressha_icon(nowRow, _typeData, _ekiData));
+				$("." + pos).addClass("up");
 			} else if (pos == "R1P119D") {
 				// 新千歳空港駅右側（R1P119D）の場合
-				if ($("." + nowRow.pos).children().length < 2) {
-					if ($("." + nowRow.pos).children(".ressha").length < 1) {
-						$("." + nowRow.pos).append(create_html_down_ressha_icon(nowRow, _typeData, _ekiData));
+				if ($("." + pos).children().length < 2) {
+					if ($("." + pos).children(".ressha").length < 1) {
+						$("." + pos).append(create_html_down_ressha_icon(nowRow, _typeData, _ekiData));
 					} else {
-						$(create_html_down_ressha_icon(nowRow, _typeData, _ekiData)).prependTo("." + nowRow.pos);
+						$(create_html_down_ressha_icon(nowRow, _typeData, _ekiData)).prependTo("." + pos);
 					}
 			} else {
-				$("." + nowRow.pos).append(create_html_down_ressha_icon(nowRow, _typeData, _ekiData));
+				$("." + pos).append(create_html_down_ressha_icon(nowRow, _typeData, _ekiData));
 			}
 		} else if (String(_param_rosen) === "66" && pos.indexOf("JWH") === 0) {
 			// 羽衣線は左側の別枠に描画するため、画面上の左右ではなくpos末尾の方向を使う。
 			if (pos.slice(-1) === "U") {
-				$("." + nowRow.pos).append(create_html_up_ressha_icon(nowRow, _typeData, _ekiData));
-				$("." + nowRow.pos).addClass("up");
+				$("." + pos).append(create_html_up_ressha_icon(nowRow, _typeData, _ekiData));
+				$("." + pos).addClass("up");
 			} else {
-				$("." + nowRow.pos).append(create_html_down_ressha_icon(nowRow, _typeData, _ekiData));
+				$("." + pos).append(create_html_down_ressha_icon(nowRow, _typeData, _ekiData));
 			}
 		} else if ($("." + pos).offset().left < width / 2 + add) {
 				// アイコン表示位置が画面半分より左の場合
-				$("." + nowRow.pos).append(create_html_up_ressha_icon(nowRow, _typeData, _ekiData));
-				$("." + nowRow.pos).addClass("up");
+				$("." + pos).append(create_html_up_ressha_icon(nowRow, _typeData, _ekiData));
+				$("." + pos).addClass("up");
 			} else {
 				// アイコン表示位置が画面半分より右の場合
-				if ($("." + nowRow.pos).children(".ressha").length < 6) {
-					if ($("." + nowRow.pos).parent().parent().parent(".eki").length > 0) {
+				if ($("." + pos).children(".ressha").length < 6) {
+					if ($("." + pos).parent().parent().parent(".eki").length > 0) {
 						// 駅の場合
-						if ($("." + nowRow.pos).children(".ressha").length < 3) {
-							$("." + nowRow.pos).append(create_html_down_ressha_icon(nowRow, _typeData, _ekiData));
+						if ($("." + pos).children(".ressha").length < 3) {
+							$("." + pos).append(create_html_down_ressha_icon(nowRow, _typeData, _ekiData));
 						} else {
-							if ($("." + nowRow.pos).children(".ressha").length == 3) $("<div class='dummy'></div><div class='dummy'></div><div class='dummy'></div>").prependTo(("." + nowRow.pos));
-							let idx = $("." + nowRow.pos).children(".ressha").length - 3;
-							let test = $("." + nowRow.pos).children()[idx];
+							if ($("." + pos).children(".ressha").length == 3) $("<div class='dummy'></div><div class='dummy'></div><div class='dummy'></div>").prependTo(("." + pos));
+							let idx = $("." + pos).children(".ressha").length - 3;
+							let test = $("." + pos).children()[idx];
 							test.outerHTML = create_html_down_ressha_icon(nowRow, _typeData, _ekiData);
 						}
 					} else {
 						// 駅間の場合
-						$(create_html_down_ressha_icon(nowRow, _typeData, _ekiData)).prependTo("." + nowRow.pos);
+						$(create_html_down_ressha_icon(nowRow, _typeData, _ekiData)).prependTo("." + pos);
 					}
 				} else {
-					$("." + nowRow.pos).append(create_html_down_ressha_icon(nowRow, _typeData, _ekiData));
+					$("." + pos).append(create_html_down_ressha_icon(nowRow, _typeData, _ekiData));
 				}
 			}
 		}

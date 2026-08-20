@@ -459,22 +459,25 @@ header {
 		}
 		/* JR四国：進入方向に表示する予告窓 */
 		#stationList .jrshikoku-forecast-table {
+			--forecast-clearance: 108px;
 			background: #fff;
 			border: 2px solid #5b3;
 			box-sizing: border-box;
 			color: #222;
 			font-size: 15px;
-			min-width: 142px;
+			max-width: 142px;
+			min-width: 0;
 			position: absolute;
 			top: 50%;
 			transform: translateY(-50%);
 			z-index: 21;
+			width: 142px;
 		}
 		#stationList .jrshikoku-forecast-table.side-right {
-			left: calc(50% + 86px);
+			left: calc(50% + var(--forecast-clearance));
 		}
 		#stationList .jrshikoku-forecast-table.side-left {
-			right: calc(50% + 86px);
+			right: calc(50% + var(--forecast-clearance));
 		}
 		#stationList .jrshikoku-forecast-heading,
 		#stationList .jrshikoku-forecast-row {
@@ -491,6 +494,9 @@ header {
 			border-bottom: 2px solid #3a4;
 			color: #fff;
 			font-size: 14px;
+			line-height: 1.1;
+			text-align: center;
+			white-space: normal;
 		}
 		#stationList .jrshikoku-forecast-row + .jrshikoku-forecast-row {
 			border-top: 1px solid #9c8;
@@ -509,15 +515,9 @@ header {
 		}
 		@media (max-width: 550px) {
 			#stationList .jrshikoku-forecast-table {
-				font-size: 12px;
-				min-width: 0;
-				width: min(142px, calc(50vw - 88px));
-			}
-			#stationList .jrshikoku-forecast-table.side-right {
-				left: calc(50% + 82px);
-			}
-			#stationList .jrshikoku-forecast-table.side-left {
-				right: calc(50% + 82px);
+				--forecast-clearance: clamp(92px, 21vw, 108px);
+				font-size: clamp(8px, 2.4vw, 12px);
+				width: min(142px, calc(50% - var(--forecast-clearance) - 4px));
 			}
 			#stationList .jrshikoku-forecast-heading,
 			#stationList .jrshikoku-forecast-row {
@@ -525,13 +525,13 @@ header {
 				padding-right: 2px;
 			}
 			#stationList .jrshikoku-forecast-heading {
-				font-size: 12px;
+				font-size: clamp(8px, 2.4vw, 12px);
 			}
 		}
 		@media (max-width: 390px) {
 			#stationList .jrshikoku-forecast-table,
 			#stationList .jrshikoku-forecast-heading {
-				font-size: 10px;
+				font-size: clamp(7px, 2.35vw, 9px);
 			}
 		}
 		/* JR四国：香西～鬼無間の高松貨物ターミナル分岐 */
@@ -623,6 +623,200 @@ header {
 			}
 			#stationList .jrshikoku-freight-terminal-panel .ressha-contents {
 				left: 124px;
+			}
+		}
+		#stationList .jrshikoku-freight-terminal-panel .jrshikoku-virtual-window {
+			align-items: center;
+			background: #fff;
+			border: 1px solid #5b3;
+			box-sizing: border-box;
+			display: flex;
+			flex-direction: column;
+			font-size: 12px;
+			justify-content: center;
+			left: calc(50% - 18px);
+			min-height: 58px;
+			position: absolute;
+			top: 96px;
+			transform: translateX(-50%);
+			width: 74px;
+			z-index: 20;
+		}
+		#stationList .jrshikoku-freight-terminal-panel .jrshikoku-virtual-window .ressha-icon {
+			height: 42px;
+			min-height: 42px;
+			position: relative;
+			width: 52px;
+		}
+		#stationList .jrshikoku-freight-terminal-panel .jrshikoku-forecast-table[data-station-code="YFT"] {
+			top: 16px;
+		}
+
+		/* JR四国：入出区線・支線をLine+PosNumの投影先として独立表示する。 */
+		#stationList .jrshikoku-branch-section {
+			--branch-offset: clamp(118px, 24vw, 190px);
+			background-color: #fff;
+			border-color: transparent;
+			box-sizing: border-box;
+			height: 190px;
+			min-height: 190px;
+			overflow: visible;
+			position: relative;
+		}
+		#stationList .jrshikoku-branch-main-track,
+		#stationList .jrshikoku-branch-track {
+			background: repeating-linear-gradient(to bottom, #000 0, #000 24px, #fff 24px, #fff 48px);
+			border-left: 2px solid #000;
+			border-right: 2px solid #000;
+			box-sizing: border-box;
+			position: absolute;
+			top: -12px;
+			width: 18px;
+			z-index: 17;
+		}
+		#stationList .jrshikoku-branch-main-track {
+			bottom: -12px;
+			left: 50%;
+			transform: translateX(-50%);
+		}
+		#stationList .jrshikoku-branch-track {
+			bottom: 25px;
+		}
+		#stationList .jrshikoku-branch-section.branch-left .jrshikoku-branch-track {
+			left: calc(50% - var(--branch-offset));
+		}
+		#stationList .jrshikoku-branch-section.branch-right .jrshikoku-branch-track {
+			left: calc(50% + var(--branch-offset));
+		}
+		#stationList .jrshikoku-branch-track::after {
+			background: repeating-linear-gradient(to right, #000 0, #000 24px, #fff 24px, #fff 48px);
+			border-bottom: 2px solid #000;
+			border-top: 2px solid #000;
+			bottom: 0;
+			box-sizing: border-box;
+			content: "";
+			height: 18px;
+			position: absolute;
+			width: var(--branch-offset);
+		}
+		#stationList .jrshikoku-branch-section.branch-left .jrshikoku-branch-track::after {
+			left: 8px;
+		}
+		#stationList .jrshikoku-branch-section.branch-right .jrshikoku-branch-track::after {
+			right: 8px;
+		}
+		#stationList .jrshikoku-branch-node {
+			position: absolute;
+			top: 42px;
+			transform: translateX(-50%);
+			width: 180px;
+			z-index: 19;
+		}
+		#stationList .jrshikoku-branch-section.branch-left .jrshikoku-branch-node {
+			left: calc(50% - var(--branch-offset));
+		}
+		#stationList .jrshikoku-branch-section.branch-right .jrshikoku-branch-node {
+			left: calc(50% + var(--branch-offset));
+		}
+		#stationList .jrshikoku-branch-node .stalist-eki-link {
+			box-sizing: border-box;
+			margin: 0;
+			min-width: 160px;
+			width: 180px;
+		}
+		#stationList .jrshikoku-branch-node .stalist-eki-contents {
+			flex-direction: column;
+			justify-content: center;
+			min-height: 44px;
+		}
+		#stationList .jrshikoku-branch-node-stacked .stalist-eki-contents > div {
+			box-sizing: border-box;
+			padding: 2px 4px;
+			text-align: center;
+			width: 100%;
+		}
+		#stationList .jrshikoku-branch-node .ressha-contents {
+			height: 70px;
+			overflow: visible;
+			position: absolute;
+			top: 50px;
+			width: 52px;
+		}
+		#stationList .jrshikoku-branch-section.branch-left .jrshikoku-branch-node .ressha-contents {
+			left: 142px;
+		}
+		#stationList .jrshikoku-branch-section.branch-right .jrshikoku-branch-node .ressha-contents {
+			left: -14px;
+		}
+		#stationList .jrshikoku-branch-node .ressha-icon,
+		#stationList .jrshikoku-branch-node .ressha-icon.up {
+			margin: 0;
+			width: 52px;
+		}
+		#stationList .jrshikoku-branch-caption {
+			bottom: 8px;
+			color: #777;
+			font-weight: bold;
+			position: absolute;
+			right: 10px;
+			text-align: right;
+		}
+		#stationList .jrshikoku-boundary-node .stalist-eki-contents {
+			justify-content: center;
+		}
+		#stationList .jrshikoku-boundary-node .stalist-eki-contents > div {
+			margin: 0;
+			text-align: center;
+			width: 100%;
+		}
+		#stationList .jrshikoku-depot-branch .jrshikoku-forecast-table[data-station-code="UDEPOT"] {
+			right: calc(50% + var(--branch-offset) + 24px);
+			top: 200px;
+		}
+		#stationList .jrshikoku-depot-branch {
+			height: 280px;
+			min-height: 280px;
+		}
+		#stationList .jrshikoku-depot-branch .jrshikoku-branch-node {
+			top: 32px;
+		}
+		#stationList .jrshikoku-yodo-branch,
+		#stationList .jrshikoku-nahari-branch,
+		#stationList .jrshikoku-kochi-depot-branch {
+			height: 250px;
+			min-height: 250px;
+		}
+		#stationList .jrshikoku-yodo-branch .jrshikoku-branch-node,
+		#stationList .jrshikoku-nahari-branch .jrshikoku-branch-node,
+		#stationList .jrshikoku-kochi-depot-branch .jrshikoku-branch-node {
+			top: 112px;
+		}
+		#stationList .jrshikoku-yodo-branch .jrshikoku-forecast-table[data-station-code="GYODO"],
+		#stationList .jrshikoku-nahari-branch .jrshikoku-forecast-table[data-station-code="GN37"],
+		#stationList .jrshikoku-kochi-depot-branch .jrshikoku-forecast-table[data-station-code="KDEPOT"] {
+			top: 52px;
+		}
+		@media (max-width: 550px) {
+			#stationList .jrshikoku-branch-section {
+				--branch-offset: clamp(96px, 27vw, 128px);
+			}
+			#stationList .jrshikoku-depot-branch .jrshikoku-forecast-table[data-station-code="UDEPOT"] {
+				right: calc(50% + var(--forecast-clearance));
+			}
+			#stationList .jrshikoku-branch-node,
+			#stationList .jrshikoku-branch-node .stalist-eki-link {
+				min-width: 0;
+				width: min(156px, 38vw);
+			}
+			#stationList .jrshikoku-branch-node .stalist-eki-contents {
+				font-size: clamp(10px, 3vw, 14px);
+			}
+			#stationList .jrshikoku-nahari-branch .jrshikoku-branch-caption {
+				font-size: 10px;
+				left: 8px;
+				max-width: 92px;
+				right: auto;
+				text-align: left;
 			}
 		}
 		/* 始端駅から上へ続く縦線を表示しない分岐駅 */

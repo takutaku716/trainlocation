@@ -283,7 +283,8 @@
 		}
 		const position = resolvePosition(train.pos, direction, context);
 		if (isHagoromoBranch && position.key.indexOf(context.positionPrefix) === 0) {
-			position.key = context.positionPrefix + "H" + position.key.slice(context.positionPrefix.length);
+			const branchPrefix = getHagoromoPositionPrefix(context.positionPrefix);
+			position.key = branchPrefix + position.key.slice(context.positionPrefix.length);
 		}
 		if (!position.key) return null;
 		const destinationName = toText(typeof train.dest === "object" && train.dest ? train.dest.text : train.dest) || "行先取得不可";
@@ -571,6 +572,13 @@
 		const page = toText(senku);
 		if (!page || prefix.endsWith(page)) return prefix;
 		return prefix + page;
+	}
+
+	function getHagoromoPositionPrefix(positionPrefix) {
+		const prefix = toText(positionPrefix) || "JW";
+		if (prefix.indexOf("JWH") === 0) return prefix;
+		if (prefix.indexOf("JW") === 0) return "JWH" + prefix.slice(2);
+		return prefix + "H";
 	}
 
 	return {
