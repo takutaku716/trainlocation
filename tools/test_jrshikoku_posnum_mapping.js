@@ -51,15 +51,73 @@ assert.strictEqual(sharedUwajima.pos, sharedIyonada.pos);
 assert.strictEqual(sharedUwajima.jrShikoku.renderPosition, "JSUDEPOT33U");
 assert.strictEqual(sharedIyonada.jrShikoku.renderPosition, "JSSDEPOT33U");
 
+[
+	[30, 0, "76", "uwajima", "JSUDEPOT30U"],
+	[30, 0, "77", "uwajima2", "JSSDEPOT30U"],
+	[31, 0, "76", "uwajima", "JSUDEPOT31U"],
+	[31, 1, "76", "uwajima", "JSUDEPOT31D"],
+	[31, 0, "77", "uwajima2", "JSSDEPOT31U"],
+	[31, 1, "77", "uwajima2", "JSSDEPOT31D"],
+	[32, 0, "76", "uwajima", "JSUDEPOT32"],
+	[32, 1, "76", "uwajima", "JSUDEPOT32"],
+	[32, 0, "77", "uwajima2", "JSSDEPOT32"],
+	[32, 1, "77", "uwajima2", "JSSDEPOT32"]
+].forEach(function(testCase) {
+	const train = normalize({ Line: "uwajima", PosNum: testCase[0], Direction: testCase[1] }, testCase[2], testCase[3]).trains[0];
+	assert.ok(train, "uwajima:" + testCase[0] + " route " + testCase[2]);
+	assert.strictEqual(train.jrShikoku.renderPosition, testCase[4]);
+});
+
 const matsuyama250 = normalize({ Line: "uwajima", PosNum: 250 }, "76", "uwajima").trains[0];
 const matsuyama252 = normalize({ Line: "uwajima", PosNum: 252 }, "76", "uwajima").trains[0];
 assert.notStrictEqual(matsuyama250.pos, matsuyama252.pos);
 assert.strictEqual(matsuyama250.jrShikoku.renderPosition, matsuyama252.jrShikoku.renderPosition);
 
-const iyoWaka92 = normalize({ Line: "uwajima", PosNum: 92 }, "77", "uwajima2").trains[0];
-const iyoWaka213 = normalize({ Line: "uwajima", PosNum: 213 }, "77", "uwajima2").trains[0];
-assert.strictEqual(iyoWaka92.jrShikoku.renderPosition, "JSSIYOWAKA92U");
-assert.strictEqual(iyoWaka213.jrShikoku.renderPosition, "JSSIYOWAKA213U");
+[
+	[87, "76", "uwajima", "JSUWAKA87U"],
+	[92, "76", "uwajima", "JSUWAKA92U"],
+	[213, "76", "uwajima", "JSUWAKA213U"],
+	[92, "77", "uwajima2", "JSSWAKA92U"],
+	[213, "77", "uwajima2", "JSSWAKA213U"]
+].forEach(function(testCase) {
+	const train = normalize({ Line: "uwajima", PosNum: testCase[0] }, testCase[1], testCase[2]).trains[0];
+	assert.ok(train, "uwajima:" + testCase[0] + " route " + testCase[1]);
+	assert.strictEqual(train.jrShikoku.renderPosition, testCase[3]);
+});
+assert.strictEqual(normalize({ Line: "uwajima", PosNum: 87 }, "77", "uwajima2").trains.length, 0);
+
+const tokushimaOutbound = normalize({ Line: "tokushima", PosNum: 497, Direction: 0 }, "81", "tokushima").trains[0];
+const tokushimaInbound = normalize({ Line: "tokushima", PosNum: 497, Direction: 1 }, "81", "tokushima").trains[0];
+assert.strictEqual(tokushimaOutbound.jrShikoku.renderPosition, "JSBT00_B01D");
+assert.strictEqual(tokushimaInbound.jrShikoku.renderPosition, "JSBT00_B01U");
+assert.strictEqual(normalize({ Line: "koutoku", PosNum: 496, Direction: 1 }, "81", "tokushima").trains[0].jrShikoku.renderPosition, "JSBT00_B01U");
+assert.strictEqual(normalize({ Line: "tokushima", PosNum: 497, Direction: 0 }, "80", "koutoku").trains[0].jrShikoku.renderPosition, "JSTT01_T00U");
+assert.strictEqual(normalize({ Line: "tokushima", PosNum: 497, Direction: 0 }, "82", "naruto").trains[0].jrShikoku.renderPosition, "JSNT01_T00U");
+
+const duplicateSharedTrain = adapter.normalize([
+	{ GetDateTime: "2026/08/20 12:00:00" },
+	{ TrainNum: "487D", Line: "koutoku", PosNum: 495, Pos: "佐古", Direction: 0, Type: "normal", delay: 0 },
+	{ TrainNum: "487D", Line: "tokushima", PosNum: 495, Pos: "佐古", Direction: 0, Type: "normal", delay: 0 }
+], [{ "487D": "徳島,発,11:00#佐古,発,11:05#穴吹,着,12:00#" }], { senku: "81", lineId: "tokushima" });
+assert.strictEqual(duplicateSharedTrain.trains.length, 1);
+assert.strictEqual(duplicateSharedTrain.trains[0].jrShikoku.sourceLine, "tokushima");
+
+const duplicateKoutokuYosanTrain = adapter.normalize([
+	{ GetDateTime: "2026/08/20 12:00:00" },
+	{ TrainNum: "3033D", Line: "yosan", PosNum: 410, Pos: "屋島", Direction: 1, Type: "express", delay: 0 },
+	{ TrainNum: "3033D", Line: "koutoku", PosNum: 420, Pos: "木太町～屋島", Direction: 1, Type: "express", delay: 0 }
+], [{ "3033D": "高松,発,11:00#屋島,発,11:15#徳島,着,12:10#" }], { senku: "80", lineId: "koutoku" });
+assert.strictEqual(duplicateKoutokuYosanTrain.trains.length, 1);
+assert.strictEqual(duplicateKoutokuYosanTrain.trains[0].jrShikoku.sourceLine, "koutoku");
+
+const locationMaster = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "original", "location_master.json"), "utf8"));
+Object.keys(positionMap.records).forEach(function(key) {
+	const record = positionMap.records[key];
+	assert.strictEqual(locationMaster[adapter.buildSourcePositionKey(record.line, record.posNum)], record.name, "location_master " + key);
+});
+assert.strictEqual(locationMaster.JSP_uwajima_87, "新谷～伊予若宮");
+assert.strictEqual(locationMaster.JSP_uwajima_92, "伊予若宮～伊予大洲");
+assert.strictEqual(locationMaster.JSP_uwajima_213, "伊予白滝～伊予若宮");
 
 assert.strictEqual(normalize({ Line: "tokushima", PosNum: 668 }, "81", "tokushima").trains.length, 0);
 assert.strictEqual(normalize({ Line: "yosan", PosNum: 233 }, "64", "seto").trains.length, 0);
@@ -69,13 +127,22 @@ assert.strictEqual(normalize({ Line: "yosan", PosNum: 235 }, "64", "seto").train
 	["uwajima", 184, "76", "uwajima", "JSUYODO184U"],
 	["dosan", 178, "78", "dosan", "JSDNAHARI178U"],
 	["dosan", 199, "78", "dosan", "JSDKDEPOT199U"],
-	["yosan", 295, "73", "yosan", "JSYV295"],
-	["yosan", 346, "73", "yosan", "JSYFT346"],
+	["yosan", 295, "73", "yosan", "JSYV295D"],
+	["yosan", 346, "73", "yosan", "JSYFT346U"],
 	["dosan", 70, "81", "tokushima", "JSBB23_B24U"]
 ].forEach(function(testCase) {
 	const train = normalize({ Line: testCase[0], PosNum: testCase[1] }, testCase[2], testCase[3]).trains[0];
 	assert.ok(train, testCase.slice(0, 2).join(":"));
 	assert.strictEqual(train.jrShikoku.renderPosition, testCase[4]);
 });
+
+assert.strictEqual(
+	normalize({ Line: "yosan", PosNum: 346, Direction: 1 }, "73", "yosan").trains[0].jrShikoku.renderPosition,
+	"JSYFT346D"
+);
+assert.strictEqual(
+	normalize({ Line: "dosan", PosNum: 199, Direction: 1 }, "78", "dosan").trains[0].jrShikoku.renderPosition,
+	"JSDKDEPOT199D"
+);
 
 console.log("JR Shikoku Line + PosNum mapping tests passed.");

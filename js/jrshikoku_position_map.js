@@ -730,6 +730,10 @@
 					"U": "JSTT01U",
 					"D": "JSTT01D"
 				},
+				"81": {
+					"U": "JSBB01U",
+					"D": "JSBB01D"
+				},
 				"82": {
 					"U": "JSNT01U",
 					"D": "JSNT01D"
@@ -748,6 +752,10 @@
 				"80": {
 					"U": "JSTT00U",
 					"D": "JSTT00D"
+				},
+				"81": {
+					"U": "JSBT00U",
+					"D": "JSBT00D"
 				},
 				"82": {
 					"U": "JSNT00U",
@@ -779,9 +787,17 @@
 				"1"
 			],
 			"projections": {
+				"80": {
+					"U": "JSTT00U",
+					"D": "JSTT00D"
+				},
 				"81": {
 					"U": "JSBT00U",
 					"D": "JSBT00D"
+				},
+				"82": {
+					"U": "JSNT00U",
+					"D": "JSNT00D"
 				}
 			}
 		},
@@ -794,9 +810,17 @@
 				"1"
 			],
 			"projections": {
+				"80": {
+					"U": "JSTT01U",
+					"D": "JSTT01D"
+				},
 				"81": {
 					"U": "JSBB01U",
 					"D": "JSBB01D"
+				},
+				"82": {
+					"U": "JSNT01U",
+					"D": "JSNT01D"
 				}
 			}
 		},
@@ -1002,12 +1026,16 @@
 			],
 			"projections": {
 				"76": {
-					"U": "JSUU02_U05U",
-					"D": "JSUU02_U05D"
+					"U": "JSUDEPOT31U",
+					"D": "JSUDEPOT31D",
+					"senku": "76",
+					"name": "北伊予～伊予市"
 				},
 				"77": {
-					"U": "JSSU02_U05U",
-					"D": "JSSU02_U05D"
+					"U": "JSSDEPOT31U",
+					"D": "JSSDEPOT31D",
+					"senku": "77",
+					"name": "北伊予～伊予市"
 				}
 			}
 		},
@@ -2322,10 +2350,15 @@
 				"1"
 			],
 			"projections": {
+				"76": {
+					"senku": "76",
+					"U": "JSUWAKA92U",
+					"D": "JSUWAKA92D"
+				},
 				"77": {
 					"senku": "77",
-					"U": "JSSIYOWAKA92U",
-					"D": "JSSIYOWAKA92D"
+					"U": "JSSWAKA92U",
+					"D": "JSSWAKA92D"
 				}
 			}
 		},
@@ -3047,6 +3080,10 @@
 					"U": "JSTT01U",
 					"D": "JSTT01D"
 				},
+				"81": {
+					"U": "JSBB01U",
+					"D": "JSBB01D"
+				},
 				"82": {
 					"U": "JSNT01U",
 					"D": "JSNT01D"
@@ -3077,9 +3114,17 @@
 				"1"
 			],
 			"projections": {
+				"80": {
+					"U": "JSTT01U",
+					"D": "JSTT01D"
+				},
 				"81": {
 					"U": "JSBB01U",
 					"D": "JSBB01D"
+				},
+				"82": {
+					"U": "JSNT01U",
+					"D": "JSNT01D"
 				}
 			}
 		},
@@ -3536,12 +3581,16 @@
 			],
 			"projections": {
 				"76": {
-					"U": "JSUU02_U05U",
-					"D": "JSUU02_U05D"
+					"U": "JSUDEPOT30U",
+					"D": "JSUDEPOT30D",
+					"senku": "76",
+					"name": "北伊予～伊予市"
 				},
 				"77": {
-					"U": "JSSU02_U05U",
-					"D": "JSSU02_U05D"
+					"U": "JSSDEPOT30U",
+					"D": "JSSDEPOT30D",
+					"senku": "77",
+					"name": "北伊予～伊予市"
 				}
 			}
 		},
@@ -3841,6 +3890,10 @@
 					"U": "JSTT00U",
 					"D": "JSTT00D"
 				},
+				"81": {
+					"U": "JSBT00U",
+					"D": "JSBT00D"
+				},
 				"82": {
 					"U": "JSNT00U",
 					"D": "JSNT00D"
@@ -3856,9 +3909,17 @@
 				"1"
 			],
 			"projections": {
+				"80": {
+					"U": "JSTT00U",
+					"D": "JSTT00D"
+				},
 				"81": {
 					"U": "JSBT00U",
 					"D": "JSBT00D"
+				},
+				"82": {
+					"U": "JSNT00U",
+					"D": "JSNT00D"
 				}
 			}
 		},
@@ -4887,8 +4948,8 @@
 			"projections": {
 				"73": {
 					"senku": "73",
-					"U": "JSYFT346",
-					"D": "JSYFT346"
+					"U": "JSYFT346U",
+					"D": "JSYFT346D"
 				}
 			}
 		},
@@ -5068,9 +5129,17 @@
 				"1"
 			],
 			"projections": {
+				"80": {
+					"U": "JSTT01_T00U",
+					"D": "JSTT01_T00D"
+				},
 				"81": {
-					"U": "JSBT00_B01U",
-					"D": "JSBT00_B01D"
+					"U": "JSBT00_B01D",
+					"D": "JSBT00_B01U"
+				},
+				"82": {
+					"U": "JSNT01_T00U",
+					"D": "JSNT01_T00D"
 				}
 			}
 		},
@@ -5083,9 +5152,17 @@
 				"1"
 			],
 			"projections": {
+				"80": {
+					"U": "JSTT01_T00U",
+					"D": "JSTT01_T00D"
+				},
 				"81": {
-					"U": "JSBT00_B01U",
-					"D": "JSBT00_B01D"
+					"U": "JSBT00_B01D",
+					"D": "JSBT00_B01U"
+				},
+				"82": {
+					"U": "JSNT01_T00U",
+					"D": "JSNT01_T00D"
 				}
 			}
 		},
@@ -5743,15 +5820,17 @@
 		"uwajima:87": {
 			"line": "uwajima",
 			"posNum": "87",
-			"name": "新谷～伊予大洲",
+			"name": "新谷～伊予若宮",
 			"directions": [
 				"0",
 				"1"
 			],
 			"projections": {
 				"76": {
-					"U": "JSUU13_U14U",
-					"D": "JSUU13_U14D"
+					"U": "JSUWAKA87U",
+					"D": "JSUWAKA87D",
+					"senku": "76",
+					"name": "新谷～伊予若宮"
 				}
 			}
 		},
@@ -5831,6 +5910,14 @@
 				"80": {
 					"U": "JSTT01_T00U",
 					"D": "JSTT01_T00D"
+				},
+				"81": {
+					"U": "JSBT00_B01D",
+					"D": "JSBT00_B01U"
+				},
+				"82": {
+					"U": "JSNT01_T00U",
+					"D": "JSNT01_T00D"
 				}
 			}
 		},
@@ -5846,6 +5933,10 @@
 				"80": {
 					"U": "JSTT01_T00U",
 					"D": "JSTT01_T00D"
+				},
+				"81": {
+					"U": "JSBT00_B01D",
+					"D": "JSBT00_B01U"
 				},
 				"82": {
 					"U": "JSNT01_T00U",
@@ -6619,6 +6710,10 @@
 					"U": "JSTT00U",
 					"D": "JSTT00D"
 				},
+				"81": {
+					"U": "JSBT00U",
+					"D": "JSBT00D"
+				},
 				"82": {
 					"U": "JSNT00U",
 					"D": "JSNT00D"
@@ -6634,9 +6729,17 @@
 				"1"
 			],
 			"projections": {
+				"80": {
+					"U": "JSTT00U",
+					"D": "JSTT00D"
+				},
 				"81": {
 					"U": "JSBT00U",
 					"D": "JSBT00D"
+				},
+				"82": {
+					"U": "JSNT00U",
+					"D": "JSNT00D"
 				}
 			}
 		},
@@ -7640,6 +7743,10 @@
 					"U": "JSTT00U",
 					"D": "JSTT00D"
 				},
+				"81": {
+					"U": "JSBT00U",
+					"D": "JSBT00D"
+				},
 				"82": {
 					"U": "JSNT00U",
 					"D": "JSNT00D"
@@ -7655,9 +7762,17 @@
 				"1"
 			],
 			"projections": {
+				"80": {
+					"U": "JSTT00U",
+					"D": "JSTT00D"
+				},
 				"81": {
 					"U": "JSBT00U",
 					"D": "JSBT00D"
+				},
+				"82": {
+					"U": "JSNT00U",
+					"D": "JSNT00D"
 				}
 			}
 		},
@@ -7941,10 +8056,15 @@
 				"1"
 			],
 			"projections": {
+				"76": {
+					"senku": "76",
+					"U": "JSUWAKA213U",
+					"D": "JSUWAKA213D"
+				},
 				"77": {
 					"senku": "77",
-					"U": "JSSIYOWAKA213U",
-					"D": "JSSIYOWAKA213D"
+					"U": "JSSWAKA213U",
+					"D": "JSSWAKA213D"
 				}
 			}
 		},
@@ -8480,12 +8600,16 @@
 			],
 			"projections": {
 				"76": {
-					"U": "JSUU02_U05U",
-					"D": "JSUU02_U05D"
+					"U": "JSUDEPOT32",
+					"D": "JSUDEPOT32",
+					"senku": "76",
+					"name": "北伊予～伊予市"
 				},
 				"77": {
-					"U": "JSSU02_U05U",
-					"D": "JSSU02_U05D"
+					"U": "JSSDEPOT32",
+					"D": "JSSDEPOT32",
+					"senku": "77",
+					"name": "北伊予～伊予市"
 				}
 			}
 		},
@@ -8870,8 +8994,8 @@
 			"projections": {
 				"73": {
 					"senku": "73",
-					"U": "JSYV295",
-					"D": "JSYV295",
+					"U": "JSYV295D",
+					"D": "JSYV295D",
 					"kind": "virtual"
 				}
 			}

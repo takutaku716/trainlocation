@@ -41,7 +41,7 @@ assert.strictEqual(normalized.trains[2].typeLabel, "貨物");
 assert.strictEqual(normalized.trains[2].displayTrainNumber, "3078");
 assert.strictEqual(normalized.trains[3].typeLabel, "貨物");
 assert.strictEqual(normalized.trains[3].pos, "JSP_yosan_346");
-assert.strictEqual(normalized.trains[3].jrShikoku.renderPosition, "JSYFT346");
+assert.strictEqual(normalized.trains[3].jrShikoku.renderPosition, "JSYFT346U");
 assert.strictEqual(normalized.trains[3].posName, "鬼無～高松（タ）");
 
 const tokushimaDirection = adapter.normalize([

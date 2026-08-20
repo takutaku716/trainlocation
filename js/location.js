@@ -1152,7 +1152,7 @@ $(function ($) {
 
 	// 区間をクリックしたときの動き
 	$(document).on("click"
-	, ".rosen-name-list .rosen-name-contents, .hoka-rosen-link a, .up-rosen-link a, .down-rosen-link a, .shin-link a"
+	, ".rosen-name-list .rosen-name-contents, .hoka-rosen-link a, .up-rosen-link a, .down-rosen-link a, .shin-link a, .jrshikoku-wakamiya-caption a"
 	,  function() {
 		$("#sideMenu .side-menu-outer").hide();
 
@@ -3045,6 +3045,12 @@ function create_ressha_icon(_param_rosen, _nowData, _typeData, _ekiData) {
 		if (pos != "" && $("." + pos).length > 0) {
 			if (nowRow.jrShikoku && nowRow.jrShikoku.isForecastWindow) {
 				$("." + pos).append(create_html_jrshikoku_forecast_row(nowRow, _typeData, _ekiData));
+			} else if (nowRow.jrShikoku && pos.slice(-1) === "U") {
+				// JR四国はLine + PosNumの投影先末尾で、画面上の上下方向を明示する。
+				$("." + pos).append(create_html_up_ressha_icon(nowRow, _typeData, _ekiData));
+				$("." + pos).addClass("up");
+			} else if (nowRow.jrShikoku && pos.slice(-1) === "D") {
+				$("." + pos).append(create_html_down_ressha_icon(nowRow, _typeData, _ekiData));
 			} else if (pos == "R9P11U" || pos == "R9P10U" || pos == "R9P9U" || pos == "R1P160U") {
 				// 新函館北斗駅左側（R9P11U）
 				// 新函館北斗～仁山間左側（R9P10U）

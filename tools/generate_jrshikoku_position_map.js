@@ -7,6 +7,7 @@ const adapter = require("../js/jrshikoku_location_adapter.js");
 const ROOT = path.resolve(__dirname, "..");
 const CSV_PATH = path.join(ROOT, "original", "SikokuPos", "jrshikoku_gui_collector", "Pos_PosNum_Direction_Line.csv");
 const OUTPUT_PATH = path.join(ROOT, "js", "jrshikoku_position_map.js");
+const LOCATION_MASTER_PATH = path.join(ROOT, "original", "location_master.json");
 
 const AUTO_ROUTES = [
 	{ senku: "64", lineId: "seto", sourceLine: "yosan" },
@@ -36,6 +37,19 @@ const EXTRA_RESOLVED_PROJECTIONS = {
 	"82": ["tokushima:483", "tokushima:496"]
 };
 
+// 佐古～徳島は高徳線・徳島線で同じ物理区間を別Lineとして配信する。
+// 各画面の線形へ明示的に投影し、81ページだけ画面上の並びに合わせてU/Dを反転する。
+const SAKO_TOKUSHIMA_PROJECTIONS = {
+	"494": { "80": "JSTT01", "81": "JSBB01", "82": "JSNT01" },
+	"495": { "80": "JSTT01", "81": "JSBB01", "82": "JSNT01" },
+	"496": { "80": "JSTT01_T00", "81": "JSBT00_B01", "82": "JSNT01_T00" },
+	"497": { "80": "JSTT01_T00", "81": "JSBT00_B01", "82": "JSNT01_T00" },
+	"499": { "80": "JSTT00", "81": "JSBT00", "82": "JSNT00" },
+	"500": { "80": "JSTT00", "81": "JSBT00", "82": "JSNT00" },
+	"501": { "80": "JSTT00", "81": "JSBT00", "82": "JSNT00" },
+	"502": { "80": "JSTT00", "81": "JSBT00", "82": "JSNT00" }
+};
+
 // 瀬戸大橋周辺は挙動確認後に、この表だけを差し替えて拡張する。
 const SETO_OHASHI_OVERRIDES = {
 	"yosan:246": { senku: "64", render: "JSYF246", kind: "forecast" },
@@ -45,6 +59,18 @@ const SETO_OHASHI_OVERRIDES = {
 const SPECIAL_PROJECTIONS = {
 	"tokushima:496": [
 		{ senku: "82", U: "JSNT01_T00U", D: "JSNT01_T00D" }
+	],
+	"uwajima:30": [
+		{ senku: "76", U: "JSUDEPOT30U", D: "JSUDEPOT30D", name: "北伊予～伊予市" },
+		{ senku: "77", U: "JSSDEPOT30U", D: "JSSDEPOT30D", name: "北伊予～伊予市" }
+	],
+	"uwajima:31": [
+		{ senku: "76", U: "JSUDEPOT31U", D: "JSUDEPOT31D", name: "北伊予～伊予市" },
+		{ senku: "77", U: "JSSDEPOT31U", D: "JSSDEPOT31D", name: "北伊予～伊予市" }
+	],
+	"uwajima:32": [
+		{ senku: "76", U: "JSUDEPOT32", D: "JSUDEPOT32", name: "北伊予～伊予市" },
+		{ senku: "77", U: "JSSDEPOT32", D: "JSSDEPOT32", name: "北伊予～伊予市" }
 	],
 	"uwajima:33": [
 		{ senku: "76", U: "JSUDEPOT33U", D: "JSUDEPOT33D", name: "松山運転所～北伊予 入出区線" },
@@ -59,10 +85,15 @@ const SPECIAL_PROJECTIONS = {
 		{ senku: "77", U: "JSSU00U", D: "JSSU00D", name: "松山" }
 	],
 	"uwajima:92": [
-		{ senku: "77", U: "JSSIYOWAKA92U", D: "JSSIYOWAKA92D" }
+		{ senku: "76", U: "JSUWAKA92U", D: "JSUWAKA92D" },
+		{ senku: "77", U: "JSSWAKA92U", D: "JSSWAKA92D" }
 	],
 	"uwajima:213": [
-		{ senku: "77", U: "JSSIYOWAKA213U", D: "JSSIYOWAKA213D" }
+		{ senku: "76", U: "JSUWAKA213U", D: "JSUWAKA213D" },
+		{ senku: "77", U: "JSSWAKA213U", D: "JSSWAKA213D" }
+	],
+	"uwajima:87": [
+		{ senku: "76", U: "JSUWAKA87U", D: "JSUWAKA87D", name: "新谷～伊予若宮" }
 	],
 	"uwajima:184": [
 		{ senku: "76", U: "JSUYODO184U", D: "JSUYODO184D" },
@@ -75,11 +106,16 @@ const SPECIAL_PROJECTIONS = {
 		{ senku: "78", U: "JSDKDEPOT199U", D: "JSDKDEPOT199D" }
 	],
 	"yosan:295": [
-		{ senku: "73", U: "JSYV295", D: "JSYV295", kind: "virtual" }
+		{ senku: "73", U: "JSYV295D", D: "JSYV295D", kind: "virtual" }
 	],
 	"yosan:346": [
-		{ senku: "73", U: "JSYFT346", D: "JSYFT346" }
+		{ senku: "73", U: "JSYFT346U", D: "JSYFT346D" }
 	]
+};
+
+// 元データの地点名から自動投影できても、その画面には在線を出さない組み合わせ。
+const DISABLED_PROJECTIONS = {
+	"uwajima:87": ["77"]
 };
 
 const FORECAST_SOURCES = {
@@ -234,6 +270,21 @@ Object.keys(EXTRA_RESOLVED_PROJECTIONS).forEach(function(senku) {
 	});
 });
 
+Object.keys(SAKO_TOKUSHIMA_PROJECTIONS).forEach(function(posNum) {
+	["koutoku", "tokushima"].forEach(function(line) {
+		const record = records[line + ":" + posNum];
+		if (!record) throw new Error("Missing Sako-Tokushima record: " + line + ":" + posNum);
+		Object.keys(SAKO_TOKUSHIMA_PROJECTIONS[posNum]).forEach(function(senku) {
+			const base = SAKO_TOKUSHIMA_PROJECTIONS[posNum][senku];
+			const reverse = senku === "81" && (posNum === "496" || posNum === "497");
+			addProjection(record, senku, {
+				U: base + (reverse ? "D" : "U"),
+				D: base + (reverse ? "U" : "D")
+			});
+		});
+	});
+});
+
 Object.keys(SPECIAL_PROJECTIONS).forEach(function(key) {
 	if (!records[key]) throw new Error("Missing special projection record: " + key);
 	SPECIAL_PROJECTIONS[key].forEach(function(projection) {
@@ -270,6 +321,13 @@ Object.keys(SETO_OHASHI_OVERRIDES).forEach(function(key) {
 	});
 });
 
+Object.keys(DISABLED_PROJECTIONS).forEach(function(key) {
+	if (!records[key]) throw new Error("Missing disabled projection record: " + key);
+	DISABLED_PROJECTIONS[key].forEach(function(senku) {
+		delete records[key].projections[senku];
+	});
+});
+
 // 佃仮想窓は土讃線側の共通在線を使うため表示しない。
 if (records["tokushima:668"]) records["tokushima:668"].projections = {};
 
@@ -293,6 +351,13 @@ const output = `(function(root, factory) {\n` +
 	`\t"use strict";\n\treturn ${JSON.stringify(payload, null, "\t")};\n}));\n`;
 
 fs.writeFileSync(OUTPUT_PATH, output, "utf8");
+const locationMaster = JSON.parse(fs.readFileSync(LOCATION_MASTER_PATH, "utf8"));
+Object.keys(records).forEach(function(key) {
+	const record = records[key];
+	const sourceKey = "JSP_" + record.line.replace(/[^A-Za-z0-9_-]/g, "_") + "_" + record.posNum;
+	locationMaster[sourceKey] = record.name;
+});
+fs.writeFileSync(LOCATION_MASTER_PATH, JSON.stringify(locationMaster, null, "\t") + "\n", "utf8");
 const unmapped = Object.keys(records).filter(function(key) { return records[key].unmapped; });
-console.log("Generated", path.relative(ROOT, OUTPUT_PATH), "with", Object.keys(records).length, "Line+PosNum records.");
+console.log("Generated", path.relative(ROOT, OUTPUT_PATH), "with", Object.keys(records).length, "Line+PosNum records and location_master entries.");
 console.log("Unmapped records:", unmapped.length, unmapped.join(", "));

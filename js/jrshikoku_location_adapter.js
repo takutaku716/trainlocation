@@ -191,6 +191,10 @@
 		"35": { pos: "JSYF35", name: "北伊予予告窓②", lineId: "uwajima", rosen: "76", hostStationCode: "UDEPOT", side: "left", slot: 2,
 			additionalDisplays: [{ lineId: "uwajima2", rosen: "77", hostStationCode: "UDEPOT", side: "left", slot: 2 }] }
 	};
+	const SHARED_LINE_DUPLICATE_PAIRS = new Set([
+		"koutoku|tokushima",
+		"koutoku|yosan"
+	]);
 	const LINE_CONFIGS = {
 		yosan: {
 			lineId: "yosan",
@@ -275,9 +279,9 @@
 		const stationContext = buildStationContext(lineConfig);
 		const rows = Array.isArray(liveJson) ? liveJson : [];
 		const timestampRow = rows.find(function(row) { return row && row.GetDateTime; });
-		const trains = rows.map(function(row, rowIndex) {
+		const trains = dedupeSharedLineTrains(rows.map(function(row, rowIndex) {
 			return convertTrain(row, timetableMap, stationContext, settings, lineConfig, rowIndex);
-		}).filter(Boolean);
+		}).filter(Boolean), lineConfig);
 		const time = formatTimestamp(timestampRow && timestampRow.GetDateTime);
 		const result = { trains: trains };
 		if (time) {
@@ -291,6 +295,42 @@
 				}];
 			}
 		}
+		return result;
+	}
+
+	function dedupeSharedLineTrains(trains, lineConfig) {
+		const result = [];
+		const byTrainNumber = new Map();
+		trains.forEach(function(train) {
+			if (!train || !train.cbango || train.jrShikoku.isForecastWindow) {
+				result.push(train);
+				return;
+			}
+			const previousIndex = byTrainNumber.get(train.cbango);
+			if (previousIndex === undefined) {
+				byTrainNumber.set(train.cbango, result.length);
+				result.push(train);
+				return;
+			}
+			const previous = result[previousIndex];
+			const sharedPair = [previous.jrShikoku.sourceLine, train.jrShikoku.sourceLine].sort().join("|");
+			if (!SHARED_LINE_DUPLICATE_PAIRS.has(sharedPair)) {
+				result.push(train);
+				return;
+			}
+			const equivalentPosition = previous.jrShikoku.positionNumber === train.jrShikoku.positionNumber ||
+				previous.jrShikoku.renderPosition === train.jrShikoku.renderPosition;
+			if (!equivalentPosition) {
+				result.push(train);
+				return;
+			}
+			const preferredLines = [lineConfig && lineConfig.lineId]
+				.concat((lineConfig && lineConfig.additionalLineIds) || [])
+				.filter(Boolean);
+			if (preferredLines.indexOf(train.jrShikoku.sourceLine) >= 0 && preferredLines.indexOf(previous.jrShikoku.sourceLine) < 0) {
+				result[previousIndex] = train;
+			}
+		});
 		return result;
 	}
 
