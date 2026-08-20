@@ -1162,6 +1162,31 @@ header {
 		#stationList .jrshikoku-special-substations > div {
 			padding: 2px 0;
 		}
+		#stationList .jrshikoku-special-node .jrshikoku-gn-station,
+		#stationList .jrshikoku-special-substations .jrshikoku-gn-station,
+		#stationList .jrshikoku-special-node .jrshikoku-numbered-station,
+		#stationList .jrshikoku-special-substations .jrshikoku-numbered-station {
+			align-items: center;
+			display: flex;
+			flex-direction: row;
+			justify-content: flex-start;
+		}
+		#stationList .jrshikoku-special-node .jrshikoku-gn-station > div,
+		#stationList .jrshikoku-special-substations .jrshikoku-gn-station > div,
+		#stationList .jrshikoku-special-node .jrshikoku-numbered-station > div,
+		#stationList .jrshikoku-special-substations .jrshikoku-numbered-station > div {
+			box-sizing: border-box;
+			flex: 1;
+			font-weight: bold;
+			text-align: center;
+		}
+		#stationList .jrshikoku-special-node .jrshikoku-gn-station .eki-icon,
+		#stationList .jrshikoku-special-substations .jrshikoku-gn-station .eki-icon,
+		#stationList .jrshikoku-special-node .jrshikoku-numbered-station .eki-icon,
+		#stationList .jrshikoku-special-substations .jrshikoku-numbered-station .eki-icon {
+			flex: 0 0 auto;
+			margin: 1px 5px;
+		}
 		#stationList .jrshikoku-freight-terminal-panel {
 			--special-cushion-top: 105px;
 			--special-branch-offset: clamp(96px, 13vw, 120px);
@@ -1222,11 +1247,13 @@ header {
 			top: 280px;
 			transform: translateX(-50%);
 		}
-		#stationList .jrshikoku-nahari-branch,
-		#stationList .jrshikoku-yodo-branch {
-			--special-branch-offset: clamp(184px, 25vw, 240px);
-			height: 520px;
-			min-height: 520px;
+		#stationList .jrshikoku-yodo-branch,
+		#stationList .jrshikoku-nahari-branch {
+			--special-cushion-top: 115px;
+			--special-branch-offset: clamp(96px, 13vw, 120px);
+			background-color: #fff;
+			height: 515px;
+			min-height: 515px;
 		}
 		#stationList .jrshikoku-kochi-depot-branch {
 			--special-cushion-top: 105px;
@@ -1237,6 +1264,8 @@ header {
 		}
 		#stationList .jrshikoku-freight-terminal-panel::before,
 		#stationList .jrshikoku-depot-branch::before,
+		#stationList .jrshikoku-yodo-branch::before,
+		#stationList .jrshikoku-nahari-branch::before,
 		#stationList .jrshikoku-kochi-depot-branch::before {
 			background: #eee;
 			border-radius: 15px;
@@ -1250,43 +1279,77 @@ header {
 		}
 		#stationList .jrshikoku-special-junction.branch-left.jrshikoku-freight-terminal-panel::before,
 		#stationList .jrshikoku-special-junction.branch-left.jrshikoku-depot-branch::before,
+		#stationList .jrshikoku-special-junction.branch-left.jrshikoku-yodo-branch::before,
+		#stationList .jrshikoku-special-junction.branch-left.jrshikoku-nahari-branch::before,
 		#stationList .jrshikoku-special-junction.branch-left.jrshikoku-kochi-depot-branch::before {
 			right: calc(50% + 8px);
 		}
 		#stationList .jrshikoku-special-junction.branch-right.jrshikoku-freight-terminal-panel::before,
 		#stationList .jrshikoku-special-junction.branch-right.jrshikoku-depot-branch::before,
+		#stationList .jrshikoku-special-junction.branch-right.jrshikoku-yodo-branch::before,
+		#stationList .jrshikoku-special-junction.branch-right.jrshikoku-nahari-branch::before,
 		#stationList .jrshikoku-special-junction.branch-right.jrshikoku-kochi-depot-branch::before {
 			left: calc(50% + 8px);
 		}
 		#stationList .jrshikoku-special-junction.jrshikoku-freight-terminal-panel::before {
 			height: 168px;
 		}
+		#stationList .jrshikoku-yodo-branch .jrshikoku-special-node,
 		#stationList .jrshikoku-nahari-branch .jrshikoku-special-node {
-			top: 138px;
+			top: 121px;
+			width: 164px;
 		}
-		#stationList .jrshikoku-yodo-branch .jrshikoku-special-node {
-			top: 138px;
+		#stationList .jrshikoku-yodo-branch .jrshikoku-special-node .stalist-eki-link,
+		#stationList .jrshikoku-nahari-branch .jrshikoku-special-node .stalist-eki-link {
+			min-width: 164px;
+			width: 164px;
+		}
+		#stationList .jrshikoku-special-junction.branch-right.jrshikoku-yodo-branch .jrshikoku-special-hirendo,
+		#stationList .jrshikoku-special-junction.branch-right.jrshikoku-nahari-branch .jrshikoku-special-hirendo {
+			height: 243px;
+			left: calc(50% + 8px);
+			right: 0;
+			top: 245px;
+			width: auto;
+		}
+		#stationList .jrshikoku-yodo-branch .jrshikoku-special-substations,
+		#stationList .jrshikoku-nahari-branch .jrshikoku-special-substations {
+			left: calc(50% + var(--special-branch-offset));
+			top: 388px;
+			transform: translate(-50%, -50%);
+			width: 164px;
+		}
+		/* 務田は1駅だけの非連動駅枠なので、通常の1駅用幅に揃える。 */
+		#stationList .jrshikoku-yodo-branch .jrshikoku-special-substations {
+			align-items: center;
+			display: flex;
+			height: 46px;
+			padding: 0 8px;
+			width: 160px;
 		}
 		#stationList .jrshikoku-kochi-depot-branch .jrshikoku-special-node {
 			top: 108px;
 		}
-		#stationList .jrshikoku-nahari-branch .jrshikoku-special-side-track,
-		#stationList .jrshikoku-yodo-branch .jrshikoku-special-side-track {
-			height: 322px;
-			top: 188px;
+		#stationList .jrshikoku-yodo-branch .jrshikoku-special-side-track,
+		#stationList .jrshikoku-nahari-branch .jrshikoku-special-side-track {
+			height: 333px;
+			top: 171px;
 		}
 		#stationList .jrshikoku-kochi-depot-branch .jrshikoku-special-side-track {
 			height: 250px;
 			top: 92px;
 		}
-		#stationList .jrshikoku-nahari-branch .jrshikoku-special-cross-track,
-		#stationList .jrshikoku-yodo-branch .jrshikoku-special-cross-track {
-			top: 493px;
+		#stationList .jrshikoku-yodo-branch .jrshikoku-special-cross-track,
+		#stationList .jrshikoku-nahari-branch .jrshikoku-special-cross-track {
+			top: 488px;
 		}
 		#stationList .jrshikoku-kochi-depot-branch .jrshikoku-special-cross-track {
 			top: 325px;
 		}
-		#stationList .jrshikoku-yodo-branch .jrshikoku-forecast-table[data-station-code="GYODO"],
+		#stationList .jrshikoku-yodo-branch .jrshikoku-forecast-table[data-station-code="GYODO"] {
+			top: 36px;
+			transform: translateX(-50%);
+		}
 		#stationList .jrshikoku-nahari-branch .jrshikoku-forecast-table[data-station-code="GN37"] {
 			top: 0;
 			transform: translateX(-50%);
@@ -1299,17 +1362,46 @@ header {
 		#stationList .jrshikoku-kochi-depot-branch .slot-outside {
 			top: 238px;
 		}
-		#stationList .jrshikoku-nahari-branch .slot-outside {
-			top: 274px;
-		}
-		#stationList .jrshikoku-nahari-branch .jrshikoku-branch-caption {
-			bottom: 8px;
-			color: #777;
-			font-weight: bold;
+		#stationList .eki-panel.jrshikoku-special-junction.jrshikoku-yodo-branch .jrshikoku-special-yodo-window.ressha-contents,
+		#stationList .eki-panel.jrshikoku-special-junction.jrshikoku-nahari-branch .jrshikoku-special-nahari-window.ressha-contents {
+			left: calc(50% + var(--special-branch-offset) + 100px);
+			height: 150px;
+			min-height: 150px;
+			overflow: visible;
 			position: absolute;
-			right: 10px;
-			text-align: right;
+			top: 313px;
+			width: 82px;
 			z-index: 20;
+		}
+		#stationList .jrshikoku-yodo-branch .jrshikoku-special-yodo-window .hirendo-ressha-panel,
+		#stationList .jrshikoku-nahari-branch .jrshikoku-special-nahari-window .hirendo-ressha-panel {
+			align-items: center;
+			box-sizing: border-box;
+			display: flex;
+			justify-content: center;
+			height: 150px;
+			min-height: 150px;
+		}
+		#stationList .eki-panel.jrshikoku-special-junction.jrshikoku-yodo-branch .jrshikoku-special-yodo-window .ressha-icon,
+		#stationList .eki-panel.jrshikoku-special-junction.jrshikoku-nahari-branch .jrshikoku-special-nahari-window .ressha-icon {
+			align-items: center;
+			bottom: auto;
+			display: flex;
+			height: 100%;
+			justify-content: center;
+			margin: 0;
+			padding: 0;
+			position: static;
+			top: auto;
+			width: 100%;
+		}
+		#stationList .eki-panel.jrshikoku-special-junction.jrshikoku-yodo-branch .jrshikoku-special-yodo-window .ressha-icon:empty,
+		#stationList .eki-panel.jrshikoku-special-junction.jrshikoku-nahari-branch .jrshikoku-special-nahari-window .ressha-icon:empty {
+			display: none;
+		}
+		#stationList .eki-panel.jrshikoku-special-junction.jrshikoku-yodo-branch .jrshikoku-special-yodo-window .ressha-icon div.ressha,
+		#stationList .eki-panel.jrshikoku-special-junction.jrshikoku-nahari-branch .jrshikoku-special-nahari-window .ressha-icon div.ressha {
+			margin: 0;
 		}
 		@media (max-width: 550px) {
 			#stationList .jrshikoku-special-junction {
@@ -1326,15 +1418,14 @@ header {
 			}
 			#stationList .jrshikoku-freight-terminal-panel,
 			#stationList .jrshikoku-depot-branch,
+			#stationList .jrshikoku-yodo-branch,
+			#stationList .jrshikoku-nahari-branch,
 			#stationList .jrshikoku-kochi-depot-branch {
 				--special-branch-offset: clamp(108px, 28vw, 124px);
 			}
-			#stationList .jrshikoku-nahari-branch .jrshikoku-branch-caption {
-				font-size: 10px;
-				left: 8px;
-				max-width: 92px;
-				right: auto;
-				text-align: left;
+			#stationList .eki-panel.jrshikoku-special-junction.jrshikoku-yodo-branch .jrshikoku-special-yodo-window.ressha-contents,
+			#stationList .eki-panel.jrshikoku-special-junction.jrshikoku-nahari-branch .jrshikoku-special-nahari-window.ressha-contents {
+				left: calc(50% + var(--special-branch-offset) + 82px);
 			}
 		}
 		/* 始端駅から上へ続く縦線を表示しない分岐駅 */
@@ -1640,7 +1731,9 @@ header {
 						}
 
 					/* TID非対象の駅の列車アイコンの表示領域 */
-					#stationList .eki-panel.hirendo .ressha-contents .hirendo-ressha-panel {
+					#stationList .eki-panel.hirendo .ressha-contents .hirendo-ressha-panel,
+					#stationList .jrshikoku-special-yodo-window .hirendo-ressha-panel,
+					#stationList .jrshikoku-special-nahari-window .hirendo-ressha-panel {
 						border: 2px dashed #111;
 						border-radius: 15px;
 						width: 78px;

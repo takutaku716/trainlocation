@@ -99,6 +99,15 @@ span.eki-icon {
 	span.eki-icon.jrshikoku-eki-icon.jrshikoku-icon-N {
 		border-color: #8a2155;
 	}
+	span.eki-icon.jrshikoku-eki-icon.jrshikoku-icon-G {
+		border-color: #019157;
+	}
+	/* 土佐くろしお鉄道 ごめん・なはり線 */
+	span.eki-icon.jrshikoku-eki-icon.jrshikoku-icon-GN {
+		border-color: #858585;
+		color: #000;
+		font-size: 12px;
+	}
 	/* JR東海：路線記号と駅番号を上下に分けた矩形 */
 	span.eki-icon.jrcentral-eki-icon {
 		background-color: #fff;
