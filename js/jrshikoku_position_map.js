@@ -788,16 +788,16 @@
 			],
 			"projections": {
 				"80": {
-					"U": "JSTT00U",
-					"D": "JSTT00D"
+					"U": "JSTT00D",
+					"D": "JSTT00U"
 				},
 				"81": {
 					"U": "JSBT00U",
 					"D": "JSBT00D"
 				},
 				"82": {
-					"U": "JSNT00U",
-					"D": "JSNT00D"
+					"U": "JSNT00D",
+					"D": "JSNT00U"
 				}
 			}
 		},
@@ -3910,16 +3910,16 @@
 			],
 			"projections": {
 				"80": {
-					"U": "JSTT00U",
-					"D": "JSTT00D"
+					"U": "JSTT00D",
+					"D": "JSTT00U"
 				},
 				"81": {
 					"U": "JSBT00U",
 					"D": "JSBT00D"
 				},
 				"82": {
-					"U": "JSNT00U",
-					"D": "JSNT00D"
+					"U": "JSNT00D",
+					"D": "JSNT00U"
 				}
 			}
 		},
@@ -6730,16 +6730,16 @@
 			],
 			"projections": {
 				"80": {
-					"U": "JSTT00U",
-					"D": "JSTT00D"
+					"U": "JSTT00D",
+					"D": "JSTT00U"
 				},
 				"81": {
 					"U": "JSBT00U",
 					"D": "JSBT00D"
 				},
 				"82": {
-					"U": "JSNT00U",
-					"D": "JSNT00D"
+					"U": "JSNT00D",
+					"D": "JSNT00U"
 				}
 			}
 		},
@@ -7763,16 +7763,16 @@
 			],
 			"projections": {
 				"80": {
-					"U": "JSTT00U",
-					"D": "JSTT00D"
+					"U": "JSTT00D",
+					"D": "JSTT00U"
 				},
 				"81": {
 					"U": "JSBT00U",
 					"D": "JSBT00D"
 				},
 				"82": {
-					"U": "JSNT00U",
-					"D": "JSNT00D"
+					"U": "JSNT00D",
+					"D": "JSNT00U"
 				}
 			}
 		},
@@ -8056,6 +8056,11 @@
 				"1"
 			],
 			"projections": {
+				"76": {
+					"senku": "76",
+					"U": "JSUWAKA213U",
+					"D": "JSUWAKA213D"
+				},
 				"77": {
 					"senku": "77",
 					"U": "JSSWAKA213U",

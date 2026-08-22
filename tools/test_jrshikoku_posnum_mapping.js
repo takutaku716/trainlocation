@@ -93,6 +93,24 @@ assert.strictEqual(normalize({ Line: "koutoku", PosNum: 496, Direction: 1 }, "81
 assert.strictEqual(normalize({ Line: "tokushima", PosNum: 497, Direction: 0 }, "80", "koutoku").trains[0].jrShikoku.renderPosition, "JSTT01_T00U");
 assert.strictEqual(normalize({ Line: "tokushima", PosNum: 497, Direction: 0 }, "82", "naruto").trains[0].jrShikoku.renderPosition, "JSNT01_T00U");
 
+// 徳島線の佐古方面行きは、徳島駅では徳島線ページの下向きに対し、
+// 高徳線・鳴門線ページでは線形上の上向きへ投影する。
+[499, 500, 501, 502].forEach(function(posNum) {
+	assert.strictEqual(
+		normalize({ Line: "tokushima", PosNum: posNum, Direction: 1 }, "80", "koutoku").trains[0].jrShikoku.renderPosition,
+		"JSTT00U"
+	);
+	assert.strictEqual(
+		normalize({ Line: "tokushima", PosNum: posNum, Direction: 1 }, "82", "naruto").trains[0].jrShikoku.renderPosition,
+		"JSNT00U"
+	);
+});
+const tokushimaStationOnTokushimaPage = adapter.normalize([
+	{ GetDateTime: "2026/08/22 12:00:00" },
+	{ TrainNum: "485D", Line: "tokushima", PosNum: 500, Pos: "徳島", Direction: 1, Type: "normal", delay: 0 }
+], [{ "485D": "徳島,発,12:00#佐古,発,12:04#穴吹,着,13:00#" }], { senku: "81", lineId: "tokushima" }).trains[0];
+assert.strictEqual(tokushimaStationOnTokushimaPage.jrShikoku.renderPosition, "JSBT00D");
+
 const duplicateSharedTrain = adapter.normalize([
 	{ GetDateTime: "2026/08/20 12:00:00" },
 	{ TrainNum: "487D", Line: "koutoku", PosNum: 495, Pos: "佐古", Direction: 0, Type: "normal", delay: 0 },

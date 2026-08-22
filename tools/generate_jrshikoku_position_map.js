@@ -38,7 +38,8 @@ const EXTRA_RESOLVED_PROJECTIONS = {
 };
 
 // 佐古～徳島は高徳線・徳島線で同じ物理区間を別Lineとして配信する。
-// 各画面の線形へ明示的に投影し、81ページだけ画面上の並びに合わせてU/Dを反転する。
+// 81ページの駅間と、徳島線由来の徳島駅在線を80/82ページへ出す場合は、
+// それぞれの画面上の並びに合わせてU/Dを反転する。
 const SAKO_TOKUSHIMA_PROJECTIONS = {
 	"494": { "80": "JSTT01", "81": "JSBB01", "82": "JSNT01" },
 	"495": { "80": "JSTT01", "81": "JSBB01", "82": "JSNT01" },
@@ -305,7 +306,11 @@ Object.keys(SAKO_TOKUSHIMA_PROJECTIONS).forEach(function(posNum) {
 		if (!record) throw new Error("Missing Sako-Tokushima record: " + line + ":" + posNum);
 		Object.keys(SAKO_TOKUSHIMA_PROJECTIONS[posNum]).forEach(function(senku) {
 			const base = SAKO_TOKUSHIMA_PROJECTIONS[posNum][senku];
-			const reverse = senku === "81" && (posNum === "496" || posNum === "497");
+			const reverseIntervalOnTokushimaPage = senku === "81" && (posNum === "496" || posNum === "497");
+			const reverseTokushimaStationOnKoutokuPages = line === "tokushima" &&
+				(senku === "80" || senku === "82") &&
+				(posNum === "499" || posNum === "500" || posNum === "501" || posNum === "502");
+			const reverse = reverseIntervalOnTokushimaPage || reverseTokushimaStationOnKoutokuPages;
 			addProjection(record, senku, {
 				U: base + (reverse ? "D" : "U"),
 				D: base + (reverse ? "U" : "D")
