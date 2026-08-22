@@ -122,6 +122,18 @@ assert.strictEqual(locationMaster.JSP_uwajima_92_D, "伊予若宮→伊予大洲
 assert.strictEqual(locationMaster.JSP_uwajima_92_U, "伊予大洲→伊予若宮 間");
 assert.strictEqual(locationMaster.JSP_uwajima_213_D, "伊予白滝→伊予若宮 間");
 assert.strictEqual(locationMaster.JSP_uwajima_213_U, "伊予若宮→伊予白滝 間");
+assert.strictEqual(locationMaster.JSP_uwajima_33_U, "松山運転所→北伊予 入出区線 間");
+assert.strictEqual(locationMaster.JSP_uwajima_33_D, "北伊予 入出区線→松山運転所 間");
+assert.strictEqual(locationMaster.JSP_uwajima_184_U, "北宇和島→宮野下方 間");
+assert.strictEqual(locationMaster.JSP_uwajima_184_D, "宮野下方→北宇和島 間");
+assert.strictEqual(locationMaster.JSP_dosan_178_U, "後免→なはり方 間");
+assert.strictEqual(locationMaster.JSP_dosan_178_D, "なはり方→後免 間");
+assert.strictEqual(locationMaster.JSP_dosan_199_U, "土佐一宮→運転所方 間");
+assert.strictEqual(locationMaster.JSP_dosan_199_D, "運転所方→土佐一宮 間");
+assert.strictEqual(locationMaster.JSP_yosan_295_U, "鬼無仮想窓");
+assert.strictEqual(locationMaster.JSP_yosan_295_D, "鬼無仮想窓");
+assert.strictEqual(locationMaster.JSP_yosan_346_U, "鬼無→高松（タ） 間");
+assert.strictEqual(locationMaster.JSP_yosan_346_D, "高松（タ）→鬼無 間");
 
 assert.strictEqual(normalize({ Line: "tokushima", PosNum: 668 }, "81", "tokushima").trains.length, 0);
 assert.strictEqual(normalize({ Line: "yosan", PosNum: 233 }, "64", "seto").trains.length, 0);

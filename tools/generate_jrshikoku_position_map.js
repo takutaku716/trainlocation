@@ -113,6 +113,35 @@ const SPECIAL_PROJECTIONS = {
 	]
 };
 
+// Branches and depot leads do not always follow the endpoint order in Pos.
+// Keep their direction-specific detail labels explicit and independent of rendering.
+const SPECIAL_DIRECTION_NAMES = {
+	"uwajima:33": {
+		U: "松山運転所→北伊予 入出区線 間",
+		D: "北伊予 入出区線→松山運転所 間"
+	},
+	"uwajima:184": {
+		U: "北宇和島→宮野下方 間",
+		D: "宮野下方→北宇和島 間"
+	},
+	"dosan:178": {
+		U: "後免→なはり方 間",
+		D: "なはり方→後免 間"
+	},
+	"dosan:199": {
+		U: "土佐一宮→運転所方 間",
+		D: "運転所方→土佐一宮 間"
+	},
+	"yosan:295": {
+		U: "鬼無仮想窓",
+		D: "鬼無仮想窓"
+	},
+	"yosan:346": {
+		U: "鬼無→高松（タ） 間",
+		D: "高松（タ）→鬼無 間"
+	}
+};
+
 // 元データの地点名から自動投影できても、その画面には在線を出さない組み合わせ。
 const DISABLED_PROJECTIONS = {
 	"uwajima:87": ["77"]
@@ -356,6 +385,13 @@ Object.keys(records).forEach(function(key) {
 	const record = records[key];
 	const sourceKey = "JSP_" + record.line.replace(/[^A-Za-z0-9_-]/g, "_") + "_" + record.posNum;
 	locationMaster[sourceKey] = record.name;
+});
+Object.keys(SPECIAL_DIRECTION_NAMES).forEach(function(key) {
+	const record = records[key];
+	if (!record) throw new Error("Missing special direction-name record: " + key);
+	const sourceKey = "JSP_" + record.line.replace(/[^A-Za-z0-9_-]/g, "_") + "_" + record.posNum;
+	locationMaster[sourceKey + "_U"] = SPECIAL_DIRECTION_NAMES[key].U;
+	locationMaster[sourceKey + "_D"] = SPECIAL_DIRECTION_NAMES[key].D;
 });
 fs.writeFileSync(LOCATION_MASTER_PATH, JSON.stringify(locationMaster, null, "\t") + "\n", "utf8");
 const unmapped = Object.keys(records).filter(function(key) { return records[key].unmapped; });
