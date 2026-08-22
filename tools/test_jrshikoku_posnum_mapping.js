@@ -34,14 +34,14 @@ function normalize(row, senku, lineId) {
 // Pos is deliberately wrong: the projection must still be selected only by Line + PosNum.
 const wrongPos = normalize({ Line: "yosan", PosNum: 296, Pos: "存在しない地点名" }, "73", "yosan");
 assert.strictEqual(wrongPos.trains.length, 1);
-assert.strictEqual(wrongPos.trains[0].pos, "JSP_yosan_296");
+assert.strictEqual(wrongPos.trains[0].pos, "JSP_yosan_296_U");
 assert.strictEqual(wrongPos.trains[0].posName, "鬼無");
 assert.strictEqual(wrongPos.trains[0].jrShikoku.renderPosition, "JSYY02U");
 assert.strictEqual(wrongPos.trains[0].jrShikoku.rawPosition, "存在しない地点名");
 
 assert.notStrictEqual(
-	adapter.buildSourcePositionKey("yosan", 101),
-	adapter.buildSourcePositionKey("uwajima", 101),
+	adapter.buildSourcePositionKey("yosan", 101, "U"),
+	adapter.buildSourcePositionKey("uwajima", 101, "U"),
 	"PosNum alone must not identify a location"
 );
 
@@ -76,7 +76,6 @@ assert.strictEqual(matsuyama250.jrShikoku.renderPosition, matsuyama252.jrShikoku
 [
 	[87, "76", "uwajima", "JSUWAKA87U"],
 	[92, "76", "uwajima", "JSUWAKA92U"],
-	[213, "76", "uwajima", "JSUWAKA213U"],
 	[92, "77", "uwajima2", "JSSWAKA92U"],
 	[213, "77", "uwajima2", "JSSWAKA213U"]
 ].forEach(function(testCase) {
@@ -113,11 +112,16 @@ assert.strictEqual(duplicateKoutokuYosanTrain.trains[0].jrShikoku.sourceLine, "k
 const locationMaster = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "original", "location_master.json"), "utf8"));
 Object.keys(positionMap.records).forEach(function(key) {
 	const record = positionMap.records[key];
-	assert.strictEqual(locationMaster[adapter.buildSourcePositionKey(record.line, record.posNum)], record.name, "location_master " + key);
+	["U", "D"].forEach(function(direction) {
+		assert.ok(locationMaster[adapter.buildSourcePositionKey(record.line, record.posNum, direction)], "location_master " + key + " " + direction);
+	});
 });
-assert.strictEqual(locationMaster.JSP_uwajima_87, "新谷～伊予若宮");
-assert.strictEqual(locationMaster.JSP_uwajima_92, "伊予若宮～伊予大洲");
-assert.strictEqual(locationMaster.JSP_uwajima_213, "伊予白滝～伊予若宮");
+assert.strictEqual(locationMaster.JSP_uwajima_87_D, "新谷→伊予若宮 間");
+assert.strictEqual(locationMaster.JSP_uwajima_87_U, "伊予若宮→新谷 間");
+assert.strictEqual(locationMaster.JSP_uwajima_92_D, "伊予若宮→伊予大洲 間");
+assert.strictEqual(locationMaster.JSP_uwajima_92_U, "伊予大洲→伊予若宮 間");
+assert.strictEqual(locationMaster.JSP_uwajima_213_D, "伊予白滝→伊予若宮 間");
+assert.strictEqual(locationMaster.JSP_uwajima_213_U, "伊予若宮→伊予白滝 間");
 
 assert.strictEqual(normalize({ Line: "tokushima", PosNum: 668 }, "81", "tokushima").trains.length, 0);
 assert.strictEqual(normalize({ Line: "yosan", PosNum: 233 }, "64", "seto").trains.length, 0);

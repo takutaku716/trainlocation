@@ -378,11 +378,12 @@
 		return positionMap.records[key] || null;
 	}
 
-	function buildSourcePositionKey(line, posNum) {
+	function buildSourcePositionKey(line, posNum, direction) {
 		const sourceLine = toText(line).replace(/[^A-Za-z0-9_-]/g, "_");
 		const positionNumber = toText(posNum).replace(/[^A-Za-z0-9_-]/g, "_");
-		if (!sourceLine || !positionNumber) return "";
-		return "JSP_" + sourceLine + "_" + positionNumber;
+		const positionDirection = direction === "U" || direction === "D" ? direction : "";
+		if (!sourceLine || !positionNumber || !positionDirection) return "";
+		return "JSP_" + sourceLine + "_" + positionNumber + "_" + positionDirection;
 	}
 
 	function getPositionProjection(record, senku, direction) {
@@ -407,7 +408,7 @@
 		const direction = resolveDirection(row.Direction, positionRecord.name, context, lineConfig, timetable);
 		const projection = getPositionProjection(positionRecord, settings.senku, direction);
 		if (!projection) return null;
-		const sourcePositionKey = buildSourcePositionKey(positionRecord.line, positionRecord.posNum);
+		const sourcePositionKey = buildSourcePositionKey(positionRecord.line, positionRecord.posNum, direction);
 		if (!sourcePositionKey) return null;
 		const type = mapShikokuTrainType(trainNumber, row.Type);
 		const destination = timetable.length > 0 ? timetable[timetable.length - 1].stationName : "行先取得不可";

@@ -86,6 +86,7 @@ const JR_SHINKANSEN_LOCATION_SOURCE_MAP = {
 		centralUrl: "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://traininfo.jr-central.co.jp/shinkansen/var/train_info/train_location_info.json",
 		centralSuspensionUrl: "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://traininfo.jr-central.co.jp/shinkansen/var/train_info/suspension_info.json",
 		centralMasterUrl: "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://traininfo.jr-central.co.jp/shinkansen/common/data/common_ja.json",
+		centralFormationUrl: "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://traininfo.jr-central.co.jp/shinkansen/var/train_info/formation_info.json",
 		centralTrainInfoUrlBase: "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://traininfo.jr-central.co.jp/shinkansen/var/train_info/",
 		officialTrainNumberUrl: (location.hostname === "127.0.0.1" || location.hostname === "localhost") ?
 			"http://127.0.0.1:8787/jreast-shinkansen/train-numbers" :
@@ -422,9 +423,7 @@ const JRWEST_LOCATION_SOURCE_MAP = {
 };
 const jrWestStaticSourceDataCache = new Map();
 const jrWestStaticJsonDataCache = new Map();
-const JRSHIKOKU_API_BASE = (location.hostname === "127.0.0.1" || location.hostname === "localhost")
-	? location.origin
-	: "https://trainlocation.pages.dev";
+const JRSHIKOKU_API_BASE = "https://trainlocation.pages.dev";
 const JRSHIKOKU_LOCATION_SOURCE_MAP = {
 	"64": {
 		senku: "64",
@@ -1893,13 +1892,14 @@ function load_jr_shinkansen_location_now_data(_param_rosen, _now) {
 	}
 	return Promise.all([
 		jqxhr_to_promise(get_dokotre_location_request(source.centralUrl, _now)).catch(() => null),
-		load_jr_shinkansen_static_source_data(source, _now).catch(() => ({ centralMasterJson: null })),
+		load_jr_shinkansen_static_source_data(source, _now).catch(() => ({ centralMasterJson: null, centralFormationMap: {} })),
 		jqxhr_to_promise(get_external_text_request(source.kyushuUrl, _now)).catch(() => ""),
 		load_jr_shinkansen_central_suspension_data(source, _now).catch(() => null),
 		load_jr_shinkansen_official_train_number_map(source).catch(() => ({}))
 	]).then((results) => {
 		const centralLocationJson = results[0];
 		const centralMasterJson = results[1].centralMasterJson;
+		const centralFormationMap = results[1].centralFormationMap || {};
 		const kyushuHtml = results[2];
 		const centralSuspensionJson = results[3];
 		const officialTrainNumberMap = results[4];
@@ -1908,6 +1908,7 @@ function load_jr_shinkansen_location_now_data(_param_rosen, _now) {
 				const baseOptions = {
 					senku: source.senku || _param_rosen,
 					centralTrainInfoMap: centralTrainInfoMap,
+					centralFormationMap: centralFormationMap,
 					centralSuspensionJson: centralSuspensionJson,
 					officialTrainNumberMap: officialTrainNumberMap
 				};
@@ -2029,16 +2030,20 @@ function get_jrkyushu_timetable_service_date(now = new Date()) {
 }
 
 function load_jr_shinkansen_static_source_data(source, _now) {
-	if (!source || !source.centralMasterUrl) return Promise.resolve({ centralMasterJson: null });
-	const cacheKey = source && source.centralMasterUrl || "";
+	if (!source || !source.centralMasterUrl) return Promise.resolve({ centralMasterJson: null, centralFormationMap: {} });
+	const cacheKey = [source.centralMasterUrl || "", source.centralFormationUrl || ""].join("|");
 	if (jrShinkansenStaticSourceDataCache.has(cacheKey)) {
 		return jrShinkansenStaticSourceDataCache.get(cacheKey);
 	}
 	const loadPromise = Promise.all([
-		jqxhr_to_promise(get_dokotre_location_request(source.centralMasterUrl, _now))
+		jqxhr_to_promise(get_dokotre_location_request(source.centralMasterUrl, _now)),
+		source.centralFormationUrl ?
+			jqxhr_to_promise(get_dokotre_location_request(source.centralFormationUrl, _now)).catch(() => null) :
+			Promise.resolve(null)
 	]).then((results) => {
 		return {
-			centralMasterJson: results[0]
+			centralMasterJson: results[0],
+			centralFormationMap: build_jr_shinkansen_central_formation_map(results[1])
 		};
 	}).catch((error) => {
 		jrShinkansenStaticSourceDataCache.delete(cacheKey);
@@ -2046,6 +2051,15 @@ function load_jr_shinkansen_static_source_data(source, _now) {
 	});
 	jrShinkansenStaticSourceDataCache.set(cacheKey, loadPromise);
 	return loadPromise;
+}
+
+function build_jr_shinkansen_central_formation_map(data) {
+	const rows = data && Array.isArray(data.formationInfoList) ? data.formationInfoList : [];
+	return rows.reduce((map, row) => {
+		if (!row || row.formationNumber === null || typeof row.formationNumber === "undefined") return map;
+		map[String(row.formationNumber)] = row;
+		return map;
+	}, {});
 }
 
 function load_jr_shinkansen_central_train_info_map(source, centralLocationJson, _now) {
@@ -3904,6 +3918,7 @@ function create_ressha_detail(_objItem, _nowRow, _typeData, _ekiData) {
 
 		// 車両数
 		const jreastSeries = _nowRow.jrEast && _nowRow.jrEast.series ? _nowRow.jrEast.series : "";
+		const jrShinkansenSeries = _nowRow.jrShinkansen && _nowRow.jrShinkansen.formationType ? _nowRow.jrShinkansen.formationType : "";
 		_objItem.dataset.ryosu = _nowRow.ryosu && _nowRow.ryosu != 0 ? _nowRow.ryosu : "";
 		if (_objItem.dataset.ryosu != "") {
 			if (lang == "ja") _objItem.dataset.ryosu += "両";
@@ -3913,6 +3928,8 @@ function create_ressha_detail(_objItem, _nowRow, _typeData, _ekiData) {
 			if (lang == "kr") _objItem.dataset.ryosu += "량 편성";
 			if (_nowRow.source === "jreast" && jreastSeries) {
 				_objItem.dataset.ryosu += "（" + jreastSeries + "）";
+			} else if (_nowRow.source === "jrshinkansen" && jrShinkansenSeries) {
+				_objItem.dataset.ryosu += "（" + jrShinkansenSeries + "）";
 			}
 		}
 	}

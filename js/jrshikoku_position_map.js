@@ -8056,11 +8056,6 @@
 				"1"
 			],
 			"projections": {
-				"76": {
-					"senku": "76",
-					"U": "JSUWAKA213U",
-					"D": "JSUWAKA213D"
-				},
 				"77": {
 					"senku": "77",
 					"U": "JSSWAKA213U",

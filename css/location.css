@@ -881,12 +881,15 @@ header {
 		}
 		#stationList .jrshikoku-wakamiya-caption a {
 			cursor: pointer;
-			display: block;
+			display: inline-block;
 			font-size: 15px;
 			font-weight: bold;
 			line-height: 18px;
 			position: relative;
 			text-decoration: none;
+		}
+		#stationList .jrshikoku-wakamiya-caption a:hover {
+			text-decoration: underline;
 		}
 		#stationList .jrshikoku-wakamiya-caption .jrshikoku-wakamiya-arrow {
 			position: absolute;
@@ -1252,6 +1255,8 @@ header {
 			--special-cushion-top: 115px;
 			--special-branch-offset: clamp(96px, 13vw, 120px);
 			background-color: #fff;
+			container-name: jrshikoku-special-branch;
+			container-type: inline-size;
 			height: 515px;
 			min-height: 515px;
 		}
@@ -1426,6 +1431,31 @@ header {
 			#stationList .eki-panel.jrshikoku-special-junction.jrshikoku-yodo-branch .jrshikoku-special-yodo-window.ressha-contents,
 			#stationList .eki-panel.jrshikoku-special-junction.jrshikoku-nahari-branch .jrshikoku-special-nahari-window.ressha-contents {
 				left: calc(50% + var(--special-branch-offset) + 82px);
+			}
+		}
+		@container jrshikoku-special-branch (max-width: 560px) {
+			#stationList .jrshikoku-yodo-branch .jrshikoku-special-substations,
+			#stationList .jrshikoku-nahari-branch .jrshikoku-special-substations {
+				left: calc(50% + var(--special-branch-offset) - 9.6px);
+				padding-left: 3px;
+				padding-right: 3px;
+				transform: translate(-100%, -50%);
+				width: 56px;
+			}
+			#stationList .jrshikoku-yodo-branch .jrshikoku-special-substations .jrshikoku-numbered-station > div,
+			#stationList .jrshikoku-nahari-branch .jrshikoku-special-substations .jrshikoku-gn-station > div {
+				display: none;
+			}
+			#stationList .eki-panel.jrshikoku-special-junction.jrshikoku-yodo-branch .jrshikoku-special-yodo-window.ressha-contents,
+			#stationList .eki-panel.jrshikoku-special-junction.jrshikoku-nahari-branch .jrshikoku-special-nahari-window.ressha-contents {
+				left: auto;
+				right: 4px;
+			}
+		}
+		@container jrshikoku-special-branch (max-width: 330px) {
+			#stationList .jrshikoku-yodo-branch .jrshikoku-special-substations,
+			#stationList .jrshikoku-nahari-branch .jrshikoku-special-substations {
+				display: none;
 			}
 		}
 		/* 始端駅から上へ続く縦線を表示しない分岐駅 */
