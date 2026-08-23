@@ -111,6 +111,17 @@ const tokushimaStationOnTokushimaPage = adapter.normalize([
 ], [{ "485D": "徳島,発,12:00#佐古,発,12:04#穴吹,着,13:00#" }], { senku: "81", lineId: "tokushima" }).trains[0];
 assert.strictEqual(tokushimaStationOnTokushimaPage.jrShikoku.renderPosition, "JSBT00D");
 
+// 徳島線の穴吹方面列車は、高徳線・鳴門線ページの徳島駅では上向きに表示する。
+["80", "82"].forEach(function(senku) {
+	const lineId = senku === "80" ? "koutoku" : "naruto";
+	const expectedPosition = senku === "80" ? "JSTT00U" : "JSNT00U";
+	const train = adapter.normalize([
+		{ GetDateTime: "2026/08/23 12:00:00" },
+		{ TrainNum: "5471D", Line: "tokushima", PosNum: 500, Pos: "徳島", Direction: 0, Type: "normal", delay: 0 }
+	], [{ "5471D": "徳島,発,12:00#佐古,発,12:04#穴吹,着,13:00#" }], { senku: senku, lineId: lineId }).trains[0];
+	assert.strictEqual(train.jrShikoku.renderPosition, expectedPosition);
+});
+
 const duplicateSharedTrain = adapter.normalize([
 	{ GetDateTime: "2026/08/20 12:00:00" },
 	{ TrainNum: "487D", Line: "koutoku", PosNum: 495, Pos: "佐古", Direction: 0, Type: "normal", delay: 0 },
@@ -140,8 +151,8 @@ assert.strictEqual(locationMaster.JSP_uwajima_92_D, "伊予若宮→伊予大洲
 assert.strictEqual(locationMaster.JSP_uwajima_92_U, "伊予大洲→伊予若宮 間");
 assert.strictEqual(locationMaster.JSP_uwajima_213_D, "伊予白滝→伊予若宮 間");
 assert.strictEqual(locationMaster.JSP_uwajima_213_U, "伊予若宮→伊予白滝 間");
-assert.strictEqual(locationMaster.JSP_uwajima_33_U, "松山運転所→北伊予 入出区線 間");
-assert.strictEqual(locationMaster.JSP_uwajima_33_D, "北伊予 入出区線→松山運転所 間");
+assert.strictEqual(locationMaster.JSP_uwajima_33_U, "松山運転所 入出区線");
+assert.strictEqual(locationMaster.JSP_uwajima_33_D, "松山運転所 入出区線");
 assert.strictEqual(locationMaster.JSP_uwajima_184_U, "北宇和島→宮野下方 間");
 assert.strictEqual(locationMaster.JSP_uwajima_184_D, "宮野下方→北宇和島 間");
 assert.strictEqual(locationMaster.JSP_dosan_178_U, "後免→なはり方 間");

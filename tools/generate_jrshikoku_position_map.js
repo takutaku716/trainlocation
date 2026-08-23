@@ -38,8 +38,8 @@ const EXTRA_RESOLVED_PROJECTIONS = {
 };
 
 // 佐古～徳島は高徳線・徳島線で同じ物理区間を別Lineとして配信する。
-// 81ページの駅間と、徳島線由来の徳島駅在線を80/82ページへ出す場合は、
-// それぞれの画面上の並びに合わせてU/Dを反転する。
+// 81ページの駅間は、画面上の並びに合わせてU/Dを反転する。
+// 徳島駅構内は時刻表から各画面上の進行方向を解決するため、ここでは反転しない。
 const SAKO_TOKUSHIMA_PROJECTIONS = {
 	"494": { "80": "JSTT01", "81": "JSBB01", "82": "JSNT01" },
 	"495": { "80": "JSTT01", "81": "JSBB01", "82": "JSNT01" },
@@ -74,8 +74,8 @@ const SPECIAL_PROJECTIONS = {
 		{ senku: "77", U: "JSSDEPOT32", D: "JSSDEPOT32", name: "北伊予～伊予市" }
 	],
 	"uwajima:33": [
-		{ senku: "76", U: "JSUDEPOT33U", D: "JSUDEPOT33D", name: "松山運転所～北伊予 入出区線" },
-		{ senku: "77", U: "JSSDEPOT33U", D: "JSSDEPOT33D", name: "松山運転所～北伊予 入出区線" }
+		{ senku: "76", U: "JSUDEPOT33U", D: "JSUDEPOT33D", name: "松山運転所 入出区線" },
+		{ senku: "77", U: "JSSDEPOT33U", D: "JSSDEPOT33D", name: "松山運転所 入出区線" }
 	],
 	"uwajima:250": [
 		{ senku: "76", U: "JSUU00U", D: "JSUU00D", name: "松山" },
@@ -118,8 +118,8 @@ const SPECIAL_PROJECTIONS = {
 // Keep their direction-specific detail labels explicit and independent of rendering.
 const SPECIAL_DIRECTION_NAMES = {
 	"uwajima:33": {
-		U: "松山運転所→北伊予 入出区線 間",
-		D: "北伊予 入出区線→松山運転所 間"
+		U: "松山運転所 入出区線",
+		D: "松山運転所 入出区線"
 	},
 	"uwajima:184": {
 		U: "北宇和島→宮野下方 間",
@@ -307,10 +307,7 @@ Object.keys(SAKO_TOKUSHIMA_PROJECTIONS).forEach(function(posNum) {
 		Object.keys(SAKO_TOKUSHIMA_PROJECTIONS[posNum]).forEach(function(senku) {
 			const base = SAKO_TOKUSHIMA_PROJECTIONS[posNum][senku];
 			const reverseIntervalOnTokushimaPage = senku === "81" && (posNum === "496" || posNum === "497");
-			const reverseTokushimaStationOnKoutokuPages = line === "tokushima" &&
-				(senku === "80" || senku === "82") &&
-				(posNum === "499" || posNum === "500" || posNum === "501" || posNum === "502");
-			const reverse = reverseIntervalOnTokushimaPage || reverseTokushimaStationOnKoutokuPages;
+			const reverse = reverseIntervalOnTokushimaPage;
 			addProjection(record, senku, {
 				U: base + (reverse ? "D" : "U"),
 				D: base + (reverse ? "U" : "D")

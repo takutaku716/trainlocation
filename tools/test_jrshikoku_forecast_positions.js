@@ -68,11 +68,15 @@ const forecastDefinitions = new Map(adapter.forecastPositions.filter(function(ro
 }));
 assert.strictEqual(forecastDefinitions.get("246").side, "right");
 assert.strictEqual(forecastDefinitions.get("45").side, "left");
+assert.strictEqual(forecastDefinitions.get("45").displayDirection, "up");
 assert.strictEqual(forecastDefinitions.get("669").side, "left");
+assert.strictEqual(forecastDefinitions.get("669").displayDirection, "up");
 assert.strictEqual(forecastDefinitions.get("227").hostStationCode, "Y54");
 assert.strictEqual(forecastDefinitions.get("227").side, "right");
 assert.strictEqual(forecastDefinitions.get("34").hostStationCode, "UDEPOT");
 assert.strictEqual(forecastDefinitions.get("34").side, "left");
+assert.strictEqual(forecastDefinitions.get("34").displayDirection, "up");
+assert.strictEqual(forecastDefinitions.get("293").displayDirection, undefined);
 
 const iyonadaDefinitions = adapter.forecastPositions.filter(function(row) {
 	return row.rosen === "77";

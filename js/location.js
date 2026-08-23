@@ -3182,7 +3182,12 @@ function prepare_jrshikoku_forecast_windows(_param_rosen) {
 			.addClass("side-" + (rows[0].side === "left" ? "left" : "right"));
 		table.append($("<div class='jrshikoku-forecast-heading'></div>").text(baseName + "予告"));
 		rows.forEach(function(definition) {
-			table.append($("<div class='ressha-icon jrshikoku-forecast-row'></div>").addClass(definition.pos));
+			const slotLabels = { 1: "①", 2: "②" };
+			const slotLabel = slotLabels[Number(definition.slot)] || String(definition.slot || "");
+			const directionArrow = definition.displayDirection === "up" ? "↑" : "↓";
+			const row = $("<div class='ressha-icon jrshikoku-forecast-row'></div>").addClass(definition.pos);
+			row.append($("<span class='jrshikoku-forecast-slot-label'></span>").text(slotLabel + directionArrow));
+			table.append(row);
 		});
 		stationPanel.append(table);
 	});
@@ -3191,10 +3196,9 @@ function prepare_jrshikoku_forecast_windows(_param_rosen) {
 function create_html_jrshikoku_forecast_row(_nowRow, _typeData, _ekiData) {
 	const objItem = document.createElement("div");
 	objItem.classList.add("ressha", "jrshikoku-forecast-train");
-	const arrow = Number(_nowRow.jrShikoku && _nowRow.jrShikoku.rawDirection) === 0 ? "↑" : "↓";
 	const trainNumber = get_train_number_display_label(_nowRow) || "?";
 	const destination = _nowRow.shuEkiSimple || "?";
-	objItem.textContent = arrow + " " + trainNumber + "／" + destination;
+	objItem.textContent = trainNumber + "／" + destination;
 	create_ressha_detail(objItem, _nowRow, _typeData, _ekiData);
 	return objItem.outerHTML;
 }

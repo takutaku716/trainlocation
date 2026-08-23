@@ -172,23 +172,23 @@
 		"294": { pos: "JSYF294", name: "鬼無予告窓②", lineId: "yosan", rosen: "73", hostStationCode: "YFT", side: "right", slot: 2 },
 		"246": { pos: "JSYF246", name: "児島予告窓①", lineId: "seto", rosen: "64", hostStationCode: "0256", side: "right", slot: 1 },
 		"93": { pos: "JSYF93", name: "児島予告窓②", lineId: "seto", rosen: "64", hostStationCode: "0256", side: "right", slot: 2 },
-		"45": { pos: "JSYF45", name: "多度津予告窓①", lineId: "yosan", rosen: "73", hostStationCode: "Y12", side: "left", slot: 1 },
-		"303": { pos: "JSYF303", name: "多度津予告窓②", lineId: "yosan", rosen: "73", hostStationCode: "Y12", side: "left", slot: 2 },
+		"45": { pos: "JSYF45", name: "多度津予告窓①", lineId: "yosan", rosen: "73", hostStationCode: "Y12", side: "left", slot: 1, displayDirection: "up" },
+		"303": { pos: "JSYF303", name: "多度津予告窓②", lineId: "yosan", rosen: "73", hostStationCode: "Y12", side: "left", slot: 2, displayDirection: "up" },
 		"185": { pos: "JSYF185", name: "北宇和島～宮野下方予告窓", lineId: "uwajima", rosen: "76", hostStationCode: "GYODO", side: "right", slot: 1,
 			additionalDisplays: [{ lineId: "uwajima2", rosen: "77", hostStationCode: "GYODO", side: "right", slot: 1 }] },
 		"68": { pos: "JSYF68", name: "佃予告窓①", lineId: "dosan", rosen: "78", hostStationCode: "D21", side: "right", slot: 1 },
 		"69": { pos: "JSYF69", name: "佃予告窓②", lineId: "dosan", rosen: "78", hostStationCode: "D21", side: "right", slot: 2 },
-		"669": { pos: "JSYF669", name: "佃予告窓①", lineId: "tokushima", rosen: "81", hostStationCode: "B24", side: "left", slot: 1 },
-		"670": { pos: "JSYF670", name: "佃予告窓②", lineId: "tokushima", rosen: "81", hostStationCode: "B24", side: "left", slot: 2 },
+		"669": { pos: "JSYF669", name: "佃予告窓①", lineId: "tokushima", rosen: "81", hostStationCode: "B24", side: "left", slot: 1, displayDirection: "up" },
+		"670": { pos: "JSYF670", name: "佃予告窓②", lineId: "tokushima", rosen: "81", hostStationCode: "B24", side: "left", slot: 2, displayDirection: "up" },
 		"176": { pos: "JSYF176", name: "後免予告窓①", lineId: "dosan", rosen: "78", hostStationCode: "GN37", side: "right", slot: 1 },
 		"177": { pos: "JSYF177", name: "後免予告窓②", lineId: "dosan", rosen: "78", hostStationCode: "GN37", side: "right", slot: 2 },
 		"197": { pos: "JSYF197", name: "土佐一宮予告窓①", lineId: "dosan", rosen: "78", hostStationCode: "KDEPOT", side: "right", slot: 1 },
 		"198": { pos: "JSYF198", name: "土佐一宮予告窓②", lineId: "dosan", rosen: "78", hostStationCode: "KDEPOT", side: "right", slot: 2 },
 		"227": { pos: "JSYF227", name: "三津浜予告窓①", lineId: "yosan", rosen: "73", hostStationCode: "Y54", side: "right", slot: 1 },
 		"228": { pos: "JSYF228", name: "三津浜予告窓②", lineId: "yosan", rosen: "73", hostStationCode: "Y54", side: "right", slot: 2 },
-		"34": { pos: "JSYF34", name: "北伊予予告窓①", lineId: "uwajima", rosen: "76", hostStationCode: "UDEPOT", side: "left", slot: 1,
+		"34": { pos: "JSYF34", name: "北伊予予告窓①", lineId: "uwajima", rosen: "76", hostStationCode: "UDEPOT", side: "left", slot: 1, displayDirection: "up",
 			additionalDisplays: [{ lineId: "uwajima2", rosen: "77", hostStationCode: "UDEPOT", side: "left", slot: 1 }] },
-		"35": { pos: "JSYF35", name: "北伊予予告窓②", lineId: "uwajima", rosen: "76", hostStationCode: "UDEPOT", side: "left", slot: 2,
+		"35": { pos: "JSYF35", name: "北伊予予告窓②", lineId: "uwajima", rosen: "76", hostStationCode: "UDEPOT", side: "left", slot: 2, displayDirection: "up",
 			additionalDisplays: [{ lineId: "uwajima2", rosen: "77", hostStationCode: "UDEPOT", side: "left", slot: 2 }] }
 	};
 	const SHARED_LINE_DUPLICATE_PAIRS = new Set([
@@ -405,7 +405,8 @@
 		const timetable = timetableMap.get(trainNumber) || [];
 		const positionRecord = getPositionRecord(row.Line, row.PosNum);
 		if (!positionRecord) return null;
-		const direction = resolveDirection(row.Direction, positionRecord.name, context, lineConfig, timetable);
+		const sourceLineConfig = LINE_CONFIGS[positionRecord.line] || lineConfig;
+		const direction = resolveDirection(row.Direction, positionRecord.name, context, sourceLineConfig, timetable);
 		const projection = getPositionProjection(positionRecord, settings.senku, direction);
 		if (!projection) return null;
 		const sourcePositionKey = buildSourcePositionKey(positionRecord.line, positionRecord.posNum, direction);
@@ -622,7 +623,8 @@
 				rows.push(Object.assign({
 					positionNumber: key,
 					pos: baseDefinition.pos,
-					name: baseDefinition.name
+					name: baseDefinition.name,
+					displayDirection: baseDefinition.displayDirection
 				}, displayDefinition));
 			});
 			return rows;

@@ -788,16 +788,16 @@
 			],
 			"projections": {
 				"80": {
-					"U": "JSTT00D",
-					"D": "JSTT00U"
+					"U": "JSTT00U",
+					"D": "JSTT00D"
 				},
 				"81": {
 					"U": "JSBT00U",
 					"D": "JSBT00D"
 				},
 				"82": {
-					"U": "JSNT00D",
-					"D": "JSNT00U"
+					"U": "JSNT00U",
+					"D": "JSNT00D"
 				}
 			}
 		},
@@ -1042,7 +1042,7 @@
 		"uwajima:33": {
 			"line": "uwajima",
 			"posNum": "33",
-			"name": "松山運転所～北伊予 入出区線",
+			"name": "松山運転所 入出区線",
 			"directions": [
 				"0",
 				"1"
@@ -1052,13 +1052,13 @@
 					"senku": "76",
 					"U": "JSUDEPOT33U",
 					"D": "JSUDEPOT33D",
-					"name": "松山運転所～北伊予 入出区線"
+					"name": "松山運転所 入出区線"
 				},
 				"77": {
 					"senku": "77",
 					"U": "JSSDEPOT33U",
 					"D": "JSSDEPOT33D",
-					"name": "松山運転所～北伊予 入出区線"
+					"name": "松山運転所 入出区線"
 				}
 			}
 		},
@@ -3910,16 +3910,16 @@
 			],
 			"projections": {
 				"80": {
-					"U": "JSTT00D",
-					"D": "JSTT00U"
+					"U": "JSTT00U",
+					"D": "JSTT00D"
 				},
 				"81": {
 					"U": "JSBT00U",
 					"D": "JSBT00D"
 				},
 				"82": {
-					"U": "JSNT00D",
-					"D": "JSNT00U"
+					"U": "JSNT00U",
+					"D": "JSNT00D"
 				}
 			}
 		},
@@ -6730,16 +6730,16 @@
 			],
 			"projections": {
 				"80": {
-					"U": "JSTT00D",
-					"D": "JSTT00U"
+					"U": "JSTT00U",
+					"D": "JSTT00D"
 				},
 				"81": {
 					"U": "JSBT00U",
 					"D": "JSBT00D"
 				},
 				"82": {
-					"U": "JSNT00D",
-					"D": "JSNT00U"
+					"U": "JSNT00U",
+					"D": "JSNT00D"
 				}
 			}
 		},
@@ -7763,16 +7763,16 @@
 			],
 			"projections": {
 				"80": {
-					"U": "JSTT00D",
-					"D": "JSTT00U"
+					"U": "JSTT00U",
+					"D": "JSTT00D"
 				},
 				"81": {
 					"U": "JSBT00U",
 					"D": "JSBT00D"
 				},
 				"82": {
-					"U": "JSNT00D",
-					"D": "JSNT00U"
+					"U": "JSNT00U",
+					"D": "JSNT00D"
 				}
 			}
 		},
