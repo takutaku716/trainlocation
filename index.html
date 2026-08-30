@@ -8,7 +8,7 @@
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>列車運行情報｜JR北海道- Hokkaido Railway Company</title>
+	<title>列車運行情報</title>
 	<meta name="description" content="JR北海道の列車運行情報を提供しています。">
 	<meta name="keywords" content="JR北海道,JR北海道列車運行情報">
 	<meta name="author" content="北海道旅客鉄道株式会社">
@@ -41,25 +41,27 @@
 	<link rel="icon" type="image/svg+xml" href="https://www3.jrhokkaido.co.jp/favicon.svg">
 	<link rel="stylesheet" href="./css/common.css" type="text/css" media="screen,print">
 	<link rel="stylesheet" href="./css/common_location.css" type="text/css" media="screen,print">
-	<link rel="stylesheet" href="./css/common_eki_icon.css" type="text/css" media="screen,print">
+	<link rel="stylesheet" href="./css/common_eki_icon.css?20260821g" type="text/css" media="screen,print">
 	<link rel="stylesheet" href="./css/common_attention_section.css" type="text/css" media="screen,print">
 	<link rel="stylesheet" href="./css/common_oshirase_section.css" type="text/css" media="screen,print">
 	<link rel="stylesheet" href="./css/common_guide.css" type="text/css" media="screen,print">
-	<link rel="stylesheet" href="./css/common_side_menu.css" type="text/css" media="screen,print">
+	<link rel="stylesheet" href="./css/common_side_menu.css?20260812a" type="text/css" media="screen,print">
 	<link rel="stylesheet" href="./css/common_train_detail.css" type="text/css" media="screen,print">
 	<link rel="stylesheet" href="./css/common_unkou_info_menu_section.css" type="text/css" media="screen,print">
 	<script src="./js/jquery-3.6.4.min.js"></script>
-	<script src="./js/common.js"></script>
-	<script src="./js/common_pos_info.js"></script>
-	<script src="./js/common_oshirase.js"></script>
+	<script src="./js/common.js?20260830b"></script>
+	<script src="./js/common_pos_info.js?20260812a"></script>
+		<script src="./js/common_oshirase.js?20260812d"></script>
 	<script src="./js/common_function_name.js"></script>
+	<script src="./js/jrwest_route_catalog.js?20260812a"></script>
+	<script src="./js/jrkyushu_doredore_routes.js?20260830a"></script>
 	<script src="./js/common_location.js"></script>
 	<script src="./js/common_train_detail.js"></script>
 	<script type="text/javascript" src="./common/js/ga.js"></script>
 	<!-- 共通（終了） -->
 	<!-- 専用（開始） -->
 	<link rel="stylesheet" href="./css/top.css" type="text/css" media="screen,print">
-	<script src="./js/top.js"></script>
+	<script src="./js/top.js?20260812d"></script>
 	<!-- 専用（終了） -->
 	<!--やさしいブラウザ用（開始）-->
 	<script src="./common/js/ewbc.min.js"></script>
@@ -157,6 +159,24 @@
 										<input id="areaOperationShinTab" type="radio" name="areaOperationTab" value="6">
 										<label class="area-grid" for="areaOperationShinTab">
 											<span class="area-name">新幹線</span>
+										</label>
+									</li>
+									<li id="jrwest">
+										<input id="areaOperationJrWestTab" type="radio" name="areaOperationTab" value="7">
+										<label class="area-grid" for="areaOperationJrWestTab">
+											<span class="area-name">JR西日本</span>
+										</label>
+									</li>
+									<li id="jrshikoku">
+										<input id="areaOperationJrShikokuTab" type="radio" name="areaOperationTab" value="8">
+										<label class="area-grid" for="areaOperationJrShikokuTab">
+											<span class="area-name">JR四国</span>
+										</label>
+									</li>
+									<li id="jrcentral">
+										<input id="areaOperationJrCentralTab" type="radio" name="areaOperationTab" value="9">
+										<label class="area-grid" for="areaOperationJrCentralTab">
+											<span class="area-name">JR東海</span>
 										</label>
 									</li>
 								</ul>
@@ -449,6 +469,246 @@
 								</div>
 								<div class="area-map shin">
 									<object id="areaMapshin" data="./map/senku_24.svg" type="image/svg+xml" title="列車運行情報"></object>
+								</div>
+							</div>
+							<div class="area-contents jrcentral">
+								<div class="area-name-label jrcentral">JR東海</div>
+								<div class="rosen-name-list jrcentral">
+									<div value="75" class="rosen-name-contents">
+										<span class="jrcentral-line-symbol">CA</span>
+										<span class="rosen-name-label"><span class="main">東海道線</span><span class="sub">[熱海～豊橋間]</span></span>
+										<span class="icon-arrow-right"></span>
+									</div>
+									<div value="74" class="rosen-name-contents">
+										<span class="jrcentral-line-symbol">CA</span>
+										<span class="rosen-name-label"><span class="main">東海道線</span><span class="sub">[豊橋～米原間]</span></span>
+										<span class="icon-arrow-right"></span>
+									</div>
+									<div value="83" class="rosen-name-contents">
+										<span class="jrcentral-line-symbol">CF</span>
+										<span class="rosen-name-label"><span class="main">中央線</span><span class="sub">[名古屋～塩尻間]</span></span>
+										<span class="icon-arrow-right"></span>
+									</div>
+									<div value="84" class="rosen-name-contents">
+										<span class="jrcentral-line-symbol">CJ</span>
+										<span class="rosen-name-label"><span class="main">関西線</span><span class="sub">[名古屋～亀山間]</span></span>
+										<span class="icon-arrow-right"></span>
+									</div>
+									<div value="85" class="rosen-name-contents">
+										<span class="jrcentral-line-symbol no-symbol"></span>
+										<span class="rosen-name-label"><span class="main">紀勢線</span><span class="sub">[亀山～新宮間]</span></span>
+										<span class="icon-arrow-right"></span>
+									</div>
+									<div value="86" class="rosen-name-contents">
+										<span class="jrcentral-line-symbol">CG</span>
+										<span class="rosen-name-label"><span class="main">高山線</span><span class="sub">[岐阜～猪谷間]</span></span>
+										<span class="icon-arrow-right"></span>
+									</div>
+									<div value="87" class="rosen-name-contents">
+										<span class="jrcentral-line-symbol">CE</span>
+										<span class="rosen-name-label"><span class="main">武豊線</span><span class="sub">[大府～武豊間]</span></span>
+										<span class="icon-arrow-right"></span>
+									</div>
+									<div value="88" class="rosen-name-contents">
+										<span class="jrcentral-line-symbol">CD</span>
+										<span class="rosen-name-label"><span class="main">飯田線</span><span class="sub">[豊橋～辰野間]</span></span>
+										<span class="icon-arrow-right"></span>
+									</div>
+									<div value="89" class="rosen-name-contents">
+										<span class="jrcentral-line-symbol">CI</span>
+										<span class="rosen-name-label"><span class="main">太多線</span><span class="sub">[多治見～美濃太田間]</span></span>
+										<span class="icon-arrow-right"></span>
+									</div>
+									<div value="90" class="rosen-name-contents">
+										<span class="jrcentral-line-symbol">CB</span>
+										<span class="rosen-name-label"><span class="main">御殿場線</span><span class="sub">[国府津～沼津間]</span></span>
+										<span class="icon-arrow-right"></span>
+									</div>
+									<div value="91" class="rosen-name-contents">
+										<span class="jrcentral-line-symbol">CC</span>
+										<span class="rosen-name-label"><span class="main">身延線</span><span class="sub">[富士～甲府間]</span></span>
+										<span class="icon-arrow-right"></span>
+									</div>
+									<div value="92" class="rosen-name-contents">
+										<span class="jrcentral-line-symbol no-symbol"></span>
+										<span class="rosen-name-label"><span class="main">参宮線</span><span class="sub">[多気～鳥羽間]</span></span>
+										<span class="icon-arrow-right"></span>
+									</div>
+									<div value="93" class="rosen-name-contents">
+										<span class="jrcentral-line-symbol no-symbol"></span>
+										<span class="rosen-name-label"><span class="main">名松線</span><span class="sub">[松阪～伊勢奥津間]</span></span>
+										<span class="icon-arrow-right"></span>
+									</div>
+									<div value="94" class="rosen-name-contents">
+										<span class="jrcentral-line-symbol">CA</span>
+										<span class="rosen-name-label"><span class="main">美濃赤坂線</span><span class="sub">[大垣～美濃赤坂間]</span></span>
+										<span class="icon-arrow-right"></span>
+									</div>
+									<div value="95" class="rosen-name-contents">
+										<span class="jrcentral-line-symbol no-symbol"></span>
+										<span class="rosen-name-label"><span class="main">伊勢鉄道</span><span class="sub">[河原田～津間]</span></span>
+										<span class="icon-arrow-right"></span>
+									</div>
+								</div>
+							</div>
+							<div class="area-contents jrwest">
+								<div class="area-name-label jrwest">JR西日本</div>
+								<div class="rosen-name-list jrwest">
+									<div class="jrwest-area-group">
+										<button type="button" class="jrwest-area-label">北陸</button>
+										<div class="jrwest-area-lines">
+											<div value="62" class="rosen-name-contents">
+												<span class="jrwest-line-symbol">A</span>
+												<span class="rosen-name-label"><span class="main">北陸線</span><span class="sub">[敦賀～米原間]</span></span>
+												<span class="icon-arrow-right"></span>
+											</div>
+											<div value="63" class="rosen-name-contents">
+												<span class="jrwest-line-symbol">B</span>
+												<span class="rosen-name-label"><span class="main">湖西線・北陸線</span><span class="sub">[京都～敦賀間]</span></span>
+												<span class="icon-arrow-right"></span>
+											</div>
+										</div>
+									</div>
+									<div class="jrwest-area-group">
+										<button type="button" class="jrwest-area-label">近畿</button>
+										<div class="jrwest-area-lines">
+											<div value="61" class="rosen-name-contents">
+												<span class="jrwest-line-symbol">A</span>
+												<span class="rosen-name-label"><span class="main">琵琶湖線・JR京都線・JR神戸線</span><span class="sub">[米原～姫路間]</span></span>
+											</div>
+											<div value="70" class="rosen-name-contents">
+												<span class="jrwest-line-symbol">F</span>
+												<span class="rosen-name-label"><span class="main">おおさか東線</span><span class="sub">[大阪～久宝寺間]</span></span>
+												<span class="icon-arrow-right"></span>
+											</div>
+											<div value="65" class="rosen-name-contents">
+												<span class="jrwest-line-symbol">H</span>
+												<span class="rosen-name-label"><span class="main">JR東西線・学研都市線</span><span class="sub">[尼崎～木津間]</span></span>
+												<span class="icon-arrow-right"></span>
+											</div>
+											<div value="67" class="rosen-name-contents">
+												<span class="jrwest-line-symbol">O</span>
+												<span class="rosen-name-label"><span class="main">大阪環状線</span><span class="sub">[大阪～天王寺～大阪間]</span></span>
+												<span class="icon-arrow-right"></span>
+											</div>
+											<div value="68" class="rosen-name-contents">
+												<span class="jrwest-line-symbol">P</span>
+												<span class="rosen-name-label"><span class="main">JRゆめ咲線</span><span class="sub">[西九条～桜島間]</span></span>
+												<span class="icon-arrow-right"></span>
+											</div>
+											<div value="69" class="rosen-name-contents">
+												<span class="jrwest-line-symbol">Q</span>
+												<span class="rosen-name-label"><span class="main">大和路線</span><span class="sub">[JR難波～加茂間]</span></span>
+												<span class="icon-arrow-right"></span>
+											</div>
+											<div value="66" class="rosen-name-contents">
+												<span class="jrwest-line-symbol">R</span>
+												<span class="rosen-name-label"><span class="main">阪和線・羽衣線</span><span class="sub">[天王寺～和歌山・鳳～東羽衣間]</span></span>
+												<span class="icon-arrow-right"></span>
+											</div>
+											<div value="71" class="rosen-name-contents">
+												<span class="jrwest-line-symbol">S</span>
+												<span class="rosen-name-label"><span class="main">関西空港線</span><span class="sub">[日根野～関西空港間]</span></span>
+												<span class="icon-arrow-right"></span>
+											</div>
+										</div>
+									</div>
+									<div class="jrwest-area-group">
+									<button type="button" class="jrwest-area-label">岡山・倉敷</button>
+									<div class="jrwest-area-lines">
+										<div value="72" class="rosen-name-contents">
+											<span class="jrwest-line-symbol">L</span>
+											<span class="rosen-name-label"><span class="main">宇野みなと線</span><span class="sub">[茶屋町～宇野間]</span></span>
+											<span class="icon-arrow-right"></span>
+										</div>
+										<div value="64" class="rosen-name-contents">
+												<span class="jrwest-line-symbol">M</span>
+												<span class="rosen-name-label"><span class="main">瀬戸大橋線</span><span class="sub">[岡山～宇多津間]</span></span>
+												<span class="icon-arrow-right"></span>
+											</div>
+										</div>
+									</div>
+									<div class="jrwest-area-group">
+										<button type="button" class="jrwest-area-label">広島・山口</button>
+										<div class="jrwest-area-lines"><span class="jrwest-area-empty">路線は未登録</span></div>
+									</div>
+									<div class="jrwest-area-group">
+										<button type="button" class="jrwest-area-label">山陰</button>
+										<div class="jrwest-area-lines"><span class="jrwest-area-empty">路線は未登録</span></div>
+									</div>
+								</div>
+								<div class="area-map jrwest"></div>
+							</div>
+							<div class="area-contents jrkyushu">
+								<div class="area-name-label jrkyushu">JR九州</div>
+								<div class="rosen-name-list jrkyushu">
+									<div value="122" class="rosen-name-contents"><span class="rosen-name-label"><span class="main">鹿児島本線</span><span class="sub">[門司港～八代間]</span></span><span class="icon-arrow-right"></span></div>
+									<div value="123" class="rosen-name-contents"><span class="rosen-name-label"><span class="main">鹿児島本線</span><span class="sub">[川内～鹿児島間]</span></span><span class="icon-arrow-right"></span></div>
+									<div value="124" class="rosen-name-contents"><span class="rosen-name-label"><span class="main">福北ゆたか線・若松線</span><span class="sub">[若松～博多間]</span></span><span class="icon-arrow-right"></span></div>
+									<div value="125" class="rosen-name-contents"><span class="rosen-name-label"><span class="main">日豊本線</span><span class="sub">[小倉～鹿児島中央間]</span></span><span class="icon-arrow-right"></span></div>
+									<div value="126" class="rosen-name-contents"><span class="rosen-name-label"><span class="main">長崎本線</span><span class="sub">[鳥栖～長崎間]</span></span><span class="icon-arrow-right"></span></div>
+									<div value="127" class="rosen-name-contents"><span class="rosen-name-label"><span class="main">長崎本線（長与経由）</span><span class="sub">[諫早～長崎間]</span></span><span class="icon-arrow-right"></span></div>
+									<div value="128" class="rosen-name-contents"><span class="rosen-name-label"><span class="main">久大本線</span><span class="sub">[久留米～大分間]</span></span><span class="icon-arrow-right"></span></div>
+									<div value="129" class="rosen-name-contents"><span class="rosen-name-label"><span class="main">豊肥本線</span><span class="sub">[熊本～大分間]</span></span><span class="icon-arrow-right"></span></div>
+									<div value="130" class="rosen-name-contents"><span class="rosen-name-label"><span class="main">筑肥線</span><span class="sub">[下山門～西唐津間]</span></span><span class="icon-arrow-right"></span></div>
+									<div value="131" class="rosen-name-contents"><span class="rosen-name-label"><span class="main">筑肥線</span><span class="sub">[西唐津～伊万里間]</span></span><span class="icon-arrow-right"></span></div>
+									<div value="132" class="rosen-name-contents"><span class="rosen-name-label"><span class="main">香椎線</span><span class="sub">[西戸崎～宇美間]</span></span><span class="icon-arrow-right"></span></div>
+									<div value="133" class="rosen-name-contents"><span class="rosen-name-label"><span class="main">唐津線</span><span class="sub">[佐賀～西唐津間]</span></span><span class="icon-arrow-right"></span></div>
+									<div value="134" class="rosen-name-contents"><span class="rosen-name-label"><span class="main">日田彦山線</span><span class="sub">[小倉～添田間]</span></span><span class="icon-arrow-right"></span></div>
+									<div value="136" class="rosen-name-contents"><span class="rosen-name-label"><span class="main">後藤寺線</span><span class="sub">[新飯塚～田川後藤寺間]</span></span><span class="icon-arrow-right"></span></div>
+									<div value="137" class="rosen-name-contents"><span class="rosen-name-label"><span class="main">佐世保線</span><span class="sub">[江北～佐世保間]</span></span><span class="icon-arrow-right"></span></div>
+									<div value="138" class="rosen-name-contents"><span class="rosen-name-label"><span class="main">宮崎空港線</span><span class="sub">[宮崎～宮崎空港間]</span></span><span class="icon-arrow-right"></span></div>
+									<div value="139" class="rosen-name-contents"><span class="rosen-name-label"><span class="main">指宿枕崎線</span><span class="sub">[鹿児島中央～西頴娃間]</span></span><span class="icon-arrow-right"></span></div>
+								</div>
+							</div>
+							<div class="area-contents jrshikoku">
+								<div class="area-name-label jrshikoku">JR四国</div>
+								<div class="rosen-name-list jrshikoku">
+									<div value="64" class="rosen-name-contents">
+										<span class="jrwest-line-symbol">M</span>
+										<span class="rosen-name-label"><span class="main">瀬戸大橋線</span><span class="sub">[岡山～宇多津間]</span></span>
+										<span class="icon-arrow-right"></span>
+									</div>
+									<div value="73" class="rosen-name-contents">
+										<span class="jrshikoku-line-symbol">Y</span>
+										<span class="rosen-name-label"><span class="main">予讃線</span><span class="sub">[高松～松山間]</span></span>
+										<span class="icon-arrow-right"></span>
+									</div>
+									<div value="76" class="rosen-name-contents">
+										<span class="jrshikoku-line-symbol">U</span>
+										<span class="rosen-name-label"><span class="main">予讃線・内子線</span><span class="sub">[松山～宇和島間]</span></span>
+										<span class="icon-arrow-right"></span>
+									</div>
+									<div value="77" class="rosen-name-contents">
+										<span class="jrshikoku-line-symbol" style="background:#a4b0da">S</span>
+										<span class="rosen-name-label"><span class="main">予讃線（伊予灘線）</span><span class="sub">[松山～宇和島間]</span></span>
+										<span class="icon-arrow-right"></span>
+									</div>
+									<div value="78" class="rosen-name-contents">
+										<span class="jrshikoku-line-symbol" style="background:#df5280">D</span>
+										<span class="rosen-name-label"><span class="main">土讃線</span><span class="sub">[多度津～高知間]</span></span>
+										<span class="icon-arrow-right"></span>
+									</div>
+									<div value="79" class="rosen-name-contents">
+										<span class="jrshikoku-line-symbol" style="background:#df5280">K</span>
+										<span class="rosen-name-label"><span class="main">土讃線</span><span class="sub">[高知～窪川間]</span></span>
+										<span class="icon-arrow-right"></span>
+									</div>
+									<div value="80" class="rosen-name-contents">
+										<span class="jrshikoku-line-symbol" style="background:#8cc220">T</span>
+										<span class="rosen-name-label"><span class="main">高徳線</span><span class="sub">[高松～徳島間]</span></span>
+										<span class="icon-arrow-right"></span>
+									</div>
+									<div value="81" class="rosen-name-contents">
+										<span class="jrshikoku-line-symbol" style="background:#145c7d">B</span>
+										<span class="rosen-name-label"><span class="main">徳島線</span><span class="sub">[徳島～阿波池田間]</span></span>
+										<span class="icon-arrow-right"></span>
+									</div>
+									<div value="82" class="rosen-name-contents">
+										<span class="jrshikoku-line-symbol" style="background:#8a2155">N</span>
+										<span class="rosen-name-label"><span class="main">鳴門線</span><span class="sub">[徳島～鳴門間]</span></span>
+										<span class="icon-arrow-right"></span>
+									</div>
 								</div>
 							</div>
 						</div>

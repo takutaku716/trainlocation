@@ -86,6 +86,7 @@ const JR_SHINKANSEN_LOCATION_SOURCE_MAP = {
 		centralUrl: "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://traininfo.jr-central.co.jp/shinkansen/var/train_info/train_location_info.json",
 		centralSuspensionUrl: "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://traininfo.jr-central.co.jp/shinkansen/var/train_info/suspension_info.json",
 		centralMasterUrl: "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://traininfo.jr-central.co.jp/shinkansen/common/data/common_ja.json",
+		centralFormationUrl: "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://traininfo.jr-central.co.jp/shinkansen/var/train_info/formation_info.json",
 		centralTrainInfoUrlBase: "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://traininfo.jr-central.co.jp/shinkansen/var/train_info/",
 		officialTrainNumberUrl: (location.hostname === "127.0.0.1" || location.hostname === "localhost") ?
 			"http://127.0.0.1:8787/jreast-shinkansen/train-numbers" :
@@ -101,6 +102,465 @@ const jrShinkansenStaticSourceDataCache = new Map();
 const jrEastShinkansenTrainNumberDataCache = new Map();
 const jrKyushuTimetableDataCache = new Map();
 const JR_KYUSHU_TIMETABLE_WORKER_BASE = "https://trainlocation-jrkyushu-timetable-cache.densha716.workers.dev";
+const JRKYUSHU_DOREDORE_LOCATION_SOURCE_MAP = Object.fromEntries(
+	(Array.isArray(window.JRKYUSHU_DOREDORE_ROUTES) ? window.JRKYUSHU_DOREDORE_ROUTES : []).map((route) => [String(route.rosen), Object.assign({}, route, {
+		senku: String(route.rosen),
+		url: "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://george-doredore.jrkyushu.co.jp/jrqSEN" + route.sourceId + ".html"
+	})])
+);
+const JRWEST_LOCATION_SOURCE_MAP = {
+	"61": {
+		senku: "61",
+		currentTimeUrl: "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www.train-guide.westjr.co.jp/api/v3/currenttime.txt",
+		sources: [
+			{
+				areaId: "kinki",
+				lineId: "hokurikubiwako",
+				positionPrefix: "JW61",
+				stationCodes: [
+					"0382", "0384", "0385", "0386", "0387", "0388", "0389", "0390", "0391",
+					"0392", "0393", "0394", "0395", "0396", "0397", "0398", "0399", "0400",
+					"0401", "0402"
+				],
+				areaMasterUrl: "https://www.train-guide.westjr.co.jp/api/v3/area_kinki_master.json",
+				stationUrl: "https://www.train-guide.westjr.co.jp/api/v3/hokurikubiwako_st.json",
+				locationUrl: "https://www.train-guide.westjr.co.jp/api/v3/hokurikubiwako.json"
+			},
+			{
+				areaId: "kinki",
+				lineId: "kyoto",
+				positionPrefix: "JW61",
+				stationCodes: [
+					"0402", "0404", "0464", "0405", "0406", "0407", "0461", "0408", "0409",
+					"0466", "0410", "0411", "0412", "0413", "0414", "0415", "0416"
+				],
+				areaMasterUrl: "https://www.train-guide.westjr.co.jp/api/v3/area_kinki_master.json",
+				stationUrl: "https://www.train-guide.westjr.co.jp/api/v3/kyoto_st.json",
+				locationUrl: "https://www.train-guide.westjr.co.jp/api/v3/kyoto.json"
+			},
+			{
+				areaId: "kinki",
+				lineId: "kobesanyo",
+				positionPrefix: "JW61",
+				stationCodes: [
+					"0415", "0416", "0417", "0419", "0420", "0421", "0422", "0460", "0423", "0424",
+					"0425", "0426", "0427", "0428", "0429", "0430", "0431", "0432", "0433", "0434",
+					"0435", "0462", "0436", "0437", "0438", "0439", "0440", "0441", "0442", "0443",
+					"0444", "0445", "0446", "0447", "0448", "0449", "0450", "0451", "0465", "0452"
+				],
+				areaMasterUrl: "https://www.train-guide.westjr.co.jp/api/v3/area_kinki_master.json",
+				stationUrl: "https://www.train-guide.westjr.co.jp/api/v3/kobesanyo_st.json",
+				locationUrl: "https://www.train-guide.westjr.co.jp/api/v3/kobesanyo.json"
+			}
+		]
+	},
+	"62": {
+		senku: "62",
+		currentTimeUrl: "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www.train-guide.westjr.co.jp/api/v3/currenttime.txt",
+		sources: [
+			{
+				areaId: "hokuriku",
+				lineId: "hokuriku",
+				positionPrefix: "JWH",
+				stationCodes: ["0450", "0449", "0448"],
+				areaMasterUrl: "https://www.train-guide.westjr.co.jp/api/v3/area_hokuriku_master.json",
+				stationUrl: "https://www.train-guide.westjr.co.jp/api/v3/hokuriku_st.json",
+				locationUrl: "https://www.train-guide.westjr.co.jp/api/v3/hokuriku.json"
+			},
+			{
+				areaId: "kinki",
+				lineId: "hokurikubiwako",
+				stationCodes: [
+					"0509", "0508", "0507", "0506", "0505", "0504", "0503", "0502", "0501", "0382"
+				],
+				areaMasterUrl: "https://www.train-guide.westjr.co.jp/api/v3/area_kinki_master.json",
+				stationUrl: "https://www.train-guide.westjr.co.jp/api/v3/hokurikubiwako_st.json",
+				locationUrl: "https://www.train-guide.westjr.co.jp/api/v3/hokurikubiwako.json"
+			}
+		]
+	},
+	"63": {
+		senku: "63",
+		currentTimeUrl: "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www.train-guide.westjr.co.jp/api/v3/currenttime.txt",
+		sources: [
+			{
+				areaId: "hokuriku",
+				lineId: "hokuriku",
+				positionPrefix: "JWH",
+				stationCodes: ["0450", "0449"],
+				areaMasterUrl: "https://www.train-guide.westjr.co.jp/api/v3/area_hokuriku_master.json",
+				stationUrl: "https://www.train-guide.westjr.co.jp/api/v3/hokuriku_st.json",
+				locationUrl: "https://www.train-guide.westjr.co.jp/api/v3/hokuriku.json"
+			},
+			{
+				areaId: "kinki",
+				lineId: "kosei",
+				stationCodes: [
+					"0510", "0509", "0919", "0618", "0617", "0616", "0615", "0614",
+					"0613", "0612", "0611", "0610", "0609", "0608", "0607", "0606",
+					"0605", "0604", "0603", "0602", "0601", "0401", "0402"
+				],
+				areaMasterUrl: "https://www.train-guide.westjr.co.jp/api/v3/area_kinki_master.json",
+				stationUrl: "https://www.train-guide.westjr.co.jp/api/v3/kosei_st.json",
+				locationUrl: "https://www.train-guide.westjr.co.jp/api/v3/kosei.json"
+			},
+			{
+				areaId: "kinki",
+				lineId: "kosei",
+				stationCodes: [
+					"0510", "0509", "0919", "0618", "0617", "0616", "0615", "0614",
+					"0613", "0612", "0611", "0610", "0609", "0608", "0607", "0606",
+					"0605", "0604", "0603", "0602", "0601", "0401", "0402"
+				],
+				areaMasterUrl: "https://www.train-guide.westjr.co.jp/api/v3/area_kinki_master.json",
+				stationUrl: "https://www.train-guide.westjr.co.jp/api/v3/kosei_st.json",
+				locationUrl: "https://www.train-guide.westjr.co.jp/api/v3/koseihokurikubiwako.json"
+			}
+		]
+	},
+	"64": {
+		senku: "64",
+		currentTimeUrl: "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www.train-guide.westjr.co.jp/api/v3/currenttime.txt",
+		sources: [
+			{
+				areaId: "okayama",
+				lineId: "setoohashi",
+				positionPrefix: "JWO",
+				stationCodes: [
+					"0245", "0246", "0247", "0248", "0249", "0250",
+					"0251", "0252", "0253", "0254", "0255", "0256"
+				],
+				areaMasterUrl: "https://www.train-guide.westjr.co.jp/api/v3/area_okayama_master.json",
+				stationUrl: "https://www.train-guide.westjr.co.jp/api/v3/setoohashi_st.json",
+				locationUrl: "https://www.train-guide.westjr.co.jp/api/v3/setoohashi.json"
+			}
+		]
+	},
+	"65": {
+		senku: "65",
+		currentTimeUrl: "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www.train-guide.westjr.co.jp/api/v3/currenttime.txt",
+		sources: [
+			{
+				areaId: "kinki",
+				lineId: "gakkentoshi",
+				stationCodes: [
+					"3023", "1322", "1321", "1320", "1319", "1318", "1317", "1316",
+					"1315", "1314", "1313", "1312", "1311", "1310", "1309", "1308",
+					"1307", "1306", "1305", "1304", "1303", "1302", "1301", "2517"
+				],
+				areaMasterUrl: "https://www.train-guide.westjr.co.jp/api/v3/area_kinki_master.json",
+				stationUrl: "https://www.train-guide.westjr.co.jp/api/v3/gakkentoshi_st.json",
+				locationUrl: "https://www.train-guide.westjr.co.jp/api/v3/gakkentoshi.json"
+			},
+			{
+				areaId: "kinki",
+				lineId: "tozai",
+				stationCodes: [
+					"2517", "1501", "1502", "1503", "1504", "1505", "1506", "1508", "0419"
+				],
+				areaMasterUrl: "https://www.train-guide.westjr.co.jp/api/v3/area_kinki_master.json",
+				stationUrl: "https://www.train-guide.westjr.co.jp/api/v3/tozai_st.json",
+				locationUrl: "https://www.train-guide.westjr.co.jp/api/v3/tozai.json"
+			}
+		]
+	},
+	"66": {
+		senku: "66",
+		currentTimeUrl: "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www.train-guide.westjr.co.jp/api/v3/currenttime.txt",
+		sources: [
+			{
+				areaId: "kinki",
+				lineId: "hanwahagoromo",
+				stationCodes: [
+					"2510", "2601", "2602", "2603", "2604", "2605", "2606", "2607",
+					"2608", "2609", "2610", "2611", "6061", "2613", "2651", "2614",
+					"2615", "2616", "2617", "2618", "2619", "2620", "2621", "2622",
+					"2623", "2624", "2625", "3701", "3702", "3703", "3704", "3705",
+					"3706", "3707", "3708", "3709"
+				],
+				areaMasterUrl: "https://www.train-guide.westjr.co.jp/api/v3/area_kinki_master.json",
+				stationUrl: "https://www.train-guide.westjr.co.jp/api/v3/hanwahagoromo_st.json",
+				locationUrl: "https://www.train-guide.westjr.co.jp/api/v3/hanwahagoromo.json"
+			}
+		]
+	},
+	"67": {
+		senku: "67",
+		currentTimeUrl: "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www.train-guide.westjr.co.jp/api/v3/currenttime.txt",
+		sources: [
+			{
+				areaId: "kinki",
+				lineId: "osakaloop",
+				stationCodes: [
+					"0416", "2501", "2502", "2503", "2504", "2506", "2507", "2508",
+					"2509", "2510", "2511", "2512", "2513", "2514", "2515", "2516",
+					"2517", "2518", "2519"
+				],
+				areaMasterUrl: "https://www.train-guide.westjr.co.jp/api/v3/area_kinki_master.json",
+				stationUrl: "https://www.train-guide.westjr.co.jp/api/v3/osakaloop_st.json",
+				locationUrl: "https://www.train-guide.westjr.co.jp/api/v3/osakaloop.json"
+			}
+		]
+	},
+	"68": {
+		senku: "68",
+		currentTimeUrl: "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www.train-guide.westjr.co.jp/api/v3/currenttime.txt",
+		sources: [
+			{
+				areaId: "kinki",
+				lineId: "yumesaki",
+				stationCodes: ["2503", "2551", "2552", "2553"],
+				areaMasterUrl: "https://www.train-guide.westjr.co.jp/api/v3/area_kinki_master.json",
+				stationUrl: "https://www.train-guide.westjr.co.jp/api/v3/yumesaki_st.json",
+				locationUrl: "https://www.train-guide.westjr.co.jp/api/v3/yumesaki.json"
+			}
+		]
+	},
+	"69": {
+		senku: "69",
+		currentTimeUrl: "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www.train-guide.westjr.co.jp/api/v3/currenttime.txt",
+		sources: [
+			{
+				areaId: "kinki",
+				lineId: "yamatoji",
+				stationCodes: [
+					"3002", "2508", "2509", "2510", "3003", "3005", "3008", "3009",
+					"3010", "3011", "3012", "3013", "3014", "3015", "3016", "3017",
+					"3018", "3019", "3020", "3022", "3023", "3024"
+				],
+				areaMasterUrl: "https://www.train-guide.westjr.co.jp/api/v3/area_kinki_master.json",
+				stationUrl: "https://www.train-guide.westjr.co.jp/api/v3/yamatoji_st.json",
+				locationUrl: "https://www.train-guide.westjr.co.jp/api/v3/yamatoji.json"
+			},
+			{
+				areaId: "kinki",
+				lineId: "yamatoji",
+				stationCodes: [
+					"3002", "2508", "2509", "2510", "3003", "3005", "3008", "3009",
+					"3010", "3011", "3012", "3013", "3014", "3015", "3016", "3017",
+					"3018", "3019", "3020", "3022", "3023", "3024"
+				],
+				areaMasterUrl: "https://www.train-guide.westjr.co.jp/api/v3/area_kinki_master.json",
+				stationUrl: "https://www.train-guide.westjr.co.jp/api/v3/yamatoji_st.json",
+				locationUrl: "https://www.train-guide.westjr.co.jp/api/v3/yamatojiosakahigashi.json"
+			}
+		]
+	},
+	"70": {
+		senku: "70",
+		currentTimeUrl: "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www.train-guide.westjr.co.jp/api/v3/currenttime.txt",
+		sources: [
+			{
+				areaId: "kinki",
+				lineId: "osakahigashi",
+				stationCodes: [
+					"1401", "0415", "1204", "1206", "1207", "1208", "1301", "1302",
+					"8006", "8005", "8004", "8003", "8007", "8001", "3009"
+				],
+				areaMasterUrl: "https://www.train-guide.westjr.co.jp/api/v3/area_kinki_master.json",
+				stationUrl: "https://www.train-guide.westjr.co.jp/api/v3/osakahigashi_st.json",
+				locationUrl: "https://www.train-guide.westjr.co.jp/api/v3/osakahigashi.json"
+			},
+			{
+				areaId: "kinki",
+				lineId: "osakahigashi",
+				stationCodes: [
+					"1401", "0415", "1204", "1206", "1207", "1208", "1301", "1302",
+					"8006", "8005", "8004", "8003", "8007", "8001", "3009"
+				],
+				areaMasterUrl: "https://www.train-guide.westjr.co.jp/api/v3/area_kinki_master.json",
+				stationUrl: "https://www.train-guide.westjr.co.jp/api/v3/osakahigashi_st.json",
+				locationUrl: "https://www.train-guide.westjr.co.jp/api/v3/osakahigashigakkentoshi.json"
+			},
+			{
+				areaId: "kinki",
+				lineId: "osakahigashi",
+				stationCodes: [
+					"1401", "0415", "1204", "1206", "1207", "1208", "1301", "1302",
+					"8006", "8005", "8004", "8003", "8007", "8001", "3009"
+				],
+				areaMasterUrl: "https://www.train-guide.westjr.co.jp/api/v3/area_kinki_master.json",
+				stationUrl: "https://www.train-guide.westjr.co.jp/api/v3/osakahigashi_st.json",
+				locationUrl: "https://www.train-guide.westjr.co.jp/api/v3/osakahigashiyamatoji.json"
+			},
+			{
+				areaId: "kinki",
+				lineId: "osakahigashi",
+				stationCodes: [
+					"1401", "0415", "1204", "1206", "1207", "1208", "1301", "1302",
+					"8006", "8005", "8004", "8003", "8007", "8001", "3009"
+				],
+				areaMasterUrl: "https://www.train-guide.westjr.co.jp/api/v3/area_kinki_master.json",
+				stationUrl: "https://www.train-guide.westjr.co.jp/api/v3/osakahigashi_st.json",
+				locationUrl: "https://www.train-guide.westjr.co.jp/api/v3/osakahigashikyoto.json"
+			}
+		]
+	},
+	"71": {
+		senku: "71",
+		currentTimeUrl: "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www.train-guide.westjr.co.jp/api/v3/currenttime.txt",
+		sources: [
+			{
+				areaId: "kinki",
+				lineId: "kansaiairport",
+				stationCodes: ["2625", "2701", "2702"],
+				areaMasterUrl: "https://www.train-guide.westjr.co.jp/api/v3/area_kinki_master.json",
+				stationUrl: "https://www.train-guide.westjr.co.jp/api/v3/kansaiairport_st.json",
+				locationUrl: "https://www.train-guide.westjr.co.jp/api/v3/kansaiairport.json"
+			}
+		]
+	},
+	"72": {
+		senku: "72",
+		currentTimeUrl: "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www.train-guide.westjr.co.jp/api/v3/currenttime.txt",
+		sources: [
+			{
+				areaId: "okayama",
+				lineId: "unominato",
+				positionPrefix: "JWO",
+				stationCodes: ["0252", "0258", "0259", "0260", "0261", "0262", "0263", "0264"],
+				areaMasterUrl: "https://www.train-guide.westjr.co.jp/api/v3/area_okayama_master.json",
+				stationUrl: "https://www.train-guide.westjr.co.jp/api/v3/unominato_st.json",
+				locationUrl: "https://www.train-guide.westjr.co.jp/api/v3/unominato.json"
+			}
+		]
+	},
+	...((typeof window !== "undefined" && window.JrWestRemainingRouteSources) || {})
+};
+const jrWestStaticSourceDataCache = new Map();
+const jrWestStaticJsonDataCache = new Map();
+const JRSHIKOKU_API_BASE = "https://trainlocation.pages.dev";
+const JRSHIKOKU_LOCATION_SOURCE_MAP = {
+	"64": {
+		senku: "64",
+		lineId: "seto",
+		liveUrl: JRSHIKOKU_API_BASE + "/api/jrshikoku/location",
+		timetableUrl: JRSHIKOKU_API_BASE + "/api/jrshikoku/timetable"
+	},
+	"73": {
+		senku: "73",
+		lineId: "yosan",
+		liveUrl: JRSHIKOKU_API_BASE + "/api/jrshikoku/location",
+		timetableUrl: JRSHIKOKU_API_BASE + "/api/jrshikoku/timetable"
+	},
+	"76": {
+		senku: "76",
+		lineId: "uwajima",
+		liveUrl: JRSHIKOKU_API_BASE + "/api/jrshikoku/location",
+		timetableUrl: JRSHIKOKU_API_BASE + "/api/jrshikoku/timetable"
+	},
+	"77": {
+		senku: "77",
+		lineId: "uwajima2",
+		liveUrl: JRSHIKOKU_API_BASE + "/api/jrshikoku/location",
+		timetableUrl: JRSHIKOKU_API_BASE + "/api/jrshikoku/timetable"
+	},
+	"78": {
+		senku: "78",
+		lineId: "dosan",
+		liveUrl: JRSHIKOKU_API_BASE + "/api/jrshikoku/location",
+		timetableUrl: JRSHIKOKU_API_BASE + "/api/jrshikoku/timetable"
+	},
+	"79": {
+		senku: "79",
+		lineId: "kubokawa",
+		liveUrl: JRSHIKOKU_API_BASE + "/api/jrshikoku/location",
+		timetableUrl: JRSHIKOKU_API_BASE + "/api/jrshikoku/timetable"
+	},
+	"80": {
+		senku: "80",
+		lineId: "koutoku",
+		liveUrl: JRSHIKOKU_API_BASE + "/api/jrshikoku/location",
+		timetableUrl: JRSHIKOKU_API_BASE + "/api/jrshikoku/timetable"
+	},
+	"81": {
+		senku: "81",
+		lineId: "tokushima",
+		liveUrl: JRSHIKOKU_API_BASE + "/api/jrshikoku/location",
+		timetableUrl: JRSHIKOKU_API_BASE + "/api/jrshikoku/timetable"
+	},
+	"82": {
+		senku: "82",
+		lineId: "naruto",
+		liveUrl: JRSHIKOKU_API_BASE + "/api/jrshikoku/location",
+		timetableUrl: JRSHIKOKU_API_BASE + "/api/jrshikoku/timetable"
+	}
+};
+const jrShikokuStaticSourceDataCache = new Map();
+const JRCENTRAL_LOCATION_SOURCE_MAP = {
+	"74": {
+		senku: "74",
+		lineName: "東海道線(豊橋～米原)",
+		stationSet: "tokaido_toyohashi_maibara",
+		positionPrefix: "JTC",
+		liveUrl: "https://traininfo.jr-central.co.jp/zairaisen/data/zaisenichi.json"
+	},
+	"75": {
+		senku: "75",
+		lineName: "東海道線(熱海～豊橋)",
+		stationSet: "tokaido_atami_toyohashi",
+		positionPrefix: "JTC",
+		liveUrl: "https://traininfo.jr-central.co.jp/zairaisen/data/zaisenichi.json"
+	},
+	"83": {
+		senku: "83", lineName: "中央線", stationSet: "chuo", positionPrefix: "JTC83",
+		liveUrl: "https://traininfo.jr-central.co.jp/zairaisen/data/zaisenichi.json"
+	},
+	"84": {
+		senku: "84", lineName: "関西線", stationSet: "kansai", positionPrefix: "JTC84",
+		liveUrl: "https://traininfo.jr-central.co.jp/zairaisen/data/zaisenichi.json"
+	},
+	"85": {
+		senku: "85", lineName: "紀勢線", stationSet: "kisei", positionPrefix: "JTC85",
+		liveUrl: "https://traininfo.jr-central.co.jp/zairaisen/data/zaisenichi.json"
+	},
+	"86": {
+		senku: "86", lineName: "高山線", stationSet: "takayama", positionPrefix: "JTC86",
+		liveUrl: "https://traininfo.jr-central.co.jp/zairaisen/data/zaisenichi.json"
+	},
+	"87": {
+		senku: "87", lineName: "武豊線", stationSet: "taketoyo", positionPrefix: "JTC87",
+		liveUrl: "https://traininfo.jr-central.co.jp/zairaisen/data/zaisenichi.json"
+	},
+	"88": {
+		senku: "88", lineName: "飯田線", stationSet: "iida", positionPrefix: "JTC88",
+		liveUrl: "https://traininfo.jr-central.co.jp/zairaisen/data/zaisenichi.json"
+	},
+	"89": {
+		senku: "89", lineName: "太多線", stationSet: "taita", positionPrefix: "JTC89",
+		liveUrl: "https://traininfo.jr-central.co.jp/zairaisen/data/zaisenichi.json"
+	},
+	"90": {
+		senku: "90", lineName: "御殿場線", stationSet: "gotemba", positionPrefix: "JTC90",
+		liveUrl: "https://traininfo.jr-central.co.jp/zairaisen/data/zaisenichi.json"
+	},
+	"91": {
+		senku: "91", lineName: "身延線", stationSet: "minobu", positionPrefix: "JTC91",
+		liveUrl: "https://traininfo.jr-central.co.jp/zairaisen/data/zaisenichi.json"
+	},
+	"92": {
+		senku: "92", lineName: "参宮線", stationSet: "sangu", positionPrefix: "JTC92",
+		liveUrl: "https://traininfo.jr-central.co.jp/zairaisen/data/zaisenichi.json"
+	},
+	"93": {
+		senku: "93", lineName: "名松線", stationSet: "meisho", positionPrefix: "JTC93",
+		liveUrl: "https://traininfo.jr-central.co.jp/zairaisen/data/zaisenichi.json"
+	},
+	"94": {
+		senku: "94", lineName: "美濃赤坂線", stationSet: "mino_akasaka", positionPrefix: "JTC94",
+		liveUrl: "https://traininfo.jr-central.co.jp/zairaisen/data/zaisenichi.json"
+	},
+	"95": {
+		senku: "95", lineName: "伊勢鉄道", stationSet: "ise_railway", positionPrefix: "JTC95",
+		liveUrl: "https://traininfo.jr-central.co.jp/zairaisen/data/zaisenichi.json"
+	}
+};
+const JRCENTRAL_TIMETABLE_URL = "https://traininfo.jr-central.co.jp/zairaisen/data/kobetsujikoku.json";
+const JRCENTRAL_TIMETABLE_CACHE_NAME = "jrcentral-timetable-v1";
+let jrCentralTimetableDataPromise = null;
+let jrCentralTimetableDataExpiresAt = 0;
+let jrCentralTimetableCacheExpiryTimer = null;
+let jrCentralTimetableCacheInitializedFor = "";
 
 function get_mainte_json_request(fileName, cacheKey) {
 	const cloudflareApiBase = "https://trainlocation.pages.dev";
@@ -144,6 +604,10 @@ let locationSleepPreventEnabled = false;
 let locationWakeLock = null;
 // 次回自動更新予定時刻
 let nextLocationAutoRefreshAt = null;
+// バックグラウンドからの復帰判定
+let locationPageWasBackgrounded = false;
+let lastLocationForegroundRefreshAt = 0;
+const LOCATION_FOREGROUND_REFRESH_DEBOUNCE = 1000;
 // 列車検索用キャッシュ
 let cachedTrainSearchData = null;
 let trainSearchDataPromise = null;
@@ -171,6 +635,9 @@ let preserveScrollAfterHashChange = false;
 let preservedScrollTop = 0;
 let suppressTrackScrollOnce = false;
 let trackingScrollEnabled = true;
+let osakaLoopScrollState = null;
+let osakaLoopScrollFrame = null;
+let osakaLoopResizeTimer = null;
 
 function preserve_scroll_after_hash_change() {
 	preserveScrollAfterHashChange = true;
@@ -336,6 +803,7 @@ window.onresize = function () {
 
 	// ページの最後が駅で終わっている路線（08、13）でサブフッターの表示があった場合、下に余白を追加する
 	eki_end_margin();
+	recalculate_osaka_loop_scroll();
 };
 
 window.onscroll = function () {
@@ -358,7 +826,9 @@ window.onhashchange = function () {
 
 		if (param_id) {
 			// 繝上ャ繧ｷ繝･縺ｫ鬧・D縺悟ｭ伜惠縺励◆蝣ｴ蜷医∝ｯｾ雎｡縺ｮ鬧・∪縺ｧ繧ｹ繧ｯ繝ｭ繝ｼ繝ｫ
-			let pos = $("div[key='" + param_id + "']").offset().top - 380;
+			let target = get_preferred_station_element(param_id);
+			if (!target.length) return;
+			let pos = target.offset().top - 380;
 			$("body,html").scrollTop(pos);
 		}
 
@@ -464,15 +934,28 @@ $(function ($) {
 	// 駅選択をクリックしたときの動き
 	$(document).on("click", ".header-btn.eki", function() {
 		// テンプレートのhtmlから駅を取得
-		let list = $("#stationList .eki-panel .eki-contents a");
+		let stationListScope = $("#stationList");
+		if (get_param_rosen() === "67") {
+			stationListScope = stationListScope.children(".osaka-loop-cycle[data-loop-cycle='1']");
+		}
+		let list;
+		if (is_jrkyushu_doredore_location_rosen(get_param_rosen())) {
+			list = stationListScope.find(".eki-panel .eki-contents [key][data-station-selectable='1']");
+		} else {
+			list = stationListScope.find(".eki-panel .eki-contents a [key]");
+		}
 		// 取得した駅からボタンをダイアログに表示する内容を作成
 		let html = "<ul>";
-		for(let row of list){
-			const stationNode = row.querySelector("[key]");
-			if (!stationNode) continue;
+		const stationKeys = new Set();
+		for(let stationNode of list){
+			const stationKey = stationNode.getAttribute("key");
+			if (!stationKey || stationKeys.has(stationKey)) continue;
+			stationKeys.add(stationKey);
+			const stationContents = stationNode.closest(".stalist-eki-contents");
+			const stationIcon = stationContents ? stationContents.querySelector(".eki-icon") : null;
 			html += "<li>";
-			html += row.children[0].children[0].outerHTML;
-			html += "<div value='" + stationNode.getAttribute("key") + "'>" + stationNode.innerText.replace("\n", "") + "</div>";
+			html += stationIcon ? stationIcon.outerHTML : '<span class="eki-icon hide"></span>';
+			html += "<div value='" + stationKey + "'>" + stationNode.innerText.replace(/\n/g, "") + "</div>";
 			html += "</li>";
 		}
 		html += "</ul>";
@@ -567,7 +1050,7 @@ $(function ($) {
 		// 駅コードを取得
 		let id = this.children[1].getAttribute("value");
 		// 対象の駅までスクロール
-		let target = $("div[key='" + id + "']").first();
+		let target = get_preferred_station_element(id);
 		if (target.length == 0) return;
 		let pos = target.offset().top - 380;
 		$("body,html").animate({scrollTop: pos});
@@ -649,7 +1132,7 @@ $(function ($) {
 		if (trackingScrollEnabled) {
 			const param_cbango = get_param_cbango();
 			if (!param_cbango) return;
-			const ressha = $("div[data-cbango='" + param_cbango + "']");
+			const ressha = get_preferred_train_element(param_cbango);
 			if (ressha.length) {
 				scroll_selected_train_into_view(ressha);
 			}
@@ -664,7 +1147,10 @@ $(function ($) {
 	document.addEventListener("visibilitychange", handle_page_visibility_change);
 	document.addEventListener("pointerdown", handle_location_wake_lock_user_activation);
 	document.addEventListener("keydown", handle_location_wake_lock_user_activation);
-	window.addEventListener("pagehide", release_location_wake_lock);
+	window.addEventListener("blur", mark_location_page_backgrounded);
+	window.addEventListener("focus", handle_page_window_focus);
+	window.addEventListener("pagehide", handle_location_page_hide);
+	window.addEventListener("pageshow", handle_location_page_show);
 	window.addEventListener("beforeunload", release_location_wake_lock);
 
 	// サイドメニューの閉じるボタンをクリックしたときの動き
@@ -680,7 +1166,7 @@ $(function ($) {
 
 	// 区間をクリックしたときの動き
 	$(document).on("click"
-	, ".rosen-name-list div, .hoka-rosen-link a, .up-rosen-link a, .down-rosen-link a, .shin-link a"
+	, ".rosen-name-list .rosen-name-contents, .hoka-rosen-link a, .up-rosen-link a, .down-rosen-link a, .shin-link a, .jrshikoku-wakamiya-caption a"
 	,  function() {
 		$("#sideMenu .side-menu-outer").hide();
 
@@ -908,6 +1394,22 @@ function is_jr_shinkansen_location_rosen(_rosen) {
 	return Object.prototype.hasOwnProperty.call(JR_SHINKANSEN_LOCATION_SOURCE_MAP, String(_rosen || ""));
 }
 
+function is_jrkyushu_doredore_location_rosen(_rosen) {
+	return Object.prototype.hasOwnProperty.call(JRKYUSHU_DOREDORE_LOCATION_SOURCE_MAP, String(_rosen || ""));
+}
+
+function is_jrwest_location_rosen(_rosen) {
+	return Object.prototype.hasOwnProperty.call(JRWEST_LOCATION_SOURCE_MAP, String(_rosen || ""));
+}
+
+function is_jrshikoku_location_rosen(_rosen) {
+	return Object.prototype.hasOwnProperty.call(JRSHIKOKU_LOCATION_SOURCE_MAP, String(_rosen || ""));
+}
+
+function is_jrcentral_location_rosen(_rosen) {
+	return Object.prototype.hasOwnProperty.call(JRCENTRAL_LOCATION_SOURCE_MAP, String(_rosen || ""));
+}
+
 function is_location_auto_refresh_allowed(_rosen) {
 	return !is_jreast_location_rosen(_rosen);
 }
@@ -925,6 +1427,132 @@ function get_dokotre_location_request(_url, _now) {
 	const url = _url + separator + "cache=" + _now;
 	const proxyPrefix = "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=";
 	return $.getJSON(url.indexOf(proxyPrefix) === 0 ? url : proxyPrefix + url);
+}
+
+function get_jrcentral_timetable_cache_info(_now = new Date()) {
+	const now = new Date(_now);
+	const boundary = new Date(now);
+	boundary.setHours(4, 0, 0, 0);
+	let serviceDate = new Date(now);
+	let expiresAt = boundary;
+	if (now >= boundary) {
+		expiresAt = new Date(boundary);
+		expiresAt.setDate(expiresAt.getDate() + 1);
+	} else {
+		serviceDate.setDate(serviceDate.getDate() - 1);
+	}
+	const pad = (value) => String(value).padStart(2, "0");
+	return {
+		serviceDate: serviceDate.getFullYear() + "-" + pad(serviceDate.getMonth() + 1) + "-" + pad(serviceDate.getDate()),
+		expiresAt: expiresAt.getTime()
+	};
+}
+
+function get_jrcentral_timetable_cache_request(_serviceDate) {
+	return new Request(new URL("./__jrcentral_timetable_cache__/" + _serviceDate + ".json", location.href).toString());
+}
+
+async function get_jrcentral_timetable_cache(_cacheInfo) {
+	if (!("caches" in window)) return null;
+	const cache = await caches.open(JRCENTRAL_TIMETABLE_CACHE_NAME);
+	const targetRequest = get_jrcentral_timetable_cache_request(_cacheInfo.serviceDate);
+	const requests = await cache.keys();
+	await Promise.all(requests.map(async (request) => {
+		if (request.url === targetRequest.url) return;
+		await cache.delete(request);
+	}));
+	const cachedResponse = await cache.match(targetRequest);
+	if (!cachedResponse) return { cache: cache, request: targetRequest, response: null };
+	const expiresAt = Number(cachedResponse.headers.get("x-expires-at") || 0);
+	if (!expiresAt || expiresAt <= Date.now()) {
+		await cache.delete(targetRequest);
+		return { cache: cache, request: targetRequest, response: null };
+	}
+	return { cache: cache, request: targetRequest, response: cachedResponse };
+}
+
+function parse_jrcentral_timetable_json(_text) {
+	return JSON.parse(String(_text || "").replace(/^\uFEFF/, ""));
+}
+
+async function fetch_jrcentral_timetable_json(_cacheInfo, _cacheContext) {
+	const cacheToken = String(_cacheInfo.serviceDate || "").replace(/-/g, "");
+	const sourceUrl = JRCENTRAL_TIMETABLE_URL + "?cache=" + cacheToken;
+	const proxyUrl = "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=" + sourceUrl;
+	const response = await fetch(proxyUrl, { cache: "no-store" });
+	if (!response.ok) throw new Error("JR Central timetable request failed: " + response.status);
+	const text = await response.text();
+	const json = parse_jrcentral_timetable_json(text);
+	if (!json || !Array.isArray(json.train_info)) throw new Error("JR Central timetable response is invalid");
+	if (_cacheContext && _cacheContext.cache) {
+		const cachedResponse = new Response(text, {
+			headers: {
+				"content-type": "application/json; charset=utf-8",
+				"x-expires-at": String(_cacheInfo.expiresAt)
+			}
+		});
+		try {
+			await _cacheContext.cache.put(_cacheContext.request, cachedResponse);
+		} catch (_error) {
+			// 容量制限などで保存できない場合も、今回取得した時刻データはそのまま使用する。
+		}
+	}
+	return json;
+}
+
+function schedule_jrcentral_timetable_cache_expiry(_expiresAt) {
+	if (jrCentralTimetableCacheExpiryTimer) clearTimeout(jrCentralTimetableCacheExpiryTimer);
+	const delay = Math.max(0, Number(_expiresAt || 0) - Date.now());
+	jrCentralTimetableCacheExpiryTimer = setTimeout(() => {
+		jrCentralTimetableDataPromise = null;
+		jrCentralTimetableDataExpiresAt = 0;
+		jrCentralTimetableCacheExpiryTimer = null;
+		jrCentralTimetableCacheInitializedFor = "";
+		if ("caches" in window) caches.delete(JRCENTRAL_TIMETABLE_CACHE_NAME).catch(() => {});
+	}, Math.min(delay, 2147483647));
+}
+
+function initialize_jrcentral_timetable_cache() {
+	const cacheInfo = get_jrcentral_timetable_cache_info();
+	if (jrCentralTimetableCacheInitializedFor === cacheInfo.serviceDate) return;
+	jrCentralTimetableCacheInitializedFor = cacheInfo.serviceDate;
+	get_jrcentral_timetable_cache(cacheInfo).catch(() => {});
+	schedule_jrcentral_timetable_cache_expiry(cacheInfo.expiresAt);
+}
+
+function load_jrcentral_timetable_json() {
+	const cacheInfo = get_jrcentral_timetable_cache_info();
+	if (jrCentralTimetableDataPromise && jrCentralTimetableDataExpiresAt > Date.now()) {
+		return jrCentralTimetableDataPromise;
+	}
+	jrCentralTimetableDataExpiresAt = cacheInfo.expiresAt;
+	jrCentralTimetableDataPromise = get_jrcentral_timetable_cache(cacheInfo)
+		.then(async (cacheContext) => {
+			if (cacheContext && cacheContext.response) {
+				return parse_jrcentral_timetable_json(await cacheContext.response.text());
+			}
+			return fetch_jrcentral_timetable_json(cacheInfo, cacheContext);
+		})
+		.catch((error) => {
+			jrCentralTimetableDataPromise = null;
+			jrCentralTimetableDataExpiresAt = 0;
+			throw error;
+		});
+	schedule_jrcentral_timetable_cache_expiry(cacheInfo.expiresAt);
+	return jrCentralTimetableDataPromise;
+}
+
+function prepare_jrcentral_timetable_dataset(_dataset) {
+	if (!_dataset || _dataset.source !== "jrcentral") return Promise.resolve();
+	const trainIdentificationKey = String(_dataset.jrcentral_train_key || "").trim();
+	if (!trainIdentificationKey || !window.JrCentralLocationAdapter || typeof window.JrCentralLocationAdapter.convertTimetable !== "function") {
+		_dataset.jrcentral_timetable = "[]";
+		return Promise.resolve();
+	}
+	return load_jrcentral_timetable_json().then((json) => {
+		const timetable = window.JrCentralLocationAdapter.convertTimetable(json, trainIdentificationKey);
+		_dataset.jrcentral_timetable = JSON.stringify(timetable);
+	});
 }
 
 function get_dokotre_mapping_request(_url, _now) {
@@ -949,6 +1577,78 @@ function jqxhr_to_promise(_jqxhr) {
 }
 
 const LOCATION_DATA_STALE_THRESHOLD_MS = 5 * 60 * 1000;
+
+function get_location_train_merge_key(_row) {
+	if (!_row || !_row.cbango) return "";
+	const cbango = String(_row.cbango);
+	if (_row.jrShikoku && _row.jrShikoku.isForecastWindow) {
+		return ["jrshikoku-forecast", cbango, String(_row.pos || "")].join("|");
+	}
+	return cbango;
+}
+
+function prepare_jrkyushu_train_navi_dataset(_dataset) {
+	if (!window.JrKyushuTrainNaviAdapter) {
+		return Promise.reject(new Error("JR Kyushu Train Navi adapter is not loaded"));
+	}
+	let request;
+	try {
+		request = JSON.parse(_dataset.jrkyushu_train_navi_request || "null");
+	} catch (_error) {
+		request = null;
+	}
+	if (!window.JrKyushuTrainNaviAdapter.isValidTimetableRequest(request)) {
+		return Promise.reject(new Error("JR Kyushu Train Navi request is invalid"));
+	}
+	const stationCandidates = Array.from(new Set([request.currentStationName].concat(request.candidateStationNames || []).filter(Boolean))).slice(0, 10);
+	const directions = [request.upperLowerKbn];
+	const oppositeDirection = request.upperLowerKbn === "1" ? "2" : "1";
+	if (stationCandidates.length > 1) directions.push(oppositeDirection);
+	const attempts = stationCandidates.flatMap((stationName) => directions.map((upperLowerKbn) => {
+		const attempt = Object.assign({}, request, { currentStationName: stationName, upperLowerKbn: upperLowerKbn });
+		delete attempt.candidateStationNames;
+		return attempt;
+	}));
+	let lastResponse = null;
+	let matchedAttempt = null;
+	const fetchAttempt = (index) => {
+		if (index >= attempts.length) return Promise.resolve(lastResponse || { ok: true, matched: false, reason: "train-not-found", timetable: [] });
+		return window.JrKyushuTrainNaviAdapter.fetchTimetable(JR_KYUSHU_TIMETABLE_WORKER_BASE, attempts[index])
+			.then((response) => {
+				lastResponse = response;
+				if (response.matched) {
+					matchedAttempt = attempts[index];
+					return response;
+				}
+				return fetchAttempt(index + 1);
+			})
+			.catch(() => fetchAttempt(index + 1));
+	};
+	return fetchAttempt(0)
+		.then((response) => {
+			const identity = response && response.identity;
+			if (!response.matched || !identity || !matchedAttempt || matchedAttempt.currentStationName === request.currentStationName) return response;
+			const originalStationRequest = Object.assign({}, request, {
+				trainCrownCode: String(identity.trainCrownCode || 0),
+				trainSignCode: String(identity.trainSignCode),
+				trainGenkai: String(identity.trainGenkai || 0),
+				trainCompanyCode: String(identity.trainCompanyCode || 1),
+				drivingBaseDate: identity.drivingBaseDate || request.drivingBaseDate
+			});
+			delete originalStationRequest.candidateStationNames;
+			return window.JrKyushuTrainNaviAdapter.fetchTimetable(JR_KYUSHU_TIMETABLE_WORKER_BASE, originalStationRequest)
+				.then((originalStationResponse) => originalStationResponse.matched ? originalStationResponse : response)
+				.catch(() => response);
+		})
+		.then((response) => {
+			window.JrKyushuTrainNaviAdapter.applyResponseToDataset(
+				_dataset,
+				response,
+				document.documentElement.dataset.lang || "ja"
+			);
+			return response;
+		});
+}
 
 function merge_location_now_data(_nowDataList) {
 	const seenCbangoMap = new Map();
@@ -976,9 +1676,9 @@ function merge_location_now_data(_nowDataList) {
 				mergedTrains.push(row);
 				return;
 			}
-			const cbango = String(row.cbango);
-			if (seenCbangoMap.has(cbango)) return;
-			seenCbangoMap.set(cbango, true);
+			const mergeKey = get_location_train_merge_key(row);
+			if (seenCbangoMap.has(mergeKey)) return;
+			seenCbangoMap.set(mergeKey, true);
 			mergedTrains.push(row);
 		});
 	});
@@ -990,6 +1690,9 @@ function merge_location_now_data(_nowDataList) {
 }
 
 function load_location_now_data(_param_rosen, _now) {
+	if (String(_param_rosen || "") === "64") {
+		return load_combined_jrwest_jrshikoku_location_now_data(_param_rosen, _now);
+	}
 	if (is_jreast_location_rosen(_param_rosen)) {
 		return load_combined_jreast_location_now_data(_param_rosen, _now);
 	}
@@ -998,6 +1701,18 @@ function load_location_now_data(_param_rosen, _now) {
 	}
 	if (is_jr_shinkansen_location_rosen(_param_rosen)) {
 		return load_jr_shinkansen_location_now_data(_param_rosen, _now);
+	}
+	if (is_jrkyushu_doredore_location_rosen(_param_rosen)) {
+		return load_jrkyushu_doredore_location_now_data(_param_rosen, _now);
+	}
+	if (is_jrwest_location_rosen(_param_rosen)) {
+		return load_jrwest_location_now_data(_param_rosen, _now);
+	}
+	if (is_jrshikoku_location_rosen(_param_rosen)) {
+		return load_jrshikoku_location_now_data(_param_rosen, _now);
+	}
+	if (is_jrcentral_location_rosen(_param_rosen)) {
+		return load_jrcentral_location_now_data(_param_rosen, _now);
 	}
 
 	const sourceRosens = get_location_json_source_list(_param_rosen);
@@ -1010,6 +1725,21 @@ function load_location_now_data(_param_rosen, _now) {
 	).then((nowDataResults) => {
 		const successDataList = nowDataResults.filter((entry) => entry && entry.nowData && Array.isArray(entry.nowData.trains));
 		if (successDataList.length < 1) throw new Error("location now json load failed");
+		return merge_location_now_data(successDataList);
+	});
+}
+
+function load_combined_jrwest_jrshikoku_location_now_data(_param_rosen, _now) {
+	return Promise.all([
+		load_jrshikoku_location_now_data(_param_rosen, _now)
+			.then((nowData) => ({ rosen: _param_rosen, sourceType: "jrshikoku", nowData: nowData }))
+			.catch(() => null),
+		load_jrwest_location_now_data(_param_rosen, _now)
+			.then((nowData) => ({ rosen: _param_rosen, sourceType: "jrwest", nowData: nowData }))
+			.catch(() => null)
+	]).then((nowDataResults) => {
+		const successDataList = nowDataResults.filter((entry) => entry && entry.nowData && Array.isArray(entry.nowData.trains));
+		if (successDataList.length < 1) throw new Error("Seto-Ohashi location now json load failed");
 		return merge_location_now_data(successDataList);
 	});
 }
@@ -1120,6 +1850,126 @@ function get_dokotre_static_source_cache_key(source) {
 	].join("|");
 }
 
+function load_jrwest_location_now_data(_param_rosen, _now) {
+	const source = JRWEST_LOCATION_SOURCE_MAP[String(_param_rosen || "")];
+	if (!source || !window.JrWestLocationAdapter) {
+		return Promise.reject(new Error("JR West location adapter is not loaded"));
+	}
+	const sources = Array.isArray(source.sources) ? source.sources : [source];
+	return jqxhr_to_promise(get_external_text_request(source.currentTimeUrl, _now)).catch(() => "")
+		.then((currentTimeText) => Promise.all(sources.map((entry) => {
+			return load_jrwest_location_source(entry, source.senku || _param_rosen, currentTimeText, _now)
+				.then((nowData) => ({ rosen: source.senku || _param_rosen, sourceType: "jrwest", nowData: nowData }))
+				.catch(() => null);
+		})))
+		.then((nowDataResults) => {
+			const successDataList = nowDataResults.filter((entry) => entry && entry.nowData && Array.isArray(entry.nowData.trains));
+			if (successDataList.length < 1) throw new Error("JR West location now json load failed");
+			return merge_location_now_data(successDataList);
+		});
+}
+
+function load_jrwest_location_source(source, senku, currentTimeText, _now) {
+	return Promise.all([
+		load_jrwest_static_source_data(source, _now),
+		jqxhr_to_promise(get_dokotre_location_request(source.locationUrl, _now))
+	]).then((results) => {
+		return window.JrWestLocationAdapter.normalize(
+			results[1],
+			results[0].stationJson,
+			results[0].areaMasterJson,
+			currentTimeText,
+			{
+				senku: senku,
+				lineId: source.lineId,
+				stationCodes: source.stationCodes,
+				positionPrefix: window.JrWestLocationAdapter.scopePositionPrefix(source.positionPrefix, senku)
+			}
+		);
+	});
+}
+
+function load_jrwest_static_source_data(source, _now) {
+	const cacheKey = [source.areaId, source.lineId, source.areaMasterUrl, source.stationUrl].join("|");
+	if (jrWestStaticSourceDataCache.has(cacheKey)) {
+		return jrWestStaticSourceDataCache.get(cacheKey);
+	}
+	const loadPromise = Promise.all([
+		load_jrwest_static_json(source.areaMasterUrl, _now),
+		load_jrwest_static_json(source.stationUrl, _now)
+	]).then((results) => ({ areaMasterJson: results[0], stationJson: results[1] }))
+		.catch((error) => {
+			jrWestStaticSourceDataCache.delete(cacheKey);
+			throw error;
+		});
+	jrWestStaticSourceDataCache.set(cacheKey, loadPromise);
+	return loadPromise;
+}
+
+function load_jrwest_static_json(url, _now) {
+	if (jrWestStaticJsonDataCache.has(url)) return jrWestStaticJsonDataCache.get(url);
+	const loadPromise = jqxhr_to_promise(get_dokotre_location_request(url, _now))
+		.catch((error) => {
+			jrWestStaticJsonDataCache.delete(url);
+			throw error;
+		});
+	jrWestStaticJsonDataCache.set(url, loadPromise);
+	return loadPromise;
+}
+
+function load_jrshikoku_location_now_data(_param_rosen, _now) {
+	const source = JRSHIKOKU_LOCATION_SOURCE_MAP[String(_param_rosen || "")];
+	if (!source || !window.JrShikokuLocationAdapter) {
+		return Promise.reject(new Error("JR Shikoku location adapter is not loaded"));
+	}
+	return Promise.all([
+		jqxhr_to_promise(get_external_text_request(source.liveUrl, _now)),
+		load_jrshikoku_timetable_data(source, _now)
+	]).then((results) => {
+		return window.JrShikokuLocationAdapter.normalize(results[0], results[1], {
+			senku: source.senku || _param_rosen,
+			lineId: source.lineId || "yosan"
+		});
+	});
+}
+
+function load_jrcentral_location_now_data(_param_rosen, _now) {
+	const source = JRCENTRAL_LOCATION_SOURCE_MAP[String(_param_rosen || "")];
+	if (!source || !window.JrCentralLocationAdapter) {
+		return Promise.reject(new Error("JR Central location adapter is not loaded"));
+	}
+	initialize_jrcentral_timetable_cache();
+	return jqxhr_to_promise(get_dokotre_location_request(source.liveUrl, _now))
+		.then((rawData) => window.JrCentralLocationAdapter.normalize(rawData, {
+			senku: source.senku || _param_rosen,
+			lineName: source.lineName,
+			stationSet: source.stationSet,
+			positionPrefix: source.positionPrefix
+		}));
+}
+
+function load_jrshikoku_timetable_data(source, _now) {
+	const cacheKey = source && source.timetableUrl ? source.timetableUrl : "jrshikoku-timetable";
+	if (jrShikokuStaticSourceDataCache.has(cacheKey)) {
+		return jrShikokuStaticSourceDataCache.get(cacheKey);
+	}
+	const loadPromise = jqxhr_to_promise(get_external_text_request(source.timetableUrl, get_jrshikoku_service_date_key()))
+		.catch((error) => {
+			jrShikokuStaticSourceDataCache.delete(cacheKey);
+			throw error;
+		});
+	jrShikokuStaticSourceDataCache.set(cacheKey, loadPromise);
+	return loadPromise;
+}
+
+function get_jrshikoku_service_date_key() {
+	const jst = new Date(Date.now() + 9 * 60 * 60 * 1000);
+	if (jst.getUTCHours() < 4) jst.setUTCDate(jst.getUTCDate() - 1);
+	return jst.getUTCFullYear() + "-" +
+		String(jst.getUTCMonth() + 1).padStart(2, "0") + "-" +
+		String(jst.getUTCDate()).padStart(2, "0");
+}
+
 function load_jr_shinkansen_location_now_data(_param_rosen, _now) {
 	const source = JR_SHINKANSEN_LOCATION_SOURCE_MAP[String(_param_rosen || "")];
 	if (!source || !window.JrShinkansenLocationAdapter) {
@@ -1127,13 +1977,14 @@ function load_jr_shinkansen_location_now_data(_param_rosen, _now) {
 	}
 	return Promise.all([
 		jqxhr_to_promise(get_dokotre_location_request(source.centralUrl, _now)).catch(() => null),
-		load_jr_shinkansen_static_source_data(source, _now).catch(() => ({ centralMasterJson: null })),
+		load_jr_shinkansen_static_source_data(source, _now).catch(() => ({ centralMasterJson: null, centralFormationMap: {} })),
 		jqxhr_to_promise(get_external_text_request(source.kyushuUrl, _now)).catch(() => ""),
 		load_jr_shinkansen_central_suspension_data(source, _now).catch(() => null),
 		load_jr_shinkansen_official_train_number_map(source).catch(() => ({}))
 	]).then((results) => {
 		const centralLocationJson = results[0];
 		const centralMasterJson = results[1].centralMasterJson;
+		const centralFormationMap = results[1].centralFormationMap || {};
 		const kyushuHtml = results[2];
 		const centralSuspensionJson = results[3];
 		const officialTrainNumberMap = results[4];
@@ -1142,6 +1993,7 @@ function load_jr_shinkansen_location_now_data(_param_rosen, _now) {
 				const baseOptions = {
 					senku: source.senku || _param_rosen,
 					centralTrainInfoMap: centralTrainInfoMap,
+					centralFormationMap: centralFormationMap,
 					centralSuspensionJson: centralSuspensionJson,
 					officialTrainNumberMap: officialTrainNumberMap
 				};
@@ -1263,16 +2115,20 @@ function get_jrkyushu_timetable_service_date(now = new Date()) {
 }
 
 function load_jr_shinkansen_static_source_data(source, _now) {
-	if (!source || !source.centralMasterUrl) return Promise.resolve({ centralMasterJson: null });
-	const cacheKey = source && source.centralMasterUrl || "";
+	if (!source || !source.centralMasterUrl) return Promise.resolve({ centralMasterJson: null, centralFormationMap: {} });
+	const cacheKey = [source.centralMasterUrl || "", source.centralFormationUrl || ""].join("|");
 	if (jrShinkansenStaticSourceDataCache.has(cacheKey)) {
 		return jrShinkansenStaticSourceDataCache.get(cacheKey);
 	}
 	const loadPromise = Promise.all([
-		jqxhr_to_promise(get_dokotre_location_request(source.centralMasterUrl, _now))
+		jqxhr_to_promise(get_dokotre_location_request(source.centralMasterUrl, _now)),
+		source.centralFormationUrl ?
+			jqxhr_to_promise(get_dokotre_location_request(source.centralFormationUrl, _now)).catch(() => null) :
+			Promise.resolve(null)
 	]).then((results) => {
 		return {
-			centralMasterJson: results[0]
+			centralMasterJson: results[0],
+			centralFormationMap: build_jr_shinkansen_central_formation_map(results[1])
 		};
 	}).catch((error) => {
 		jrShinkansenStaticSourceDataCache.delete(cacheKey);
@@ -1280,6 +2136,25 @@ function load_jr_shinkansen_static_source_data(source, _now) {
 	});
 	jrShinkansenStaticSourceDataCache.set(cacheKey, loadPromise);
 	return loadPromise;
+}
+
+function load_jrkyushu_doredore_location_now_data(_param_rosen, _now) {
+	const source = JRKYUSHU_DOREDORE_LOCATION_SOURCE_MAP[String(_param_rosen || "")];
+	if (!source || !window.JrKyushuDoredoreLocationAdapter) {
+		return Promise.reject(new Error("JR Kyushu Doredore location adapter is not loaded"));
+	}
+	return jqxhr_to_promise(get_external_text_request(source.url, _now)).then((html) => {
+		return window.JrKyushuDoredoreLocationAdapter.normalize(html, source).location;
+	});
+}
+
+function build_jr_shinkansen_central_formation_map(data) {
+	const rows = data && Array.isArray(data.formationInfoList) ? data.formationInfoList : [];
+	return rows.reduce((map, row) => {
+		if (!row || row.formationNumber === null || typeof row.formationNumber === "undefined") return map;
+		map[String(row.formationNumber)] = row;
+		return map;
+	}, {});
 }
 
 function load_jr_shinkansen_central_train_info_map(source, centralLocationJson, _now) {
@@ -1455,10 +2330,142 @@ function format_location_timestamp_jst() {
 		now.getUTCSeconds() + "秒現在";
 }
 
+function prepare_osaka_loop_cycles(_param_rosen) {
+	if (String(_param_rosen) !== "67") return;
+	const stationList = $("#stationList");
+	const sourceCycle = stationList.children(".osaka-loop-cycle").first();
+	if (sourceCycle.length !== 1 || stationList.children(".osaka-loop-cycle").length !== 1) return;
+
+	sourceCycle.attr("data-loop-cycle", "1");
+	const previousCycle = sourceCycle.clone(false).attr("data-loop-cycle", "0");
+	const nextCycle = sourceCycle.clone(false).attr("data-loop-cycle", "2");
+	sourceCycle.before(previousCycle);
+	sourceCycle.after(nextCycle);
+}
+
+function get_osaka_loop_anchor_offset() {
+	const subHeader = document.querySelector(".sub-header");
+	if (!subHeader) return 0;
+	return Math.max(0, subHeader.getBoundingClientRect().bottom + 8);
+}
+
+function measure_osaka_loop_scroll() {
+	const cycles = $("#stationList").children(".osaka-loop-cycle");
+	if (cycles.length !== 3) return null;
+	const middleTop = cycles.eq(1).offset().top;
+	const nextTop = cycles.eq(2).offset().top;
+	const cycleHeight = nextTop - middleTop;
+	if (!(cycleHeight > 0)) return null;
+	return {
+		middleTop: middleTop,
+		nextTop: nextTop,
+		cycleHeight: cycleHeight,
+		anchorOffset: get_osaka_loop_anchor_offset()
+	};
+}
+
+function normalize_osaka_loop_scroll() {
+	if (!osakaLoopScrollState || isDialogDisp) return;
+	const state = osakaLoopScrollState;
+	let target = window.scrollY;
+	let anchorPosition = target + state.anchorOffset;
+	while (anchorPosition < state.middleTop) {
+		target += state.cycleHeight;
+		anchorPosition += state.cycleHeight;
+	}
+	while (anchorPosition >= state.nextTop) {
+		target -= state.cycleHeight;
+		anchorPosition -= state.cycleHeight;
+	}
+	if (Math.abs(target - window.scrollY) < 1) return;
+	window.scrollTo(0, target);
+	window.sessionStorage.setItem("scrollY", Math.max(0, target - 50));
+}
+
+function setup_osaka_loop_infinite_scroll(_param_rosen) {
+	teardown_osaka_loop_infinite_scroll();
+	if (String(_param_rosen) !== "67") return;
+
+	window.requestAnimationFrame(function() {
+		const measured = measure_osaka_loop_scroll();
+		if (!measured) return;
+		osakaLoopScrollState = measured;
+		if (window.scrollY <= 1) {
+			window.scrollTo(0, Math.max(0, measured.middleTop - measured.anchorOffset));
+		} else {
+			normalize_osaka_loop_scroll();
+		}
+		osakaLoopScrollState.handler = function() {
+			if (osakaLoopScrollFrame !== null) return;
+			osakaLoopScrollFrame = window.requestAnimationFrame(function() {
+				osakaLoopScrollFrame = null;
+				normalize_osaka_loop_scroll();
+			});
+		};
+		window.addEventListener("scroll", osakaLoopScrollState.handler, { passive: true });
+	});
+}
+
+function recalculate_osaka_loop_scroll() {
+	if (!osakaLoopScrollState) return;
+	clearTimeout(osakaLoopResizeTimer);
+	osakaLoopResizeTimer = setTimeout(function() {
+		if (!osakaLoopScrollState) return;
+		const oldState = osakaLoopScrollState;
+		const oldPosition = window.scrollY + oldState.anchorOffset - oldState.middleTop;
+		const progress = ((oldPosition % oldState.cycleHeight) + oldState.cycleHeight) % oldState.cycleHeight;
+		const measured = measure_osaka_loop_scroll();
+		if (!measured) return;
+		measured.handler = oldState.handler;
+		osakaLoopScrollState = measured;
+		window.scrollTo(0, Math.max(0, measured.middleTop + progress - measured.anchorOffset));
+	}, 80);
+}
+
+function teardown_osaka_loop_infinite_scroll() {
+	if (osakaLoopScrollState && osakaLoopScrollState.handler) {
+		window.removeEventListener("scroll", osakaLoopScrollState.handler);
+	}
+	if (osakaLoopScrollFrame !== null) {
+		window.cancelAnimationFrame(osakaLoopScrollFrame);
+		osakaLoopScrollFrame = null;
+	}
+	clearTimeout(osakaLoopResizeTimer);
+	osakaLoopResizeTimer = null;
+	osakaLoopScrollState = null;
+}
+
+function get_preferred_station_element(_key) {
+	const key = String(_key || "");
+	let scope = $("#stationList");
+	if (get_param_rosen() === "67") {
+		const middleCycle = scope.children(".osaka-loop-cycle[data-loop-cycle='1']");
+		if (middleCycle.length) scope = middleCycle;
+	}
+	return scope.find("[key]").filter(function() {
+		return String($(this).attr("key")) === key;
+	}).first();
+}
+
+function get_preferred_train_element(_cbango) {
+	const cbango = String(_cbango || "");
+	let scope = $("#stationList");
+	if (get_param_rosen() === "67") {
+		const middleCycle = scope.children(".osaka-loop-cycle[data-loop-cycle='1']");
+		if (middleCycle.length) scope = middleCycle;
+	}
+	const candidates = scope.find(".ressha[data-cbango]").filter(function() {
+		return String($(this).attr("data-cbango")) === cbango;
+	});
+	const actualTrain = candidates.not(".jrshikoku-forecast-train").first();
+	return actualTrain.length ? actualTrain : candidates.first();
+}
+
 function set_station_list(_param_rosen, _scrollKey, _callback) {
 	stop_location_auto_refresh();
+	teardown_osaka_loop_infinite_scroll();
 	// お知らせ欄作成
-	disp_oshirase(_param_rosen);
+	if (!is_jrcentral_location_rosen(_param_rosen)) disp_oshirase(_param_rosen);
 
 	// 各区間のhtmlを読み込み
 	const lang = document.documentElement.dataset.lang;
@@ -1480,7 +2487,7 @@ function set_station_list(_param_rosen, _scrollKey, _callback) {
 	.done(function(rosenNameData, maintenanceData, typeData, ekiData, rosen, maintenance) {
 
 		// 現在日付を設定。外部JSON変換路線はJSON内部の配信時刻を使用する。
-		if (is_jreast_location_rosen(_param_rosen) || is_dokotre_location_rosen(_param_rosen) || is_jr_shinkansen_location_rosen(_param_rosen)) $("#timestamp").text("");
+		if (is_jreast_location_rosen(_param_rosen) || is_dokotre_location_rosen(_param_rosen) || is_jr_shinkansen_location_rosen(_param_rosen) || is_jrkyushu_doredore_location_rosen(_param_rosen) || is_jrwest_location_rosen(_param_rosen) || is_jrshikoku_location_rosen(_param_rosen) || is_jrcentral_location_rosen(_param_rosen)) $("#timestamp").text("");
 		else update_location_timestamp();
 
 		// 路線名を設定
@@ -1525,8 +2532,10 @@ function set_station_list(_param_rosen, _scrollKey, _callback) {
 			cachedResshaTypeData = typeData[0];
 			cachedEkiData = ekiData[0];
 			$("#stationList").html(rosen[0]);
+			prepare_osaka_loop_cycles(_param_rosen);
+			prepare_jrshikoku_forecast_windows(_param_rosen);
 			set_jr_shinkansen_station_border_colors(_param_rosen);
-			if (is_jreast_location_rosen(_param_rosen) || is_dokotre_location_rosen(_param_rosen) || is_jr_shinkansen_location_rosen(_param_rosen)) setTimestamp(nowData);
+			if (is_jreast_location_rosen(_param_rosen) || is_dokotre_location_rosen(_param_rosen) || is_jr_shinkansen_location_rosen(_param_rosen) || is_jrkyushu_doredore_location_rosen(_param_rosen) || is_jrwest_location_rosen(_param_rosen) || is_jrshikoku_location_rosen(_param_rosen) || is_jrcentral_location_rosen(_param_rosen)) setTimestamp(nowData);
 			update_location_data_stale_warning(nowData);
 			// 列車アイコンを描画する
 			create_ressha_icon(_param_rosen, nowData, typeData[0], ekiData[0]);
@@ -1637,7 +2646,7 @@ function redraw_location_positions(_param_rosen, _nowData) {
 	clear_location_positions(_param_rosen);
 	create_ressha_icon(_param_rosen, _nowData, cachedResshaTypeData, cachedEkiData);
 	ressha_pos_sort();
-	if (is_jreast_location_rosen(_param_rosen) || is_dokotre_location_rosen(_param_rosen) || is_jr_shinkansen_location_rosen(_param_rosen)) setTimestamp(_nowData);
+	if (is_jreast_location_rosen(_param_rosen) || is_dokotre_location_rosen(_param_rosen) || is_jr_shinkansen_location_rosen(_param_rosen) || is_jrwest_location_rosen(_param_rosen) || is_jrshikoku_location_rosen(_param_rosen) || is_jrcentral_location_rosen(_param_rosen)) setTimestamp(_nowData);
 	else update_location_timestamp();
 	update_location_data_stale_warning(_nowData);
 	restore_selected_train_marker(trackingScrollEnabled);
@@ -1681,7 +2690,7 @@ function update_location_timestamp() {
 function restore_selected_train_marker(_follow = false) {
 	const param_cbango = get_param_cbango();
 	if (!param_cbango) return;
-	const ressha = $("div[data-cbango='" + param_cbango + "']");
+	const ressha = get_preferred_train_element(param_cbango);
 	if (!ressha.length) {
 		clear_tracked_train_selection(true);
 		return;
@@ -1838,30 +2847,53 @@ function apply_location_auto_refresh_settings(_enabled, _interval, _sleepPrevent
  * ページの表示状態に応じて自動更新を停止・再開する
  */
 function handle_page_visibility_change() {
-	const currentRosen = get_param_rosen();
 	if (document.visibilityState === "hidden") {
+		locationPageWasBackgrounded = true;
 		release_location_wake_lock();
 		stop_location_auto_refresh(true);
 		return;
 	}
 	update_location_wake_lock();
-	if (document.visibilityState === "visible" && locationAutoRefreshEnabled && currentRosen) {
-		if (!is_location_auto_refresh_allowed(currentRosen)) {
-			stop_location_auto_refresh();
-			return;
-		}
-		if (!nextLocationAutoRefreshAt) {
-			start_location_auto_refresh(currentRosen);
-			return;
-		}
-		const remaining = nextLocationAutoRefreshAt.getTime() - Date.now();
-		if (remaining <= 0) {
-			refresh_location_positions(currentRosen);
-			start_location_auto_refresh(currentRosen);
-		} else {
-			start_location_auto_refresh(currentRosen, remaining);
-		}
+	resume_location_after_background();
+}
+
+function mark_location_page_backgrounded() {
+	locationPageWasBackgrounded = true;
+}
+
+function handle_page_window_focus() {
+	resume_location_after_background();
+}
+
+function handle_location_page_hide() {
+	locationPageWasBackgrounded = true;
+	release_location_wake_lock();
+	stop_location_auto_refresh(true);
+}
+
+function handle_location_page_show(_event) {
+	if (_event && _event.persisted) locationPageWasBackgrounded = true;
+	update_location_wake_lock();
+	resume_location_after_background();
+}
+
+function resume_location_after_background() {
+	if (!locationPageWasBackgrounded || document.visibilityState !== "visible") return;
+	const currentRosen = get_param_rosen();
+	if (!locationAutoRefreshEnabled || !currentRosen) return;
+	if (!is_location_auto_refresh_allowed(currentRosen)) {
+		locationPageWasBackgrounded = false;
+		stop_location_auto_refresh();
+		return;
 	}
+
+	locationPageWasBackgrounded = false;
+	const now = Date.now();
+	if (now - lastLocationForegroundRefreshAt >= LOCATION_FOREGROUND_REFRESH_DEBOUNCE) {
+		lastLocationForegroundRefreshAt = now;
+		refresh_location_positions(currentRosen);
+	}
+	start_location_auto_refresh(currentRosen);
 }
 
 /*
@@ -1901,7 +2933,9 @@ function set_post_station_list(_param_rosen, _scrollKey) {
 			let param_id = get_param_id();
 			if (param_id) {
 				// ハッシュに駅IDが存在した場合、対象の駅までスクロール
-				let pos = $("div[key='" + param_id + "']").offset().top - 380;
+				let target = get_preferred_station_element(param_id);
+				if (!target.length) return;
+				let pos = target.offset().top - 380;
 				$("body,html").animate({scrollTop: pos});
 				window.sessionStorage.setItem("scrollY", pos - 50);
 			} else {
@@ -1930,6 +2964,7 @@ function set_post_station_list(_param_rosen, _scrollKey) {
 	scrollKey = "";
 	isSideMenuClick = false;
 	update_tracking_footer_controls();
+	setup_osaka_loop_infinite_scroll(_param_rosen);
 
 	// ローディングアニメーションを非表示にする
 	loading_animation_hidden();
@@ -1943,7 +2978,7 @@ function set_disp_scroll(_param_rosen, _scrollKey) {
 	let doc = $("a[value='" + befRosen + "']");
 	if (_scrollKey && _scrollKey != "") {
 		// 駅の箇所までスクロール
-		doc = $("div[key='" + _scrollKey + "']");
+		doc = get_preferred_station_element(_scrollKey);
 	}
 
 	if (isSideMenuClick) {
@@ -2109,76 +3144,94 @@ function set_responsive() {
 function create_ressha_icon(_param_rosen, _nowData, _typeData, _ekiData) {
 	_nowData.trains.forEach(nowRow => {
 		let windowWidth = window.innerWidth;
-		let pos = nowRow.pos;
+		let pos = nowRow.jrShikoku && nowRow.jrShikoku.renderPosition
+			? nowRow.jrShikoku.renderPosition
+			: nowRow.pos;
 		let width = $("#stationList").width();
 		let add = 0;
 		if (windowWidth > 1000) add = 325;
 
 		if (pos != "" && $("." + pos).length > 0) {
-			if (pos == "R9P11U" || pos == "R9P10U" || pos == "R9P9U" || pos == "R1P160U") {
+			if (nowRow.jrShikoku && nowRow.jrShikoku.isForecastWindow) {
+				$("." + pos).append(create_html_jrshikoku_forecast_row(nowRow, _typeData, _ekiData));
+			} else if (nowRow.jrShikoku && pos.slice(-1) === "U") {
+				// JR四国はLine + PosNumの投影先末尾で、画面上の上下方向を明示する。
+				$("." + pos).append(create_html_up_ressha_icon(nowRow, _typeData, _ekiData));
+				$("." + pos).addClass("up");
+			} else if (nowRow.jrShikoku && pos.slice(-1) === "D") {
+				$("." + pos).append(create_html_down_ressha_icon(nowRow, _typeData, _ekiData));
+			} else if (pos == "R9P11U" || pos == "R9P10U" || pos == "R9P9U" || pos == "R1P160U") {
 				// 新函館北斗駅左側（R9P11U）
 				// 新函館北斗～仁山間左側（R9P10U）
 				// 仁山駅左側（R9P9U）
 				// 新千歳空港～南千歳間左側（R1P160U）の場合
-				$("." + nowRow.pos).append(create_html_up_ressha_icon(nowRow, _typeData, _ekiData));
-				$("." + nowRow.pos).addClass("up");
+				$("." + pos).append(create_html_up_ressha_icon(nowRow, _typeData, _ekiData));
+				$("." + pos).addClass("up");
 			} else if (pos == "R9P11D" || pos == "R9P10D" || pos == "R9P9D" || pos == "R1P160D") {
 				// 新函館北斗駅右側（R9P11D）
 				// 新函館北斗～仁山間右側（R9P10D）
 				// 仁山駅右側（R9P9D）
 				// 新千歳空港～南千歳間右側（R1P160D）
-				if ($("." + nowRow.pos).children(".ressha").length < 4) {
-					$(create_html_down_ressha_icon(nowRow, _typeData, _ekiData)).prependTo("." + nowRow.pos);
+				if ($("." + pos).children(".ressha").length < 4) {
+					$(create_html_down_ressha_icon(nowRow, _typeData, _ekiData)).prependTo("." + pos);
 				} else {
-					$("." + nowRow.pos).append(create_html_down_ressha_icon(nowRow, _typeData, _ekiData));
+					$("." + pos).append(create_html_down_ressha_icon(nowRow, _typeData, _ekiData));
 				}
 			} else if (pos == "R9P26U") {
 				// 藤城線（R9P26U）
-				if ($("." + nowRow.pos).children(".ressha").length < 4) {
-					$(create_html_up_ressha_icon(nowRow, _typeData, _ekiData)).prependTo("." + nowRow.pos);
-					$("." + nowRow.pos).addClass("up");
+				if ($("." + pos).children(".ressha").length < 4) {
+					$(create_html_up_ressha_icon(nowRow, _typeData, _ekiData)).prependTo("." + pos);
+					$("." + pos).addClass("up");
 				} else {
-					$("." + nowRow.pos).append(create_html_up_ressha_icon(nowRow, _typeData, _ekiData));
-					$("." + nowRow.pos).addClass("up");
+					$("." + pos).append(create_html_up_ressha_icon(nowRow, _typeData, _ekiData));
+					$("." + pos).addClass("up");
 				}
 			} else if (pos == "R1P119U") {
 				// 新千歳空港駅左側（R1P119U）の場合
-				$("." + nowRow.pos).append(create_html_up_ressha_icon(nowRow, _typeData, _ekiData));
-				$("." + nowRow.pos).addClass("up");
+				$("." + pos).append(create_html_up_ressha_icon(nowRow, _typeData, _ekiData));
+				$("." + pos).addClass("up");
 			} else if (pos == "R1P119D") {
 				// 新千歳空港駅右側（R1P119D）の場合
-				if ($("." + nowRow.pos).children().length < 2) {
-					if ($("." + nowRow.pos).children(".ressha").length < 1) {
-						$("." + nowRow.pos).append(create_html_down_ressha_icon(nowRow, _typeData, _ekiData));
+				if ($("." + pos).children().length < 2) {
+					if ($("." + pos).children(".ressha").length < 1) {
+						$("." + pos).append(create_html_down_ressha_icon(nowRow, _typeData, _ekiData));
 					} else {
-						$(create_html_down_ressha_icon(nowRow, _typeData, _ekiData)).prependTo("." + nowRow.pos);
+						$(create_html_down_ressha_icon(nowRow, _typeData, _ekiData)).prependTo("." + pos);
 					}
-				} else {
-					$("." + nowRow.pos).append(create_html_down_ressha_icon(nowRow, _typeData, _ekiData));
-				}
-			} else if ($("." + pos).offset().left < width / 2 + add) {
+			} else {
+				$("." + pos).append(create_html_down_ressha_icon(nowRow, _typeData, _ekiData));
+			}
+		} else if (String(_param_rosen) === "66" && pos.indexOf("JWH") === 0) {
+			// 羽衣線は左側の別枠に描画するため、画面上の左右ではなくpos末尾の方向を使う。
+			if (pos.slice(-1) === "U") {
+				$("." + pos).append(create_html_up_ressha_icon(nowRow, _typeData, _ekiData));
+				$("." + pos).addClass("up");
+			} else {
+				$("." + pos).append(create_html_down_ressha_icon(nowRow, _typeData, _ekiData));
+			}
+		} else if ($("." + pos).offset().left < width / 2 + add) {
 				// アイコン表示位置が画面半分より左の場合
-				$("." + nowRow.pos).append(create_html_up_ressha_icon(nowRow, _typeData, _ekiData));
-				$("." + nowRow.pos).addClass("up");
+				$("." + pos).append(create_html_up_ressha_icon(nowRow, _typeData, _ekiData));
+				$("." + pos).addClass("up");
 			} else {
 				// アイコン表示位置が画面半分より右の場合
-				if ($("." + nowRow.pos).children(".ressha").length < 6) {
-					if ($("." + nowRow.pos).parent().parent().parent(".eki").length > 0) {
+				if ($("." + pos).children(".ressha").length < 6) {
+					if ($("." + pos).parent().parent().parent(".eki").length > 0) {
 						// 駅の場合
-						if ($("." + nowRow.pos).children(".ressha").length < 3) {
-							$("." + nowRow.pos).append(create_html_down_ressha_icon(nowRow, _typeData, _ekiData));
+						if ($("." + pos).children(".ressha").length < 3) {
+							$("." + pos).append(create_html_down_ressha_icon(nowRow, _typeData, _ekiData));
 						} else {
-							if ($("." + nowRow.pos).children(".ressha").length == 3) $("<div class='dummy'></div><div class='dummy'></div><div class='dummy'></div>").prependTo(("." + nowRow.pos));
-							let idx = $("." + nowRow.pos).children(".ressha").length - 3;
-							let test = $("." + nowRow.pos).children()[idx];
+							if ($("." + pos).children(".ressha").length == 3) $("<div class='dummy'></div><div class='dummy'></div><div class='dummy'></div>").prependTo(("." + pos));
+							let idx = $("." + pos).children(".ressha").length - 3;
+							let test = $("." + pos).children()[idx];
 							test.outerHTML = create_html_down_ressha_icon(nowRow, _typeData, _ekiData);
 						}
 					} else {
 						// 駅間の場合
-						$(create_html_down_ressha_icon(nowRow, _typeData, _ekiData)).prependTo("." + nowRow.pos);
+						$(create_html_down_ressha_icon(nowRow, _typeData, _ekiData)).prependTo("." + pos);
 					}
 				} else {
-					$("." + nowRow.pos).append(create_html_down_ressha_icon(nowRow, _typeData, _ekiData));
+					$("." + pos).append(create_html_down_ressha_icon(nowRow, _typeData, _ekiData));
 				}
 			}
 		}
@@ -2189,6 +3242,60 @@ function create_ressha_icon(_param_rosen, _nowData, _typeData, _ekiData) {
 
 	// 函館駅周辺の高さを設定
 	if (["09", "52"].includes(_param_rosen)) set_hakodate_height();
+}
+
+/*
+ * JR四国の予告窓を、対象駅の直前に専用枠として追加する。
+ */
+function prepare_jrshikoku_forecast_windows(_param_rosen) {
+	if (!is_jrshikoku_location_rosen(_param_rosen) || !window.JrShikokuLocationAdapter) return;
+	const definitions = Array.isArray(window.JrShikokuLocationAdapter.forecastPositions)
+		? window.JrShikokuLocationAdapter.forecastPositions.filter(function(definition) {
+			return definition.rosen === String(_param_rosen);
+		})
+		: [];
+	if (definitions.length === 0) return;
+
+	const groupedDefinitions = new Map();
+	definitions.forEach(function(definition) {
+		if (!groupedDefinitions.has(definition.hostStationCode)) groupedDefinitions.set(definition.hostStationCode, []);
+		groupedDefinitions.get(definition.hostStationCode).push(definition);
+	});
+
+	groupedDefinitions.forEach(function(rows, stationCode) {
+		if ($("#stationList .jrshikoku-forecast-table[data-station-code='" + stationCode + "']").length > 0) return;
+		const stationNameElement = $("#stationList [key]").filter(function() {
+			return String($(this).attr("key")) === stationCode;
+		}).first();
+		const stationPanel = stationNameElement.closest(".eki-panel");
+		if (stationPanel.length === 0) return;
+
+		rows.sort(function(left, right) { return Number(left.slot) - Number(right.slot); });
+		const baseName = String(rows[0].name || "予告窓").replace(/予告窓[①②]?$/, "");
+		const table = $("<div class='jrshikoku-forecast-table'></div>")
+			.attr("data-station-code", stationCode)
+			.addClass("side-" + (rows[0].side === "left" ? "left" : "right"));
+		table.append($("<div class='jrshikoku-forecast-heading'></div>").text(baseName + "予告"));
+		rows.forEach(function(definition) {
+			const slotLabels = { 1: "①", 2: "②" };
+			const slotLabel = slotLabels[Number(definition.slot)] || String(definition.slot || "");
+			const directionArrow = definition.displayDirection === "up" ? "↑" : "↓";
+			const row = $("<div class='ressha-icon jrshikoku-forecast-row'></div>").addClass(definition.pos);
+			row.append($("<span class='jrshikoku-forecast-slot-label'></span>").text(slotLabel + directionArrow));
+			table.append(row);
+		});
+		stationPanel.append(table);
+	});
+}
+
+function create_html_jrshikoku_forecast_row(_nowRow, _typeData, _ekiData) {
+	const objItem = document.createElement("div");
+	objItem.classList.add("ressha", "jrshikoku-forecast-train");
+	const trainNumber = get_train_number_display_label(_nowRow) || "?";
+	const destination = _nowRow.shuEkiSimple || "?";
+	objItem.textContent = trainNumber + "／" + destination;
+	create_ressha_detail(objItem, _nowRow, _typeData, _ekiData);
+	return objItem.outerHTML;
 }
 
 /*
@@ -2509,6 +3616,58 @@ function set_jr_shinkansen_train_icon(_iconArea, _nowRow) {
 	}
 }
 
+function set_jrwest_train_icon(_iconArea, _nowRow) {
+	const iconCode = _nowRow.jrWest && _nowRow.jrWest.lineColorIconCode ? _nowRow.jrWest.lineColorIconCode : "";
+	if (!/^[a-z0-9]+$/.test(iconCode)) return;
+	_iconArea.style.backgroundImage = "url(./images/home/jrwest/train_icon_" + iconCode + ".svg)";
+}
+
+function set_jrcentral_train_icon(_iconArea, _nowRow) {
+	const semanticType = _nowRow.jrCentral && _nowRow.jrCentral.semanticType ? _nowRow.jrCentral.semanticType : "";
+	const genericIconMap = {
+		local: "./images/home/train_icon.svg",
+		limited_express: "./images/home/train_icon_red.svg",
+		express: "./images/home/train_icon_red.svg",
+		liner: "./images/home/train_icon_red.svg",
+		special: "./images/home/train_icon_white.svg"
+	};
+	if (genericIconMap[semanticType]) {
+		_iconArea.style.backgroundImage = "url(" + genericIconMap[semanticType] + ")";
+		_iconArea.classList.add("jrcentral-icon", "jrcentral-icon-" + semanticType);
+		return;
+	}
+	const iconCode = _nowRow.jrCentral && _nowRow.jrCentral.lineColorIconCode ? _nowRow.jrCentral.lineColorIconCode : "";
+	if (!/^[a-z0-9_]+$/.test(iconCode)) return;
+	_iconArea.style.backgroundImage = "url(./images/home/jrcentral/train_icon_" + iconCode + ".svg)";
+	_iconArea.classList.add("jrcentral-icon", "jrcentral-icon-" + iconCode);
+}
+
+function get_train_type_simple_label(_nowRow, _type, _lang) {
+	if (_nowRow.jrKyushu && _nowRow.jrKyushu.typeSimple) {
+		return _nowRow.jrKyushu.typeSimple;
+	}
+	if (_nowRow.jrWest && _nowRow.jrWest.typeSimple) {
+		return _nowRow.jrWest.typeSimple;
+	}
+	if (_nowRow.jrShikoku && _nowRow.jrShikoku.typeSimple) {
+		return _nowRow.jrShikoku.typeSimple;
+	}
+	if (_nowRow.jrCentral && _nowRow.jrCentral.typeSimple) {
+		return _nowRow.jrCentral.typeSimple;
+	}
+	if (_type && _type.typeSimple) {
+		return _type.typeSimple[_lang] || _type.typeSimple.ja || "";
+	}
+	return "";
+}
+
+function get_train_number_display_label(_nowRow) {
+	if (Object.prototype.hasOwnProperty.call(_nowRow, "displayTrainNumber")) {
+		return _nowRow.displayTrainNumber || "";
+	}
+	return _nowRow.cbango || "";
+}
+
 function create_html_up_ressha_icon(_nowRow, _typeData, _ekiData) {
 	let lang = document.documentElement.dataset.lang;
 	let objItem = document.createElement("div");
@@ -2520,13 +3679,16 @@ function create_html_up_ressha_icon(_nowRow, _typeData, _ekiData) {
 	let iconArea = document.createElement("div");
 	iconArea.classList.add("icon-img");
 	set_jr_shinkansen_train_icon(iconArea, _nowRow);
+	set_jrwest_train_icon(iconArea, _nowRow);
+	set_jrcentral_train_icon(iconArea, _nowRow);
 	// 新幹線以外には列車種別の文字をアイコンに入れる
 	if(_nowRow.type != "4") {
 		let objSbt = document.createElement("span");
 		objSbt.classList.add("ressha-sbt");
-		if (typeof type !== "undefined") {
-			objSbt.textContent = type.typeSimple[lang];
-			objSbt.setAttribute("sbt", type.typeSimple[lang]);
+		const simpleLabel = get_train_type_simple_label(_nowRow, type, lang);
+		if (simpleLabel) {
+			objSbt.textContent = simpleLabel;
+			objSbt.setAttribute("sbt", simpleLabel);
 		}
 		iconArea.appendChild(objSbt);
 	} else {
@@ -2536,7 +3698,7 @@ function create_html_up_ressha_icon(_nowRow, _typeData, _ekiData) {
 
 	let objCbango = document.createElement("span");
 	objCbango.classList.add("cbango-label");
-	objCbango.textContent = _nowRow.cbango;
+	objCbango.textContent = get_train_number_display_label(_nowRow);
 	iconArea.appendChild(objCbango);
 
 	// 遅延を設定
@@ -2627,13 +3789,16 @@ function create_html_down_ressha_icon(_nowRow, _typeData, _ekiData) {
 	let iconArea = document.createElement("div");
 	iconArea.classList.add("icon-img");
 	set_jr_shinkansen_train_icon(iconArea, _nowRow);
+	set_jrwest_train_icon(iconArea, _nowRow);
+	set_jrcentral_train_icon(iconArea, _nowRow);
 	// 新幹線以外には列車種別の文字をアイコンに入れる
 	if(_nowRow.type != "4") {
 		let objSbt = document.createElement("span");
 		objSbt.classList.add("ressha-sbt");
-		if (typeof type !== "undefined") {
-			objSbt.textContent = type.typeSimple[lang];
-			objSbt.setAttribute("sbt", type.typeSimple[lang]);
+		const simpleLabel = get_train_type_simple_label(_nowRow, type, lang);
+		if (simpleLabel) {
+			objSbt.textContent = simpleLabel;
+			objSbt.setAttribute("sbt", simpleLabel);
 		}
 		iconArea.appendChild(objSbt);
 	} else {
@@ -2643,7 +3808,7 @@ function create_html_down_ressha_icon(_nowRow, _typeData, _ekiData) {
 
 	let objCbango = document.createElement("span");
 	objCbango.classList.add("cbango-label");
-	objCbango.textContent = _nowRow.cbango;
+	objCbango.textContent = get_train_number_display_label(_nowRow);
 	iconArea.appendChild(objCbango);
 
 	// 列車アイコンの矢印を設定
@@ -2697,6 +3862,7 @@ function create_ressha_detail(_objItem, _nowRow, _typeData, _ekiData) {
 		// 列車番号
 		{
 			_objItem.dataset.cbango = _nowRow.cbango;
+			_objItem.dataset.display_cbango = get_train_number_display_label(_nowRow);
 			_objItem.dataset.source = _nowRow.source || "";
 			_objItem.dataset.source_rosen = _nowRow.sourceRosen || "";
 			_objItem.dataset.aisho = _nowRow.jrEast && _nowRow.jrEast.nickname ? _nowRow.jrEast.nickname : (_nowRow.name || "");
@@ -2704,6 +3870,15 @@ function create_ressha_detail(_objItem, _nowRow, _typeData, _ekiData) {
 			_objItem.dataset.jreast_timetable = _nowRow.jrEast && Array.isArray(_nowRow.jrEast.timetable) ? JSON.stringify(_nowRow.jrEast.timetable) : "[]";
 			_objItem.dataset.dokotre_timetable = _nowRow.dokotre && Array.isArray(_nowRow.dokotre.timetable) ? JSON.stringify(_nowRow.dokotre.timetable) : "[]";
 			_objItem.dataset.jrshinkansen_timetable = _nowRow.jrShinkansen && Array.isArray(_nowRow.jrShinkansen.timetable) ? JSON.stringify(_nowRow.jrShinkansen.timetable) : "[]";
+			_objItem.dataset.jrwest_timetable = _nowRow.jrWest && Array.isArray(_nowRow.jrWest.timetable) ? JSON.stringify(_nowRow.jrWest.timetable) : "[]";
+			_objItem.dataset.jrwest_type_change = _nowRow.jrWest && _nowRow.jrWest.typeChange ? _nowRow.jrWest.typeChange : "";
+			_objItem.dataset.jrshikoku_timetable = _nowRow.jrShikoku && Array.isArray(_nowRow.jrShikoku.timetable) ? JSON.stringify(_nowRow.jrShikoku.timetable) : "[]";
+			_objItem.dataset.jrcentral_timetable = _nowRow.jrCentral && Array.isArray(_nowRow.jrCentral.timetable) ? JSON.stringify(_nowRow.jrCentral.timetable) : "[]";
+			_objItem.dataset.jrcentral_train_key = _nowRow.jrCentral && _nowRow.jrCentral.trainIdentificationKey ? _nowRow.jrCentral.trainIdentificationKey : "";
+			_objItem.dataset.jrkyushu_timetable = _nowRow.jrKyushu && Array.isArray(_nowRow.jrKyushu.timetable) ? JSON.stringify(_nowRow.jrKyushu.timetable) : "[]";
+			const jrKyushuTrainNaviRequest = window.JrKyushuTrainNaviAdapter ?
+				window.JrKyushuTrainNaviAdapter.buildTimetableRequest(_nowRow) : null;
+			_objItem.dataset.jrkyushu_train_navi_request = jrKyushuTrainNaviRequest ? JSON.stringify(jrKyushuTrainNaviRequest) : "";
 			_objItem.dataset.jrshinkansenIcon = _nowRow.jrShinkansen && _nowRow.jrShinkansen.trainIcon ? _nowRow.jrShinkansen.trainIcon : "";
 		}
 
@@ -2840,7 +4015,8 @@ function create_ressha_detail(_objItem, _nowRow, _typeData, _ekiData) {
 
 		// 行先
 		const jreastDestination = _nowRow.shuEkiName || _nowRow.shuEkiSimple || "";
-		if (lang == "ja") _objItem.dataset.shu_eki = jreastDestination === "行先取得不可" ? jreastDestination : (typeof findEki !== "undefined" ? findEki.ja + " 行き" : (jreastDestination ? jreastDestination + " 行き" : "行き"));
+		const jrWestVia = _nowRow.jrWest && _nowRow.jrWest.via ? _nowRow.jrWest.via + "経由 " : "";
+		if (lang == "ja") _objItem.dataset.shu_eki = jreastDestination === "行先取得不可" ? jreastDestination : jrWestVia + (typeof findEki !== "undefined" ? findEki.ja + " 行き" : (jreastDestination ? jreastDestination + " 行き" : "行き"));
 		if (lang == "en") _objItem.dataset.shu_eki = typeof findEki !== "undefined" ? "For " + findEki.en : (jreastDestination ? "For " + jreastDestination : "For ");
 		if (lang == "tc") _objItem.dataset.shu_eki = typeof findEki !== "undefined" ? "開往" + findEki.tc : (jreastDestination ? "開往" + jreastDestination : "開往");
 		if (lang == "sc") _objItem.dataset.shu_eki = typeof findEki !== "undefined" ? "开往" + findEki.sc : (jreastDestination ? "开往" + jreastDestination : "开往");
@@ -2848,6 +4024,7 @@ function create_ressha_detail(_objItem, _nowRow, _typeData, _ekiData) {
 
 		// 車両数
 		const jreastSeries = _nowRow.jrEast && _nowRow.jrEast.series ? _nowRow.jrEast.series : "";
+		const jrShinkansenSeries = _nowRow.jrShinkansen && _nowRow.jrShinkansen.formationType ? _nowRow.jrShinkansen.formationType : "";
 		_objItem.dataset.ryosu = _nowRow.ryosu && _nowRow.ryosu != 0 ? _nowRow.ryosu : "";
 		if (_objItem.dataset.ryosu != "") {
 			if (lang == "ja") _objItem.dataset.ryosu += "両";
@@ -2857,6 +4034,8 @@ function create_ressha_detail(_objItem, _nowRow, _typeData, _ekiData) {
 			if (lang == "kr") _objItem.dataset.ryosu += "량 편성";
 			if (_nowRow.source === "jreast" && jreastSeries) {
 				_objItem.dataset.ryosu += "（" + jreastSeries + "）";
+			} else if (_nowRow.source === "jrshinkansen" && jrShinkansenSeries) {
+				_objItem.dataset.ryosu += "（" + jrShinkansenSeries + "）";
 			}
 		}
 	}
@@ -3071,7 +4250,7 @@ function ressha_run_check() {
 	if (!suppressTrackScrollOnce) $("body,html").scrollTop(0);
 
 	let param_cbango = get_param_cbango();
-	let ressha = $("div[data-cbango='" + param_cbango + "']");
+	let ressha = get_preferred_train_element(param_cbango);
 	if (ressha.length > 0) {
 		let pos = ressha.offset().top - 260;
 		// リロードされた場合アニメーションを行わない
@@ -3126,11 +4305,7 @@ function ressha_run_check() {
  * ハッシュから路線を取得
  */
 function get_param_rosen() {
-	let params = location.hash.slice(1).split('&');
-	if (params.length > 0) {
-		if (params[0].indexOf("rosen=") >= 0) return params[0].slice(-2);
-		else return "";
-	}
+	return new URLSearchParams(location.hash.slice(1)).get("rosen") || "";
 }
 
 /*

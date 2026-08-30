@@ -7,6 +7,8 @@ function set_unko_info(_param_rosen) {
 	if (set_merged_unko_info(_param_rosen, now, lang)) return;
 	if (set_dokotre_unko_info(_param_rosen, now, lang)) return;
 	if (set_jr_shinkansen_unko_info(_param_rosen, now, lang)) return;
+	if (set_jrwest_unko_info(_param_rosen, now, lang)) return;
+	if (set_jrcentral_unko_info(_param_rosen, now, lang)) return;
 
 	if (_param_rosen == "01" || _param_rosen == "02" || _param_rosen == "03") {
 		// 札幌近郊
@@ -294,6 +296,198 @@ function set_unko_info(_param_rosen) {
 	} else {
 		$("#unkouInfo").hide();
 	}
+}
+
+const JRCENTRAL_UNKO_INFO_URL = "https://traininfo.jr-central.co.jp/zairaisen/data/trainInfo/json/unkou.json";
+const JRCENTRAL_UNKO_LINE_MAP = {
+	"74": ["東海道線", "ひだ", "しらさぎ"],
+	"75": ["東海道線", "ふじかわ"],
+	"83": ["中央線", "しなの"],
+	"84": ["関西線", "南紀", "みえ"],
+	"85": ["紀勢線", "南紀", "みえ"],
+	"86": ["高山線", "ひだ"],
+	"87": ["武豊線"],
+	"88": ["飯田線", "伊那路"],
+	"89": ["太多線"],
+	"90": ["御殿場線", "ふじさん"],
+	"91": ["身延線", "ふじかわ"],
+	"92": ["参宮線", "みえ"],
+	"93": ["名松線"],
+	"94": ["美濃赤坂線"],
+	"95": ["伊勢鉄道", "南紀", "みえ"]
+};
+
+function set_jrcentral_unko_info(_param_rosen, _now, _lang) {
+	const lineNames = JRCENTRAL_UNKO_LINE_MAP[String(_param_rosen || "")];
+	if (!lineNames) return false;
+	const adapter = typeof JrCentralOperationInfoAdapter !== "undefined" ? JrCentralOperationInfoAdapter : null;
+	$("#unkouInfo").hide();
+	if (!adapter) return true;
+
+	get_jrcentral_unko_info_request(_now)
+		.done((data) => {
+			const notices = adapter.getNotices(data, lineNames, _lang);
+			if (notices.length < 1) {
+				$("#unkouInfo").hide();
+				return;
+			}
+
+			const areaName = "JR東海";
+			const lineName = lineNames[0];
+			$("#unkouInfo").show();
+			$("#titleAreaName").text(areaName);
+			$("#senkuList").show();
+			$("#commonSenkuOperation").show();
+			$("#senkuListAreaName").text(areaName);
+			$("#gaikyoAreaName").text(lineName);
+			create_gaikyo(notices.map((notice) => convert_jrcentral_unko_gaikyo(notice, _lang)));
+			$("#commonSenkuOperation").html("<ul>" + create_jrcentral_unko_list(lineName, notices) + "</ul>");
+		})
+		.fail(() => {
+			$("#unkouInfo").hide();
+		});
+	return true;
+}
+
+function get_jrcentral_unko_info_request(now) {
+	const isLocal = location.hostname === "127.0.0.1" || location.hostname === "localhost";
+	const url = isLocal ? "/api/jrcentral/operation?_=" + now :
+		"https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=" +
+		encodeURIComponent(JRCENTRAL_UNKO_INFO_URL) + "&_=" + now;
+	return $.ajax({ "url": url, "dataType": "text", "cache": false });
+}
+
+function convert_jrcentral_unko_gaikyo(notice, lang) {
+	return {
+		"time": escape_dokotre_info_html(JrCentralOperationInfoAdapter.formatDate(notice.updatedAt, lang)),
+		"title": escape_dokotre_info_html(notice.title),
+		"honbun": escape_dokotre_info_html(notice.body).replace(/\r?\n/g, "<br>"),
+		"eikyo": { "spo": 0, "doo": 0, "donan": 0, "dohoku": 0, "doto": 0 }
+	};
+}
+
+function create_jrcentral_unko_list(lineName, notices) {
+	const status = notices.some((notice) => notice.severity === "suspend") ? "2" : "1";
+	let html = "<li><div class='common-button'>";
+	html += "<span class='name'>" + escape_dokotre_info_html(lineName) + "</span>";
+	html += "<img class='unkou-icon' alt='' src='" + get_dokotre_info_icon(status) + "'/>";
+	html += "</div></li>";
+	return html;
+}
+
+const JRWEST_UNKO_LINE_MAP = {
+	"61": { "name": "琵琶湖線・JR京都線・JR神戸線", "lineIds": [2, 3, 4, 5] },
+	"62": { "name": "北陸線", "lineIds": [1, 27] },
+	"63": { "name": "湖西線・北陸線", "lineIds": [1, 8, 27] },
+	"64": { "name": "瀬戸大橋線", "lineIds": [46] },
+	"65": { "name": "JR東西線・学研都市線", "lineIds": [14, 15] },
+	"66": { "name": "阪和線・羽衣線", "lineIds": [21, 23] },
+	"67": { "name": "大阪環状線", "lineIds": [18] },
+	"68": { "name": "JRゆめ咲線", "lineIds": [19] },
+	"69": { "name": "大和路線", "lineIds": [20] },
+	"70": { "name": "おおさか東線", "lineIds": [12] },
+	"71": { "name": "関西空港線", "lineIds": [22] },
+	"72": { "name": "宇野みなと線", "lineIds": [45] },
+	"96": { "name": "赤穂線", "lineIds": [6, 47] },
+	"97": { "name": "草津線", "lineIds": [9] },
+	"98": { "name": "奈良線", "lineIds": [10] },
+	"99": { "name": "嵯峨野線", "lineIds": [11] },
+	"100": { "name": "山陰線", "lineIds": [38] },
+	"101": { "name": "山陰線", "lineIds": [38, 54] },
+	"102": { "name": "山陰線", "lineIds": [54] },
+	"103": { "name": "山陰線", "lineIds": [54] },
+	"104": { "name": "JR宝塚線・福知山線", "lineIds": [13, 39, 40] },
+	"105": { "name": "播但線", "lineIds": [41] },
+	"106": { "name": "舞鶴線", "lineIds": [42] },
+	"107": { "name": "和歌山線", "lineIds": [24, 35] },
+	"108": { "name": "万葉まほろば線", "lineIds": [25] },
+	"109": { "name": "関西線", "lineIds": [26] },
+	"110": { "name": "きのくに線", "lineIds": [36] },
+	"111": { "name": "伯備線", "lineIds": [52, 58] },
+	"112": { "name": "山陽線", "lineIds": [5, 49] },
+	"113": { "name": "山陽線", "lineIds": [49, 60] },
+	"114": { "name": "山陽線", "lineIds": [60] },
+	"115": { "name": "津山線", "lineIds": [50] },
+	"116": { "name": "福塩線", "lineIds": [53, 63] },
+	"117": { "name": "可部線", "lineIds": [59] },
+	"118": { "name": "芸備線", "lineIds": [48, 61] },
+	"119": { "name": "呉線", "lineIds": [62] },
+	"120": { "name": "山口線", "lineIds": [67] },
+	"121": { "name": "因美線", "lineIds": [43, 55] }
+};
+
+function set_jrwest_unko_info(_param_rosen, _now) {
+	const route = JRWEST_UNKO_LINE_MAP[String(_param_rosen || "")];
+	if (!route) return false;
+	const adapter = typeof JrWestOperationInfoAdapter !== "undefined" ? JrWestOperationInfoAdapter : null;
+	$("#unkouInfo").hide();
+	if (!adapter) return true;
+
+	get_jr_west_shinkansen_unko_info_request(_now)
+		.done((data) => {
+			const notices = adapter.getNotices(data, route.lineIds);
+			if (notices.length < 1) {
+				$("#unkouInfo").hide();
+				return;
+			}
+
+			const areaName = "JR西日本";
+			$("#unkouInfo").show();
+			$("#titleAreaName").text(areaName);
+			$("#senkuList").show();
+			$("#commonSenkuOperation").show();
+			$("#senkuListAreaName").text(areaName);
+			$("#gaikyoAreaName").text(route.name);
+			create_gaikyo(notices.map(convert_jrwest_unko_gaikyo));
+			$("#commonSenkuOperation").html("<ul>" + create_jrwest_unko_list(notices) + "</ul>");
+		})
+		.fail(() => {
+			$("#unkouInfo").hide();
+		});
+	return true;
+}
+
+function convert_jrwest_unko_gaikyo(notice) {
+	const title = [
+		get_dokotre_text(notice && notice.lineName),
+		get_dokotre_text(notice && notice.conditionName) || get_dokotre_text(notice && notice.title)
+	].filter(Boolean).join(" ");
+	const body = [
+		get_dokotre_text(notice && notice.body),
+		get_dokotre_text(notice && notice.supplementary)
+	].filter(Boolean).join("\n");
+	return {
+		"time": format_jr_west_shinkansen_notice_time(notice && notice.updatedAt),
+		"title": escape_dokotre_info_html(title),
+		"honbun": escape_dokotre_info_html(body).replace(/\r?\n/g, "<br>"),
+		"eikyo": { "spo": 0, "doo": 0, "donan": 0, "dohoku": 0, "doto": 0 }
+	};
+}
+
+function create_jrwest_unko_list(notices) {
+	const lines = [];
+	const byLine = new Map();
+	(Array.isArray(notices) ? notices : []).forEach((notice) => {
+		const ids = Array.isArray(notice && notice.lineIds) ? notice.lineIds : [notice && notice.lineId];
+		const names = Array.isArray(notice && notice.lineNames) ? notice.lineNames : [notice && notice.lineName];
+		ids.forEach((id, index) => {
+			const key = String(id || names[index] || "");
+			if (!key) return;
+			if (!byLine.has(key)) {
+				byLine.set(key, []);
+				lines.push({ "key": key, "name": names[index] || notice.lineName || "対象線区" });
+			}
+			byLine.get(key).push(notice);
+		});
+	});
+	return lines.map((line) => {
+		const status = byLine.get(line.key).some((notice) => notice.severity === "suspend") ? "2" : "1";
+		let html = "<li><div class='common-button'>";
+		html += "<span class='name'>" + escape_dokotre_info_html(line.name) + "</span>";
+		html += "<img class='unkou-icon' alt='' src='" + get_dokotre_info_icon(status) + "'/>";
+		html += "</div></li>";
+		return html;
+	}).join("");
 }
 
 let jrShinkansenUnkoInfoGroups = [];

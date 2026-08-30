@@ -1,6 +1,10 @@
 // スクロールの高さ保持用
 let scrollY = 0;
 
+const JRWEST_ROUTE_IDS = (window.JrWestRouteCatalog && Array.isArray(window.JrWestRouteCatalog.routeIds))
+	? window.JrWestRouteCatalog.routeIds.map(String)
+	: ["61", "62", "63", "64", "65", "66", "67", "68", "69", "70", "71", "72"];
+
 // 各エリアに属するデータキー
 const AREA_ROSEN_KEYS = {
 	"spo": ["7", "8", "9", "10", "11", "12", "26", "30", "31", "32", "33", "34"],		// 札幌近郊
@@ -9,7 +13,11 @@ const AREA_ROSEN_KEYS = {
 	"donan": ["1", "2", "3", "4", "16"],												// 道南エリア
 	"dohoku": ["17", "18", "19", "51"],													// 道北エリア
 	"doto": ["35", "36", "40", "41", "42", "37", "38", "39"],							// 道東エリア
-	"shin": ["51", "52", "53", "54", "55", "56", "57"]												// 新幹線
+	"shin": ["51", "52", "53", "54", "55", "56", "57"],												// 新幹線
+	"jrwest": JRWEST_ROUTE_IDS,			// JR西日本
+	"jrshikoku": ["64", "73", "76", "77", "78", "79", "80", "81", "82"],		// JR四国
+	"jrcentral": ["75", "74", "83", "84", "85", "86", "87", "88", "89", "90", "91", "92", "93", "94", "95"],		// JR東海
+	"jrkyushu": (Array.isArray(window.JRKYUSHU_DOREDORE_ROUTES) ? window.JRKYUSHU_DOREDORE_ROUTES : []).map(function(route) { return String(route.rosen); })
 };
 
 // 各路線に属するデータキー
@@ -37,7 +45,44 @@ const ROSEN_NUM_KEYS = {
 	"52": ["1", "2", "3", "4", "10", "22", "23", "24", "25", "26", "30", "31", "32"],	// [札幌～函館間]
 	"53": ["10", "31", "32", "35", "36", "40", "41", "42"],	// [札幌～釧路間]
 	"58": ["57"],							// [盛岡～秋田間]
+	"61": [],								// [米原～姫路間]
+	"62": [],								// [敦賀～米原間]
+	"63": [],								// [京都～敦賀間]
+	"64": [],								// [岡山～宇多津間]
+	"65": [],								// [尼崎～木津間]
+	"66": [],								// [天王寺～和歌山・鳳～東羽衣間]
+	"73": [],								// [高松～松山間]
+	"76": [],								// [松山～宇和島間]
+	"77": [],								// [向井原～伊予大洲間]
+	"78": [],								// [多度津～高知間]
+	"79": [],								// [高知～窪川間]
+	"80": [],								// [高松～徳島間]
+	"81": [],								// [徳島～阿波池田間]
+	"82": [],								// [池谷～鳴門間]
+	"74": [],								// [豊橋～米原間]
+	"75": [],								// [熱海～豊橋間]
+	"83": [],								// 中央線
+	"84": [],								// 関西線
+	"85": [],								// 紀勢線
+	"86": [],								// 高山線
+	"87": [],								// 武豊線
+	"88": [],								// 飯田線
+	"89": [],								// 太多線
+	"90": [],								// 御殿場線
+	"91": [],								// 身延線
+	"92": [],								// 参宮線
+	"93": [],								// 名松線
+	"94": [],								// 美濃赤坂線
+	"95": [],								// 伊勢鉄道
 };
+
+JRWEST_ROUTE_IDS.forEach(function (rosen) {
+	if (!Object.prototype.hasOwnProperty.call(ROSEN_NUM_KEYS, rosen)) ROSEN_NUM_KEYS[rosen] = [];
+});
+
+(Array.isArray(window.JRKYUSHU_DOREDORE_ROUTES) ? window.JRKYUSHU_DOREDORE_ROUTES : []).forEach(function(route) {
+	if (!Object.prototype.hasOwnProperty.call(ROSEN_NUM_KEYS, route.rosen)) ROSEN_NUM_KEYS[route.rosen] = [];
+});
 
 /*
  * 画面ロード時
@@ -204,18 +249,18 @@ $(function ($) {
 	});
 
 	//rosen-name-listのマウスホバーで路線を選択
-	$(document).on("mouseover", ".rosen-name-list div", function () {
+	$(document).on("mouseover", ".rosen-name-list .rosen-name-contents", function () {
 
 		let val = $(this).attr("value");
-		let selectAreaName =  $(this)[0].parentElement.classList[1];
+		let selectAreaName = $(this).closest(".rosen-name-list").attr("class").split(" ")[1];
 		// 路線図の路線選択
 		selectRosen(val, selectAreaName);
 	});
 
 	//rosen-name-listでマウスが離れたとき路線選択を解除
-	$(document).on("mouseleave", ".rosen-name-list div", function () {
+	$(document).on("mouseleave", ".rosen-name-list .rosen-name-contents", function () {
 
-		let selectAreaName =  $(this)[0].parentElement.classList[1];
+		let selectAreaName = $(this).closest(".rosen-name-list").attr("class").split(" ")[1];
 		// 路線図の路線選択削除
 		allSelectClear();
 		selectArea(selectAreaName);
@@ -367,8 +412,10 @@ function selectRosen(rosen, selectAreaName) {
 	// スマホ表示中ならば、各エリアのマップに変更
 	if (window.innerWidth <= 1000) {
 		var mapName = "areaMap" + rosenToArea(rosen, selectAreaName);
-		selectMap = $(document.getElementById(mapName).contentDocument);
+		var mapElement = document.getElementById(mapName);
+		selectMap = mapElement && mapElement.contentDocument ? $(mapElement.contentDocument) : $();
 	}
+	if (!selectMap[0]) return;
 
 	var rosenNumList = ROSEN_NUM_KEYS[rosen] || [];
 	if (window.innerWidth <= 1000 && selectAreaName && AREA_ROSEN_KEYS[selectAreaName]) {
@@ -395,8 +442,10 @@ function selectArea(area) {
 	// スマホ表示中ならば、各エリアのマップに変更
 	if (window.innerWidth <= 1000) {
 		var mapName = "areaMap" + area;
-		selectMap = $(document.getElementById(mapName).contentDocument);
+		var mapElement = document.getElementById(mapName);
+		selectMap = mapElement && mapElement.contentDocument ? $(mapElement.contentDocument) : $();
 	}
+	if (!selectMap[0]) return;
 
 	var areaRosenList = AREA_ROSEN_KEYS[area];
 	var dataStatus = "1";
@@ -508,6 +557,14 @@ function rosenToArea(rosen, selectAreaName) {
 		area = "doto";
 	} else if (["15", "54", "55", "56", "57", "58", "59", "60"].includes(rosen)) {				// 新幹線
 		area = "shin";
+	} else if (["64"].includes(rosen)) {						// JR西日本・JR四国にまたがる路線
+		area = selectAreaName == "jrshikoku" ? "jrshikoku" : "jrwest";
+	} else if (JRWEST_ROUTE_IDS.includes(rosen)) {	// JR西日本
+		area = "jrwest";
+	} else if (["73", "76", "77", "78", "79", "80", "81", "82"].includes(rosen)) {						// JR四国
+		area = "jrshikoku";
+	} else if (["74", "75", "83", "84", "85", "86", "87", "88", "89", "90", "91", "92", "93", "94", "95"].includes(rosen)) {				// JR東海
+		area = "jrcentral";
 	}
 	return area;
 }

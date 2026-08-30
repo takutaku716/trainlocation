@@ -13,6 +13,60 @@ $(function ($) {
 	let lang = document.documentElement.dataset.lang;
 	// 列車のアイコンをクリックしたときの動き
 	$(document).on("click", ".ressha-icon .ressha", function() {
+		const clickedItem = this;
+		const clickedDataset = clickedItem.dataset;
+		if (clickedDataset.jrkyushu_train_navi_request && clickedDataset.jrkyushu_timetable_loaded !== "1") {
+			if (clickedDataset.jrkyushu_timetable_loading === "1") return;
+			clickedDataset.jrkyushu_timetable_loading = "1";
+			loading_animation_display();
+			prepare_jrkyushu_train_navi_dataset(clickedDataset)
+				.catch(function() {
+					clickedDataset.jrkyushu_timetable = "[]";
+					return null;
+				})
+				.then(function(response) {
+					const targetItem = clickedItem.isConnected ? clickedItem : Array.from(document.querySelectorAll(".ressha-icon .ressha")).find(function(item) {
+						return item.dataset.cbango === clickedDataset.cbango && item.dataset.source === clickedDataset.source;
+					});
+					if (!targetItem) {
+						loading_animation_hidden();
+						return;
+					}
+					if (response && targetItem !== clickedItem && window.JrKyushuTrainNaviAdapter) {
+						window.JrKyushuTrainNaviAdapter.applyResponseToDataset(targetItem.dataset, response, document.documentElement.dataset.lang || "ja");
+					} else {
+						targetItem.dataset.jrkyushu_timetable = clickedDataset.jrkyushu_timetable || "[]";
+					}
+					targetItem.dataset.jrkyushu_timetable_loading = "0";
+					targetItem.dataset.jrkyushu_timetable_loaded = "1";
+					$(targetItem).trigger("click");
+				});
+			return;
+		}
+		if (clickedDataset.source === "jrcentral" && clickedDataset.jrcentral_timetable_loaded !== "1") {
+			if (clickedDataset.jrcentral_timetable_loading === "1") return;
+			clickedDataset.jrcentral_timetable_loading = "1";
+			loading_animation_display();
+			prepare_jrcentral_timetable_dataset(clickedDataset)
+				.catch(function() {
+					clickedDataset.jrcentral_timetable = "[]";
+				})
+				.then(function() {
+					const trainKey = clickedDataset.jrcentral_train_key || "";
+					const targetItem = clickedItem.isConnected ? clickedItem : Array.from(document.querySelectorAll(".ressha-icon .ressha")).find(function(item) {
+						return item.dataset.source === "jrcentral" && item.dataset.jrcentral_train_key === trainKey;
+					});
+					if (!targetItem) {
+						loading_animation_hidden();
+						return;
+					}
+					targetItem.dataset.jrcentral_timetable = clickedDataset.jrcentral_timetable || "[]";
+					targetItem.dataset.jrcentral_timetable_loading = "0";
+					targetItem.dataset.jrcentral_timetable_loaded = "1";
+					$(targetItem).trigger("click");
+				});
+			return;
+		}
 		let lang = document.documentElement.dataset.lang;
 		// ローディングアニメーションを表示
 		loading_animation_display();
@@ -23,7 +77,14 @@ $(function ($) {
 			// ヘッダータイトル
 			$("#headerTitle").text(DETAILED_TRAIN_INFORMATION_DIALOG_TITLES[lang]);
 			// 列車種別名
-			if (lang == "ja") $("#resshaTypeName").text(dataset.ressha_type_name);
+			if (lang == "ja") {
+				const typeName = dataset.ressha_type_name || "";
+				const typeNameLength = Array.from(typeName).length;
+				$("#resshaTypeName")
+					.text(typeName)
+					.toggleClass("long-label", typeNameLength >= 6)
+					.toggleClass("very-long-label", typeNameLength >= 9);
+			}
 			// 行先
 			$("#shuEki").html(dataset.shu_eki);
 			// 両数
@@ -104,17 +165,17 @@ $(function ($) {
 			let now = Date.now() >>> 16;
 			//運行番号
 			// 運行番号（列車番号のラベルと数値を分けて制御）
-			$("#cbangoDetail").text(dataset.cbango);
+			$("#cbangoDetail").text(Object.prototype.hasOwnProperty.call(dataset, "display_cbango") ? dataset.display_cbango : dataset.cbango);
 			$("#cbangoIcon").removeClass("hide");
 			$("#cbangoDetail").removeClass("hide");
 
-			if (dataset.source === "jreast" || dataset.source === "dokotre" || dataset.source === "jrshinkansen") {
+			if (dataset.source === "jreast" || dataset.source === "dokotre" || dataset.source === "jrshinkansen" || dataset.source === "jrwest" || dataset.source === "jrshikoku" || dataset.source === "jrcentral" || dataset.source === "jrkyushu" || dataset.source === "jrkyushu-doredore" || dataset.jrkyushu_train_navi_request) {
 				$("#unkouDetailMain").hide();
 				$.getJSON("./original/location_master" + (lang === "ja" ? "" : "_" + lang) + ".json?" + now)
 					.done(function(posNameMasterBase) {
 						const posKey = String(dataset.pos || "").trim();
 						$("#posDetailText").text(posNameMasterBase[posKey] || dataset.pos_name || posKey || "");
-						$("#aisho").text(dataset.aisho || dataset.ressha_type_name || "");
+						$("#aisho").text(get_detail_train_name_text(dataset));
 						create_jreast_daiya(dataset);
 						$('#resshaDetailMessage').empty();
 						$('#resshaDetailMessage').hide();
@@ -126,7 +187,7 @@ $(function ($) {
 					.fail(function() {
 						const posKey = String(dataset.pos || "").trim();
 						$("#posDetailText").text(dataset.pos_name || posKey || "");
-						$("#aisho").text(dataset.aisho || dataset.ressha_type_name || "");
+						$("#aisho").text(get_detail_train_name_text(dataset));
 						create_jreast_daiya(dataset);
 						$('#resshaDetailMessage').empty();
 						$('#resshaDetailMessage').hide();
@@ -230,6 +291,12 @@ $(function ($) {
 	});
 });
 
+function get_detail_train_name_text(_dataset) {
+	const baseText = _dataset.aisho || _dataset.ressha_type_name || "";
+	const typeChange = _dataset.source === "jrwest" ? (_dataset.jrwest_type_change || "") : "";
+	return [baseText, typeChange].filter(Boolean).join("　");
+}
+
 /*
  * JR東日本形式の時刻表データを表示する
  */
@@ -240,6 +307,10 @@ function create_jreast_daiya(_dataset) {
 		const timetableText =
 			_dataset.source === "dokotre" ? _dataset.dokotre_timetable :
 			_dataset.source === "jrshinkansen" ? _dataset.jrshinkansen_timetable :
+			_dataset.source === "jrwest" ? _dataset.jrwest_timetable :
+			_dataset.source === "jrshikoku" ? _dataset.jrshikoku_timetable :
+			_dataset.source === "jrcentral" ? _dataset.jrcentral_timetable :
+			_dataset.source === "jrkyushu" || _dataset.jrkyushu_train_navi_request ? _dataset.jrkyushu_timetable :
 			_dataset.jreast_timetable;
 		timetable = JSON.parse(timetableText || "[]");
 	} catch (_error) {

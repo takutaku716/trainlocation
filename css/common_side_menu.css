@@ -401,6 +401,157 @@ input[type=radio] {
 				display: inline-block;
 			}
 
+.side-menu .jrwest-area-group {
+	border: 1px solid #ccc;
+	border-bottom: 0;
+	margin: 0 5px;
+}
+
+.side-menu .jrwest-area-group:last-child {
+	border-bottom: 1px solid #ccc;
+}
+
+.side-menu .jrwest-area-label {
+	align-items: center;
+	background: #f7f7f7 url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath fill='none' stroke='%233a4' stroke-width='2.5' d='m1 1 5 5 5-5'/%3E%3C/svg%3E") no-repeat right 12px center / 12px 8px;
+	border: 0;
+	color: #111;
+	cursor: pointer;
+	display: flex;
+	font: inherit;
+	font-weight: bold;
+	min-height: 42px;
+	padding: 8px 36px 8px 12px;
+	text-align: left;
+	width: 100%;
+}
+
+.side-menu .jrwest-area-label.open {
+	background-image: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath fill='none' stroke='%233a4' stroke-width='2.5' d='m1 7 5-5 5 5'/%3E%3C/svg%3E");
+}
+
+.side-menu .jrwest-area-lines {
+	background: #fff;
+	display: none;
+	padding: 0 5px 5px;
+}
+
+.side-menu .jrwest-area-lines .rosen-name-contents {
+	margin: 0;
+}
+
+.side-menu .jrwest-area-empty {
+	color: #777;
+	display: block;
+	font-size: 13px;
+	padding: 10px 8px;
+}
+
+.side-menu .jrwest-line-symbol {
+	align-items: center;
+	background: #0072bc;
+	color: #fff;
+	display: inline-flex;
+	flex: 0 0 21px;
+	font-size: 15px;
+	font-weight: bold;
+	height: 21px;
+	justify-content: center;
+	line-height: 1;
+	margin-left: 4px;
+}
+
+.side-menu .jrshikoku-line-symbol {
+	align-items: center;
+	background: #f39800;
+	color: #fff;
+	display: inline-flex;
+	flex: 0 0 21px;
+	font-size: 15px;
+	font-weight: bold;
+	height: 21px;
+	justify-content: center;
+	line-height: 1;
+	margin-left: 4px;
+}
+
+.side-menu .jrcentral-line-symbol {
+	align-items: center;
+	background: #ff7e1c;
+	color: #fff;
+	display: inline-flex;
+	flex: 0 0 27px;
+	font-size: 13px;
+	font-weight: bold;
+	height: 21px;
+	justify-content: center;
+	line-height: 1;
+	margin-left: 4px;
+}
+
+.side-menu .rosen-name-contents[value="83"] .jrcentral-line-symbol { background: #406f90; }
+.side-menu .rosen-name-contents[value="84"] .jrcentral-line-symbol { background: #05a88a; }
+.side-menu .rosen-name-contents[value="85"] .jrcentral-line-symbol,
+.side-menu .rosen-name-contents[value="92"] .jrcentral-line-symbol,
+.side-menu .rosen-name-contents[value="93"] .jrcentral-line-symbol,
+.side-menu .rosen-name-contents[value="95"] .jrcentral-line-symbol { background: #909090; }
+.side-menu .rosen-name-contents[value="86"] .jrcentral-line-symbol { background: #a61e2b; }
+.side-menu .rosen-name-contents[value="87"] .jrcentral-line-symbol { background: #76432c; }
+.side-menu .rosen-name-contents[value="88"] .jrcentral-line-symbol { background: #719cdf; }
+.side-menu .rosen-name-contents[value="89"] .jrcentral-line-symbol { background: #b1a548; }
+.side-menu .rosen-name-contents[value="90"] .jrcentral-line-symbol { background: #3d733d; }
+.side-menu .rosen-name-contents[value="91"] .jrcentral-line-symbol { background: #6b3174; }
+
+.side-menu .jrcentral-line-symbol.no-symbol {
+	flex-basis: 8px;
+	width: 8px;
+}
+
+.side-menu .rosen-name-contents[value="63"] .jrwest-line-symbol {
+	background: #00acd1;
+}
+
+.side-menu .rosen-name-contents[value="64"] .jrwest-line-symbol {
+	background: #0072ba;
+}
+
+.side-menu .rosen-name-contents[value="65"] .jrwest-line-symbol {
+	background: #e25c83;
+}
+
+.side-menu .rosen-name-contents[value="66"] .jrwest-line-symbol {
+	background: #ff8e1f;
+}
+
+.side-menu .rosen-name-contents[value="67"] .jrwest-line-symbol {
+	background: #f8405c;
+}
+
+.side-menu .rosen-name-contents[value="68"] .jrwest-line-symbol {
+	background: #003c88;
+}
+
+.side-menu .rosen-name-contents[value="69"] .jrwest-line-symbol {
+	background: #00b17b;
+}
+
+.side-menu .rosen-name-contents[value="70"] .jrwest-line-symbol {
+	background: #467088;
+}
+
+.side-menu .rosen-name-contents[value="71"] .jrwest-line-symbol {
+	background: #0072ba;
+}
+
+.side-menu .rosen-name-contents[value="72"] .jrwest-line-symbol {
+	background: #63d2d3;
+}
+
+.side-menu .jrwest-line-symbol.no-symbol {
+	flex-basis: 8px;
+	width: 8px;
+}
+
 /* firefoxでのレイアウト調整 */
 @-moz-document url-prefix(){
 	[data-lang="en"] .side-menu .area-contents .rosen-name-list .rosen-name-contents[value="01"] .rosen-name-label .main {
