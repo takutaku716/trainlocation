@@ -1,5 +1,11 @@
 const assert = require("assert");
 const adapter = require("../js/jrkyushu_train_navi_adapter.js");
+const locationAdapter = require("../js/jrkyushu_doredore_location_adapter.js");
+
+const yardSwitching = locationAdapter.normalize(`
+<tr title="KUKAN1" id="EKINO201"><td class="auto-style1"><a href="#EKINO">門司港<br></a><a href="https://www.jrkyushu-timetable.jp/?c=1">時刻</a></td><td title="構85M" background="image/Mdwn.png">構内行<br><br>定刻</td></tr>
+`, { sourceId: "2", trainNaviRouteName: "鹿児島本線" }).location.trains[0];
+assert.strictEqual(adapter.buildTimetableRequest(yardSwitching), null);
 
 const request = adapter.buildTimetableRequest({
 	cbango: "4131M",

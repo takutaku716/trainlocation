@@ -27,6 +27,7 @@
 				const direction = rawTrain.direction === "U" ? "U" : "D";
 				const anchors = findTrainNaviAnchors(rows, row.index, direction, 10);
 				const anchor = anchors[0];
+				const isYardSwitching = rawTrain.isYardSwitching === true;
 				trains.push({
 					cbango: rawTrain.number,
 					name: rawTrain.name,
@@ -57,7 +58,9 @@
 						source: "doredore",
 						doredoreLineId: String(settings.sourceId || ""),
 						doredoreKukan: row.kukan,
-						trainNavi: anchor ? {
+						isYardSwitching: isYardSwitching,
+						typeSimple: isYardSwitching ? "入" : "",
+						trainNavi: !isYardSwitching && anchor ? {
 							currentStationName: anchor.stationNames[0],
 							candidateStationNames: anchors.map(function(candidate) { return candidate.stationNames[0]; }),
 							drivingRouteName: String(settings.trainNaviRouteName || settings.lineName || ""),
@@ -160,6 +163,7 @@
 	function parseTrainCell(number, background, html) {
 		const displayNumber = normalizeTrainNumber(number);
 		if (!displayNumber) return null;
+		const isYardSwitching = /^構/.test(displayNumber);
 		const lines = decodeText(html).split(/\n+/).map(function(value) { return value.trim(); }).filter(Boolean);
 		const destination = lines.length ? lines[0].replace(/行$/, "") : "";
 		const delayLine = lines.find(function(value) { return /(?:定刻|遅れ)/.test(value); }) || "";
@@ -167,12 +171,13 @@
 		const type = classifyTrainType(displayNumber, trainTypeFromBackground(background));
 		return {
 			number: displayNumber,
-			name: serviceName || displayNumber,
+			name: serviceName || defaultTrainName(type),
 			destination: destination,
 			direction: /up/i.test(String(background || "")) ? "U" : "D",
-			delay: parseDelay(delayLine),
-			type: type.code,
-			typeLabel: type.label
+				delay: parseDelay(delayLine),
+				type: type.code,
+				typeLabel: type.label,
+				isYardSwitching: isYardSwitching
 		};
 	}
 
@@ -313,6 +318,9 @@
 	}
 
 	function classifyTrainType(displayNumber, locationType) {
+		if (/^構/.test(String(displayNumber || "").trim())) {
+			return { code: "7", label: "入替車両" };
+		}
 		if (locationType && String(locationType.code) === "1") {
 			return { code: "1", label: "特急" };
 		}
@@ -329,6 +337,12 @@
 		return { code: "3", label: "普通" };
 	}
 
+	function defaultTrainName(type) {
+		const label = type && type.label ? type.label : "";
+		if (!label) return "列車";
+		return label === "入替車両" ? label : label + "列車";
+	}
+
 	function isTrainNumberInRanges(trainNumber, ranges) {
 		return (Array.isArray(ranges) ? ranges : []).some(function(range) {
 			return trainNumber >= range[0] && trainNumber <= range[1];
@@ -336,7 +350,7 @@
 	}
 
 	function normalizeTrainNumber(value) {
-		const match = String(value || "").trim().match(/(\d{1,6}[A-Za-z]?)/);
+		const match = String(value || "").trim().match(/(構?\d{1,6}[A-Za-z]?)/);
 		return match ? match[1].toUpperCase() : "";
 	}
 

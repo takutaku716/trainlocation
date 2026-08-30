@@ -3634,6 +3634,9 @@ function set_jrcentral_train_icon(_iconArea, _nowRow) {
 }
 
 function get_train_type_simple_label(_nowRow, _type, _lang) {
+	if (_nowRow.jrKyushu && _nowRow.jrKyushu.typeSimple) {
+		return _nowRow.jrKyushu.typeSimple;
+	}
 	if (_nowRow.jrWest && _nowRow.jrWest.typeSimple) {
 		return _nowRow.jrWest.typeSimple;
 	}

@@ -6,7 +6,7 @@ const html = `
 <tr title="KUKAN1" id="EKINO201"><td class="auto-style1"><a href="#EKINO">門司港<br></a><a href="https://www.jrkyushu-timetable.jp/?c=1">時刻</a></td><td title="3125M" background="image/MdwnRetK.png">二日市行<br><br>定刻</td></tr>
 <tr title="KUKAN2" id="EKINO"><td class="auto-style6">小森江<br>新宮中央<br></td><td title="3126M" background="image/MupRetK.png">門司港行<br><br>3分遅れ</td></tr>
 <tr title="KUKAN3" id="EKINO"><td class="auto-style6"></td></tr>
-<tr title="KUKAN4" id="EKINO203"><td class="auto-style1"><a href="#EKINO">門司<br></a><a href="https://www.jrkyushu-timetable.jp/?c=2">時刻</a></td></tr>`;
+<tr title="KUKAN4" id="EKINO203"><td class="auto-style1"><a href="#EKINO">門司<br></a><a href="https://www.jrkyushu-timetable.jp/?c=2">時刻</a></td><td title="構85M" background="image/Mup.png">構内行<br><br>定刻</td></tr>`;
 
 const normalized = adapter.normalize(html, {
 	senku: "122",
@@ -16,16 +16,36 @@ const normalized = adapter.normalize(html, {
 });
 
 assert.strictEqual(normalized.rows.length, 4);
-assert.strictEqual(normalized.location.trains.length, 2);
+assert.strictEqual(normalized.location.trains.length, 3);
 assert.strictEqual(normalized.location.trains[0].pos, "JQK02P001D");
+assert.strictEqual(normalized.location.trains[0].type, "9");
+assert.strictEqual(normalized.location.trains[0].typeLabel, "区間快速");
+assert.strictEqual(normalized.location.trains[0].name, "区間快速列車");
 assert.strictEqual(normalized.location.trains[0].jrKyushu.trainNavi.currentStationName, "門司港");
 assert.deepStrictEqual(normalized.location.trains[0].jrKyushu.trainNavi.candidateStationNames, ["門司港", "門司"]);
 assert.strictEqual(normalized.location.trains[1].pos, "JQK02P002U");
+assert.strictEqual(normalized.location.trains[1].type, "9");
+assert.strictEqual(normalized.location.trains[1].typeLabel, "区間快速");
+assert.strictEqual(normalized.location.trains[1].name, "区間快速列車");
 assert.strictEqual(normalized.location.trains[1].chien, 3);
 assert.strictEqual(normalized.location.trains[1].jrKyushu.trainNavi.currentStationName, "門司");
 assert.deepStrictEqual(normalized.location.trains[1].jrKyushu.trainNavi.candidateStationNames, ["門司", "門司港"]);
+assert.strictEqual(normalized.location.trains[2].cbango, "構85M");
+assert.strictEqual(normalized.location.trains[2].type, "7");
+assert.strictEqual(normalized.location.trains[2].typeLabel, "入替車両");
+assert.strictEqual(normalized.location.trains[2].name, "入替車両");
+assert.strictEqual(normalized.location.trains[2].jrKyushu.isYardSwitching, true);
+assert.strictEqual(normalized.location.trains[2].jrKyushu.typeSimple, "入");
+assert.strictEqual(normalized.location.trains[2].jrKyushu.trainNavi, null);
 assert.strictEqual(normalized.rows[1].isNonInterlocked, true);
 assert.strictEqual(normalized.rows[2].isNonInterlocked, false);
+
+const ordinary = adapter.normalize(`
+<tr title="KUKAN1" id="EKINO201"><td class="auto-style1">宮崎</td><td title="6863M" background="image/Mdwn.png">西都城行<br><br>定刻</td></tr>
+`, { sourceId: "10" }).location.trains[0];
+assert.strictEqual(ordinary.cbango, "6863M");
+assert.strictEqual(ordinary.name, "普通列車");
+
 const routeHtml = adapter.buildRouteHtml(html, { sourceId: "2" });
 assert.match(routeHtml, /eki-panel hirendo/);
 assert.match(routeHtml, /hirendo-contents/);
