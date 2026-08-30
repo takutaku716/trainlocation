@@ -938,15 +938,24 @@ $(function ($) {
 		if (get_param_rosen() === "67") {
 			stationListScope = stationListScope.children(".osaka-loop-cycle[data-loop-cycle='1']");
 		}
-		let list = stationListScope.find(".eki-panel .eki-contents a");
+		let list;
+		if (is_jrkyushu_doredore_location_rosen(get_param_rosen())) {
+			list = stationListScope.find(".eki-panel .eki-contents [key][data-station-selectable='1']");
+		} else {
+			list = stationListScope.find(".eki-panel .eki-contents a [key]");
+		}
 		// 取得した駅からボタンをダイアログに表示する内容を作成
 		let html = "<ul>";
-		for(let row of list){
-			const stationNode = row.querySelector("[key]");
-			if (!stationNode) continue;
+		const stationKeys = new Set();
+		for(let stationNode of list){
+			const stationKey = stationNode.getAttribute("key");
+			if (!stationKey || stationKeys.has(stationKey)) continue;
+			stationKeys.add(stationKey);
+			const stationContents = stationNode.closest(".stalist-eki-contents");
+			const stationIcon = stationContents ? stationContents.querySelector(".eki-icon") : null;
 			html += "<li>";
-			html += row.children[0].children[0].outerHTML;
-			html += "<div value='" + stationNode.getAttribute("key") + "'>" + stationNode.innerText.replace("\n", "") + "</div>";
+			html += stationIcon ? stationIcon.outerHTML : '<span class="eki-icon hide"></span>';
+			html += "<div value='" + stationKey + "'>" + stationNode.innerText.replace(/\n/g, "") + "</div>";
 			html += "</li>";
 		}
 		html += "</ul>";

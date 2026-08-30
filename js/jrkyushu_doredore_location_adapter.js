@@ -138,26 +138,32 @@
 	}
 
 	function buildRow(kukan, stationId, stationHtml, stationCellClass, trains) {
-		const stationNames = parseStationNames(stationHtml);
+		const isNonInterlocked = stationNamesAreSeparate(stationCellClass);
+		const stationNames = parseStationNames(stationHtml, isNonInterlocked);
 		return {
 			kukan: kukan,
 			stationId: String(stationId || ""),
 			stationNames: stationNames,
 			hasTimetableLink: /jrkyushu-timetable\.jp/i.test(String(stationHtml || "")),
-			isNonInterlocked: stationNames.length > 0 && /(?:^|\s)auto-style6/i.test(String(stationCellClass || "")),
+			isNonInterlocked: stationNames.length > 0 && isNonInterlocked,
 			trains: trains || []
 		};
 	}
 
-	function parseStationNames(html) {
+	function stationNamesAreSeparate(stationCellClass) {
+		return /(?:^|\s)auto-style6/i.test(String(stationCellClass || ""));
+	}
+
+	function parseStationNames(html, keepSeparate) {
 		let source = String(html || "");
 		const primaryLink = source.match(/<a\b[^>]*href=["'][^"']*(?:hash=|#EKINO)[^"']*["'][^>]*>([\s\S]*?)<\/a>/i);
 		if (primaryLink) source = primaryLink[1];
 		else source = source.replace(/<a\b[^>]*href=["'][^"']*jrkyushu-timetable[^"']*["'][^>]*>[\s\S]*?<\/a>/gi, "");
-		return decodeText(source)
+		const names = decodeText(source)
 			.split(/\n+/)
 			.map(normalizeStationName)
 			.filter(Boolean);
+		return keepSeparate ? names : [normalizeStationName(names.join(""))].filter(Boolean);
 	}
 
 	function parseTrainCell(number, background, html) {
@@ -237,12 +243,12 @@
 				parts.push('<div class="hirendo-contents">');
 				parts.push('<div class="ressha-contents"><div class="hirendo-ressha-panel one-eki-contents"><div class="ressha-icon ' + positionKey(settings.sourceId, row.kukan) + 'U"></div></div></div>');
 				parts.push('<div class="stalist-eki-link ' + stationCountClass(row.stationNames.length) + '">' + row.stationNames.map(function(name, stationIndex) {
-					return '<div class="stalist-eki-contents non-icon"><span class="eki-icon hide"></span><div key="' + escapeHtml(stationKey(settings.sourceId, row) + '-' + stationIndex) + '">' + escapeHtml(name) + '</div></div>';
+					return '<div class="stalist-eki-contents non-icon"><span class="eki-icon hide"></span><div key="' + escapeHtml(stationKey(settings.sourceId, row) + '-' + stationIndex) + '"' + stationSelectAttribute(row, name) + '>' + escapeHtml(name) + '</div></div>';
 				}).join("") + '</div>');
 				parts.push('<div class="ressha-contents"><div class="hirendo-ressha-panel one-eki-contents"><div class="ressha-icon ' + positionKey(settings.sourceId, row.kukan) + 'D"></div></div></div>');
 				parts.push('</div>');
 			} else if (isStation) {
-				parts.push('<div class="stalist-eki-link"><div class="stalist-eki-contents non-icon"><span class="eki-icon hide"></span><div key="' + escapeHtml(stationKey(settings.sourceId, row)) + '" class="margin-left05">' + row.stationNames.map(escapeHtml).join("<br>") + '</div></div></div>');
+				parts.push('<div class="stalist-eki-link"><div class="stalist-eki-contents non-icon"><span class="eki-icon hide"></span><div key="' + escapeHtml(stationKey(settings.sourceId, row)) + '" class="margin-left05"' + stationSelectAttribute(row, row.stationNames[0]) + '>' + row.stationNames.map(escapeHtml).join("<br>") + '</div></div></div>');
 			}
 			if (!row.isNonInterlocked) parts.push('<div class="ressha-contents"><div class="ressha-icon ' + positionKey(settings.sourceId, row.kukan) + 'U"></div><div class="ressha-icon ' + positionKey(settings.sourceId, row.kukan) + 'D"></div></div>');
 			parts.push('</div>' + (index === rows.length - 1 ? '' : '<svg class="senro-img"><use xlink:href="#senro"></use></svg>') + '</div>');
@@ -257,6 +263,15 @@
 		if (count === 4) return "four-eki";
 		if (count >= 5) return "five-eki";
 		return "many-eki";
+	}
+
+	function stationSelectAttribute(row, name) {
+		if ((!row.hasTimetableLink && !row.isNonInterlocked) || isOperationalFacility(name)) return "";
+		return ' data-station-selectable="1"';
+	}
+
+	function isOperationalFacility(name) {
+		return /(?:信号場|操車場|貨物|電留)$/.test(String(name || ""));
 	}
 
 	function buildLocationMasterEntries(rowsOrHtml, options) {
@@ -365,7 +380,11 @@
 	}
 
 	function normalizeStationName(value) {
-		return String(value || "").replace(/\s+/g, "").replace(/^ｽﾍﾟｰｽﾜｰﾙﾄﾞ$/, "スペースワールド");
+		return String(value || "")
+			.replace(/\s+/g, "")
+			.replace(/信号所/g, "信号場")
+			.replace(/^北九州ターミナル$/, "北九州貨物ターミナル")
+			.replace(/^ｽﾍﾟｰｽﾜｰﾙﾄﾞ$/, "スペースワールド");
 	}
 
 	function decodeText(value) {

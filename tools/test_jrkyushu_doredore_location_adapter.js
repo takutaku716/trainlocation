@@ -38,7 +38,23 @@ assert.strictEqual(normalized.location.trains[2].jrKyushu.isYardSwitching, true)
 assert.strictEqual(normalized.location.trains[2].jrKyushu.typeSimple, "入");
 assert.strictEqual(normalized.location.trains[2].jrKyushu.trainNavi, null);
 assert.strictEqual(normalized.rows[1].isNonInterlocked, true);
+assert.deepStrictEqual(normalized.rows[1].stationNames, ["小森江", "新宮中央"]);
 assert.strictEqual(normalized.rows[2].isNonInterlocked, false);
+
+const longStationHtml = `
+<tr title="KUKAN1" id="EKINO201"><td class="auto-style1"><a href="#EKINO">小波瀬<br>西工大前<br></a><a href="https://www.jrkyushu-timetable.jp/?c=1">時刻</a></td></tr>
+<tr title="KUKAN2" id="EKINO202"><td class="auto-style1">西有田信号所</td></tr>
+<tr title="KUKAN3" id="EKINO203"><td class="auto-style1">北九州<br>ターミナル</td></tr>`;
+const longStationRows = adapter.parseRows(longStationHtml);
+assert.deepStrictEqual(longStationRows[0].stationNames, ["小波瀬西工大前"]);
+assert.deepStrictEqual(longStationRows[1].stationNames, ["西有田信号場"]);
+assert.deepStrictEqual(longStationRows[2].stationNames, ["北九州貨物ターミナル"]);
+const longStationRouteHtml = adapter.buildRouteHtml(longStationHtml, { sourceId: "10" });
+assert.match(longStationRouteHtml, />小波瀬西工大前<\/div>/);
+assert.doesNotMatch(longStationRouteHtml, /小波瀬<br>西工大前/);
+assert.match(longStationRouteHtml, /西有田信号場/);
+assert.doesNotMatch(longStationRouteHtml, /信号所/);
+assert.match(longStationRouteHtml, /北九州貨物ターミナル/);
 
 const ordinary = adapter.normalize(`
 <tr title="KUKAN1" id="EKINO201"><td class="auto-style1">宮崎</td><td title="6863M" background="image/Mdwn.png">西都城行<br><br>定刻</td></tr>
@@ -50,9 +66,18 @@ const routeHtml = adapter.buildRouteHtml(html, { sourceId: "2" });
 assert.match(routeHtml, /eki-panel hirendo/);
 assert.match(routeHtml, /hirendo-contents/);
 assert.match(routeHtml, /stalist-eki-link two-eki/);
+assert.strictEqual((routeHtml.match(/data-station-selectable="1"/g) || []).length, 4);
 assert.match(routeHtml, /小森江/);
 assert.match(routeHtml, /新宮中央/);
 assert.match(routeHtml, /JQK02P002D/);
+
+const facilityHtml = `
+<tr title="KUKAN1" id="EKINO201"><td class="auto-style1"><a href="#EKINO">門司港<br></a><a href="https://www.jrkyushu-timetable.jp/?c=1">時刻</a></td></tr>
+<tr title="KUKAN2" id="EKINO202"><td class="auto-style1">北九州貨物ターミナル</td></tr>
+<tr title="KUKAN3" id="EKINO203"><td class="auto-style1">東小倉</td></tr>
+<tr title="KUKAN4" id="EKINO204"><td class="auto-style1">川尻信号場</td></tr>`;
+const facilityRouteHtml = adapter.buildRouteHtml(facilityHtml, { sourceId: "2" });
+assert.strictEqual((facilityRouteHtml.match(/data-station-selectable="1"/g) || []).length, 1);
 
 const locationMaster = adapter.buildLocationMasterEntries(normalized.rows, { sourceId: "2", lineName: "鹿児島本線" });
 assert.strictEqual(locationMaster.JQK02P001U, "門司港");
