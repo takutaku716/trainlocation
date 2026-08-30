@@ -7,6 +7,17 @@
 }(typeof self !== "undefined" ? self : this, function() {
 	"use strict";
 
+	const SECTION_RAPID_RANGES = {
+		M: [[3120, 3199], [4120, 4199], [4320, 4399]],
+		D: [[4220, 4299]]
+	};
+	const RAPID_RANGES = {
+		M: [[1320, 1399], [3220, 3299], [4220, 4299]],
+		C: [[1320, 1399], [1620, 1699]],
+		H: [[4620, 4699]],
+		D: [[3220, 3299], [3320, 3399], [3530, 3599], [3920, 3999]]
+	};
+
 	function normalize(html, options) {
 		const settings = options || {};
 		const rows = parseRows(html);
@@ -153,7 +164,7 @@
 		const destination = lines.length ? lines[0].replace(/行$/, "") : "";
 		const delayLine = lines.find(function(value) { return /(?:定刻|遅れ)/.test(value); }) || "";
 		const serviceName = lines.slice(1).find(function(value) { return !/(?:定刻|遅れ)/.test(value); }) || "";
-		const type = trainTypeFromBackground(background);
+		const type = classifyTrainType(displayNumber, trainTypeFromBackground(background));
 		return {
 			number: displayNumber,
 			name: serviceName || displayNumber,
@@ -301,6 +312,29 @@
 		return { code: "4", label: "普通" };
 	}
 
+	function classifyTrainType(displayNumber, locationType) {
+		if (locationType && String(locationType.code) === "1") {
+			return { code: "1", label: "特急" };
+		}
+		const match = String(displayNumber || "").trim().toUpperCase().match(/^0*(\d+)([A-Z])$/);
+		if (!match) return { code: "3", label: "普通" };
+		const trainNumber = Number(match[1]);
+		const suffix = match[2];
+		if (isTrainNumberInRanges(trainNumber, SECTION_RAPID_RANGES[suffix])) {
+			return { code: "9", label: "区間快速" };
+		}
+		if (isTrainNumberInRanges(trainNumber, RAPID_RANGES[suffix])) {
+			return { code: "2", label: "快速" };
+		}
+		return { code: "3", label: "普通" };
+	}
+
+	function isTrainNumberInRanges(trainNumber, ranges) {
+		return (Array.isArray(ranges) ? ranges : []).some(function(range) {
+			return trainNumber >= range[0] && trainNumber <= range[1];
+		});
+	}
+
 	function normalizeTrainNumber(value) {
 		const match = String(value || "").trim().match(/(\d{1,6}[A-Za-z]?)/);
 		return match ? match[1].toUpperCase() : "";
@@ -355,6 +389,7 @@
 	return {
 		normalize: normalize,
 		parseRows: parseRows,
+		classifyTrainType: classifyTrainType,
 		buildRouteHtml: buildRouteHtml,
 		buildLocationMasterEntries: buildLocationMasterEntries,
 		positionKey: positionKey
