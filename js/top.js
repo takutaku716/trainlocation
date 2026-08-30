@@ -16,7 +16,8 @@ const AREA_ROSEN_KEYS = {
 	"shin": ["51", "52", "53", "54", "55", "56", "57"],												// 新幹線
 	"jrwest": JRWEST_ROUTE_IDS,			// JR西日本
 	"jrshikoku": ["64", "73", "76", "77", "78", "79", "80", "81", "82"],		// JR四国
-	"jrcentral": ["75", "74", "83", "84", "85", "86", "87", "88", "89", "90", "91", "92", "93", "94", "95"]		// JR東海
+	"jrcentral": ["75", "74", "83", "84", "85", "86", "87", "88", "89", "90", "91", "92", "93", "94", "95"],		// JR東海
+	"jrkyushu": (Array.isArray(window.JRKYUSHU_DOREDORE_ROUTES) ? window.JRKYUSHU_DOREDORE_ROUTES : []).map(function(route) { return String(route.rosen); })
 };
 
 // 各路線に属するデータキー
@@ -77,6 +78,10 @@ const ROSEN_NUM_KEYS = {
 
 JRWEST_ROUTE_IDS.forEach(function (rosen) {
 	if (!Object.prototype.hasOwnProperty.call(ROSEN_NUM_KEYS, rosen)) ROSEN_NUM_KEYS[rosen] = [];
+});
+
+(Array.isArray(window.JRKYUSHU_DOREDORE_ROUTES) ? window.JRKYUSHU_DOREDORE_ROUTES : []).forEach(function(route) {
+	if (!Object.prototype.hasOwnProperty.call(ROSEN_NUM_KEYS, route.rosen)) ROSEN_NUM_KEYS[route.rosen] = [];
 });
 
 /*

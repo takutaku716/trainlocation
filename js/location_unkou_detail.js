@@ -15,6 +15,34 @@ $(function ($) {
 	$(document).on("click", ".ressha-icon .ressha", function() {
 		const clickedItem = this;
 		const clickedDataset = clickedItem.dataset;
+		if (clickedDataset.jrkyushu_train_navi_request && clickedDataset.jrkyushu_timetable_loaded !== "1") {
+			if (clickedDataset.jrkyushu_timetable_loading === "1") return;
+			clickedDataset.jrkyushu_timetable_loading = "1";
+			loading_animation_display();
+			prepare_jrkyushu_train_navi_dataset(clickedDataset)
+				.catch(function() {
+					clickedDataset.jrkyushu_timetable = "[]";
+					return null;
+				})
+				.then(function(response) {
+					const targetItem = clickedItem.isConnected ? clickedItem : Array.from(document.querySelectorAll(".ressha-icon .ressha")).find(function(item) {
+						return item.dataset.cbango === clickedDataset.cbango && item.dataset.source === clickedDataset.source;
+					});
+					if (!targetItem) {
+						loading_animation_hidden();
+						return;
+					}
+					if (response && targetItem !== clickedItem && window.JrKyushuTrainNaviAdapter) {
+						window.JrKyushuTrainNaviAdapter.applyResponseToDataset(targetItem.dataset, response, document.documentElement.dataset.lang || "ja");
+					} else {
+						targetItem.dataset.jrkyushu_timetable = clickedDataset.jrkyushu_timetable || "[]";
+					}
+					targetItem.dataset.jrkyushu_timetable_loading = "0";
+					targetItem.dataset.jrkyushu_timetable_loaded = "1";
+					$(targetItem).trigger("click");
+				});
+			return;
+		}
 		if (clickedDataset.source === "jrcentral" && clickedDataset.jrcentral_timetable_loaded !== "1") {
 			if (clickedDataset.jrcentral_timetable_loading === "1") return;
 			clickedDataset.jrcentral_timetable_loading = "1";
@@ -141,7 +169,7 @@ $(function ($) {
 			$("#cbangoIcon").removeClass("hide");
 			$("#cbangoDetail").removeClass("hide");
 
-			if (dataset.source === "jreast" || dataset.source === "dokotre" || dataset.source === "jrshinkansen" || dataset.source === "jrwest" || dataset.source === "jrshikoku" || dataset.source === "jrcentral") {
+			if (dataset.source === "jreast" || dataset.source === "dokotre" || dataset.source === "jrshinkansen" || dataset.source === "jrwest" || dataset.source === "jrshikoku" || dataset.source === "jrcentral" || dataset.source === "jrkyushu" || dataset.jrkyushu_train_navi_request) {
 				$("#unkouDetailMain").hide();
 				$.getJSON("./original/location_master" + (lang === "ja" ? "" : "_" + lang) + ".json?" + now)
 					.done(function(posNameMasterBase) {
@@ -282,6 +310,7 @@ function create_jreast_daiya(_dataset) {
 			_dataset.source === "jrwest" ? _dataset.jrwest_timetable :
 			_dataset.source === "jrshikoku" ? _dataset.jrshikoku_timetable :
 			_dataset.source === "jrcentral" ? _dataset.jrcentral_timetable :
+			_dataset.source === "jrkyushu" || _dataset.jrkyushu_train_navi_request ? _dataset.jrkyushu_timetable :
 			_dataset.jreast_timetable;
 		timetable = JSON.parse(timetableText || "[]");
 	} catch (_error) {

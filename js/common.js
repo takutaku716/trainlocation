@@ -10,6 +10,11 @@ $(function ($) {
 	// 言語コードを取得する。
 	const lang = document.documentElement.dataset.lang;
 
+	$(".area-contents.jrshikoku").each(function() {
+		const jrKyushu = $(this).siblings(".area-contents.jrkyushu").first();
+		if (jrKyushu.length) $(this).after(jrKyushu);
+	});
+
 	// ヘッダーを埋め込み表示する。
 	if ($("header").length) {
 		// キャッシュバスター値を生成する。(UNIX元期からの経過ミリ秒数を右に16ビットシフトした値。2の16乗＝65536ミリ秒≒約1分間隔でキャッシュを無効化する)

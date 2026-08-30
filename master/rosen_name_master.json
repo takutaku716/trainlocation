@@ -1623,5 +1623,22 @@
 		},
 		"kigo": "B",
 		"area": "7"
-	}
+	},
+	{"rosen":"122","rosenName":{"ja":"鹿児島本線","en":"Kagoshima Main Line","tc":"鹿兒島本線","sc":"鹿儿岛本线","kr":"가고시마 본선"},"kukanName":{"ja":"[門司港～八代間]","en":"[Mojiko - Yatsushiro]","tc":"[門司港～八代間]","sc":"[门司港～八代间]","kr":"[모지코～야쓰시로]"},"area":"10"},
+	{"rosen":"123","rosenName":{"ja":"鹿児島本線","en":"Kagoshima Main Line","tc":"鹿兒島本線","sc":"鹿儿岛本线","kr":"가고시마 본선"},"kukanName":{"ja":"[川内～鹿児島間]","en":"[Sendai - Kagoshima]","tc":"[川內～鹿兒島間]","sc":"[川内～鹿儿岛间]","kr":"[센다이～가고시마]"},"area":"10"},
+	{"rosen":"124","rosenName":{"ja":"福北ゆたか線・若松線","en":"Fukuhoku Yutaka/Wakamatsu Line","tc":"福北豐線・若松線","sc":"福北丰线・若松线","kr":"후쿠호쿠유타카선・와카마쓰선"},"kukanName":{"ja":"[若松～博多間]","en":"[Wakamatsu - Hakata]","tc":"[若松～博多間]","sc":"[若松～博多间]","kr":"[와카마쓰～하카타]"},"area":"10"},
+	{"rosen":"125","rosenName":{"ja":"日豊本線","en":"Nippo Main Line","tc":"日豐本線","sc":"日丰本线","kr":"닛포 본선"},"kukanName":{"ja":"[小倉～鹿児島中央間]","en":"[Kokura - Kagoshima-Chuo]","tc":"[小倉～鹿兒島中央間]","sc":"[小仓～鹿儿岛中央间]","kr":"[고쿠라～가고시마추오]"},"area":"10"},
+	{"rosen":"126","rosenName":{"ja":"長崎本線","en":"Nagasaki Main Line","tc":"長崎本線","sc":"长崎本线","kr":"나가사키 본선"},"kukanName":{"ja":"[鳥栖～長崎間]","en":"[Tosu - Nagasaki]","tc":"[鳥栖～長崎間]","sc":"[鸟栖～长崎间]","kr":"[도스～나가사키]"},"area":"10"},
+	{"rosen":"127","rosenName":{"ja":"長崎本線（長与経由）","en":"Nagasaki Main Line via Nagayo","tc":"長崎本線（經長與）","sc":"长崎本线（经长与）","kr":"나가사키 본선 나가요 경유"},"kukanName":{"ja":"[諫早～長崎間]","en":"[Isahaya - Nagasaki]","tc":"[諫早～長崎間]","sc":"[谏早～长崎间]","kr":"[이사하야～나가사키]"},"area":"10"},
+	{"rosen":"128","rosenName":{"ja":"久大本線","en":"Kyudai Main Line","tc":"久大本線","sc":"久大本线","kr":"규다이 본선"},"kukanName":{"ja":"[久留米～大分間]","en":"[Kurume - Oita]","tc":"[久留米～大分間]","sc":"[久留米～大分间]","kr":"[구루메～오이타]"},"area":"10"},
+	{"rosen":"129","rosenName":{"ja":"豊肥本線","en":"Hohi Main Line","tc":"豐肥本線","sc":"丰肥本线","kr":"호히 본선"},"kukanName":{"ja":"[熊本～大分間]","en":"[Kumamoto - Oita]","tc":"[熊本～大分間]","sc":"[熊本～大分间]","kr":"[구마모토～오이타]"},"area":"10"},
+	{"rosen":"130","rosenName":{"ja":"筑肥線","en":"Chikuhi Line","tc":"筑肥線","sc":"筑肥线","kr":"지쿠히선"},"kukanName":{"ja":"[下山門～西唐津間]","en":"[Shimoyamato - Nishi-Karatsu]","tc":"[下山門～西唐津間]","sc":"[下山门～西唐津间]","kr":"[시모야마토～니시카라쓰]"},"area":"10"},
+	{"rosen":"131","rosenName":{"ja":"筑肥線","en":"Chikuhi Line","tc":"筑肥線","sc":"筑肥线","kr":"지쿠히선"},"kukanName":{"ja":"[西唐津～伊万里間]","en":"[Nishi-Karatsu - Imari]","tc":"[西唐津～伊萬里間]","sc":"[西唐津～伊万里间]","kr":"[니시카라쓰～이마리]"},"area":"10"},
+	{"rosen":"132","rosenName":{"ja":"香椎線","en":"Kashii Line","tc":"香椎線","sc":"香椎线","kr":"가시이선"},"kukanName":{"ja":"[西戸崎～宇美間]","en":"[Saitozaki - Umi]","tc":"[西戶崎～宇美間]","sc":"[西户崎～宇美间]","kr":"[사이토자키～우미]"},"area":"10"},
+	{"rosen":"133","rosenName":{"ja":"唐津線","en":"Karatsu Line","tc":"唐津線","sc":"唐津线","kr":"가라쓰선"},"kukanName":{"ja":"[佐賀～西唐津間]","en":"[Saga - Nishi-Karatsu]","tc":"[佐賀～西唐津間]","sc":"[佐贺～西唐津间]","kr":"[사가～니시카라쓰]"},"area":"10"},
+	{"rosen":"134","rosenName":{"ja":"日田彦山線","en":"Hitahikosan Line","tc":"日田彥山線","sc":"日田彦山线","kr":"히타히코산선"},"kukanName":{"ja":"[小倉～添田間]","en":"[Kokura - Soeda]","tc":"[小倉～添田間]","sc":"[小仓～添田间]","kr":"[고쿠라～소에다]"},"area":"10"},
+	{"rosen":"136","rosenName":{"ja":"後藤寺線","en":"Gotoji Line","tc":"後藤寺線","sc":"后藤寺线","kr":"고토지선"},"kukanName":{"ja":"[新飯塚～田川後藤寺間]","en":"[Shin-Iizuka - Tagawa-Gotoji]","tc":"[新飯塚～田川後藤寺間]","sc":"[新饭塚～田川后藤寺间]","kr":"[신이즈카～다가와고토지]"},"area":"10"},
+	{"rosen":"137","rosenName":{"ja":"佐世保線","en":"Sasebo Line","tc":"佐世保線","sc":"佐世保线","kr":"사세보선"},"kukanName":{"ja":"[江北～佐世保間]","en":"[Kohoku - Sasebo]","tc":"[江北～佐世保間]","sc":"[江北～佐世保间]","kr":"[고호쿠～사세보]"},"area":"10"},
+	{"rosen":"138","rosenName":{"ja":"宮崎空港線","en":"Miyazaki Airport Line","tc":"宮崎機場線","sc":"宫崎机场线","kr":"미야자키공항선"},"kukanName":{"ja":"[宮崎～宮崎空港間]","en":"[Miyazaki - Miyazaki Airport]","tc":"[宮崎～宮崎機場間]","sc":"[宫崎～宫崎机场间]","kr":"[미야자키～미야자키공항]"},"area":"10"},
+	{"rosen":"139","rosenName":{"ja":"指宿枕崎線","en":"Ibusuki Makurazaki Line","tc":"指宿枕崎線","sc":"指宿枕崎线","kr":"이부스키마쿠라자키선"},"kukanName":{"ja":"[鹿児島中央～西頴娃間]","en":"[Kagoshima-Chuo - Nishi-Ei]","tc":"[鹿兒島中央～西頴娃間]","sc":"[鹿儿岛中央～西颕娃间]","kr":"[가고시마추오～니시에이]"},"area":"10"}
 ]
