@@ -61,7 +61,9 @@
 	<!-- 共通（終了） -->
 	<!-- 専用（開始） -->
 	<link rel="stylesheet" href="./css/top.css" type="text/css" media="screen,print">
-	<script src="./js/top.js?20260812d"></script>
+	<link rel="stylesheet" href="./css/toei_location.css?20260907a">
+	<link rel="stylesheet" href="./css/keikyu_location.css?20260908a">
+	<script src="./js/top.js?20260908a"></script>
 	<!-- 専用（終了） -->
 	<!--やさしいブラウザ用（開始）-->
 	<script src="./common/js/ewbc.min.js"></script>
@@ -167,6 +169,12 @@
 											<span class="area-name">JR西日本</span>
 										</label>
 									</li>
+									<li id="keikyu"><input id="areaOperationKeikyuTab" type="radio" name="areaOperationTab" value="12"><label class="area-grid" for="areaOperationKeikyuTab"><span class="area-name">京急電鉄</span></label></li>
+									<li id="toei">
+										<!-- ODPT railway groups -->
+										<input id="areaOperationToeiTab" type="radio" name="areaOperationTab" value="11">
+										<label class="area-grid" for="areaOperationToeiTab"><span class="area-name">都営交通</span></label>
+									</li>
 									<li id="jrshikoku">
 										<input id="areaOperationJrShikokuTab" type="radio" name="areaOperationTab" value="8">
 										<label class="area-grid" for="areaOperationJrShikokuTab">
@@ -177,6 +185,12 @@
 										<input id="areaOperationJrCentralTab" type="radio" name="areaOperationTab" value="9">
 										<label class="area-grid" for="areaOperationJrCentralTab">
 											<span class="area-name">JR東海</span>
+										</label>
+									</li>
+									<li id="jrkyushu">
+										<input id="areaOperationJrKyushuTab" type="radio" name="areaOperationTab" value="10">
+										<label class="area-grid" for="areaOperationJrKyushuTab">
+											<span class="area-name">JR九州</span>
 										</label>
 									</li>
 								</ul>
@@ -659,6 +673,27 @@
 									<div value="137" class="rosen-name-contents"><span class="rosen-name-label"><span class="main">佐世保線</span><span class="sub">[江北～佐世保間]</span></span><span class="icon-arrow-right"></span></div>
 									<div value="138" class="rosen-name-contents"><span class="rosen-name-label"><span class="main">宮崎空港線</span><span class="sub">[宮崎～宮崎空港間]</span></span><span class="icon-arrow-right"></span></div>
 									<div value="139" class="rosen-name-contents"><span class="rosen-name-label"><span class="main">指宿枕崎線</span><span class="sub">[鹿児島中央～西頴娃間]</span></span><span class="icon-arrow-right"></span></div>
+								</div>
+							</div>
+							<div class="area-contents keikyu">
+								<div class="area-name-label keikyu">京急電鉄</div>
+								<div class="rosen-name-list keikyu">
+									<div value="146" class="rosen-name-contents"><span class="rosen-name-label"><span class="main">京急本線</span><span class="sub">[品川～浦賀間]</span></span><span class="icon-arrow-right"></span></div>
+									<div value="147" class="rosen-name-contents"><span class="rosen-name-label"><span class="main">空港線</span><span class="sub">[京急蒲田～羽田空港第１・第２ターミナル間]</span></span><span class="icon-arrow-right"></span></div>
+									<div value="148" class="rosen-name-contents"><span class="rosen-name-label"><span class="main">大師線</span><span class="sub">[京急川崎～小島新田間]</span></span><span class="icon-arrow-right"></span></div>
+									<div value="149" class="rosen-name-contents"><span class="rosen-name-label"><span class="main">逗子線</span><span class="sub">[金沢八景～逗子・葉山間]</span></span><span class="icon-arrow-right"></span></div>
+									<div value="150" class="rosen-name-contents"><span class="rosen-name-label"><span class="main">久里浜線</span><span class="sub">[堀ノ内～三崎口間]</span></span><span class="icon-arrow-right"></span></div>
+								</div>
+							</div>
+							<div class="area-contents toei">
+								<div class="area-name-label toei">都営交通</div>
+								<div class="rosen-name-list toei">
+									<div value="140" class="rosen-name-contents"><span class="rosen-name-label"><span class="main">浅草線</span><span class="sub">[西馬込～押上間]</span></span><span class="icon-arrow-right"></span></div>
+									<div value="141" class="rosen-name-contents"><span class="rosen-name-label"><span class="main">三田線</span><span class="sub">[目黒～西高島平間]</span></span><span class="icon-arrow-right"></span></div>
+									<div value="142" class="rosen-name-contents"><span class="rosen-name-label"><span class="main">新宿線</span><span class="sub">[新宿～本八幡間]</span></span><span class="icon-arrow-right"></span></div>
+									<div value="143" class="rosen-name-contents"><span class="rosen-name-label"><span class="main">大江戸線</span><span class="sub">[都庁前～光が丘間]</span></span><span class="icon-arrow-right"></span></div>
+									<div value="144" class="rosen-name-contents"><span class="rosen-name-label"><span class="main">東京さくらトラム（都電荒川線）</span><span class="sub">[三ノ輪橋～早稲田間]</span></span><span class="icon-arrow-right"></span></div>
+									<div value="145" class="rosen-name-contents"><span class="rosen-name-label"><span class="main">日暮里・舎人ライナー</span><span class="sub">[日暮里～見沼代親水公園間]</span></span><span class="icon-arrow-right"></span></div>
 								</div>
 							</div>
 							<div class="area-contents jrshikoku">

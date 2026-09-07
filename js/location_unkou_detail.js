@@ -15,6 +15,8 @@ $(function ($) {
 	$(document).on("click", ".ressha-icon .ressha", function() {
 		const clickedItem = this;
 		const clickedDataset = clickedItem.dataset;
+		$("#resshaDetail").toggleClass("toei-detail", clickedDataset.source === "toei");
+		$("#resshaDetail").toggleClass("keikyu-detail", clickedDataset.source === "keikyu");
 		if (clickedDataset.jrkyushu_train_navi_request && clickedDataset.jrkyushu_timetable_loaded !== "1") {
 			if (clickedDataset.jrkyushu_timetable_loading === "1") return;
 			clickedDataset.jrkyushu_timetable_loading = "1";
@@ -169,7 +171,7 @@ $(function ($) {
 			$("#cbangoIcon").removeClass("hide");
 			$("#cbangoDetail").removeClass("hide");
 
-			if (dataset.source === "jreast" || dataset.source === "dokotre" || dataset.source === "jrshinkansen" || dataset.source === "jrwest" || dataset.source === "jrshikoku" || dataset.source === "jrcentral" || dataset.source === "jrkyushu" || dataset.source === "jrkyushu-doredore" || dataset.jrkyushu_train_navi_request) {
+			if (dataset.source === "keikyu" || dataset.source === "toei" || dataset.source === "jreast" || dataset.source === "dokotre" || dataset.source === "jrshinkansen" || dataset.source === "jrwest" || dataset.source === "jrshikoku" || dataset.source === "jrcentral" || dataset.source === "jrkyushu" || dataset.source === "jrkyushu-doredore" || dataset.jrkyushu_train_navi_request) {
 				$("#unkouDetailMain").hide();
 				$.getJSON("./original/location_master" + (lang === "ja" ? "" : "_" + lang) + ".json?" + now)
 					.done(function(posNameMasterBase) {
@@ -301,6 +303,11 @@ function get_detail_train_name_text(_dataset) {
  * JR東日本形式の時刻表データを表示する
  */
 function create_jreast_daiya(_dataset) {
+	if (_dataset.source === "toei" || _dataset.source === "keikyu") {
+		$("#teisyaTableArea div").empty();
+		$("#teisyaTableArea .adjusted-notice").hide();
+		return;
+	}
 	$("#teisyaTableArea div").empty();
 	let timetable = [];
 	try {

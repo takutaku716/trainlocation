@@ -1,4 +1,6 @@
 [
+{"area":"12","name":{"ja":"京急電鉄","en":"Keikyu","tc":"京急電鐵","sc":"京急电铁","kr":"게이큐 전철"}},
+{"area":"11","name":{"ja":"都営交通","en":"Toei Transportation","tc":"都營交通","sc":"都营交通","kr":"도에이 교통"}},
 {"area":"01","name":{"ja":"札幌近郊","en":"Sapporo area","tc":"札幌近郊","sc":"札幌近郊","kr":"삿포로 근교"}},
 {"area":"02","name":{"ja":"道央エリア","en":"Central Hokkaido area","tc":"道央區域","sc":"道央区域","kr":"홋카이도 중부지역"}},
 {"area":"03","name":{"ja":"道南エリア","en":"Southern Hokkaido area","tc":"道南區域","sc":"道南区域","kr":"홋카이도 남부지역"}},

@@ -406,7 +406,9 @@
 		const positionRecord = getPositionRecord(row.Line, row.PosNum);
 		if (!positionRecord) return null;
 		const sourceLineConfig = LINE_CONFIGS[positionRecord.line] || lineConfig;
-		const direction = resolveDirection(row.Direction, positionRecord.name, context, sourceLineConfig, timetable);
+		const sharedTokushimaStation = (positionRecord.line === "koutoku" || positionRecord.line === "tokushima") &&
+			["499", "500", "501", "502"].includes(String(positionRecord.posNum));
+		const direction = resolveDirection(row.Direction, positionRecord.name, context, sourceLineConfig, timetable, sharedTokushimaStation);
 		const projection = getPositionProjection(positionRecord, settings.senku, direction);
 		if (!projection) return null;
 		const sourcePositionKey = buildSourcePositionKey(positionRecord.line, positionRecord.posNum, direction);
@@ -449,15 +451,16 @@
 		};
 	}
 
-	function resolveDirection(rawDirection, positionName, context, lineConfig, timetable) {
+	function resolveDirection(rawDirection, positionName, context, lineConfig, timetable, sharedTokushimaStation) {
 		const sourceDirection = Number(rawDirection) === 0 ? "U" : "D";
 		const timetableCodes = Array.isArray(lineConfig && lineConfig.timetableDirectionStationCodes)
 			? lineConfig.timetableDirectionStationCodes
 			: [];
-		if (timetableCodes.length === 0) return sourceDirection;
+		if (timetableCodes.length === 0 && !sharedTokushimaStation) return sourceDirection;
 		const station = context.byName.get(normalizePositionText(positionName));
-		if (!station || timetableCodes.indexOf(station.code) < 0) return sourceDirection;
-		const fallbackDirection = sourceDirection === "U" ? "D" : "U";
+		if (!station || (timetableCodes.indexOf(station.code) < 0 && !sharedTokushimaStation)) return sourceDirection;
+		const fallbackDirection = timetableCodes.indexOf(station.code) >= 0
+			? (sourceDirection === "U" ? "D" : "U") : sourceDirection;
 		if (!Array.isArray(timetable) || timetable.length === 0) return fallbackDirection;
 		const timetableIndex = timetable.findIndex(function(row) { return row.stationName === station.name; });
 		if (timetableIndex < 0) return fallbackDirection;

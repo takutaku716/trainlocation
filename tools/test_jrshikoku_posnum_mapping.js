@@ -122,6 +122,28 @@ assert.strictEqual(tokushimaStationOnTokushimaPage.jrShikoku.renderPosition, "JS
 	assert.strictEqual(train.jrShikoku.renderPosition, expectedPosition);
 });
 
+// Shared station rows may be delivered as koutoku, including duplicate rows.
+["80", "81", "82"].forEach(function(senku) {
+	const lineId = { "80": "koutoku", "81": "tokushima", "82": "naruto" }[senku];
+	const base = { "80": "JSTT00", "81": "JSBT00", "82": "JSNT00" }[senku];
+	[499, 500, 501, 502].forEach(function(posNum) {
+		[0, 1].forEach(function(direction) {
+			[false, true].forEach(function(inbound) {
+				const timetable = inbound ? "穴吹,発,11:00#佐古,発,11:56#徳島,着,12:00#" : "徳島,発,12:00#佐古,発,12:04#穴吹,着,13:00#";
+				const rows = ["koutoku", "tokushima"].map(function(line) {
+					return { TrainNum: "485D", Line: line, PosNum: posNum, Pos: "徳島", Direction: direction, Type: "normal", delay: 0 };
+				});
+				[rows, rows.slice().reverse(), [rows[0]], [rows[1]]].forEach(function(input) {
+					const trains = adapter.normalize(input, [{ "485D": timetable }], { senku: senku, lineId: lineId }).trains;
+					assert.strictEqual(trains.length, 1);
+					const down = senku === "81" ? !inbound : inbound;
+					assert.strictEqual(trains[0].jrShikoku.renderPosition, base + (down ? "D" : "U"));
+				});
+			});
+		});
+	});
+});
+
 const duplicateSharedTrain = adapter.normalize([
 	{ GetDateTime: "2026/08/20 12:00:00" },
 	{ TrainNum: "487D", Line: "koutoku", PosNum: 495, Pos: "佐古", Direction: 0, Type: "normal", delay: 0 },

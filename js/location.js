@@ -939,7 +939,9 @@ $(function ($) {
 			stationListScope = stationListScope.children(".osaka-loop-cycle[data-loop-cycle='1']");
 		}
 		let list;
-		if (is_jrkyushu_doredore_location_rosen(get_param_rosen())) {
+		if (is_odpt_location_rosen(get_param_rosen())) {
+			list = stationListScope.find(".eki-panel .eki-contents [key]");
+		} else if (is_jrkyushu_doredore_location_rosen(get_param_rosen())) {
 			list = stationListScope.find(".eki-panel .eki-contents [key][data-station-selectable='1']");
 		} else {
 			list = stationListScope.find(".eki-panel .eki-contents a [key]");
@@ -1411,7 +1413,29 @@ function is_jrcentral_location_rosen(_rosen) {
 }
 
 function is_location_auto_refresh_allowed(_rosen) {
-	return !is_jreast_location_rosen(_rosen);
+	return !is_jreast_location_rosen(_rosen) && String(_rosen) !== "145";
+}
+
+function is_odpt_location_rosen(_rosen) {
+	// Shared ODPT display lifecycle (station selection, freshness, refresh failures).
+	return !!((window.ToeiLocationAdapter && window.ToeiLocationAdapter.routeFor(_rosen)) ||
+		(window.KeikyuLocationAdapter && window.KeikyuLocationAdapter.routeFor(_rosen)));
+}
+
+function update_odpt_location_status(nowData) {
+	if (nowData && nowData.keikyu) {
+		let message = nowData.keikyu.expired ? "有効期限を過ぎた列車位置を非表示にしています。" : !nowData.trains.length ? "現在、表示できる列車位置情報はありません。" : "";
+		if (nowData.keikyu.unmapped) message += " 駅間を特定できない列車は表示していません。";
+		$(".keikyu-location-status").text(message);
+		return;
+	}
+	if (!nowData || !nowData.toei) return;
+	let text = "";
+	if (!nowData.toei.live) text = "日暮里・舎人ライナーのリアルタイム位置情報はODPTで提供されていません。列車位置は表示できません。";
+	else if (nowData.toei.expired) text = "有効期限を過ぎた列車位置を非表示にしています。";
+	else if (!nowData.trains.length) text = "現在、表示できる列車位置情報はありません。";
+	if (nowData.toei.unmapped) text += " 駅間を特定できない列車は表示していません。";
+	$(".toei-location-status").text(text);
 }
 
 function get_jreast_location_request(_rosen, _now) {
@@ -1690,6 +1714,8 @@ function merge_location_now_data(_nowDataList) {
 }
 
 function load_location_now_data(_param_rosen, _now) {
+	if (window.KeikyuLocationAdapter && window.KeikyuLocationAdapter.routeFor(_param_rosen)) return window.KeikyuLocationAdapter.load(_param_rosen);
+	if (is_odpt_location_rosen(_param_rosen)) return window.ToeiLocationAdapter.load(_param_rosen);
 	if (String(_param_rosen || "") === "64") {
 		return load_combined_jrwest_jrshikoku_location_now_data(_param_rosen, _now);
 	}
@@ -2474,6 +2500,7 @@ function set_station_list(_param_rosen, _scrollKey, _callback) {
 	let mstNow = Date.now() >>> 16;
 	let nowQuery = Date.now() >>> 10;
 	let rosen_html = lang == "ja" ? `./rosen/rosen_${_param_rosen}.html` : `https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/trainlocation/rosen_${_param_rosen}_${lang}.html`;
+	if (is_odpt_location_rosen(_param_rosen)) rosen_html = `./rosen/rosen_${_param_rosen}.html`;
 	let maintenance_html = lang == "ja" ? "./mainte/rosen_maintenance.html" : "https://cors-proxy-404216792373.asia-northeast1.run.app/proxy?url=https://www3.jrhokkaido.co.jp/trainlocation/mainte/rosen_maintenance_" + lang + ".html";
 
 	$.when(
@@ -2528,6 +2555,7 @@ function set_station_list(_param_rosen, _scrollKey, _callback) {
 		} else {
 			load_location_now_data(_param_rosen, nowQuery)
 			.then(function(nowData) {
+			if (is_odpt_location_rosen(_param_rosen) && String(_param_rosen) !== get_param_rosen()) return;
 			autoRefreshRosen = _param_rosen;
 			cachedResshaTypeData = typeData[0];
 			cachedEkiData = ekiData[0];
@@ -2631,10 +2659,15 @@ function refresh_location_positions(_param_rosen) {
 	const now = Date.now() >>> 10;
 	load_location_now_data(_param_rosen, now)
 	.then(function(nowData) {
+		if (is_odpt_location_rosen(_param_rosen) && String(_param_rosen) !== get_param_rosen()) return;
 		redraw_location_positions(_param_rosen, nowData);
 		set_unko_info(_param_rosen);
 	})
 	.catch(function() {
+		if (is_odpt_location_rosen(_param_rosen) && String(_param_rosen) === get_param_rosen()) {
+			clear_location_positions(_param_rosen);
+			$(".toei-location-status, .keikyu-location-status").text("位置情報を更新できませんでした。再取得まで列車位置を非表示にしています。");
+		}
 		// 自動更新失敗時は次回更新を待つ
 	});
 }
@@ -2647,7 +2680,7 @@ function redraw_location_positions(_param_rosen, _nowData) {
 	create_ressha_icon(_param_rosen, _nowData, cachedResshaTypeData, cachedEkiData);
 	ressha_pos_sort();
 	if (is_jreast_location_rosen(_param_rosen) || is_dokotre_location_rosen(_param_rosen) || is_jr_shinkansen_location_rosen(_param_rosen) || is_jrwest_location_rosen(_param_rosen) || is_jrshikoku_location_rosen(_param_rosen) || is_jrcentral_location_rosen(_param_rosen)) setTimestamp(_nowData);
-	else update_location_timestamp();
+	else if (!is_odpt_location_rosen(_param_rosen)) update_location_timestamp();
 	update_location_data_stale_warning(_nowData);
 	restore_selected_train_marker(trackingScrollEnabled);
 	update_tracking_footer_controls();
@@ -3142,6 +3175,12 @@ function set_responsive() {
  * 列車アイコンを描画する。
  */
 function create_ressha_icon(_param_rosen, _nowData, _typeData, _ekiData) {
+	if (is_odpt_location_rosen(_param_rosen)) {
+		$("#timestamp").text("");
+		$("header").data("timestamp", "");
+		setTimestamp(_nowData);
+		update_odpt_location_status(_nowData);
+	}
 	_nowData.trains.forEach(nowRow => {
 		let windowWidth = window.innerWidth;
 		let pos = nowRow.jrShikoku && nowRow.jrShikoku.renderPosition
@@ -3643,6 +3682,8 @@ function set_jrcentral_train_icon(_iconArea, _nowRow) {
 }
 
 function get_train_type_simple_label(_nowRow, _type, _lang) {
+	if (_nowRow.keikyu) return _nowRow.keikyu.typeSimple;
+	if (_nowRow.toei) return _nowRow.toei.typeSimple;
 	if (_nowRow.jrKyushu && _nowRow.jrKyushu.typeSimple) {
 		return _nowRow.jrKyushu.typeSimple;
 	}

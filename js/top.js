@@ -4,9 +4,13 @@ let scrollY = 0;
 const JRWEST_ROUTE_IDS = (window.JrWestRouteCatalog && Array.isArray(window.JrWestRouteCatalog.routeIds))
 	? window.JrWestRouteCatalog.routeIds.map(String)
 	: ["61", "62", "63", "64", "65", "66", "67", "68", "69", "70", "71", "72"];
+const JRKYUSHU_ROUTE_IDS = (Array.isArray(window.JRKYUSHU_DOREDORE_ROUTES) ? window.JRKYUSHU_DOREDORE_ROUTES : [])
+	.map(function(route) { return String(route.rosen); });
 
 // 各エリアに属するデータキー
 const AREA_ROSEN_KEYS = {
+	"keikyu": ["146", "147", "148", "149", "150"],
+	"toei": ["140", "141", "142", "143", "144", "145"],
 	"spo": ["7", "8", "9", "10", "11", "12", "26", "30", "31", "32", "33", "34"],		// 札幌近郊
 	"doo": ["5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "22",
 			"23", "24", "25", "26", "27", "28", "29", "30", "31", "32", "33", "34"],	// 道央エリア
@@ -17,7 +21,7 @@ const AREA_ROSEN_KEYS = {
 	"jrwest": JRWEST_ROUTE_IDS,			// JR西日本
 	"jrshikoku": ["64", "73", "76", "77", "78", "79", "80", "81", "82"],		// JR四国
 	"jrcentral": ["75", "74", "83", "84", "85", "86", "87", "88", "89", "90", "91", "92", "93", "94", "95"],		// JR東海
-	"jrkyushu": (Array.isArray(window.JRKYUSHU_DOREDORE_ROUTES) ? window.JRKYUSHU_DOREDORE_ROUTES : []).map(function(route) { return String(route.rosen); })
+	"jrkyushu": JRKYUSHU_ROUTE_IDS
 };
 
 // 各路線に属するデータキー
@@ -535,6 +539,8 @@ function exp_tab_select(key) {
  *  路線からエリアを判断
  */
 function rosenToArea(rosen, selectAreaName) {
+	if (AREA_ROSEN_KEYS.toei.includes(String(rosen))) return "toei";
+	if (AREA_ROSEN_KEYS.keikyu.includes(String(rosen))) return "keikyu";
 
 	var area = "";
 	if (["01", "03", "51"].includes(rosen)) {					// 札幌近郊
@@ -565,6 +571,8 @@ function rosenToArea(rosen, selectAreaName) {
 		area = "jrshikoku";
 	} else if (["74", "75", "83", "84", "85", "86", "87", "88", "89", "90", "91", "92", "93", "94", "95"].includes(rosen)) {				// JR東海
 		area = "jrcentral";
+	} else if (JRKYUSHU_ROUTE_IDS.includes(rosen)) {				// JR九州
+		area = "jrkyushu";
 	}
 	return area;
 }
