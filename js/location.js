@@ -3964,6 +3964,9 @@ function create_ressha_detail(_objItem, _nowRow, _typeData, _ekiData) {
 			_objItem.dataset.cbango = _nowRow.cbango;
 			_objItem.dataset.display_cbango = get_train_number_display_label(_nowRow);
 			_objItem.dataset.source = _nowRow.source || "";
+			if (_nowRow.toei) {
+				_objItem.dataset.toei_request = JSON.stringify({ rosen: _nowRow.sourceRosen, number: _nowRow.cbango, date: _nowRow.toei.date, direction: _nowRow.toei.direction });
+			}
 			if (_nowRow.tx) {
 				_objItem.dataset.tx_fleet = _nowRow.tx.fleet;
 				_objItem.dataset.tx_position = _nowRow.tx.position;

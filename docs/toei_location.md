@@ -27,7 +27,11 @@
 - ODPTの遅延は秒単位なので分に変換する。列車番号と種別・行先・提供時刻を表示する。都電の `ODPTnnnn` は配信上の識別番号。
 - 都営以外の直通先駅名はアダプター内の辞書で補完する。未登録の行先は「行先取得不可」とする。
 - 配信時刻から5分超または `dct:valid` を過ぎた位置は除外。JSONの不正・HTTPエラーを「列車0件」の正常応答として扱わない。更新通信失敗時は旧位置を消して案内する。
-- 列車詳細は現在位置・種別・行先・遅延に対応。停車駅時刻表は本実装の対象外。
+- 列車詳細は現在位置・種別・行先・遅延に加え、ODPTの列車時刻表に対応（2026-09-09追加）。都営線内の到着・出発予定時刻を別々に表示する。遅延は時刻表に加算しない。
+- `js/toei_timetable_adapter.js` が列車選択時に公開APIの `odpt:TrainTimetable` を取得する。路線・列車番号・方向・営業日カレンダーの全てが一致する単一の時刻表のみ採用し、曖昧な照合はしない。成功応答を5分キャッシュ、通信失敗は再選択で再取得。別列車・別路線への移動後は遅れて届いた応答を表示しない。
+- 大江戸線は公式仕様に従い末尾の1/2を省く表記に対応する。都電の実位置番号が時刻表のODPTnnnn番号と対応しない場合は取得不可を案内する。日暮里・舎人ライナーは列車位置自体が未提供のため、列車詳細の入口はない。
+- 午前3時前は前営業日の時刻表に照合。2026～2027年の祝日は[内閣府公式CSV](https://www8.cao.go.jp/chosei/shukujitsu/syukujitsu.csv)で確認した固定一覧を使用する。将来年の祝日一覧は更新が必要。未確認の年末年始特別ダイヤ（12月29日～1月3日）は推測せず表示を止める。2026年1月1～3日は公式発表済みの休日ダイヤを適用。
+- 時刻表の出典は[東京都交通局 列車時刻表](https://ckan.odpt.org/dataset/r_train_timetable-toei)。位置情報と同じCC BY 4.0。トークン・Cloudflareの変更は不要。
 
 データ提供：東京都交通局・公共交通オープンデータ協議会。[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)。画面に出典と加工表示を掲載している。
 
@@ -36,6 +40,8 @@
 ```powershell
 node tools/test_toei_location_adapter.js
 node tools/test_toei_location_adapter.js --live
+node tools/test_toei_timetable.js
+node tools/test_toei_timetable.js --live
 node tools/test_location_background_refresh.js
 ```
 

@@ -85,7 +85,7 @@
 				shuEkiSimple: destination === "行先取得不可" ? "？" : Array.from(destination)[0],
 				shuEkiName: destination, shuEkiKey: "", ryosu: Number(row["odpt:carComposition"]) || 0,
 				status: "1", statusDetail: "", senku: route.rosen, source: "toei", sourceRosen: route.rosen,
-				toei: { id: identity, delayKnown: row["odpt:delay"] != null, typeSimple: TYPE_SHORT[typeLabel] || "？" } }];
+				toei: { id: identity, date: row["dc:date"], direction: row["odpt:railDirection"], delayKnown: row["odpt:delay"] != null, typeSimple: TYPE_SHORT[typeLabel] || "？" } }];
 		});
 		const result = { trains, time: { ja: "", en: "", tc: "", sc: "", kr: "" }, toei: { expired, unmapped, live: route.live } };
 		if (timestamps.length) {

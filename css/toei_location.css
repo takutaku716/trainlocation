@@ -6,4 +6,5 @@
 .toei-loop-note { font-size: 12px; margin: 8px 12px; line-height: 1.6; }
 .toei-credit a { text-decoration: underline; }
 .toei-location-status:empty { display: none; }
-#resshaDetail.toei-detail #teisyaTableArea { display: none; }
+#resshaDetail.toei-detail #teisyaTableArea table { margin: 12px auto; border-collapse: collapse; }
+.toei-timetable-note { margin: 12px; font-size: 12px; line-height: 1.6; }

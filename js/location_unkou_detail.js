@@ -9,12 +9,33 @@ const DETAILED_TRAIN_INFORMATION_DIALOG_TITLES = {
 	"kr": "열차 상세 정보"
 };
 
+let toeiDetailRequestSerial = 0;
 $(function ($) {
 	let lang = document.documentElement.dataset.lang;
 	// 列車のアイコンをクリックしたときの動き
 	$(document).on("click", ".ressha-icon .ressha", function() {
 		const clickedItem = this;
 		const clickedDataset = clickedItem.dataset;
+		const toeiSerial = ++toeiDetailRequestSerial;
+		if (clickedDataset.source === "toei" && clickedDataset.toei_request && clickedDataset.toei_loaded !== "1") {
+			loading_animation_display();
+			let request;
+			try { request = JSON.parse(clickedDataset.toei_request); }
+			catch (_) { loading_animation_hidden(); return; }
+			window.ToeiTimetableAdapter.load(request)
+				.catch(function() { return { rows: [], message: "時刻表を取得できませんでした。列車を選び直して再取得してください。", failed: true }; })
+				.then(function(detail) {
+					if (toeiSerial !== toeiDetailRequestSerial) return;
+					if (get_param_rosen() !== String(request.rosen)) { loading_animation_hidden(); return; }
+					const target = clickedItem.isConnected ? clickedItem : Array.from(document.querySelectorAll(".ressha[data-source='toei']")).find(item => item.dataset.cbango === request.number && item.dataset.source_rosen === String(request.rosen));
+					if (!target) { loading_animation_hidden(); return; }
+					target.dataset.toei_timetable = JSON.stringify(detail);
+					target.dataset.toei_loaded = "1";
+					$(target).trigger("click");
+					if (detail.failed) target.dataset.toei_loaded = "0";
+				});
+			return;
+		}
 		if (clickedDataset.source === "tx" && clickedDataset.tx_loaded !== "1") {
 			if (clickedDataset.tx_loading === "1") return;
 			clickedDataset.tx_loading = "1";
@@ -301,6 +322,7 @@ $(function ($) {
 
 	// 運行詳細ボックス内の｢閉じる｣ボタンをクリックしたときの動き
 	$(document).on("click", "#resshaDetail, #resshaDetail .close", function() {
+		toeiDetailRequestSerial++;
 		// 運行情報ボックスを閉じる。
 		$("#resshaDetail").fadeOut("fast");
 		$('#resshaDetailMain').fadeOut("fast");
@@ -346,10 +368,30 @@ function get_detail_train_name_text(_dataset) {
 /*
  * JR東日本形式の時刻表データを表示する
  */
+function create_toei_daiya(dataset) {
+	$("#teisyaTableArea div").empty();
+	$("#teisyaTableArea .adjusted-notice").hide();
+	let detail;
+	try { detail = JSON.parse(dataset.toei_timetable || "{}"); } catch (_) { detail = {}; }
+	const rows = Array.isArray(detail.rows) ? detail.rows : [];
+	const area = $("#teisyaTableArea div").first();
+	if (!rows.length) {
+		$("<p>").addClass("toei-timetable-note").text(detail.message || "この列車に対応する都営線内の時刻表を特定できません。").appendTo(area);
+		return;
+	}
+	$("<p>").addClass("toei-timetable-note").text("都営線内の予定時刻（" + (detail.day || "") + "）。遅延・運転変更は反映していません。データ提供：東京都交通局・公共交通オープンデータ協議会（CC BY 4.0）。").appendTo(area);
+	const table = $("<table>").attr({ id: "teisyaTable", border: "1", width: "95%" }).appendTo(area);
+	const header = $("<tr>").appendTo(table);
+	["停車駅", "到着", "出発"].forEach(label => $("<th>").text(label).appendTo(header));
+	rows.forEach(row => {
+		const tr = $("<tr>").appendTo(table);
+		[row.stationName, row.arrival || "—", row.departure || "—"].forEach(value => $("<td>").text(value).appendTo(tr));
+	});
+}
+
 function create_jreast_daiya(_dataset) {
 	if (_dataset.source === "toei") {
-		$("#teisyaTableArea div").empty();
-		$("#teisyaTableArea .adjusted-notice").hide();
+		create_toei_daiya(_dataset);
 		return;
 	}
 	$("#teisyaTableArea div").empty();
