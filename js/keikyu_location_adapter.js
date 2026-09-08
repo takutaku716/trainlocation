@@ -1,115 +1,124 @@
 (function(root, factory) {
-	if (typeof module === "object" && module.exports) module.exports = factory(require("./keikyu_routes.js"));
-	else root.KeikyuLocationAdapter = factory(root.KeikyuRoutes);
-}(typeof self !== "undefined" ? self : this, function(catalog) {
-	"use strict";
-	const API = "https://trainlocation-odpt-proxy.densha716.workers.dev/api/keikyu/location";
-	const TYPE_SHORT = { "普通": "普", "急行": "急", "特急": "特", "快速": "快", "快特": "快特", "通勤特急": "通特", "アクセス特急": "ア特", "エアポート快特": "エ快", "モーニング・ウィング": "MW", "イブニング・ウィング": "EW" };
-	const THROUGH_DESTINATIONS = {
-		Aoto: "青砥", KeiseiTakasago: "京成高砂", KeiseiNarita: "京成成田",
-		NaritaAirportTerminal1: "成田空港", NaritaAirportTerminal2and3: "空港第2ビル",
-		ImbaNihonIdai: "印旛日本医大", ImbaNihonidai: "印旛日本医大", InzaiMakinohara: "印西牧の原",
-		HanedaAirportTerminal1and2: "羽田空港第1・第2ターミナル", KeikyuKurihama: "京急久里浜",
-		Misakiguchi: "三崎口", Miurakaigan: "三浦海岸", ZushiHayama: "逗子・葉山",
-		KanazawaBunko: "金沢文庫", KanazawaHakkei: "金沢八景", KanagawaShimmachi: "神奈川新町",
- 		KeikyuKawasaki: "京急川崎",
-		Shinagawa: "品川", Sengakuji: "泉岳寺", Sasazuka: "笹塚", Hashimoto: "橋本",
-		KeioTamaCenter: "京王多摩センター", Wakabadai: "若葉台", Chofu: "調布",
-		Sakurajosui: "桜上水", Tsutsujigaoka: "つつじヶ丘", KeioHachioji: "京王八王子",
-		Takaosanguchi: "高尾山口", Takahatafudo: "高幡不動", Hiyoshi: "日吉",
-		MusashiKosugi: "武蔵小杉", MusashiKoyama: "武蔵小山", Okusawa: "奥沢",
-		ShinYokohama: "新横浜", Nishiya: "西谷", Ebina: "海老名", Shonandai: "湘南台"
-	};
-	const stationNames = new Map(catalog.routes.flatMap(r => r.stations.map(s => [s.id, s.name])));
-	function routeFor(rosen) { return catalog.routes.find(r => r.rosen === String(rosen)); }
-	function stationName(id) {
-		if (!id) return "";
-		return stationNames.get(id) || THROUGH_DESTINATIONS[String(id).split(".").pop()] || "行先取得不可";
-	}
-	function stationPosition(route, station, direction) {
-		// 駅位置はカタログの順序に対応する。
-		const canonical = route.stations.filter(s => s.id === station.id).slice(-1)[0];
-		return "KEIKYU" + route.rosen + "P" + canonical.index + direction;
-	}
-	function positionFor(row, route) {
-		const directionId = row["direction"];
-		const direction = directionId === route.ascending ? "D" : directionId === route.descending ? "U" : "";
-		if (!direction) return null;
-		const fromId = row["from"];
-		const toId = row["to"];
-		const from = route.stations.find(s => s.id === fromId);
-		if (!from) return null;
-		if (!toId || toId === fromId) return { key: stationPosition(route, from, direction), name: from.name };
-		const step = direction === "D" ? 1 : -1;
-		for (let i = 0; i < route.stations.length; i++) {
-			const next = route.stations[i + step];
-			if (route.stations[i].id === fromId && next && next.id === toId) {
-				const lower = Math.min(route.stations[i].index, next.index);
-				return { key: "KEIKYU" + route.rosen + "P" + lower + "_" + (lower + 1) + direction,
-					name: from.name + "→" + next.name + " 間" };
-			}
-		}
-		// 不明な駅や非隣接駅を、推測で既知の駅間に置かない。
-		return null;
-	}
-	function normalize(raw, options) {
-		const settings = options || {};
-		const route = routeFor(settings.rosen);
-		if (!route) throw new Error("Unknown Keikyu railway");
-		const payload = typeof raw === "string" ? JSON.parse(raw) : raw;
-		const rows = payload && payload.trains;
-		if (!Array.isArray(rows)) throw new Error("Invalid ODPT Train response");
-		const now = settings.now == null ? Date.now() : Number(settings.now);
-		const selected = rows.filter(row => row && row["railway"] === route.railway);
-		const timestamps = selected.map(row => Date.parse(row["date"])).filter(Number.isFinite);
-		let expired = 0, unmapped = 0;
-		const seen = new Set();
-		const trains = selected.flatMap(row => {
-			const timestamp = Date.parse(row["date"]);
-			const valid = Date.parse(row["valid"]);
-			if (!Number.isFinite(timestamp) || now - timestamp > 300000 || timestamp > now + 60000 || (Number.isFinite(valid) && valid < now)) {
-				expired++;
-				return [];
-			}
-			const position = positionFor(row, route);
-			if (!position) { unmapped++; return []; }
-			const cbango = String(row["number"] || "");
-			const identity = route.railway + "." + cbango;
-			if (!/^[a-z0-9-]{1,24}$/i.test(cbango) || seen.has(identity)) return [];
-			seen.add(identity);
-			const destinations = row["destination"];
-			const destination = (Array.isArray(destinations) ? destinations : []).map(stationName).join("・") || "行先取得不可";
-			const typeLabel = catalog.types[row["type"]] || "種別不明";
-			const delay = Number(row["delay"]);
-			return [{ cbango, type: "3", typeLabel, name: "", pos: position.key, posName: position.name,
-				chien: Number.isFinite(delay) ? Math.max(0, Math.floor(delay / 60)) : 0,
-				shuEkiSimple: destination === "行先取得不可" ? "？" : Array.from(destination)[0],
-				shuEkiName: destination, shuEkiKey: "", ryosu: Number(row["cars"]) || 0,
-				status: "1", statusDetail: "", senku: route.rosen, source: "keikyu", sourceRosen: route.rosen,
-				keikyu: { id: identity, delayKnown: row["delay"] != null, typeSimple: TYPE_SHORT[typeLabel] || "？" } }];
-		});
-		const result = { trains, time: { ja: "", en: "", tc: "", sc: "", kr: "" }, keikyu: { expired, unmapped, live: route.live } };
-		if (timestamps.length) {
-			const timestamp = Math.min(...timestamps);
-			const date = new Date(timestamp + 9 * 3600000).toISOString();
-			const text = date.slice(0, 10).replace(/-/g, "/") + " " + date.slice(11, 19) + " 現在";
-			result.time = { ja: text, en: text, tc: text, sc: text, kr: text };
-			result.sourceTimes = [{ rosen: route.rosen, text, timestamp }];
-		}
-		return result;
-	}
-	async function load(rosen) {
-		const route = routeFor(rosen);
-		if (!route) throw new Error("Unknown Keikyu railway");
-		
-		const controller = new AbortController();
-		const timeout = setTimeout(() => controller.abort(), 15000);
-		try {
-			const url = API;
-			const response = await fetch(url, { signal: controller.signal, cache: "no-store" });
-			if (!response.ok) throw new Error("ODPT HTTP " + response.status);
-			return normalize(await response.json(), { rosen });
-		} finally { clearTimeout(timeout); }
-	}
-	return { routeFor, stationName, stationPosition, positionFor, normalize, load };
+  if (typeof module === "object" && module.exports) module.exports = factory(require("./keikyu_routes.js"), require("./keikyu_position_map.js"));
+  else root.KeikyuLocationAdapter = factory(root.KeikyuRoutes, root.KeikyuPositionMap);
+}(typeof self !== "undefined" ? self : this, function(catalog, positions) {
+  "use strict";
+  const API = "/api/keikyu/";
+  // Use the public web client's lookup, including its line_code assignments.
+  const PREFIXES = ["9999", "8201", "8401", "8301", "8601", "8501"];
+  const TYPES = { 1: "快特", 2: "特急", 3: "急行", 4: "普通", 6: "エアポート快特", 12: "ウィング" };
+  const SHORT = { 1: "快特", 2: "特", 3: "急", 4: "普", 6: "エ快", 12: "W" };
+  const detailCache = new Map();
+  const detailQueue = [];
+  let activeDetails = 0;
+  function destinationShort(name) {
+    const text = String(name || "").normalize("NFKC");
+    const names = { "羽田空港第1・第2ターミナル": "羽", "羽田空港第3ターミナル": "羽",
+      "京急久里浜": "久", "京急川崎": "川", "金沢文庫": "文", "金沢八景": "八",
+      "神奈川新町": "新", "三崎口": "三", "三浦海岸": "海", "逗子・葉山": "逗",
+      "京成高砂": "高", "京成成田": "成", "成田空港": "空", "印旛日本医大": "医", "印西牧の原": "牧" };
+    return names[text] || Array.from(text)[0] || "？";
+  }
+  function getCachedDetail(key) {
+    const entry = detailCache.get(key);
+    return entry && entry.expires > Date.now() ? entry.value : null;
+  }
+  function routeFor(rosen) { return catalog.routes.find(r => r.rosen === String(rosen)); }
+  function positionFor(row, route) {
+    const record = positions[row.position];
+    const projection = record && record.projections[route.rosen];
+    if (!projection) return null;
+    const direction = projection.direction || (String(row.direction) === "1" ? "D" : String(row.direction) === "2" ? "U" : record.side === 0 ? "U" : "D");
+    return { key: projection.base + direction, name: projection.name, record };
+  }
+  function normalize(raw, options) {
+    const settings = options || {};
+    const route = routeFor(settings.rosen);
+    if (!route) throw new Error("Unknown Keikyu railway");
+    const rows = typeof raw === "string" ? JSON.parse(raw) : raw;
+    if (!Array.isArray(rows)) throw new Error("Invalid Keikyu train response");
+    const now = settings.now == null ? Date.now() : Number(settings.now);
+    let expired = 0, unmapped = 0;
+    const timestamps = [], trains = [];
+    const seen = new Set();
+    for (const row of rows) {
+      if (!row || typeof row !== "object") continue;
+      if (!positions[row.position]) { unmapped++; continue; }
+      const position = positionFor(row, route);
+      if (!position) continue;
+      const timestamp = Date.parse(String(row.receive_datetime || "").replace(" ", "T") + "+09:00");
+      if (!Number.isFinite(timestamp) || now - timestamp > 300000 || timestamp > now + 60000) { expired++; continue; }
+      timestamps.push(timestamp);
+      const number = String(row.train_no || "");
+      if (!/^[a-z0-9-]{1,24}$/i.test(number)) continue;
+      const id = [row.position, number, row.direction, row.platform].join(":");
+      if (seen.has(id)) continue;
+      seen.add(id);
+      const typeLabel = TYPES[row.train_kind] || "種別不明";
+      const detailKey = ["1", "2"].includes(String(row.direction)) && number !== "0"
+        ? PREFIXES[position.record.line_code] + "-" + (Number(row.direction) - 1) + "-" + number : "";
+      const detail = getCachedDetail(detailKey);
+      trains.push({ cbango: number, displayTrainNumber: number === "0" ? "" : number,
+        type: "3", typeLabel, name: typeLabel === "普通" ? "普通列車" : typeLabel,
+        pos: position.key, posName: position.name, chien: Math.max(0, Number(row.late_minutes) || 0),
+        shuEkiSimple: detail && detail.destination ? destinationShort(detail.destination) : "？",
+        shuEkiName: detail && detail.destination || "行先取得不可", shuEkiKey: "", ryosu: detail ? parseInt(detail.cars.normalize("NFKC"), 10) || "" : "",
+        status: "1", statusDetail: "", senku: route.rosen, source: "keikyu", sourceRosen: route.rosen,
+        keikyu: { id, detailKey, platform: String(row.platform || ""), delayKnown: row.late_minutes != null,
+          typeSimple: SHORT[row.train_kind] || "？", isAlert: Number(row.is_alert) === 1 }
+      });
+    }
+    const result = { trains, time: { ja: "", en: "", tc: "", sc: "", kr: "" }, keikyu: { expired, unmapped, live: true } };
+    if (timestamps.length) {
+      const timestamp = Math.min(...timestamps);
+      const date = new Date(timestamp + 9 * 3600000).toISOString();
+      const text = date.slice(0, 10).replace(/-/g, "/") + " " + date.slice(11, 19) + " 現在";
+      result.time = { ja: text, en: text, tc: text, sc: text, kr: text };
+      result.sourceTimes = [{ rosen: route.rosen, text, timestamp }];
+    }
+    return result;
+  }
+  async function request(path) {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 15000);
+    try {
+      const response = await fetch(API + path, { signal: controller.signal, cache: "no-store" });
+      if (!response.ok) throw new Error("Keikyu HTTP " + response.status);
+      return await response.json();
+    } finally { clearTimeout(timeout); }
+  }
+  async function load(rosen) { return normalize(await request("location"), { rosen }); }
+  function normalizeDetail(raw) {
+    if (!raw || !raw.info || !Array.isArray(raw.stations)) throw new Error("Invalid Keikyu timetable response");
+    const stops = raw.stations.filter(s => s && Number(s.isSkip) !== 1);
+    const car = stops.find(s => s.numberOfCars);
+    return { destination: String(raw.info.to || ""), cars: car ? String(car.numberOfCars) : "",
+      timetable: stops.map(s => ({ stationName: String(s.stationName || ""),
+        planArrival: String(s.arrival || ""), planDeparture: String(s.departure || "") })) };
+  }
+  async function loadDetail(key) {
+    if (!/^(8201|8401|8301|8601|8501)-[01]-[a-z0-9-]{1,24}$/i.test(key)) return null;
+    const cached = detailCache.get(key);
+    if (cached && cached.expires > Date.now()) return cached.promise;
+    for (const [oldKey, entry] of detailCache) {
+      if (entry.expires <= Date.now()) detailCache.delete(oldKey);
+    }
+    const entry = { expires: Infinity, value: null, promise: null };
+    entry.promise = new Promise(resolve => detailQueue.push({ key, entry, resolve }));
+    detailCache.set(key, entry);
+    drainDetails();
+    return entry.promise;
+  }
+  function drainDetails() {
+    while (activeDetails < 3 && detailQueue.length) {
+      const { key, entry, resolve } = detailQueue.shift();
+      activeDetails++;
+      request("timetable/" + encodeURIComponent(key)).then(normalizeDetail).catch(() => null).then(detail => {
+        entry.value = detail;
+        entry.expires = Date.now() + (detail ? 60000 : 30000);
+        resolve(detail);
+      }).finally(() => { activeDetails--; drainDetails(); });
+    }
+  }
+  return { routeFor, positionFor, normalize, load, normalizeDetail, loadDetail, getCachedDetail, destinationShort };
 }));

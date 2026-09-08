@@ -17,6 +17,27 @@ $(function ($) {
 		const clickedDataset = clickedItem.dataset;
 		$("#resshaDetail").toggleClass("toei-detail", clickedDataset.source === "toei");
 		$("#resshaDetail").toggleClass("keikyu-detail", clickedDataset.source === "keikyu");
+		$("#keikyuAlertNotice").prop("hidden", !(clickedDataset.source === "keikyu" && clickedDataset.keikyu_alert === "1"));
+		if (clickedDataset.source === "keikyu" && clickedDataset.keikyu_detail_key && clickedDataset.keikyu_loaded !== "1") {
+			if (clickedDataset.keikyu_loading === "1") return;
+			clickedDataset.keikyu_loading = "1";
+			loading_animation_display();
+			window.KeikyuLocationAdapter.loadDetail(clickedDataset.keikyu_detail_key)
+				.catch(function() { return null; })
+				.then(function(detail) {
+					const target = clickedItem.isConnected ? clickedItem : Array.from(document.querySelectorAll(".ressha-icon .ressha")).find(function(item) {
+						return item.dataset.source === "keikyu" && item.dataset.keikyu_id === clickedDataset.keikyu_id;
+					});
+					clickedDataset.keikyu_loading = "0";
+					if (!target) { loading_animation_hidden(); return; }
+					if (detail) {
+						apply_keikyu_detail_to_icon(target, detail);
+					}
+					target.dataset.keikyu_loaded = "1";
+					$(target).trigger("click");
+				});
+			return;
+		}
 		if (clickedDataset.jrkyushu_train_navi_request && clickedDataset.jrkyushu_timetable_loaded !== "1") {
 			if (clickedDataset.jrkyushu_timetable_loading === "1") return;
 			clickedDataset.jrkyushu_timetable_loading = "1";
@@ -303,7 +324,7 @@ function get_detail_train_name_text(_dataset) {
  * JR東日本形式の時刻表データを表示する
  */
 function create_jreast_daiya(_dataset) {
-	if (_dataset.source === "toei" || _dataset.source === "keikyu") {
+	if (_dataset.source === "toei") {
 		$("#teisyaTableArea div").empty();
 		$("#teisyaTableArea .adjusted-notice").hide();
 		return;
@@ -312,6 +333,7 @@ function create_jreast_daiya(_dataset) {
 	let timetable = [];
 	try {
 		const timetableText =
+			_dataset.source === "keikyu" ? _dataset.keikyu_timetable :
 			_dataset.source === "dokotre" ? _dataset.dokotre_timetable :
 			_dataset.source === "jrshinkansen" ? _dataset.jrshinkansen_timetable :
 			_dataset.source === "jrwest" ? _dataset.jrwest_timetable :

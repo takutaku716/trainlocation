@@ -6,4 +6,3 @@
 .keikyu-credit a { text-decoration: underline; }
 .keikyu-location-status:empty { display: none; }
 .ressha[data-source="keikyu"] .ressha-sbt { font-size: 10px; }
-#resshaDetail.keikyu-detail #teisyaTableArea { display: none; }

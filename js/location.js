@@ -3281,6 +3281,52 @@ function create_ressha_icon(_param_rosen, _nowData, _typeData, _ekiData) {
 
 	// 函館駅周辺の高さを設定
 	if (["09", "52"].includes(_param_rosen)) set_hakodate_height();
+	observe_keikyu_destinations();
+}
+
+let keikyuDestinationObserver;
+function apply_keikyu_detail_to_icon(item, detail) {
+	if (!detail) return;
+	item.dataset.keikyu_timetable = JSON.stringify(detail.timetable);
+	if (detail.destination) {
+		const label = item.querySelector(".yukisaki-label");
+		if (label) {
+			label.textContent = window.KeikyuLocationAdapter.destinationShort(detail.destination);
+			label.title = detail.destination + " 行き";
+		}
+		item.dataset.shu_eki = escape_detail_html(detail.destination) + " 行き";
+	}
+	item.dataset.ryosu = escape_detail_html(detail.cars);
+	item.dataset.keikyu_loaded = "1";
+}
+
+function observe_keikyu_destinations() {
+	if (keikyuDestinationObserver) keikyuDestinationObserver.disconnect();
+	if (!window.KeikyuLocationAdapter) return;
+	const items = document.querySelectorAll(".ressha[data-source='keikyu'][data-keikyu_detail_key]");
+	const fetchDetail = item => {
+		if (!item.isConnected || !item.dataset.keikyu_detail_key) return;
+		window.KeikyuLocationAdapter.loadDetail(item.dataset.keikyu_detail_key).then(detail => {
+			if (item.isConnected) apply_keikyu_detail_to_icon(item, detail);
+		});
+	};
+	if (typeof IntersectionObserver !== "undefined") {
+		keikyuDestinationObserver = new IntersectionObserver(entries => {
+			entries.forEach(entry => {
+				if (!entry.isIntersecting) return;
+				keikyuDestinationObserver.unobserve(entry.target);
+				fetchDetail(entry.target);
+			});
+		}, { rootMargin: "150px" });
+	}
+	items.forEach(item => {
+		const key = item.dataset.keikyu_detail_key;
+		if (!key) return;
+		const cached = window.KeikyuLocationAdapter.getCachedDetail(key);
+		if (cached) apply_keikyu_detail_to_icon(item, cached);
+		else if (keikyuDestinationObserver) keikyuDestinationObserver.observe(item);
+		else fetchDetail(item);
+	});
 }
 
 /*
@@ -3905,6 +3951,11 @@ function create_ressha_detail(_objItem, _nowRow, _typeData, _ekiData) {
 			_objItem.dataset.cbango = _nowRow.cbango;
 			_objItem.dataset.display_cbango = get_train_number_display_label(_nowRow);
 			_objItem.dataset.source = _nowRow.source || "";
+			if (_nowRow.keikyu) {
+				_objItem.dataset.keikyu_detail_key = _nowRow.keikyu.detailKey || "";
+				_objItem.dataset.keikyu_id = _nowRow.keikyu.id;
+				_objItem.dataset.keikyu_alert = _nowRow.keikyu.isAlert ? "1" : "0";
+			}
 			_objItem.dataset.source_rosen = _nowRow.sourceRosen || "";
 			_objItem.dataset.aisho = _nowRow.jrEast && _nowRow.jrEast.nickname ? _nowRow.jrEast.nickname : (_nowRow.name || "");
 			_objItem.dataset.jreast_series = _nowRow.jrEast && _nowRow.jrEast.series ? _nowRow.jrEast.series : "";

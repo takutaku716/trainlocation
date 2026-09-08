@@ -141,6 +141,15 @@ const server = http.createServer(async (request, response) => {
     return;
   }
 
+  if (request.method === 'GET' && requestPath.startsWith('/api/keikyu/')) {
+    const source = fs.readFileSync(path.join(root, 'functions/api/keikyu/[[path]].js'), 'utf8');
+    const handler = await import('data:text/javascript;base64,' + Buffer.from(source).toString('base64'));
+    const result = await handler.onRequestGet({ request: new Request('http://localhost' + requestPath) });
+    response.writeHead(result.status, Object.fromEntries(result.headers));
+    response.end(Buffer.from(await result.arrayBuffer()));
+    return;
+  }
+
   if (requestPath === '/') requestPath = '/index.html';
   const filePath = path.resolve(root, `.${requestPath}`);
   if (!filePath.startsWith(`${root}${path.sep}`) || !fs.existsSync(filePath)) {
