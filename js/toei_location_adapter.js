@@ -6,7 +6,7 @@
 	const API = "https://api-public.odpt.org/api/v4/";
 	const TYPE_SHORT = { "普通": "普", "急行": "急", "特急": "特", "快速": "快", "快特": "快特", "通勤特急": "通特", "アクセス特急": "ア特", "エアポート快特": "エ快" };
 	const THROUGH_DESTINATIONS = {
-		Aoto: "青砥", KeiseiTakasago: "京成高砂", KeiseiNarita: "京成成田",
+		Aoto: "青砥", KeiseiTakasago: "京成高砂", KeiseiNarita: "京成成田", KeiseiSakura: "京成佐倉",
 		NaritaAirportTerminal1: "成田空港", NaritaAirportTerminal2and3: "空港第2ビル",
 		ImbaNihonIdai: "印旛日本医大", ImbaNihonidai: "印旛日本医大", InzaiMakinohara: "印西牧の原",
 		HanedaAirportTerminal1and2: "羽田空港第1・第2ターミナル", KeikyuKurihama: "京急久里浜",

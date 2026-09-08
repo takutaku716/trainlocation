@@ -2,6 +2,7 @@
  * フッターの運行情報に表示する情報を設定する。
  */
 function set_unko_info(_param_rosen) {
+	if (set_tx_unko_info(_param_rosen)) return;
 	let now = Date.now() >>> 10;
 	let lang = document.documentElement.dataset.lang;
 	if (set_merged_unko_info(_param_rosen, now, lang)) return;
@@ -300,8 +301,8 @@ function set_unko_info(_param_rosen) {
 
 const JRCENTRAL_UNKO_INFO_URL = "https://traininfo.jr-central.co.jp/zairaisen/data/trainInfo/json/unkou.json";
 const JRCENTRAL_UNKO_LINE_MAP = {
-	"74": ["東海道線", "ひだ", "しらさぎ"],
-	"75": ["東海道線", "ふじかわ"],
+	"74": ["東海道線(豊橋～米原)", "ひだ", "しらさぎ"],
+	"75": ["東海道線(熱海～豊橋)", "ふじかわ"],
 	"83": ["中央線", "しなの"],
 	"84": ["関西線", "南紀", "みえ"],
 	"85": ["紀勢線", "南紀", "みえ"],
@@ -316,6 +317,24 @@ const JRCENTRAL_UNKO_LINE_MAP = {
 	"94": ["美濃赤坂線"],
 	"95": ["伊勢鉄道", "南紀", "みえ"]
 };
+
+function set_tx_unko_info(rosen) {
+	if (String(rosen) !== "151") return false;
+	const notice = window.TxLocationAdapter && window.TxLocationAdapter.getOperationNotice();
+	$("#unkouInfo").toggle(!!notice);
+	if (!notice) return true;
+	const name = "つくばエクスプレス";
+	$("#titleAreaName, #senkuListAreaName, #gaikyoAreaName").text(name);
+	$("#senkuList, #commonSenkuOperation").show();
+	create_gaikyo([{
+		time: escape_dokotre_info_html(notice.updated_at_label || ""),
+		title: escape_dokotre_info_html(notice.status || notice.category_label || ""),
+		honbun: escape_dokotre_info_html(notice.message || "").replace(/\r?\n/g, "<br>"),
+		eikyo: { spo: 0, doo: 0, donan: 0, dohoku: 0, doto: 0 }
+	}]);
+	$("#commonSenkuOperation").html("<ul><li><div class='common-button'><span class='name'>" + name + "</span><img class='unkou-icon' alt='' src='" + get_dokotre_info_icon("1") + "'/></div></li></ul>");
+	return true;
+}
 
 function set_jrcentral_unko_info(_param_rosen, _now, _lang) {
 	const lineNames = JRCENTRAL_UNKO_LINE_MAP[String(_param_rosen || "")];
@@ -333,7 +352,7 @@ function set_jrcentral_unko_info(_param_rosen, _now, _lang) {
 			}
 
 			const areaName = "JR東海";
-			const lineName = lineNames[0];
+			const lineName = lineNames[0].replace(/[（(].*$/, "");
 			$("#unkouInfo").show();
 			$("#titleAreaName").text(areaName);
 			$("#senkuList").show();

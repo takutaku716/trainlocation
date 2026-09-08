@@ -1,0 +1,6 @@
+[
+  {"node_id":"00003494","name":"秋葉原","departure":"23:30"},
+  {"node_id":"00009444","name":"浅草（つくばエクスプレス）","arrival":"23:35","departure":"23:36"},
+  {"node_id":"00003450","name":"守谷","arrival":"00:05","departure":"00:06"},
+  {"node_id":"00009438","name":"つくば","arrival":"00:23"}
+]

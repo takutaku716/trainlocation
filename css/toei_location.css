@@ -6,5 +6,4 @@
 .toei-loop-note { font-size: 12px; margin: 8px 12px; line-height: 1.6; }
 .toei-credit a { text-decoration: underline; }
 .toei-location-status:empty { display: none; }
-.ressha[data-source="toei"] .ressha-sbt { font-size: 10px; }
 #resshaDetail.toei-detail #teisyaTableArea { display: none; }

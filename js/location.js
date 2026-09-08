@@ -1418,13 +1418,19 @@ function is_location_auto_refresh_allowed(_rosen) {
 
 function is_odpt_location_rosen(_rosen) {
 	// Shared ODPT display lifecycle (station selection, freshness, refresh failures).
-	return !!((window.ToeiLocationAdapter && window.ToeiLocationAdapter.routeFor(_rosen)) ||
+	return !!((window.TxLocationAdapter && window.TxLocationAdapter.routeFor(_rosen)) ||
+		(window.ToeiLocationAdapter && window.ToeiLocationAdapter.routeFor(_rosen)) ||
 		(window.KeikyuLocationAdapter && window.KeikyuLocationAdapter.routeFor(_rosen)));
 }
 
 function update_odpt_location_status(nowData) {
+	if (nowData && nowData.tx) {
+		$("#message").html(nowData.tx.error ? `<h2 class='msg-bg'>${get_error_message()}</h2>` : "").toggle(!!nowData.tx.error);
+		set_tx_unko_info(get_param_rosen());
+		return;
+	}
 	if (nowData && nowData.keikyu) {
-		let message = nowData.keikyu.expired ? "有効期限を過ぎた列車位置を非表示にしています。" : !nowData.trains.length ? "現在、表示できる列車位置情報はありません。" : "";
+		let message = nowData.keikyu.expired ? "有効期限を過ぎた列車位置を非表示にしています。" : "";
 		if (nowData.keikyu.unmapped) message += " 駅間を特定できない列車は表示していません。";
 		$(".keikyu-location-status").text(message);
 		return;
@@ -1433,7 +1439,6 @@ function update_odpt_location_status(nowData) {
 	let text = "";
 	if (!nowData.toei.live) text = "日暮里・舎人ライナーのリアルタイム位置情報はODPTで提供されていません。列車位置は表示できません。";
 	else if (nowData.toei.expired) text = "有効期限を過ぎた列車位置を非表示にしています。";
-	else if (!nowData.trains.length) text = "現在、表示できる列車位置情報はありません。";
 	if (nowData.toei.unmapped) text += " 駅間を特定できない列車は表示していません。";
 	$(".toei-location-status").text(text);
 }
@@ -1714,6 +1719,7 @@ function merge_location_now_data(_nowDataList) {
 }
 
 function load_location_now_data(_param_rosen, _now) {
+	if (window.TxLocationAdapter && window.TxLocationAdapter.routeFor(_param_rosen)) return window.TxLocationAdapter.load(_param_rosen);
 	if (window.KeikyuLocationAdapter && window.KeikyuLocationAdapter.routeFor(_param_rosen)) return window.KeikyuLocationAdapter.load(_param_rosen);
 	if (is_odpt_location_rosen(_param_rosen)) return window.ToeiLocationAdapter.load(_param_rosen);
 	if (String(_param_rosen || "") === "64") {
@@ -2554,6 +2560,10 @@ function set_station_list(_param_rosen, _scrollKey, _callback) {
 			set_post_station_list(_param_rosen, _scrollKey);
 		} else {
 			load_location_now_data(_param_rosen, nowQuery)
+			.catch(function(error) {
+				if (String(_param_rosen) !== "151") throw error;
+				return { trains: [], time: {}, tx: { error: true } };
+			})
 			.then(function(nowData) {
 			if (is_odpt_location_rosen(_param_rosen) && String(_param_rosen) !== get_param_rosen()) return;
 			autoRefreshRosen = _param_rosen;
@@ -2667,6 +2677,8 @@ function refresh_location_positions(_param_rosen) {
 		if (is_odpt_location_rosen(_param_rosen) && String(_param_rosen) === get_param_rosen()) {
 			clear_location_positions(_param_rosen);
 			$(".toei-location-status, .keikyu-location-status").text("位置情報を更新できませんでした。再取得まで列車位置を非表示にしています。");
+			if (String(_param_rosen) === "151") $("#message").html(`<h2 class='msg-bg'>${get_error_message()}</h2>`).show();
+			if (String(_param_rosen) === "151") set_tx_unko_info(_param_rosen);
 		}
 		// 自動更新失敗時は次回更新を待つ
 	});
@@ -3728,6 +3740,7 @@ function set_jrcentral_train_icon(_iconArea, _nowRow) {
 }
 
 function get_train_type_simple_label(_nowRow, _type, _lang) {
+	if (_nowRow.tx) return _nowRow.tx.typeSimple;
 	if (_nowRow.keikyu) return _nowRow.keikyu.typeSimple;
 	if (_nowRow.toei) return _nowRow.toei.typeSimple;
 	if (_nowRow.jrKyushu && _nowRow.jrKyushu.typeSimple) {
@@ -3951,6 +3964,10 @@ function create_ressha_detail(_objItem, _nowRow, _typeData, _ekiData) {
 			_objItem.dataset.cbango = _nowRow.cbango;
 			_objItem.dataset.display_cbango = get_train_number_display_label(_nowRow);
 			_objItem.dataset.source = _nowRow.source || "";
+			if (_nowRow.tx) {
+				_objItem.dataset.tx_fleet = _nowRow.tx.fleet;
+				_objItem.dataset.tx_position = _nowRow.tx.position;
+			}
 			if (_nowRow.keikyu) {
 				_objItem.dataset.keikyu_detail_key = _nowRow.keikyu.detailKey || "";
 				_objItem.dataset.keikyu_id = _nowRow.keikyu.id;
@@ -3976,7 +3993,9 @@ function create_ressha_detail(_objItem, _nowRow, _typeData, _ekiData) {
 
 		// 列車種別を表す色を設定。
 		{
-			if (type && type.labelColor) {
+			if (_nowRow.tx && _nowRow.tx.labelColor) {
+				_objItem.dataset.ressha_type = _nowRow.tx.labelColor;
+			} else if (type && type.labelColor) {
 				_objItem.dataset.ressha_type = type.labelColor;
 			} else {
 				_objItem.dataset.ressha_type = "";
@@ -4128,6 +4147,8 @@ function create_ressha_detail(_objItem, _nowRow, _typeData, _ekiData) {
 				_objItem.dataset.ryosu += "（" + jreastSeries + "）";
 			} else if (_nowRow.source === "jrshinkansen" && jrShinkansenSeries) {
 				_objItem.dataset.ryosu += "（" + jrShinkansenSeries + "）";
+			} else if (_nowRow.source === "tx" && _nowRow.tx.fleet) {
+				_objItem.dataset.ryosu += "（" + _nowRow.tx.fleet + "）";
 			}
 		}
 	}

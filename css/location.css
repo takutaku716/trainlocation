@@ -2123,6 +2123,11 @@ header {
 							}
 							/* 英語以外の特別快速の場合 */
 							#stationList .eki-panel .ressha-contents .ressha-icon .ressha-sbt[sbt="特快"],
+							#stationList .eki-panel .ressha-contents .ressha-icon .ressha-sbt[sbt="快特"],
+							#stationList .eki-panel .ressha-contents .ressha-icon .ressha-sbt[sbt="エ快"],
+							#stationList .eki-panel .ressha-contents .ressha-icon .ressha-sbt[sbt="ア特"],
+							#stationList .eki-panel .ressha-contents .ressha-icon .ressha-sbt[sbt="通特"],
+							#stationList .eki-panel .ressha-contents .ressha-icon .ressha-sbt[sbt="通快"],
 							#stationList .eki-panel .ressha-contents .ressha-icon .ressha-sbt[sbt="新快"],
 							#stationList .eki-panel .ressha-contents .ressha-icon .ressha-sbt[sbt="みえ"],
 							#stationList .eki-panel .ressha-contents .ressha-icon .ressha-sbt[sbt="関紀"],

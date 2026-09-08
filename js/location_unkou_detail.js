@@ -15,6 +15,26 @@ $(function ($) {
 	$(document).on("click", ".ressha-icon .ressha", function() {
 		const clickedItem = this;
 		const clickedDataset = clickedItem.dataset;
+		if (clickedDataset.source === "tx" && clickedDataset.tx_loaded !== "1") {
+			if (clickedDataset.tx_loading === "1") return;
+			clickedDataset.tx_loading = "1";
+			loading_animation_display();
+			window.TxLocationAdapter.loadDetail(clickedDataset.cbango)
+				.then(function(rows) { clickedDataset.tx_timetable = JSON.stringify(rows); clickedDataset.tx_error = ""; })
+				.catch(function() { clickedDataset.tx_timetable = "[]"; clickedDataset.tx_error = "1"; })
+				.finally(function() {
+					clickedDataset.tx_loading = "0";
+					if (get_param_rosen() !== "151") { loading_animation_hidden(); return; }
+					const target = clickedItem.isConnected ? clickedItem : Array.from(document.querySelectorAll(".ressha[data-source='tx']")).find(item => item.dataset.cbango === clickedDataset.cbango);
+					if (!target) { loading_animation_hidden(); return; }
+					target.dataset.tx_timetable = clickedDataset.tx_timetable;
+					target.dataset.tx_error = clickedDataset.tx_error;
+					target.dataset.tx_loaded = "1";
+					$(target).trigger("click");
+					if (clickedDataset.tx_error) target.dataset.tx_loaded = "0";
+				});
+			return;
+		}
 		$("#resshaDetail").toggleClass("toei-detail", clickedDataset.source === "toei");
 		$("#resshaDetail").toggleClass("keikyu-detail", clickedDataset.source === "keikyu");
 		$("#keikyuAlertNotice").prop("hidden", !(clickedDataset.source === "keikyu" && clickedDataset.keikyu_alert === "1"));
@@ -132,6 +152,9 @@ $(function ($) {
 			}
 			// 列車種別コード
 			if (lang == "ja") $("#resshaDetail").attr("dataResshaTypeColor", dataset.ressha_type);
+			const icon = this.querySelector(".icon-img");
+			const iconTypeColor = icon ? window.getComputedStyle(icon).getPropertyValue("--train-type-color").trim() : "";
+			$("#resshaTypeName").css("background-color", iconTypeColor);
 			// 運行状態コード
 			$("#resshaDetail").attr("dataUnkou", dataset.unkou);
 			// 遅れ詳細
@@ -192,7 +215,7 @@ $(function ($) {
 			$("#cbangoIcon").removeClass("hide");
 			$("#cbangoDetail").removeClass("hide");
 
-			if (dataset.source === "keikyu" || dataset.source === "toei" || dataset.source === "jreast" || dataset.source === "dokotre" || dataset.source === "jrshinkansen" || dataset.source === "jrwest" || dataset.source === "jrshikoku" || dataset.source === "jrcentral" || dataset.source === "jrkyushu" || dataset.source === "jrkyushu-doredore" || dataset.jrkyushu_train_navi_request) {
+			if (dataset.source === "tx" || dataset.source === "keikyu" || dataset.source === "toei" || dataset.source === "jreast" || dataset.source === "dokotre" || dataset.source === "jrshinkansen" || dataset.source === "jrwest" || dataset.source === "jrshikoku" || dataset.source === "jrcentral" || dataset.source === "jrkyushu" || dataset.source === "jrkyushu-doredore" || dataset.jrkyushu_train_navi_request) {
 				$("#unkouDetailMain").hide();
 				$.getJSON("./original/location_master" + (lang === "ja" ? "" : "_" + lang) + ".json?" + now)
 					.done(function(posNameMasterBase) {
@@ -333,6 +356,7 @@ function create_jreast_daiya(_dataset) {
 	let timetable = [];
 	try {
 		const timetableText =
+			_dataset.source === "tx" ? _dataset.tx_timetable :
 			_dataset.source === "keikyu" ? _dataset.keikyu_timetable :
 			_dataset.source === "dokotre" ? _dataset.dokotre_timetable :
 			_dataset.source === "jrshinkansen" ? _dataset.jrshinkansen_timetable :

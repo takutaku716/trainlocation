@@ -53,6 +53,27 @@ async function testRequests() {
     await Promise.all([adapter.loadDetail("8401-0-1054K"), adapter.loadDetail("8401-0-1054K")]);
     assert.equal(calls, 1);
     assert.equal(await adapter.loadDetail("../other"), null);
+    assert.equal(adapter.getCachedDetail("8401-0-1054K").destination, detail.destination);
+    assert.equal(adapter.destinationShort("羽田空港第１・第２ターミナル"), "羽");
+    assert.equal(adapter.destinationShort("京急久里浜"), "久");
+    assert.equal(adapter.destinationShort("青砥"), "青");
+    const cachedTrain = normalize([{ ...rows.find(t => t.train_no === "1054K"), position: "D012" }], "147").trains[0];
+    assert.equal(cachedTrain.shuEkiSimple, "羽");
+    let active = 0, maximum = 0;
+    global.fetch = async () => {
+      active++;
+      maximum = Math.max(maximum, active);
+      await new Promise(resolve => setImmediate(resolve));
+      active--;
+      return Response.json(detailRaw);
+    };
+    await Promise.all(Array.from({ length: 8 }, (_, i) => adapter.loadDetail("8201-0-" + (2000 + i))));
+    assert.equal(maximum, 3);
+    let failedCalls = 0;
+    global.fetch = async () => { failedCalls++; return new Response("Unavailable", { status: 502 }); };
+    assert.equal(await adapter.loadDetail("8201-0-9999"), null);
+    assert.equal(await adapter.loadDetail("8201-0-9999"), null);
+    assert.equal(failedCalls, 1);
   } finally { global.fetch = saved; }
   console.log("Keikyu official web: all routes, placement IDs, stale data, alerts, timetables and request cache passed.");
 }

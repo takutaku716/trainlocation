@@ -39,7 +39,7 @@ for (const route of routes) {
 	const master = JSON.parse(fs.readFileSync(path.join(root, "master/rosen_name_master.json"), "utf8"));
 	assert.equal(master.filter(r => r.rosen === route.rosen).length, 1);
 	for (const page of ["index.html", "location.html"]) {
-		assert.ok(fs.readFileSync(path.join(root, page), "utf8").includes(`value="${route.rosen}"`));
+		assert.equal(fs.readFileSync(path.join(root, page), "utf8").includes(`value="${route.rosen}"`), route.rosen !== "145");
 	}
 }
 const route = routes[0], row = train(route, route.stations[0], route.stations[1]);
