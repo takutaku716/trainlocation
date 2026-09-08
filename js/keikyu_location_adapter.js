@@ -3,7 +3,8 @@
   else root.KeikyuLocationAdapter = factory(root.KeikyuRoutes, root.KeikyuPositionMap);
 }(typeof self !== "undefined" ? self : this, function(catalog, positions) {
   "use strict";
-  const API = "/api/keikyu/";
+  const API = typeof location !== "undefined" && location.hostname.endsWith("github.io")
+    ? "https://trainlocation-odpt-proxy.densha716.workers.dev/api/keikyu/web/" : "/api/keikyu/";
   // Use the public web client's lookup, including its line_code assignments.
   const PREFIXES = ["9999", "8201", "8401", "8301", "8601", "8501"];
   const TYPES = { 1: "快特", 2: "特急", 3: "急行", 4: "普通", 6: "エアポート快特", 12: "ウィング" };

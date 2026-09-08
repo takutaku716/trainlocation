@@ -1,8 +1,9 @@
 // Application-only ODPT gateway. Never forward a caller-supplied URL or token.
+import { onRequestGet as keikyuWeb } from "../functions/api/keikyu/[[path]].js";
 const BASE = "https://api-challenge.odpt.org/api/v4/";
 const OPERATOR = "odpt.Operator:Keikyu";
 const LINES = ["Main", "Airport", "Daishi", "Zushi", "Kurihama"];
-const ORIGINS = new Set(["https://trainlocation.pages.dev", "http://127.0.0.1:8765", "http://localhost:8765"]);
+const ORIGINS = new Set(["https://trainlocation.pages.dev", "https://takutaku716.github.io", "http://127.0.0.1:8765", "http://localhost:8765", "http://127.0.0.1:8766", "http://localhost:8766"]);
 export const LICENSE_END = Date.parse("2027-03-13T00:00:00+09:00");
 function response(value, status, origin) {
   return new Response(JSON.stringify(value), { status, headers: {
@@ -36,6 +37,14 @@ export default {
     if (request.method !== "GET") return response({ error: "Method not allowed" }, 405, origin);
     const url = new URL(request.url);
     if (url.search) return response({ error: "Unsupported query" }, 400, origin);
+    if (url.pathname.startsWith("/api/keikyu/web/")) {
+      url.pathname = url.pathname.replace("/api/keikyu/web/", "/api/keikyu/");
+      const result = await keikyuWeb({ request: new Request(url.toString()) });
+      const headers = new Headers(result.headers);
+      headers.set("access-control-allow-origin", origin);
+      headers.set("vary", "Origin");
+      return new Response(result.body, { status: result.status, headers });
+    }
     if (!["/api/keikyu/catalog", "/api/keikyu/location"].includes(url.pathname)) return response({ error: "Not found" }, 404, origin);
     if (Date.now() >= LICENSE_END) return response({ error: "Challenge license expired" }, 410, origin);
     if (!env.ODPT_ACCESS_TOKEN_2026) return response({ error: "ODPT configuration unavailable" }, 503, origin);
