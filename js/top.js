@@ -9,6 +9,7 @@ const JRKYUSHU_ROUTE_IDS = (Array.isArray(window.JRKYUSHU_DOREDORE_ROUTES) ? win
 
 // 各エリアに属するデータキー
 const AREA_ROSEN_KEYS = {
+	"keisei": ["152", "153", "154", "155", "156", "157", "158"],
 	"tx": ["151"],
 	"keikyu": ["146", "147", "148", "149", "150"],
 	"toei": ["140", "141", "142", "143", "144", "145"],
@@ -541,6 +542,7 @@ function exp_tab_select(key) {
  */
 function rosenToArea(rosen, selectAreaName) {
 	if (AREA_ROSEN_KEYS.tx.includes(String(rosen))) return "tx";
+	if (AREA_ROSEN_KEYS.keisei.includes(String(rosen))) return "keisei";
 	if (AREA_ROSEN_KEYS.toei.includes(String(rosen))) return "toei";
 	if (AREA_ROSEN_KEYS.keikyu.includes(String(rosen))) return "keikyu";
 

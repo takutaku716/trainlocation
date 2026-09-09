@@ -1418,12 +1418,17 @@ function is_location_auto_refresh_allowed(_rosen) {
 
 function is_odpt_location_rosen(_rosen) {
 	// Shared ODPT display lifecycle (station selection, freshness, refresh failures).
-	return !!((window.TxLocationAdapter && window.TxLocationAdapter.routeFor(_rosen)) ||
+	return !!((window.KeiseiLocationAdapter && window.KeiseiLocationAdapter.routeFor(_rosen)) ||
+		(window.TxLocationAdapter && window.TxLocationAdapter.routeFor(_rosen)) ||
 		(window.ToeiLocationAdapter && window.ToeiLocationAdapter.routeFor(_rosen)) ||
 		(window.KeikyuLocationAdapter && window.KeikyuLocationAdapter.routeFor(_rosen)));
 }
 
 function update_odpt_location_status(nowData) {
+	if (nowData && nowData.keisei) {
+		$("#message").html(nowData.keisei.error ? `<h2 class='msg-bg'>${get_error_message()}</h2>` : "").toggle(!!nowData.keisei.error);
+		return;
+	}
 	if (nowData && nowData.tx) {
 		$("#message").html(nowData.tx.error ? `<h2 class='msg-bg'>${get_error_message()}</h2>` : "").toggle(!!nowData.tx.error);
 		set_tx_unko_info(get_param_rosen());
@@ -1719,6 +1724,7 @@ function merge_location_now_data(_nowDataList) {
 }
 
 function load_location_now_data(_param_rosen, _now) {
+	if (window.KeiseiLocationAdapter && window.KeiseiLocationAdapter.routeFor(_param_rosen)) return window.KeiseiLocationAdapter.load(_param_rosen);
 	if (window.TxLocationAdapter && window.TxLocationAdapter.routeFor(_param_rosen)) return window.TxLocationAdapter.load(_param_rosen);
 	if (window.KeikyuLocationAdapter && window.KeikyuLocationAdapter.routeFor(_param_rosen)) return window.KeikyuLocationAdapter.load(_param_rosen);
 	if (is_odpt_location_rosen(_param_rosen)) return window.ToeiLocationAdapter.load(_param_rosen);
@@ -2561,6 +2567,7 @@ function set_station_list(_param_rosen, _scrollKey, _callback) {
 		} else {
 			load_location_now_data(_param_rosen, nowQuery)
 			.catch(function(error) {
+				if (window.KeiseiLocationAdapter && window.KeiseiLocationAdapter.routeFor(_param_rosen)) return { trains: [], time: {}, keisei: { error: true } };
 				if (String(_param_rosen) !== "151") throw error;
 				return { trains: [], time: {}, tx: { error: true } };
 			})
@@ -2679,6 +2686,7 @@ function refresh_location_positions(_param_rosen) {
 			$(".toei-location-status, .keikyu-location-status").text("位置情報を更新できませんでした。再取得まで列車位置を非表示にしています。");
 			if (String(_param_rosen) === "151") $("#message").html(`<h2 class='msg-bg'>${get_error_message()}</h2>`).show();
 			if (String(_param_rosen) === "151") set_tx_unko_info(_param_rosen);
+			if (window.KeiseiLocationAdapter && window.KeiseiLocationAdapter.routeFor(_param_rosen)) $("#message").html(`<h2 class='msg-bg'>${get_error_message()}</h2>`).show();
 		}
 		// 自動更新失敗時は次回更新を待つ
 	});
@@ -3740,6 +3748,7 @@ function set_jrcentral_train_icon(_iconArea, _nowRow) {
 }
 
 function get_train_type_simple_label(_nowRow, _type, _lang) {
+	if (_nowRow.keisei) return _nowRow.keisei.typeSimple;
 	if (_nowRow.tx) return _nowRow.tx.typeSimple;
 	if (_nowRow.keikyu) return _nowRow.keikyu.typeSimple;
 	if (_nowRow.toei) return _nowRow.toei.typeSimple;
@@ -3964,6 +3973,7 @@ function create_ressha_detail(_objItem, _nowRow, _typeData, _ekiData) {
 			_objItem.dataset.cbango = _nowRow.cbango;
 			_objItem.dataset.display_cbango = get_train_number_display_label(_nowRow);
 			_objItem.dataset.source = _nowRow.source || "";
+			if (_nowRow.keisei) _objItem.dataset.keisei_date = _nowRow.keisei.date;
 			if (_nowRow.toei) {
 				_objItem.dataset.toei_request = JSON.stringify({ rosen: _nowRow.sourceRosen, number: _nowRow.cbango, date: _nowRow.toei.date, direction: _nowRow.toei.direction });
 			}

@@ -16,7 +16,26 @@ $(function ($) {
 	$(document).on("click", ".ressha-icon .ressha", function() {
 		const clickedItem = this;
 		const clickedDataset = clickedItem.dataset;
+		if (clickedDataset.source === "keisei" && clickedDataset.keisei_loading === "1") return;
 		const toeiSerial = ++toeiDetailRequestSerial;
+		if (clickedDataset.source === "keisei" && clickedDataset.keisei_loaded !== "1") {
+			clickedDataset.keisei_loading = "1";
+			loading_animation_display();
+			window.KeiseiLocationAdapter.loadDetail(clickedDataset.cbango, clickedDataset.source_rosen, clickedDataset.keisei_date)
+				.then(rows => ({ rows, failed: false }), () => ({ rows: [], failed: true }))
+				.then(function(result) {
+					clickedDataset.keisei_loading = "0";
+					if (toeiSerial !== toeiDetailRequestSerial) return;
+					if (get_param_rosen() !== clickedDataset.source_rosen) { loading_animation_hidden(); return; }
+					const target = clickedItem.isConnected ? clickedItem : Array.from(document.querySelectorAll(".ressha[data-source='keisei']")).find(item => item.dataset.cbango === clickedDataset.cbango && item.dataset.source_rosen === clickedDataset.source_rosen);
+					if (!target) { loading_animation_hidden(); return; }
+					target.dataset.keisei_timetable = JSON.stringify(result.rows);
+					target.dataset.keisei_loaded = "1";
+					$(target).trigger("click");
+					if (result.failed) target.dataset.keisei_loaded = "0";
+				});
+			return;
+		}
 		if (clickedDataset.source === "toei" && clickedDataset.toei_request && clickedDataset.toei_loaded !== "1") {
 			loading_animation_display();
 			let request;
@@ -236,7 +255,7 @@ $(function ($) {
 			$("#cbangoIcon").removeClass("hide");
 			$("#cbangoDetail").removeClass("hide");
 
-			if (dataset.source === "tx" || dataset.source === "keikyu" || dataset.source === "toei" || dataset.source === "jreast" || dataset.source === "dokotre" || dataset.source === "jrshinkansen" || dataset.source === "jrwest" || dataset.source === "jrshikoku" || dataset.source === "jrcentral" || dataset.source === "jrkyushu" || dataset.source === "jrkyushu-doredore" || dataset.jrkyushu_train_navi_request) {
+			if (dataset.source === "keisei" || dataset.source === "tx" || dataset.source === "keikyu" || dataset.source === "toei" || dataset.source === "jreast" || dataset.source === "dokotre" || dataset.source === "jrshinkansen" || dataset.source === "jrwest" || dataset.source === "jrshikoku" || dataset.source === "jrcentral" || dataset.source === "jrkyushu" || dataset.source === "jrkyushu-doredore" || dataset.jrkyushu_train_navi_request) {
 				$("#unkouDetailMain").hide();
 				$.getJSON("./original/location_master" + (lang === "ja" ? "" : "_" + lang) + ".json?" + now)
 					.done(function(posNameMasterBase) {
@@ -373,6 +392,7 @@ function create_jreast_daiya(_dataset) {
 	let timetable = [];
 	try {
 		const timetableText =
+			_dataset.source === "keisei" ? _dataset.keisei_timetable :
 			_dataset.source === "toei" ? _dataset.toei_timetable :
 			_dataset.source === "tx" ? _dataset.tx_timetable :
 			_dataset.source === "keikyu" ? _dataset.keikyu_timetable :
