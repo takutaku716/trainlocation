@@ -10,8 +10,8 @@ const row = { 'odpt:operator': 'odpt.Operator:Toei', 'odpt:railway': routes[0].r
   ] };
 const normalize = data => adapter.normalize(data, request);
 assert.equal(normalize([row]).rows.length, 2);
-assert.equal(normalize([row]).rows[1].arrival, '00:01');
-assert.equal(normalize([row]).rows[1].departure, '00:02');
+assert.equal(normalize([row]).rows[1].planArrival, '00:01');
+assert.equal(normalize([row]).rows[1].planDeparture, '00:02');
 assert.equal(normalize([row, row]).rows.length, 0);
 assert.equal(normalize([{ ...row, 'odpt:calendar': 'odpt.Calendar:SaturdayHoliday' }]).rows.length, 0);
 assert.equal(normalize([{ ...row, 'odpt:railDirection': 'wrong' }]).rows.length, 0);

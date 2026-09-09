@@ -43,12 +43,12 @@
     const objects = matches[0]['odpt:trainTimetableObject'];
     if (!Array.isArray(objects)) return unavailable();
     const validTime = value => /^(?:[01]\d|2[0-9]):[0-5]\d$/.test(value || '') ? value : '';
-    const rows = objects.flatMap(s => {
+    const rows = objects.flatMap((s, index) => {
       const arrivalId = s['odpt:arrivalStation'], departureId = s['odpt:departureStation'];
       const id = departureId || arrivalId;
       if (!stations.has(id) || (arrivalId && departureId && arrivalId !== departureId)) return [];
       const arrival = validTime(s['odpt:arrivalTime']), departure = validTime(s['odpt:departureTime']);
-      return arrival || departure ? [{ stationName: stations.get(id), arrival, departure }] : [];
+      return arrival || departure ? [{ stationName: stations.get(id), stationKey: id + ':' + index, planArrival: arrival, planDeparture: departure }] : [];
     });
     return rows.length ? { rows, message: '', day: calendar.day } : unavailable();
   }
