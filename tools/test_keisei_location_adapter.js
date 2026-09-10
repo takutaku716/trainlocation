@@ -22,7 +22,7 @@ const main = adapter.normalize(raw, "152", now).trains;
 assert.ok(main.some(t => t.cbango === "24B19" && t.pos === "KEISEI152P4_5D"));
 assert.ok(main.some(t => t.cbango === "23A13" && t.typeLabel === "快速" && t.keisei.typeSimple === "快"));
 const fixture = { UP: raw.UP, TS: [{ id: "E027", tr: [{ no: "fixture", hk: "1", bs: "3", ik: "41", sy: "0", dl: "0", sr: "8" }] }], EK: [] };
-for (const [code, short] of [["0", "？"], ["1", "？"], ["2", "？"], ["16", "？"], ["6", "普"], ["4", "特"], ["5", "急"], ["10", "快"], ["13", "快特"], ["3", "通特"], ["17", "ア特"], ["999", "？"]]) {
+for (const [code, short] of [["0", "S"], ["1", "M"], ["2", "E"], ["16", "C"], ["6", "普"], ["4", "特"], ["5", "急"], ["10", "快"], ["13", "快特"], ["3", "通特"], ["17", "ア特"], ["999", "？"]]) {
   fixture.TS[0].tr[0].sy = code;
   const train = adapter.normalize(fixture, "152", now).trains[0];
   assert.equal(train.keisei.typeSimple, short);
@@ -43,7 +43,12 @@ assert.equal(timetable[0].planDeparture, "24:21");
 assert.equal(timetable.at(-1).planArrival, "24:41");
 assert.equal(timetable.at(-1).planDeparture, "");
 const css = fs.readFileSync("css/keikyu_train_icons.css", "utf8");
-assert.equal(css.match(/data-source="keisei"/g).length, 7);
+assert.equal(css.match(/data-source="keisei"/g).length, 8);
+assert.ok(css.includes('--train-type-color: #10306c'));
+const linerSvg = fs.readFileSync('images/home/keisei/train_icon_liner.svg', 'utf8');
+const originalSvg = fs.readFileSync('images/home/keikyu/train_icon_express.svg', 'utf8');
+assert.ok(linerSvg.includes('fill="#10306c"'));
+assert.equal(linerSvg.match(/ d="([^"]+)"/)[1].replace(/\s+/g, ''), originalSvg.match(/ d="([^"]+)"/)[1].replace(/\s+/g, ''));
 assert.ok(css.includes('data-ressha_type_name="快速特急"'));
 for (const file of ["index.html", "location.html"]) {
   const html = fs.readFileSync(file, "utf8");

@@ -3,7 +3,7 @@
   else root.KeiseiLocationAdapter = factory(root.KeiseiMaster);
 }(typeof self !== "undefined" ? self : this, function(master) {
   "use strict";
-  const shorts = { "普通": "普", "急行": "急", "特急": "特", "快速": "快", "快速特急": "快特", "通勤特急": "通特", "アクセス特急": "ア特" };
+  const shorts = { "普通": "普", "急行": "急", "特急": "特", "快速": "快", "快速特急": "快特", "通勤特急": "通特", "アクセス特急": "ア特", "スカイライナー": "S", "モーニングライナー": "M", "イブニングライナー": "E", "シティライナー": "C" };
   const pending = new Map(), detailCache = new Map();
   function routeFor(id) { return master.routes.find(r => r.rosen === String(id)); }
   function destination(code) { return master.destinations.find(d => String(d.code) === String(code)); }
