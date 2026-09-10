@@ -1427,7 +1427,10 @@ function is_odpt_location_rosen(_rosen) {
 
 function update_odpt_location_status(nowData) {
 	if (nowData && nowData.tokyu) {
-		$("#message").empty().append($("<p class='tokyu-source-status'></p>").text(window.TokyuLocationAdapter.statusText(nowData))).show();
+		const text = window.TokyuLocationAdapter.statusText(nowData);
+		$("#message").empty().toggle(!!text || !!nowData.tokyu.error);
+		if (text) $("#message").append($("<p class='tokyu-source-status'></p>").text(text));
+		if (nowData.tokyu.error) $("#message").append($("<h2 class='msg-bg'></h2>").text(get_error_message()));
 		return;
 	}
 	if (nowData && nowData.keisei) {

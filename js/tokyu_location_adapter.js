@@ -36,6 +36,9 @@
     if (line === '26003' && number < 100) return String(number).padStart(2,'0') + (number < 50 ? 'K' : number%2 === 0 ? 'T' : 'S');
     return String(number);
   }
+  function trainNumberLabel(value) {
+    return String(value ?? '').replace(/^0(\d{3})(\d{3})0$/, '$1-$2');
+  }
   function normalize(envelope, id) {
     const route = routeFor(id);
     if (!route) throw new Error('データソース未設定');
@@ -54,7 +57,7 @@
       const type = types[row.kind] || types[kindCodes[row.train_kind]] || ['種別不明','？'];
       const destination = destinationFor(row, route);
       const cars = Number(row.num_of_cars);
-      trains.push({cbango:number, displayTrainNumber:number, iconTrainNumber:operationLabel(row.operation_number,row.train_line_id ?? row.line_id), type:'3', typeLabel:type[0], name:type[0] + (type[0].endsWith('ライナー') || type[0] === 'S-TRAIN' ? '' : '列車'),
+      trains.push({cbango:number, displayTrainNumber:trainNumberLabel(number), iconTrainNumber:operationLabel(row.operation_number,row.train_line_id ?? row.line_id), type:'3', typeLabel:type[0], name:type[0] + (type[0].endsWith('ライナー') || type[0] === 'S-TRAIN' ? '' : '列車'),
         pos:pos.key,posName:pos.name,chien:Math.max(0,Math.floor(Number(row.delay_time)||0)),
         shuEkiSimple:destination === '行先不明' ? '？' : Array.from(destination)[0],shuEkiName:destination,shuEkiKey:'',
         ryosu:Number.isInteger(cars) && cars > 0 && cars < 99 ? cars : 0,status:'1',statusDetail:'',senku:route.rosen,source:'tokyu',sourceRosen:route.rosen,
@@ -103,10 +106,7 @@
     return {load};
   }
   function statusText(data) {
-    const s = data.tokyu;
-    const time = s.fetchedAt ? new Date(s.fetchedAt).toLocaleString('ja-JP',{timeZone:'Asia/Tokyo',hour12:false}) : '未取得';
-    return `${s.source === 'w-tid' ? 'w-tid取得（第三者配信）' : '署名付きJSON'} / ${s.file}　最終取得: ${time}　列車: ${s.count}件` +
-      (s.unmapped ? `（位置未対応: ${s.unmapped}件）` : '') + (s.error ? `　エラー: ${s.error}` : s.inputCount === 0 ? '　在線なし' : '');
+    return data.tokyu.source === 'w-tid' ? 'w-tid取得（第三者配信）' : '';
   }
-  return {routeFor,positionFor,destinationFor,operationLabel,normalize,apiUrl,createClient,statusText,...createClient()};
+  return {routeFor,positionFor,destinationFor,operationLabel,trainNumberLabel,normalize,apiUrl,createClient,statusText,...createClient()};
 }));
