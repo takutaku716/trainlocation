@@ -66,9 +66,17 @@ w-tid路線のみ第三者配信の表示を残す。時刻は配信元の更新
 
 ## テスト・再生成
 
+東横線・目黒線・新横浜線の編成は `original/tokyu_formation.json` を参照して判定し、
+詳細の両数の後ろに括弧書きで表示する。添付の参考実装に合わせ、所属が「み」の場合は
+8両、「東」「西」の場合は10両の対照表を使用する。それ以外は取得した両数を使う。
+このため現在の参考ロジックでは対照表内の `8西` は使用しない。
+判定不能時は非表示。対照表の読み込み失敗時も在線は維持し、60秒後から再試行する。
+対照表の正常取得結果はページ内で共用する。
+
 ```text
 node tools/test_tokyu_location_adapter.cjs
 node tools/test_tokyu_proxy.mjs
+node tools/test_tokyu_formation.cjs
 npx wrangler deploy --config wrangler.tokyu.toml
 ```
 

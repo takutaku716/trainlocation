@@ -39,7 +39,18 @@
   function trainNumberLabel(value) {
     return String(value ?? '').replace(/^0(\d{3})(\d{3})0$/, '$1-$2');
   }
-  function normalize(envelope, id) {
+  function formationFor(train, formations) {
+    if (!['26001','26002','26009'].includes(String(train.train_line_id || train.line_id))) return '';
+    const affiliation = train.affiliation;
+    if (!['急','み','相','副','東','西','都','南','埼'].includes(affiliation)) return '';
+    const raw = train.train_orchestration_number;
+    if (raw == null || !/^\d{1,2}$/.test(String(raw))) return '';
+    const cars = affiliation === 'み' ? 8 : ['東','西'].includes(affiliation) ? 10 : Number(train.num_of_cars);
+    const group = formations?.tokyu_systems?.[String(cars) + affiliation];
+    const name = group?.[String(raw).padStart(2,'0')];
+    return typeof name === 'string' ? name.trim() : '';
+  }
+  function normalize(envelope, id, formations) {
     const route = routeFor(id);
     if (!route) throw new Error('データソース未設定');
     if (!envelope || !Array.isArray(envelope.data?.trains) || !Number.isFinite(envelope.fetchedAt) || envelope.fetchedAt <= 0) throw new Error('在線JSON形式不正');
@@ -62,7 +73,8 @@
         pos:pos.key,posName:pos.name,chien:Math.max(0,Math.floor(Number(row.delay_time)||0)),
         shuEkiSimple:destination === '行先不明' ? '？' : Array.from(destination)[0],shuEkiName:destination,shuEkiKey:'',
         ryosu:Number.isInteger(cars) && cars > 0 && cars < 99 ? cars : 0,status:'1',statusDetail:'',senku:route.rosen,source:'tokyu',sourceRosen:route.rosen,
-        tokyu:{typeSimple:type[1],operationNumber:row.operation_number,trainLineId:row.train_line_id,trackNumber:row.track_number}});
+        tokyu:{typeSimple:type[1],operationNumber:row.operation_number,trainLineId:row.train_line_id,trackNumber:row.track_number,
+          formation:['toyoko','meguro','shinyokohama'].includes(route.key) ? formationFor(row,formations) : ''}});
     }
     const text = new Date(envelope.fetchedAt + 9*3600000).toISOString().slice(0,19).replace(/-/g,'/').replace('T',' ') + ' 現在';
     return {trains,time:Object.fromEntries(['ja','en','tc','sc','kr'].map(l=>[l,text])),sourceTimes:[{rosen:route.rosen,timestamp:envelope.fetchedAt,text}],
@@ -76,6 +88,21 @@
   }
   function createClient({fetchImpl=(...args)=>fetch(...args), now=()=>Date.now(), timeoutMs=50000}={}) {
     const cache = new Map(), lastSuccess = new Map();
+    let formationCache;
+    function loadFormations() {
+      if (!formationCache || formationCache.expires <= now()) {
+        const entry = {expires:Infinity,promise:null};
+        entry.promise = (async()=>{
+          const response = await fetchImpl('./original/tokyu_formation.json',{signal:AbortSignal.timeout(5000)});
+          if (!response.ok) throw new Error('Formation master unavailable');
+          const data = await response.json();
+          if (!data?.tokyu_systems || typeof data.tokyu_systems !== 'object') throw new Error('Invalid formation master');
+          return data;
+        })().catch(()=>{entry.expires=now()+60000;return null;});
+        formationCache = entry;
+      }
+      return formationCache.promise;
+    }
     async function request(route) {
       const response = await fetchImpl(apiUrl(route.rosen),{cache:'no-store',signal:AbortSignal.timeout(timeoutMs)});
       let data;
@@ -96,7 +123,8 @@
         }
         const data = await entry.promise;
         if (now() - data.fetchedAt > 120000 || data.fetchedAt - now() > 60000) throw new Error('取得データの日時が古いか不正です');
-        const result = normalize(data,route.rosen);
+        const formations = ['toyoko','meguro','shinyokohama'].includes(route.key) ? await loadFormations() : null;
+        const result = normalize(data,route.rosen,formations);
         lastSuccess.set(route.rosen,data.fetchedAt);
         return result;
       } catch (error) {
@@ -109,5 +137,5 @@
   function statusText(data) {
     return data.tokyu.source === 'w-tid' ? 'w-tid取得（第三者配信）' : '';
   }
-  return {routeFor,positionFor,destinationFor,operationLabel,trainNumberLabel,normalize,apiUrl,createClient,statusText,...createClient()};
+  return {routeFor,positionFor,destinationFor,operationLabel,trainNumberLabel,formationFor,normalize,apiUrl,createClient,statusText,...createClient()};
 }));

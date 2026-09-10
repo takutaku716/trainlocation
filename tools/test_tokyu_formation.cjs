@@ -1,0 +1,46 @@
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const adapter = require('../js/tokyu_location_adapter');
+const master = JSON.parse(fs.readFileSync('original/tokyu_formation.json','utf8'));
+const base = {line_id:26001,train_line_id:26001,num_of_cars:8,affiliation:'急',train_orchestration_number:'01'};
+for (const [prefix, group] of Object.entries(master.tokyu_systems)) {
+  const [,cars,affiliation] = prefix.match(/^(\d+)(.+)$/);
+  // The supplied reference always selects the 10-car table for Tobu/Seibu.
+  if (['東','西'].includes(affiliation) && cars !== '10') continue;
+  for (const [number,expected] of Object.entries(group)) {
+    assert.equal(adapter.formationFor({...base,num_of_cars:cars,affiliation,train_orchestration_number:number},master),expected);
+  }
+}
+assert.equal(adapter.formationFor(base,master),'3101F');
+assert.equal(adapter.formationFor({...base,num_of_cars:10},master),'4101F');
+assert.equal(adapter.formationFor({...base,affiliation:'み',num_of_cars:10,train_orchestration_number:81},master),'Y511F');
+assert.equal(adapter.formationFor({...base,affiliation:'東',train_orchestration_number:2},master),'9102F');
+for (const override of [{affiliation:'不明'},{train_orchestration_number:null},{train_orchestration_number:''},{train_orchestration_number:101},{train_orchestration_number:99},{train_line_id:26003}]) assert.equal(adapter.formationFor({...base,...override},master),'');
+assert.equal(adapter.formationFor(base,null),'');
+const now = Date.now();
+const raw = {trains:[{...base,station_id:26,up:true,kind:'普',operation_number:1,train_number:'00012310'}]};
+assert.equal(adapter.normalize({data:raw,fetchedAt:now},159,master).trains[0].tokyu.formation,'3101F');
+for (const [route,line,station] of [[160,26002,914],[163,26009,983]]) {
+  const train = {...raw.trains[0],line_id:line,station_id:station};
+  assert.equal(adapter.normalize({data:{trains:[train]},fetchedAt:now},route,master).trains[0].tokyu.formation,'3101F');
+}
+async function run() {
+  let count=0;
+  const client=adapter.createClient({fetchImpl:async url=>{
+    if (url.includes('tokyu_formation')) {count++;return Response.json(master);}
+    return Response.json({data:raw,fetchedAt:now});
+  }});
+  const results=await Promise.all([client.load(159),client.load(159)]);
+  assert.equal(count,1);assert.equal(results[0].trains[0].tokyu.formation,'3101F');
+  let clock=now, attempts=0;
+  const degraded=adapter.createClient({now:()=>clock,fetchImpl:async url=>{
+    if(url.includes('tokyu_formation')) {attempts++;return new Response('',{status:404});}
+    return Response.json({data:raw,fetchedAt:clock});
+  }});
+  assert.equal((await degraded.load(159)).trains.length,1);
+  assert.equal((await degraded.load(159)).trains[0].tokyu.formation,'');
+  assert.equal(attempts,1);
+  clock+=61000;await degraded.load(159);assert.equal(attempts,2);
+  console.log('Tokyu formation: complete master, overrides, unknowns, preserved location, cache and retry passed.');
+}
+run().catch(e=>{console.error(e);process.exitCode=1;});
