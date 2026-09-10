@@ -17,6 +17,13 @@ for (const [label,asset] of Object.entries({'急行':'express','快特':'kaitoku
   assert.ok(rule.includes('[data-source="keikyu"]'));
 }
 assert.ok(!css.includes('data-ressha_type_name="普通"'));
+const wingRule = css.split('\n').find(line => line.includes('data-ressha_type_name="ウィング"'));
+assert.ok(wingRule.includes('[data-source="keikyu"]'));
+assert.ok(wingRule.includes('--train-type-color: #00a693'));
+assert.ok(wingRule.includes('train_icon_wing.svg'));
+const wingSvg = fs.readFileSync(path.join(root, 'images/home/keikyu/train_icon_wing.svg'), 'utf8');
+assert.ok(wingSvg.includes('fill="#00a693"'));
+assert.equal(wingSvg.match(/ d="([^"]+)"/)[1].replace(/\s+/g, ''), original.match(/ d="([^"]+)"/)[1].replace(/\s+/g, ''));
 const detailScript = fs.readFileSync(path.join(root, 'js/location_unkou_detail.js'), 'utf8');
 assert.ok(detailScript.includes('getPropertyValue("--train-type-color")'));
 assert.ok(detailScript.includes('$("#resshaTypeName").css("background-color", iconTypeColor)'));
