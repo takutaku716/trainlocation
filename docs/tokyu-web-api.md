@@ -1,0 +1,77 @@
+# 東急線の在線データ
+
+## 取得経路
+
+ブラウザーは `/api/tokyu/{key}` だけを使用する。ローカルは
+`node tools/local_server.js 8795`、GitHub Pages は専用 Worker
+`https://trainlocation-tokyu-proxy.densha716.workers.dev` を経由する。
+既存の京急用 Worker は変更しない。
+
+| 路線 | 路線番号 | TID ID | key / JSON | 取得元 |
+| --- | --- | --- | --- | --- |
+| 東横線 | 159 | 26001 | toyoko / toyoko.json | 署名付きJSON |
+| 目黒線 | 160 | 26002 | meguro / meguro.json | 署名付きJSON |
+| 田園都市線 | 161 | 26003 | dento / dento.json | 署名付きJSON |
+| 大井町線 | 162 | 26004 | oimachi / oimachi.json | 署名付きJSON |
+| 東急新横浜線 | 163 | 26009 | shinyokohama / shinyokohama.json | 署名付きJSON |
+| 池上線 | 164 | 26005 | ikegami / iketama.json | w-tid |
+| 東急多摩川線 | 165 | 26006 | tamagawa / iketama.json | w-tid |
+| 世田谷線 | 166 | 26007 | setagaya / setagaya.json | w-tid |
+
+新横浜線の内部IDは `sh`。路線と変換表は `js/tokyu_routes.js` に定義する。
+
+署名発行は指定された公開API
+`https://fp5owad3w3.execute-api.ap-northeast-1.amazonaws.com/prod/external-data-url?key={file}`
+を使う。2026-09-10 の確認では小文字の `origin` ヘッダーと
+`https://tokyu-tid.s3.amazonaws.com` の組み合わせで成功した。
+大文字の `Origin` では同じ値でも拒否された。
+
+返された署名URLは HTTPS、ホスト
+`external-data-user.s3.ap-northeast-1.amazonaws.com`、要求したファイルのパスを検証する。
+署名パラメーターの生成、フロントへの返却、ログへの保存は行わない。
+署名付きGETが403の場合に限り、URL再発行から1回だけ再試行する。
+内部用S3、Firebase、秘密鍵、認証情報は使用しない。
+
+w-tid は `https://w-tid.jp/tokyu/iketama.json` と
+`https://w-tid.jp/tokyu/setagaya.json` の固定URLのみ使用する。
+取得間隔は署名付き15秒、w-tid60秒。ブラウザー・サーバーでファイル単位に
+キャッシュし、池上線と多摩川線の取得を共用する。通信中の要求も共用する。
+各通信は12秒でタイムアウトする。障害は同じ期間だけ負のキャッシュに保存し、
+古い列車を現在の在線として表示しない。取得元・最終取得時刻・件数・エラーは
+路線画面の既存メッセージ領域に表示する。時刻は配信元の更新日時ではなく取得日時。
+
+## 変換
+
+駅・駅間コード、行先コードと運行番号表記は
+[w-tid公開ページ](https://w-tid.jp/tokyutid.html?meguro) の対応表を参照。
+世田谷線の配置は解析時に保存した公開路線HTMLの駅・区間IDを参照。
+既存の駅パネル・線路・上下アイコン・詳細ウィンドウを共用する。
+
+- `line_id` で対象路線を選別する。並走区間では `train_line_id` が異なる列車も表示する。
+- `station_id` があれば駅、なければ `section_id` の駅間。`up` が上り方向。
+- 行先変換表は東横・目黒・新横浜系と田園都市・大井町系を分ける。
+  例: 78は前者で渋谷、後者で鷺沼。直通線区コードを特定の終着駅に置き換えない。
+- `delay_time` は分。`num_of_cars` が0または99のとき両数は表示しない。
+- アイコンは運行番号を表示する。例: 目黒線441は41T。
+  詳細の列車番号と内部識別には元の `train_number` を保持する。
+- w-tidで行先が空欄の場合は行先不明。情報がない行先や両数は推測しない。
+  取得サンプルでは個々の列車の遅延情報が得られないため、独自の遅延推定はしない。
+- 今回は在線の追加のみ。列車時刻表の新規取得は実装していない。
+
+## テスト・再生成
+
+```text
+node tools/test_tokyu_location_adapter.cjs
+node tools/test_tokyu_proxy.mjs
+npx wrangler deploy --config wrangler.tokyu.toml
+```
+
+テストは `testdata/tokyu` の公開JSONを使用し、実APIに依存しない。
+全8路線の駅・駅間アンカーと上下方向、行先表の分離、種別、遅延、運行番号、
+空データ、不正JSON、タイムアウト、403再発行上限、キャッシュ共用を検証する。
+
+マスターの再生成には開発用の cheerio@1.1.2 と acorn@8.15.0 を
+`.tmp/tokyu-tools` にインストールし、公開ページを
+`.tmp/tokyu-source/tokyutid.html` と `.tmp/tokyu-source/setagaya.html` に配置して
+`node tools/generate_tokyu_routes.cjs` を実行する。ダウンロードしたJavaScriptは実行せず、
+ASTからリテラルの対応表のみを抽出する。

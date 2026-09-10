@@ -1418,13 +1418,18 @@ function is_location_auto_refresh_allowed(_rosen) {
 
 function is_odpt_location_rosen(_rosen) {
 	// Shared ODPT display lifecycle (station selection, freshness, refresh failures).
-	return !!((window.KeiseiLocationAdapter && window.KeiseiLocationAdapter.routeFor(_rosen)) ||
+	return !!((window.TokyuLocationAdapter && window.TokyuLocationAdapter.routeFor(_rosen)) ||
+		(window.KeiseiLocationAdapter && window.KeiseiLocationAdapter.routeFor(_rosen)) ||
 		(window.TxLocationAdapter && window.TxLocationAdapter.routeFor(_rosen)) ||
 		(window.ToeiLocationAdapter && window.ToeiLocationAdapter.routeFor(_rosen)) ||
 		(window.KeikyuLocationAdapter && window.KeikyuLocationAdapter.routeFor(_rosen)));
 }
 
 function update_odpt_location_status(nowData) {
+	if (nowData && nowData.tokyu) {
+		$("#message").empty().append($("<p class='tokyu-source-status'></p>").text(window.TokyuLocationAdapter.statusText(nowData))).show();
+		return;
+	}
 	if (nowData && nowData.keisei) {
 		$("#message").html(nowData.keisei.error ? `<h2 class='msg-bg'>${get_error_message()}</h2>` : "").toggle(!!nowData.keisei.error);
 		return;
@@ -1724,6 +1729,7 @@ function merge_location_now_data(_nowDataList) {
 }
 
 function load_location_now_data(_param_rosen, _now) {
+	if (window.TokyuLocationAdapter && window.TokyuLocationAdapter.routeFor(_param_rosen)) return window.TokyuLocationAdapter.load(_param_rosen);
 	if (window.KeiseiLocationAdapter && window.KeiseiLocationAdapter.routeFor(_param_rosen)) return window.KeiseiLocationAdapter.load(_param_rosen);
 	if (window.TxLocationAdapter && window.TxLocationAdapter.routeFor(_param_rosen)) return window.TxLocationAdapter.load(_param_rosen);
 	if (window.KeikyuLocationAdapter && window.KeikyuLocationAdapter.routeFor(_param_rosen)) return window.KeikyuLocationAdapter.load(_param_rosen);
@@ -3748,6 +3754,7 @@ function set_jrcentral_train_icon(_iconArea, _nowRow) {
 }
 
 function get_train_type_simple_label(_nowRow, _type, _lang) {
+	if (_nowRow.tokyu) return _nowRow.tokyu.typeSimple;
 	if (_nowRow.keisei) return _nowRow.keisei.typeSimple;
 	if (_nowRow.tx) return _nowRow.tx.typeSimple;
 	if (_nowRow.keikyu) return _nowRow.keikyu.typeSimple;
@@ -3807,7 +3814,7 @@ function create_html_up_ressha_icon(_nowRow, _typeData, _ekiData) {
 
 	let objCbango = document.createElement("span");
 	objCbango.classList.add("cbango-label");
-	objCbango.textContent = get_train_number_display_label(_nowRow);
+	objCbango.textContent = _nowRow.iconTrainNumber || get_train_number_display_label(_nowRow);
 	iconArea.appendChild(objCbango);
 
 	// 遅延を設定
@@ -3917,7 +3924,7 @@ function create_html_down_ressha_icon(_nowRow, _typeData, _ekiData) {
 
 	let objCbango = document.createElement("span");
 	objCbango.classList.add("cbango-label");
-	objCbango.textContent = get_train_number_display_label(_nowRow);
+	objCbango.textContent = _nowRow.iconTrainNumber || get_train_number_display_label(_nowRow);
 	iconArea.appendChild(objCbango);
 
 	// 列車アイコンの矢印を設定

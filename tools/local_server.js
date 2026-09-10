@@ -3,6 +3,7 @@ const fs = require('fs');
 const path = require('path');
 
 const root = path.resolve(__dirname, '..');
+const tokyuHandler = import('../functions/api/tokyu/[[path]].js');
 const proxySources = {
   '/api/jrshikoku/location': {
     url: 'https://train.jr-shikoku.co.jp/g?arg1=train&arg2=train',
@@ -141,6 +142,13 @@ const server = http.createServer(async (request, response) => {
     return;
   }
 
+  if (request.method === 'GET' && requestPath.startsWith('/api/tokyu/')) {
+    const handler = await tokyuHandler;
+    const result = await handler.onRequestGet({request:new Request('http://localhost' + requestPath)});
+    response.writeHead(result.status, Object.fromEntries(result.headers));
+    response.end(Buffer.from(await result.arrayBuffer()));
+    return;
+  }
   if (request.method === 'GET' && (requestPath.startsWith('/api/tx/') || requestPath.startsWith('/api/keisei/'))) {
     const source = fs.readFileSync(path.join(root, requestPath.startsWith('/api/keisei/') ? 'functions/api/keisei/[[path]].js' : 'functions/api/tx/[[path]].js'), 'utf8');
     const handler = await import('data:text/javascript;base64,' + Buffer.from(source).toString('base64'));

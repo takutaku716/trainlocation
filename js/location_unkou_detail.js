@@ -255,7 +255,7 @@ $(function ($) {
 			$("#cbangoIcon").removeClass("hide");
 			$("#cbangoDetail").removeClass("hide");
 
-			if (dataset.source === "keisei" || dataset.source === "tx" || dataset.source === "keikyu" || dataset.source === "toei" || dataset.source === "jreast" || dataset.source === "dokotre" || dataset.source === "jrshinkansen" || dataset.source === "jrwest" || dataset.source === "jrshikoku" || dataset.source === "jrcentral" || dataset.source === "jrkyushu" || dataset.source === "jrkyushu-doredore" || dataset.jrkyushu_train_navi_request) {
+			if (dataset.source === "tokyu" || dataset.source === "keisei" || dataset.source === "tx" || dataset.source === "keikyu" || dataset.source === "toei" || dataset.source === "jreast" || dataset.source === "dokotre" || dataset.source === "jrshinkansen" || dataset.source === "jrwest" || dataset.source === "jrshikoku" || dataset.source === "jrcentral" || dataset.source === "jrkyushu" || dataset.source === "jrkyushu-doredore" || dataset.jrkyushu_train_navi_request) {
 				$("#unkouDetailMain").hide();
 				$.getJSON("./original/location_master" + (lang === "ja" ? "" : "_" + lang) + ".json?" + now)
 					.done(function(posNameMasterBase) {
