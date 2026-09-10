@@ -57,6 +57,19 @@ assert.equal(adapter.positionFor({station_id:26,up:'false'},ty),null);
 const train = {operation_number:1,line_id:26001,station_id:26,up:true,kind:'通',delay_time:3,destination_station_code:78};
 const t = adapter.normalize({data:{trains:[train]},fetchedAt:now},159).trains[0];
 assert.equal(t.typeLabel,'通勤特急'); assert.equal(t.chien,3); assert.equal(t.shuEkiName,'渋谷');
+for (const [kind,label,short] of [['普','各停','各'],['Ｇ','G各','G'],['Ｂ','B各','B'],['急','急行','急'],['特','特急','特'],['Ｓ','S-TRAIN','S'],['準','準急','準'],['通','通勤特急','通特'],['Ｆ','Fライナー','F'],['回','回送','回']]) {
+  const actual = adapter.normalize({data:{trains:[{...train,kind}]},fetchedAt:now},159).trains[0];
+  assert.equal(actual.typeLabel,label); assert.equal(actual.tokyu.typeSimple,short);
+}
+const bLocal = adapter.normalize({data:{trains:[{...train,kind:'普',train_line_id:26004}]},fetchedAt:now},159).trains[0];
+assert.equal(bLocal.typeLabel,'B各'); assert.equal(bLocal.tokyu.typeSimple,'B');
+const iconCss = fs.readFileSync('css/tokyu.css','utf8');
+const originalIcon = fs.readFileSync('images/home/train_icon.svg','utf8').replace(/\r\n/g,'\n');
+for (const [name,color] of Object.entries({blue:'#0000ff',limegreen:'#32cd32',red:'#ff0000',darkorange:'#ff8c00',forestgreen:'#228b22',orangered:'#ff4500'})) {
+  assert.equal(fs.readFileSync(`images/home/tokyu/train_icon_${name}.svg`,'utf8').replace(color,'#789').replace(/\r\n/g,'\n'),originalIcon);
+  assert.ok(iconCss.includes(`--train-type-color: ${color}`));
+}
+assert.ok(!/font-size|width:|height:/.test(iconCss.split('\n').filter(line=>line.includes('.icon-img')).join('\n')));
 async function testClient() {
   let clock = now, calls = 0;
   const raw = JSON.parse(fs.readFileSync('testdata/tokyu/iketama.json'));

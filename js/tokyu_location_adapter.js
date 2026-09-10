@@ -3,7 +3,7 @@
   else root.TokyuLocationAdapter = factory(root.TokyuRoutes);
 }(typeof self !== 'undefined' ? self : this, function(master) {
   'use strict';
-  const types = {'普':['普通','普'],'Ｇ':['普通','普'],'急':['急行','急'],'特':['特急','特'],'通':['通勤特急','通特'],'準':['準急','準急'],'回':['回送','回'],'Ｓ':['S-TRAIN','S'],'Ｆ':['Fライナー','F']};
+  const types = {'普':['各停','各'],'Ｇ':['G各','G'],'Ｂ':['B各','B'],'急':['急行','急'],'特':['特急','特'],'通':['通勤特急','通特'],'準':['準急','準'],'回':['回送','回'],'Ｓ':['S-TRAIN','S'],'Ｆ':['Fライナー','F']};
   const kindCodes = {2:'普',3:'Ｓ',4:'急',5:'特',6:'回',7:'Ｆ',8:'Ｇ',10:'準',11:'通'};
   function routeFor(id) { return master.routes.find(r => [r.rosen,r.key,r.tidLineId,r.internalLineId].includes(String(id))); }
   function positionFor(train, route) {
@@ -54,7 +54,8 @@
       const identity = [number, row.operation_serial_number, row.up, row.train_line_id, pos.key].join(':');
       if (seen.has(identity)) continue;
       seen.add(identity);
-      const type = types[row.kind] || types[kindCodes[row.train_kind]] || ['種別不明','？'];
+      let type = types[row.kind] || types[kindCodes[row.train_kind]] || ['種別不明','？'];
+      if (type[0] === '各停' && String(row.train_line_id ?? row.line_id) === '26004') type = types['Ｂ'];
       const destination = destinationFor(row, route);
       const cars = Number(row.num_of_cars);
       trains.push({cbango:number, displayTrainNumber:trainNumberLabel(number), iconTrainNumber:operationLabel(row.operation_number,row.train_line_id ?? row.line_id), type:'3', typeLabel:type[0], name:type[0] + (type[0].endsWith('ライナー') || type[0] === 'S-TRAIN' ? '' : '列車'),
