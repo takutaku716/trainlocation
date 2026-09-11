@@ -74,6 +74,16 @@ Proxyは不要。認証情報は送信せず、取得先を固定する。在線
 `002134` は `2134F`、それ以外の識別形式は切り詰めずそのまま表示する。
 在線で両数が未取得の場合のみAPIの車両一覧件数を補う。種別・行先はこのAPIで上書きしない。
 
+田園都市線のAPIから編成を取得できた場合のみ、詳細の編成名を車両情報ボタンにする。
+同じレスポンスの `temp` を外気温、`cars[].temp` を車内温度、
+`cars[].passenger_rate` を混雑度の段階値として表示する（パーセントには換算しない）。
+`51xxF` の5000系のみ `cars[].air_mode` の空調モード列を表示する。
+欠損・無効な値は `—`。行先・種別・現在地は既存の在線表示を使用する。
+車両情報は取得時刻付きのスナップショットで、編成クリック時には再取得せず、
+既存の詳細内で切り替える。「列車詳細に戻る」またはEscapeで元に戻る。
+混雑アイコンはローカルの東急アプリ4.24.0解析資料の `vector_crowd_lv1`～`lv6` を
+`tools/build_tokyu_crowd_icons.ps1` でSVGに変換している。
+
 東横線・目黒線・新横浜線の編成は `original/tokyu_formation.json` を参照して判定し、
 詳細の両数の後ろに括弧書きで表示する。添付の参考実装に合わせ、所属が「み」の場合は
 8両、「東」「西」の場合は10両の対照表を使用する。それ以外は取得した両数を使う。
@@ -86,8 +96,15 @@ node tools/test_tokyu_location_adapter.cjs
 node tools/test_tokyu_proxy.mjs
 node tools/test_tokyu_formation.cjs
 node tools/test_tokyu_dento_formation.mjs
+node tools/test_tokyu_formation_detail.cjs
+node tools/test_tokyu_vehicle.cjs
+node tools/test_tokyu_vehicle_ui.cjs
 npx wrangler deploy --config wrangler.tokyu.toml
 ```
+
+車両情報UIテストはローカルサーバー（既定8796）とPlaywrightが必要。
+`TOKYU_TEST_URL` でURL、`PLAYWRIGHT_CHANNEL` で使用ブラウザを指定できる。
+1280・390・320px幅で車両行、画像、戻る操作、横はみ出しを確認する。
 
 テストは `testdata/tokyu` の公開JSONを使用し、実APIに依存しない。
 全8路線の駅・駅間アンカーと上下方向、行先表の分離、種別、遅延、運行番号、

@@ -14,6 +14,7 @@ $(function ($) {
 	let lang = document.documentElement.dataset.lang;
 	// 列車のアイコンをクリックしたときの動き
 	$(document).on("click", ".ressha-icon .ressha", function() {
+		window.TokyuCarDetail?.reset();
 		let lang = document.documentElement.dataset.lang;
 		const clickedItem = this;
 		const clickedDataset = clickedItem.dataset;
@@ -32,6 +33,7 @@ $(function ($) {
 					let cars = target.dataset.ryosu || "";
 					if (!cars && Number.isInteger(detail.cars) && detail.cars > 0 && detail.cars <= 20) cars = detail.cars + ({ja:"両",en:" car(s)",tc:"節車廂",sc:"节车厢",kr:"량 편성"}[lang] || "両");
 					target.dataset.ryosu = cars + "（" + escape_detail_html(detail.formation) + "）";
+					if (detail.vehicle) target.dataset.tokyu_vehicle_detail = JSON.stringify(detail);
 				}
 				target.dataset.tokyu_formation_loaded = "1";
 				$(target).trigger("click");
@@ -192,6 +194,7 @@ $(function ($) {
 			$("#shuEki").html(dataset.shu_eki);
 			// 両数
 			$("#ryosu").html(dataset.ryosu);
+			window.TokyuCarDetail?.bind(dataset);
 			// 運行状態名
 			$("#resshaDetailUnkouName").html(dataset.unkou_name);
 			// 運行状態詳細

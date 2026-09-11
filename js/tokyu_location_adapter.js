@@ -93,6 +93,24 @@
     const local = typeof location !== 'undefined' && /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
     return (local ? '' : 'https://trainlocation-tokyu-proxy.densha716.workers.dev') + '/api/tokyu/' + route.key;
   }
+  function dentoVehicleFor(data, formation, fetchedAt) {
+    function temperature(value) {
+      return typeof value === 'number' && Number.isFinite(value) && value >= -60 && value <= 80 ? value : null;
+    }
+    const showAirMode = /^51\d{2}F$/.test(formation);
+    const seen = new Set();
+    const carDetails = [];
+    for (const car of Array.isArray(data.cars) ? data.cars.slice(0,20) : []) {
+      if (!car || !Number.isInteger(car.number) || car.number < 1 || car.number > 20 || seen.has(car.number)) continue;
+      seen.add(car.number);
+      carDetails.push({number:car.number,
+        congestion:Number.isInteger(car.passenger_rate) && car.passenger_rate >= 1 && car.passenger_rate <= 6 ? car.passenger_rate : null,
+        temperature:temperature(car.temp),
+        airMode:showAirMode && typeof car.air_mode === 'string' ? car.air_mode.trim().slice(0,30) : ''});
+    }
+    carDetails.sort((a,b)=>a.number-b.number);
+    return {outsideTemperature:temperature(data.temp),showAirMode,carDetails,fetchedAt};
+  }
   function createClient({fetchImpl=(...args)=>fetch(...args), now=()=>Date.now(), timeoutMs=50000}={}) {
     const cache = new Map(), lastSuccess = new Map();
     const dentoCache = new Map();
@@ -110,6 +128,7 @@
               formation:/^00\d{4}$/.test(unit) ? unit.slice(2) + 'F' : unit,
               cars:Array.isArray(data.cars) && data.cars.length > 0 && data.cars.length <= 20 ? data.cars.length : 0
             } : null;
+            if (valid) valid.vehicle = dentoVehicleFor(data,valid.formation,now());
             entry.expires=now()+(valid?60000:15000);return valid;
           });
         dentoCache.set(key,entry);
@@ -166,5 +185,5 @@
   function statusText(data) {
     return data.tokyu.source === 'w-tid' ? 'w-tid取得（第三者配信）' : '';
   }
-  return {routeFor,positionFor,destinationFor,operationLabel,trainNumberLabel,formationFor,normalize,apiUrl,createClient,statusText,...createClient()};
+  return {routeFor,positionFor,destinationFor,operationLabel,trainNumberLabel,formationFor,normalize,apiUrl,dentoVehicleFor,createClient,statusText,...createClient()};
 }));
