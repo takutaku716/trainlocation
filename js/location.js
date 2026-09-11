@@ -3972,6 +3972,7 @@ function create_html_down_ressha_icon(_nowRow, _typeData, _ekiData) {
  * 列車詳細用の隠し要素を設定する。
  */
 function create_ressha_detail(_objItem, _nowRow, _typeData, _ekiData) {
+    if (_nowRow.tokyu && _nowRow.tokyu.dentoRequest) _objItem.dataset.tokyu_formation_request = JSON.stringify(_nowRow.tokyu.dentoRequest);
 	let lang = document.documentElement.dataset.lang;
 	// 列車種別マスタから列車種別を取得
 	let type = _typeData.find((v) => v.type == _nowRow.type);

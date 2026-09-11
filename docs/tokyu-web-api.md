@@ -66,6 +66,14 @@ w-tid路線のみ第三者配信の表示を残す。時刻は配信元の更新
 
 ## テスト・再生成
 
+田園都市線の編成は詳細クリック時だけ公開API
+`https://train-info.tokyuapp.com/lines/26003/trains/{operation}/directions/{up|down}`
+をブラウザから直接照会する。`Access-Control-Allow-Origin: *` を確認済みで、
+Proxyは不要。認証情報は送信せず、取得先を固定する。在線JSONの取得経路は変更しない。
+成功は60秒、空応答・失敗は15秒キャッシュし、同時要求を共用する。
+`002134` は `2134F`、それ以外の識別形式は切り詰めずそのまま表示する。
+在線で両数が未取得の場合のみAPIの車両一覧件数を補う。種別・行先はこのAPIで上書きしない。
+
 東横線・目黒線・新横浜線の編成は `original/tokyu_formation.json` を参照して判定し、
 詳細の両数の後ろに括弧書きで表示する。添付の参考実装に合わせ、所属が「み」の場合は
 8両、「東」「西」の場合は10両の対照表を使用する。それ以外は取得した両数を使う。
@@ -77,6 +85,7 @@ w-tid路線のみ第三者配信の表示を残す。時刻は配信元の更新
 node tools/test_tokyu_location_adapter.cjs
 node tools/test_tokyu_proxy.mjs
 node tools/test_tokyu_formation.cjs
+node tools/test_tokyu_dento_formation.mjs
 npx wrangler deploy --config wrangler.tokyu.toml
 ```
 

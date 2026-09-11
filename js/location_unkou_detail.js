@@ -18,6 +18,26 @@ $(function ($) {
 		const clickedDataset = clickedItem.dataset;
 		if (clickedDataset.source === "keisei" && clickedDataset.keisei_loading === "1") return;
 		const toeiSerial = ++toeiDetailRequestSerial;
+		if (clickedDataset.source === "tokyu" && clickedDataset.tokyu_formation_request && clickedDataset.tokyu_formation_loaded !== "1") {
+			loading_animation_display();
+			let request;
+			try { request = JSON.parse(clickedDataset.tokyu_formation_request); } catch (_) { loading_animation_hidden(); return; }
+			window.TokyuLocationAdapter.loadDentoFormation(request).then(function(detail) {
+				if (toeiSerial !== toeiDetailRequestSerial) return;
+				if (get_param_rosen() !== clickedDataset.source_rosen) { loading_animation_hidden(); return; }
+				const target = clickedItem.isConnected ? clickedItem : Array.from(document.querySelectorAll(".ressha[data-source='tokyu']")).find(item => item.dataset.cbango === clickedDataset.cbango && item.dataset.source_rosen === clickedDataset.source_rosen && item.dataset.tokyu_formation_request === clickedDataset.tokyu_formation_request);
+				if (!target) { loading_animation_hidden(); return; }
+				if (detail) {
+					let cars = target.dataset.ryosu || "";
+					if (!cars && Number.isInteger(detail.cars) && detail.cars > 0 && detail.cars <= 20) cars = detail.cars + ({ja:"両",en:" car(s)",tc:"節車廂",sc:"节车厢",kr:"량 편성"}[lang] || "両");
+					target.dataset.ryosu = cars + "（" + escape_detail_html(detail.formation) + "）";
+				}
+				target.dataset.tokyu_formation_loaded = "1";
+				$(target).trigger("click");
+				if (!detail) target.dataset.tokyu_formation_loaded = "0";
+			});
+			return;
+		}
 		if (clickedDataset.source === "keisei" && clickedDataset.keisei_loaded !== "1") {
 			clickedDataset.keisei_loading = "1";
 			loading_animation_display();

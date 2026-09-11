@@ -74,6 +74,7 @@
         shuEkiSimple:destination === '行先不明' ? '？' : Array.from(destination)[0],shuEkiName:destination,shuEkiKey:'',
         ryosu:Number.isInteger(cars) && cars > 0 && cars < 99 ? cars : 0,status:'1',statusDetail:'',senku:route.rosen,source:'tokyu',sourceRosen:route.rosen,
         tokyu:{typeSimple:type[1],operationNumber:row.operation_number,trainLineId:row.train_line_id,trackNumber:row.track_number,
+          dentoRequest:route.key === 'dento' && String(row.train_line_id || row.line_id) === '26003' && /^\d{1,3}$/.test(String(row.operation_number)) ? {operation:row.operation_number,direction:row.up?'up':'down'} : null,
           formation:['toyoko','meguro','shinyokohama'].includes(route.key) ? formationFor(row,formations) : ''}});
     }
     const text = new Date(envelope.fetchedAt + 9*3600000).toISOString().slice(0,19).replace(/-/g,'/').replace('T',' ') + ' 現在';
@@ -88,6 +89,27 @@
   }
   function createClient({fetchImpl=(...args)=>fetch(...args), now=()=>Date.now(), timeoutMs=50000}={}) {
     const cache = new Map(), lastSuccess = new Map();
+    const dentoCache = new Map();
+    async function loadDentoFormation(request) {
+      if (!request || !/^\d{1,3}$/.test(String(request.operation)) || !['up','down'].includes(request.direction)) return null;
+      const key = Number(request.operation) + '/' + request.direction;
+      let entry = dentoCache.get(key);
+      if (!entry || entry.expires <= now()) {
+        for (const [k,v] of dentoCache) if (v.expires <= now()) dentoCache.delete(k);
+        entry = {expires:Infinity,promise:null};
+        entry.promise = fetchImpl('https://train-info.tokyuapp.com/lines/26003/trains/' + Number(request.operation) + '/directions/' + request.direction,{signal:AbortSignal.timeout(10000),cache:'no-store',credentials:'omit'})
+          .then(r=>r.ok?r.json():null).catch(()=>null).then(data=>{
+            const unit = typeof data?.unit_number === 'string' ? data.unit_number.trim() : '';
+            const valid = /^[A-Za-z0-9-]{1,20}$/.test(unit) && !/^0+$/.test(unit) ? {
+              formation:/^00\d{4}$/.test(unit) ? unit.slice(2) + 'F' : unit,
+              cars:Array.isArray(data.cars) && data.cars.length > 0 && data.cars.length <= 20 ? data.cars.length : 0
+            } : null;
+            entry.expires=now()+(valid?60000:15000);return valid;
+          });
+        dentoCache.set(key,entry);
+      }
+      return entry.promise;
+    }
     let formationCache;
     function loadFormations() {
       if (!formationCache || formationCache.expires <= now()) {
@@ -132,7 +154,7 @@
           error:['TimeoutError','AbortError'].includes(error.name)?'取得タイムアウト':error instanceof TypeError?'通信エラー':error.message}};
       }
     }
-    return {load};
+    return {load,loadDentoFormation};
   }
   function statusText(data) {
     return data.tokyu.source === 'w-tid' ? 'w-tid取得（第三者配信）' : '';
