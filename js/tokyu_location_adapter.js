@@ -40,6 +40,12 @@
     return String(value ?? '').replace(/^0(\d{3})(\d{3})0$/, '$1-$2');
   }
   function formationFor(train, formations) {
+    if (String(train.train_line_id || train.line_id) === '26004') {
+      const raw = train.train_orchestration_number;
+      if (raw == null || !/^\d{1,2}$/.test(String(raw))) return '';
+      const name = formations?.oimachi_systems?.[String(Number(train.num_of_cars))]?.[String(raw).padStart(2,'0')];
+      return typeof name === 'string' ? name.trim() : '';
+    }
     if (!['26001','26002','26009'].includes(String(train.train_line_id || train.line_id))) return '';
     const affiliation = train.affiliation;
     if (!['急','み','相','副','東','西','都','南','埼'].includes(affiliation)) return '';
@@ -75,7 +81,7 @@
         ryosu:Number.isInteger(cars) && cars > 0 && cars < 99 ? cars : 0,status:'1',statusDetail:'',senku:route.rosen,source:'tokyu',sourceRosen:route.rosen,
         tokyu:{typeSimple:type[1],operationNumber:row.operation_number,trainLineId:row.train_line_id,trackNumber:row.track_number,
           dentoRequest:route.key === 'dento' && String(row.train_line_id || row.line_id) === '26003' && /^\d{1,3}$/.test(String(row.operation_number)) ? {operation:row.operation_number,direction:row.up?'up':'down'} : null,
-          formation:['toyoko','meguro','shinyokohama'].includes(route.key) ? formationFor(row,formations) : ''}});
+          formation:['toyoko','meguro','shinyokohama','oimachi'].includes(route.key) ? formationFor(row,formations) : ''}});
     }
     const text = new Date(envelope.fetchedAt + 9*3600000).toISOString().slice(0,19).replace(/-/g,'/').replace('T',' ') + ' 現在';
     return {trains,time:Object.fromEntries(['ja','en','tc','sc','kr'].map(l=>[l,text])),sourceTimes:[{rosen:route.rosen,timestamp:envelope.fetchedAt,text}],
@@ -115,7 +121,7 @@
       if (!formationCache || formationCache.expires <= now()) {
         const entry = {expires:Infinity,promise:null};
         entry.promise = (async()=>{
-          const response = await fetchImpl('./original/tokyu_formation.json',{signal:AbortSignal.timeout(5000)});
+          const response = await fetchImpl('./original/tokyu_formation.json?20260911b',{signal:AbortSignal.timeout(5000)});
           if (!response.ok) throw new Error('Formation master unavailable');
           const data = await response.json();
           if (!data?.tokyu_systems || typeof data.tokyu_systems !== 'object') throw new Error('Invalid formation master');
@@ -145,7 +151,7 @@
         }
         const data = await entry.promise;
         if (now() - data.fetchedAt > 120000 || data.fetchedAt - now() > 60000) throw new Error('取得データの日時が古いか不正です');
-        const formations = ['toyoko','meguro','shinyokohama'].includes(route.key) ? await loadFormations() : null;
+        const formations = ['toyoko','meguro','shinyokohama','oimachi'].includes(route.key) ? await loadFormations() : null;
         const result = normalize(data,route.rosen,formations);
         lastSuccess.set(route.rosen,data.fetchedAt);
         return result;

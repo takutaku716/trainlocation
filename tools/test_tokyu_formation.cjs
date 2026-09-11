@@ -17,6 +17,18 @@ assert.equal(adapter.formationFor({...base,affiliation:'み',num_of_cars:10,trai
 assert.equal(adapter.formationFor({...base,affiliation:'東',train_orchestration_number:2},master),'9102F');
 for (const override of [{affiliation:'不明'},{train_orchestration_number:null},{train_orchestration_number:''},{train_orchestration_number:101},{train_orchestration_number:99},{train_line_id:26003}]) assert.equal(adapter.formationFor({...base,...override},master),'');
 assert.equal(adapter.formationFor(base,null),'');
+const oimachi = {...base,line_id:26004,train_line_id:26004,affiliation:''};
+for (const [cars,group] of Object.entries(master.oimachi_systems)) {
+  for (const [number,expected] of Object.entries(group)) {
+    assert.equal(adapter.formationFor({...oimachi,num_of_cars:cars,train_orchestration_number:number},master),expected);
+    assert.equal(adapter.formationFor({...oimachi,num_of_cars:Number(cars),train_orchestration_number:Number(number)},master),expected);
+  }
+}
+assert.equal(adapter.formationFor({...oimachi,num_of_cars:5},master),'9001F');
+assert.equal(adapter.formationFor({...oimachi,num_of_cars:7},master),'6121F');
+for (const [cars,number] of [[7,4],[5,16],[5,50],[5,71],[8,1],[0,1],[5,null]]) {
+  assert.equal(adapter.formationFor({...oimachi,num_of_cars:cars,train_orchestration_number:number},master),'');
+}
 const now = Date.now();
 const raw = {trains:[{...base,station_id:26,up:true,kind:'普',operation_number:1,train_number:'00012310'}]};
 assert.equal(adapter.normalize({data:raw,fetchedAt:now},159,master).trains[0].tokyu.formation,'3101F');
@@ -25,6 +37,9 @@ for (const [route,line,station] of [[160,26002,914],[163,26009,983]]) {
   assert.equal(adapter.normalize({data:{trains:[train]},fetchedAt:now},route,master).trains[0].tokyu.formation,'3101F');
 }
 async function run() {
+  const row = {...oimachi,num_of_cars:5,station_id:adapter.routeFor(162).stations[0].id,up:true,train_number:'00012310',operation_number:1};
+  const oimachiClient=adapter.createClient({fetchImpl:async url=>Response.json(url.includes('tokyu_formation') ? master : {data:{trains:[row]},fetchedAt:now})});
+  assert.equal((await oimachiClient.load(162)).trains[0].tokyu.formation,'9001F');
   let count=0;
   const client=adapter.createClient({fetchImpl:async url=>{
     if (url.includes('tokyu_formation')) {count++;return Response.json(master);}
