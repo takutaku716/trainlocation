@@ -14,6 +14,7 @@ $(function ($) {
 	let lang = document.documentElement.dataset.lang;
 	// 列車のアイコンをクリックしたときの動き
 	$(document).on("click", ".ressha-icon .ressha", function() {
+		let lang = document.documentElement.dataset.lang;
 		const clickedItem = this;
 		const clickedDataset = clickedItem.dataset;
 		if (clickedDataset.source === "keisei" && clickedDataset.keisei_loading === "1") return;
@@ -170,7 +171,6 @@ $(function ($) {
 				});
 			return;
 		}
-		let lang = document.documentElement.dataset.lang;
 		// ローディングアニメーションを表示
 		loading_animation_display();
 
