@@ -81,7 +81,7 @@
         ryosu:Number.isInteger(cars) && cars > 0 && cars < 99 ? cars : 0,status:'1',statusDetail:'',senku:route.rosen,source:'tokyu',sourceRosen:route.rosen,
         tokyu:{typeSimple:type[1],operationNumber:row.operation_number,trainLineId:row.train_line_id,trackNumber:row.track_number,
           dentoRequest:route.key === 'dento' && String(row.train_line_id || row.line_id) === '26003' && /^\d{1,3}$/.test(String(row.operation_number)) ? {operation:row.operation_number,direction:row.up?'up':'down'} : null,
-          formation:['toyoko','meguro','shinyokohama','oimachi'].includes(route.key) ? formationFor(row,formations) : ''}});
+          formation:['toyoko','meguro','shinyokohama','oimachi'].includes(route.key) || (route.key === 'dento' && String(row.train_line_id || row.line_id) === '26004') ? formationFor(row,formations) : ''}});
     }
     const text = new Date(envelope.fetchedAt + 9*3600000).toISOString().slice(0,19).replace(/-/g,'/').replace('T',' ') + ' 現在';
     return {trains,time:Object.fromEntries(['ja','en','tc','sc','kr'].map(l=>[l,text])),sourceTimes:[{rosen:route.rosen,timestamp:envelope.fetchedAt,text}],
@@ -151,7 +151,8 @@
         }
         const data = await entry.promise;
         if (now() - data.fetchedAt > 120000 || data.fetchedAt - now() > 60000) throw new Error('取得データの日時が古いか不正です');
-        const formations = ['toyoko','meguro','shinyokohama','oimachi'].includes(route.key) ? await loadFormations() : null;
+        const needsOimachiFormations = route.key === 'dento' && data.data?.trains?.some(row => row && String(row.line_id) === route.tidLineId && String(row.train_line_id || row.line_id) === '26004');
+        const formations = ['toyoko','meguro','shinyokohama','oimachi'].includes(route.key) || needsOimachiFormations ? await loadFormations() : null;
         const result = normalize(data,route.rosen,formations);
         lastSuccess.set(route.rosen,data.fetchedAt);
         return result;

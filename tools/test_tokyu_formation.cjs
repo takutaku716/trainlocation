@@ -40,6 +40,24 @@ async function run() {
   const row = {...oimachi,num_of_cars:5,station_id:adapter.routeFor(162).stations[0].id,up:true,train_number:'00012310',operation_number:1};
   const oimachiClient=adapter.createClient({fetchImpl:async url=>Response.json(url.includes('tokyu_formation') ? master : {data:{trains:[row]},fetchedAt:now})});
   assert.equal((await oimachiClient.load(162)).trains[0].tokyu.formation,'9001F');
+  const sharedRow = {...row,line_id:26003,station_id:adapter.routeFor(161).stations[0].id};
+  const dentoRow = {...sharedRow,train_line_id:26003,train_number:'00022310',num_of_cars:10};
+  let sharedReads=0;
+  const mixedClient=adapter.createClient({fetchImpl:async url=>{
+    if(url.includes('tokyu_formation')) {sharedReads++;return Response.json(master);}
+    return Response.json({data:{trains:[sharedRow,dentoRow]},fetchedAt:now});
+  }});
+  const mixed=await mixedClient.load(161);
+  assert.equal(sharedReads,1);
+  assert.equal(mixed.trains[0].tokyu.formation,'9001F');
+  assert.equal(mixed.trains[0].tokyu.dentoRequest,null);
+  assert.equal(mixed.trains[1].tokyu.formation,'');
+  assert.deepEqual(mixed.trains[1].tokyu.dentoRequest,{operation:1,direction:'up'});
+  const onlyDento=adapter.createClient({fetchImpl:async url=>{
+    assert.ok(!url.includes('tokyu_formation'));
+    return Response.json({data:{trains:[dentoRow]},fetchedAt:now});
+  }});
+  assert.deepEqual((await onlyDento.load(161)).trains[0].tokyu.dentoRequest,{operation:1,direction:'up'});
   let count=0;
   const client=adapter.createClient({fetchImpl:async url=>{
     if (url.includes('tokyu_formation')) {count++;return Response.json(master);}
