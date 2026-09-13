@@ -1,7 +1,7 @@
 (function(root,factory){
-  if(typeof module==='object'&&module.exports)module.exports=factory(require('./sotetsu_routes.js'));
-  else root.SotetsuLocationAdapter=factory(root.SotetsuRoutes);
-}(typeof self!=='undefined'?self:this,function(master){
+  if(typeof module==='object'&&module.exports)module.exports=factory(require('./sotetsu_routes.js'),require('./tokyu_location_adapter.js'));
+  else root.SotetsuLocationAdapter=factory(root.SotetsuRoutes,root.TokyuLocationAdapter);
+}(typeof self!=='undefined'?self:this,function(master,tokyu){
   'use strict';
   function routeFor(id){return master.routes.find(r=>r.rosen===String(id));}
   function positionFor(train,route){
@@ -24,11 +24,13 @@
     const trains=[],seen=new Set();
     for(const train of raw.trains){
       const pos=positionFor(train,route),number=String(train?.train_number??'');
-      if(!pos||!/^\d{1,8}$/.test(number)||seen.has(number))continue;
+      const operation=route.lineId===3&&train?.station_id===29&&train.next_station_id===null?number.match(/^K(\d{1,3})$/):null;
+      const operationLabel=operation?tokyu.operationLabel(operation[1],'26009'):'';
+      if(!pos||(!/^\d{1,8}$/.test(number)&&!operationLabel)||seen.has(number))continue;
       seen.add(number);
       const kind=master.kinds[train.train_kind_id]||['種別不明','？'];
       const destination=master.destinations[train.destination_station_id]||'行先不明';
-      trains.push({cbango:number,displayTrainNumber:number,type:'3',typeLabel:kind[0],name:kind[0]+'列車',pos:pos.key,posName:pos.name,
+      trains.push({cbango:number,displayTrainNumber:operationLabel||number,iconTrainNumber:operationLabel||number,type:'3',typeLabel:kind[0],name:kind[0]+'列車',pos:pos.key,posName:pos.name,
         chien:Math.max(0,Math.floor(Number(train.delay)||0)),shuEkiSimple:destination==='行先不明'?'？':Array.from(destination)[0],shuEkiName:destination,shuEkiKey:'',
         ryosu:Number.isInteger(train.train_length_id)&&train.train_length_id>0&&train.train_length_id<=20?train.train_length_id:0,
         status:'1',statusDetail:'',senku:route.rosen,source:'sotetsu',sourceRosen:route.rosen,sotetsu:{typeSimple:kind[1],position:train.position}});

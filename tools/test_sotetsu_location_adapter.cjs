@@ -13,6 +13,13 @@ const fixture=require('../testdata/sotetsu_trains.json');
   assert.equal(normalized[168].trains[1].pos,'SOTETSU168P1_2U');
   assert.equal(normalized[169].trains[0].pos,'SOTETSU169P1_2U');
   assert.equal(normalized[169].trains[1].pos,'SOTETSU169P2_3D');
+  const placeholder=normalized[169].trains.find(t=>t.cbango==='K334');
+  assert.equal(placeholder.displayTrainNumber,'34S');
+  assert.equal(placeholder.iconTrainNumber,'34S');
+  assert.equal(placeholder.pos,'SOTETSU169P1D');
+  for(const patch of [{station_id:28},{next_station_id:28,station_id:null},{train_number:'K1000'},{line_id:301}]){
+    assert.equal(adapter.normalize({...fixture,trains:[{...fixture.trains.at(-1),...patch}]},169).trains.length,0);
+  }
   for(const r of master.routes){
     const html=fs.readFileSync(`rosen/rosen_${r.rosen}.html`,'utf8');
     for(const t of normalized[r.rosen].trains)assert.ok(html.includes(t.pos),t.pos);

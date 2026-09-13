@@ -23,9 +23,11 @@ Shared junction stations can appear on more than one route.
 
 Train details reuse the common destination, number, car count, location and
 delay display. This integration does not provide timetables or formation
-identification. Non-numeric placeholder train IDs (such as `K...`) are not
-treated as actual train numbers; the separate app operation lookup is not
-included. Unknown kinds retain an unknown label rather than guessing.
+identification. At Shin-Yokohama station, `K...` operation IDs reuse the
+Tokyu Shin-Yokohama operation formatter (for example, `K334` displays as
+`34S`). The original ID is retained for identity/tracking. This requires no
+additional network lookup. Other non-numeric IDs remain excluded.
+Unknown kinds retain an unknown label rather than guessing.
 
 ## Verification
 
