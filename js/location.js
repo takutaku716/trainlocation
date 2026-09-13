@@ -1418,7 +1418,8 @@ function is_location_auto_refresh_allowed(_rosen) {
 
 function is_odpt_location_rosen(_rosen) {
 	// Shared ODPT display lifecycle (station selection, freshness, refresh failures).
-	return !!((window.TokyuLocationAdapter && window.TokyuLocationAdapter.routeFor(_rosen)) ||
+	return !!((window.SotetsuLocationAdapter && window.SotetsuLocationAdapter.routeFor(_rosen)) ||
+		(window.TokyuLocationAdapter && window.TokyuLocationAdapter.routeFor(_rosen)) ||
 		(window.KeiseiLocationAdapter && window.KeiseiLocationAdapter.routeFor(_rosen)) ||
 		(window.TxLocationAdapter && window.TxLocationAdapter.routeFor(_rosen)) ||
 		(window.ToeiLocationAdapter && window.ToeiLocationAdapter.routeFor(_rosen)) ||
@@ -1426,6 +1427,11 @@ function is_odpt_location_rosen(_rosen) {
 }
 
 function update_odpt_location_status(nowData) {
+	if (nowData && nowData.sotetsu) {
+		$("#message").empty().toggle(!!nowData.sotetsu.error);
+		if (nowData.sotetsu.error) $("#message").append($("<h2 class='msg-bg'></h2>").text(get_error_message()));
+		return;
+	}
 	if (nowData && nowData.tokyu) {
 		const text = window.TokyuLocationAdapter.statusText(nowData);
 		$("#message").empty().toggle(!!text || !!nowData.tokyu.error);
@@ -1732,6 +1738,7 @@ function merge_location_now_data(_nowDataList) {
 }
 
 function load_location_now_data(_param_rosen, _now) {
+	if (window.SotetsuLocationAdapter && window.SotetsuLocationAdapter.routeFor(_param_rosen)) return window.SotetsuLocationAdapter.load(_param_rosen);
 	if (window.TokyuLocationAdapter && window.TokyuLocationAdapter.routeFor(_param_rosen)) return window.TokyuLocationAdapter.load(_param_rosen);
 	if (window.KeiseiLocationAdapter && window.KeiseiLocationAdapter.routeFor(_param_rosen)) return window.KeiseiLocationAdapter.load(_param_rosen);
 	if (window.TxLocationAdapter && window.TxLocationAdapter.routeFor(_param_rosen)) return window.TxLocationAdapter.load(_param_rosen);
@@ -3757,6 +3764,7 @@ function set_jrcentral_train_icon(_iconArea, _nowRow) {
 }
 
 function get_train_type_simple_label(_nowRow, _type, _lang) {
+	if (_nowRow.sotetsu) return _nowRow.sotetsu.typeSimple;
 	if (_nowRow.tokyu) return _nowRow.tokyu.typeSimple;
 	if (_nowRow.keisei) return _nowRow.keisei.typeSimple;
 	if (_nowRow.tx) return _nowRow.tx.typeSimple;

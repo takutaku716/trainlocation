@@ -1,0 +1,4 @@
+#stationList .ressha[data-source="sotetsu"] .icon-img { --train-type-color: #789; background-image: url('../images/home/train_icon.svg'); }
+#stationList .ressha[data-source="sotetsu"]:is([data-ressha_type_name="特急"],[data-ressha_type_name="通勤特急"]) .icon-img { --train-type-color: #e60012; background-image: url('../images/home/train_icon_red.svg'); }
+#stationList .ressha[data-source="sotetsu"]:is([data-ressha_type_name="急行"],[data-ressha_type_name="通勤急行"]) .icon-img { --train-type-color: #f39800; background-image: url('../images/home/train_icon_orange.svg'); }
+#stationList .ressha[data-source="sotetsu"][data-ressha_type_name="快速"] .icon-img { --train-type-color: #0075c2; background-image: url('../images/home/train_icon_blue.svg'); }
