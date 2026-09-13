@@ -1,8 +1,17 @@
 [
+{"area":"15","name":{"ja":"東急電鉄","en":"Tokyu","tc":"東急電鐵","sc":"东急电铁","kr":"도큐 전철"}},
+{"area":"14","name":{"ja":"京成電鉄","en":"Keisei","tc":"京成電鐵","sc":"京成电铁","kr":"게이세이 전철"}},
+{"area":"13","name":{"ja":"つくばエクスプレス","en":"Tsukuba Express","tc":"筑波快線","sc":"筑波快线","kr":"쓰쿠바 익스프레스"}},
+{"area":"12","name":{"ja":"京急電鉄","en":"Keikyu","tc":"京急電鐵","sc":"京急电铁","kr":"게이큐 전철"}},
+{"area":"11","name":{"ja":"都営交通","en":"Toei Transportation","tc":"都營交通","sc":"都营交通","kr":"도에이 교통"}},
 {"area":"01","name":{"ja":"札幌近郊","en":"Sapporo area","tc":"札幌近郊","sc":"札幌近郊","kr":"삿포로 근교"}},
 {"area":"02","name":{"ja":"道央エリア","en":"Central Hokkaido area","tc":"道央區域","sc":"道央区域","kr":"홋카이도 중부지역"}},
 {"area":"03","name":{"ja":"道南エリア","en":"Southern Hokkaido area","tc":"道南區域","sc":"道南区域","kr":"홋카이도 남부지역"}},
 {"area":"04","name":{"ja":"道北エリア","en":"Northern Hokkaido area","tc":"道北區域","sc":"道北区域","kr":"홋카이도 북부지역"}},
 {"area":"05","name":{"ja":"道東エリア","en":"Eastern Hokkaido area","tc":"道東區域","sc":"道东区域","kr":"홋카이도 동부지역"}},
-{"area":"06","name":{"ja":"北海道新幹線","en":"Hokkaido Shinkansen","tc":"北海道新幹線","sc":"北海道新干线","kr":"홋카이도 신칸센"}}
+{"area":"06","name":{"ja":"北海道新幹線","en":"Hokkaido Shinkansen","tc":"北海道新幹線","sc":"北海道新干线","kr":"홋카이도 신칸센"}},
+{"area":"07","name":{"ja":"JR西日本","en":"JR West","tc":"JR西日本","sc":"JR西日本","kr":"JR서일본"}},
+{"area":"08","name":{"ja":"JR四国","en":"JR Shikoku","tc":"JR四國","sc":"JR四国","kr":"JR시코쿠"}},
+{"area":"09","name":{"ja":"JR東海","en":"JR Central","tc":"JR東海","sc":"JR东海","kr":"JR도카이"}},
+{"area":"10","name":{"ja":"JR九州","en":"JR Kyushu","tc":"JR九州","sc":"JR九州","kr":"JR규슈"}}
 ]

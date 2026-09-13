@@ -1,0 +1,8 @@
+.area-name-label.toei { border-left: 5px solid #008a45; }
+.toei-station-number { display: inline-block; min-width: 3.2em; padding: 2px 4px; color: white; text-align: center; border-radius: 4px; font-size: 12px; }
+.toei-location-status, .toei-credit { margin: 8px 12px; line-height: 1.6; }
+.toei-location-status { padding: 8px 12px; background: #eef6f1; border-left: 4px solid #008a45; }
+.toei-credit { font-size: 11px; }
+.toei-loop-note { font-size: 12px; margin: 8px 12px; line-height: 1.6; }
+.toei-credit a { text-decoration: underline; }
+.toei-location-status:empty { display: none; }

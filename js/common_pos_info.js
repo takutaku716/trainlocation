@@ -205,11 +205,7 @@ function disp_nearest_station(_key, _isTop, _rosen, _rosenHtml) {
 				else window.location.href = "./location_" + lang + ".html#rosen=" + _rosen + "&id=" + _key;
 			} else {
 				// ハッシュを&で分割
-				let hashArray = location.hash.slice(1).split('&');
-				let befRosen = "";
-				if (hashArray[0].indexOf("rosen=") >= 0) {
-					befRosen = hashArray[0].slice(-2);
-				}
+				let befRosen = new URLSearchParams(location.hash.slice(1)).get("rosen") || "";
 
 				if (befRosen === _rosen) {
 					// 表示中の路線と遷移先の路線が同じ場合

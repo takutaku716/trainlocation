@@ -10,6 +10,11 @@ $(function ($) {
 	// 言語コードを取得する。
 	const lang = document.documentElement.dataset.lang;
 
+	$(".area-contents.jrshikoku").each(function() {
+		const jrKyushu = $(this).siblings(".area-contents.jrkyushu").first();
+		if (jrKyushu.length) $(this).after(jrKyushu);
+	});
+
 	// ヘッダーを埋め込み表示する。
 	if ($("header").length) {
 		// キャッシュバスター値を生成する。(UNIX元期からの経過ミリ秒数を右に16ビットシフトした値。2の16乗＝65536ミリ秒≒約1分間隔でキャッシュを無効化する)
@@ -236,11 +241,7 @@ function enable_test_mode() {
 }
 
 function get_current_hash_rosen() {
-	const params = location.hash.slice(1).split("&");
-	if (params.length > 0 && params[0].indexOf("rosen=") >= 0) {
-		return params[0].slice(-2);
-	}
-	return "";
+	return new URLSearchParams(location.hash.slice(1)).get("rosen") || "";
 }
 
 function update_guide_test_mode_button() {

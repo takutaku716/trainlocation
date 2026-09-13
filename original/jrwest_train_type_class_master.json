@@ -1,0 +1,241 @@
+{
+  "name": "JR西日本 列車種別番号・詳細表示クラス対照表",
+  "verified_at": "2026-08-09",
+  "official_asset_version": "v9.1.5",
+  "notes": [
+    "JSONのtypeが、詳細画面の種別クラスの数字部分として使用される。",
+    "クラス体系はエリア単位ではなく線区ページ単位で決まる。近畿エリア内にはkinki形式とwide_area形式が混在する。",
+    "北陸、岡山・福山、広島・山口、山陰の現行線区ページはwide_area形式を使用する。",
+    "trainlabel_wだけでは種別を表さない。wide_area形式ではtrainlabel_w-XXが種別を表す。",
+    "kinki形式のtrainlabel-aなど末尾の英字は路線・行先色の指定であり、種別はtrainlabel-XXが表す。",
+    "CSSに定義がない番号は、クラスを付与しても種別ラベルが表示されない。"
+  ],
+  "classification_hypothesis": {
+    "status": "strong_inference_not_officially_confirmed",
+    "summary": "kinki形式を使用する線区はSUNTRAS導入線区とほぼ一致し、wide_area形式はSUNTRAS非導入線区向けの共通種別体系と推定される。",
+    "evidence": [
+      "kinki形式は京阪神の主要線区に集中している。",
+      "JR宝塚線の大阪～新三田はkinki形式だが、新三田～福知山はwide_area形式であり、線区ページの境界で体系が切り替わる。",
+      "kinki形式には同じ表示種別へ変換される複数のtypeがあり、運行管理システム内部の種別差を画面表示時に集約している可能性がある。",
+      "公式の列車走行位置フロントエンドとJSONには、データ生成元がSUNTRASであるとの明記はない。"
+    ]
+  },
+  "areas": {
+    "hokuriku": {
+      "name": "北陸エリア",
+      "class_system": "wide_area",
+      "class_example": "trainlabel trainlabel_w trainlabel_w-12",
+      "official_page": "https://www.train-guide.westjr.co.jp/area_hokuriku.html",
+      "line_pages": [
+        { "page": "hokuriku.html", "name": "北陸線 敦賀～近江塩津", "class_system": "wide_area" }
+      ]
+    },
+    "kinki": {
+      "name": "近畿エリア",
+      "class_system": "mixed",
+      "class_examples": {
+        "kinki": "trainlabel trainlabel-08 trainlabel-a",
+        "wide_area": "trainlabel trainlabel_w trainlabel_w-03"
+      },
+      "official_page": "https://www.train-guide.westjr.co.jp/area_kinki.html",
+      "line_pages": [
+        { "page": "hokurikubiwako.html", "name": "北陸線・琵琶湖線 近江塩津～京都", "class_system": "kinki" },
+        { "page": "kyoto.html", "name": "JR京都線 京都～大阪", "class_system": "kinki" },
+        { "page": "kobesanyo.html", "name": "JR神戸線・山陽線 大阪～上郡", "class_system": "kinki" },
+        { "page": "ako.html", "name": "赤穂線 相生～播州赤穂", "class_system": "kinki" },
+        { "page": "kosei.html", "name": "湖西線 近江塩津～京都", "class_system": "kinki" },
+        { "page": "kusatsu.html", "name": "草津線 草津～柘植", "class_system": "wide_area" },
+        { "page": "nara.html", "name": "奈良線 京都～木津", "class_system": "wide_area" },
+        { "page": "sagano.html", "name": "嵯峨野線 京都～園部", "class_system": "wide_area" },
+        { "page": "sanin1.html", "name": "山陰線 園部～福知山", "class_system": "wide_area" },
+        { "page": "sanin2.html", "name": "山陰線 福知山～居組", "class_system": "wide_area" },
+        { "page": "osakahigashi.html", "name": "おおさか東線 大阪～久宝寺", "class_system": "kinki" },
+        { "page": "takarazuka.html", "name": "JR宝塚線 大阪～新三田", "class_system": "kinki" },
+        { "page": "fukuchiyama.html", "name": "JR宝塚線・福知山線 新三田～福知山", "class_system": "wide_area" },
+        { "page": "tozai.html", "name": "JR東西線 京橋～尼崎", "class_system": "kinki" },
+        { "page": "gakkentoshi.html", "name": "学研都市線 木津～京橋", "class_system": "kinki" },
+        { "page": "bantan.html", "name": "播但線 姫路～和田山", "class_system": "wide_area" },
+        { "page": "maizuru.html", "name": "舞鶴線 綾部～東舞鶴", "class_system": "wide_area" },
+        { "page": "osakaloop.html", "name": "大阪環状線", "class_system": "kinki" },
+        { "page": "yumesaki.html", "name": "JRゆめ咲線 西九条～桜島", "class_system": "kinki" },
+        { "page": "yamatoji.html", "name": "大和路線 JR難波～加茂", "class_system": "kinki" },
+        { "page": "hanwahagoromo.html", "name": "阪和線・羽衣線", "class_system": "kinki" },
+        { "page": "kansaiairport.html", "name": "関西空港線 日根野～関西空港", "class_system": "kinki" },
+        { "page": "wakayama2.html", "name": "和歌山線 王寺～五条", "class_system": "wide_area" },
+        { "page": "wakayama1.html", "name": "和歌山線 五条～和歌山", "class_system": "wide_area" },
+        { "page": "manyomahoroba.html", "name": "万葉まほろば線 奈良～高田", "class_system": "wide_area" },
+        { "page": "kansai.html", "name": "関西線 加茂～亀山", "class_system": "wide_area" },
+        { "page": "kinokuni.html", "name": "きのくに線 和歌山～新宮", "class_system": "wide_area" }
+      ]
+    },
+    "okayama_fukuyama": {
+      "name": "岡山・福山エリア",
+      "class_system": "wide_area",
+      "class_example": "trainlabel trainlabel_w trainlabel_w-03",
+      "official_page": "https://www.train-guide.westjr.co.jp/area_okayama.html",
+      "line_pages": [
+        { "page": "unominato.html", "name": "宇野みなと線 茶屋町～宇野", "class_system": "wide_area" },
+        { "page": "setoohashi.html", "name": "瀬戸大橋線 岡山～児島", "class_system": "wide_area" },
+        { "page": "ako2.html", "name": "赤穂線 播州赤穂～岡山", "class_system": "wide_area" },
+        { "page": "sanyo1.html", "name": "山陽線 上郡～三原", "class_system": "wide_area" },
+        { "page": "tsuyama.html", "name": "津山線 岡山～津山", "class_system": "wide_area" },
+        { "page": "hakubi1.html", "name": "伯備線 倉敷～新郷", "class_system": "wide_area" },
+        { "page": "fukuen1.html", "name": "福塩線 福山～府中", "class_system": "wide_area" }
+      ]
+    },
+    "hiroshima_yamaguchi": {
+      "name": "広島・山口エリア",
+      "class_system": "wide_area",
+      "class_example": "trainlabel trainlabel_w trainlabel_w-10",
+      "official_page": "https://www.train-guide.westjr.co.jp/area_hiroshima.html",
+      "line_pages": [
+        { "page": "kabe.html", "name": "可部線 広島～あき亀山", "class_system": "wide_area" },
+        { "page": "sanyo2.html", "name": "山陽線 糸崎～南岩国", "class_system": "wide_area" },
+        { "page": "sanyo3.html", "name": "山陽線 岩国～下関", "class_system": "wide_area" },
+        { "page": "geibi1.html", "name": "芸備線 三次～広島", "class_system": "wide_area" },
+        { "page": "kure.html", "name": "呉線 三原～広島", "class_system": "wide_area" },
+        { "page": "yamaguchi.html", "name": "山口線 新山口～益田", "class_system": "wide_area" }
+      ]
+    },
+    "sanin": {
+      "name": "山陰エリア",
+      "class_system": "wide_area",
+      "class_example": "trainlabel trainlabel_w trainlabel_w-12",
+      "official_page": "https://www.train-guide.westjr.co.jp/area_sanin.html",
+      "line_pages": [
+        { "page": "sanin3.html", "name": "山陰線 諸寄～米子", "class_system": "wide_area" },
+        { "page": "imbi1.html", "name": "因美線 智頭～鳥取", "class_system": "wide_area" },
+        { "page": "sanin4.html", "name": "山陰線 米子～益田", "class_system": "wide_area" },
+        { "page": "hakubi2.html", "name": "伯備線 新郷～伯耆大山", "class_system": "wide_area" }
+      ]
+    }
+  },
+  "class_systems": {
+    "wide_area": {
+      "used_by": [
+        "hokuriku",
+        "kinki（一部線区）",
+        "okayama_fukuyama",
+        "hiroshima_yamaguchi",
+        "sanin"
+      ],
+      "base_class": "trainlabel trainlabel_w",
+      "type_class_pattern": "trainlabel_w-{type}",
+      "sprite": "https://www.train-guide.westjr.co.jp/v9.1.5/img/labels/traintype_2@1x.png",
+      "types": {
+        "01": { "label": "新快速", "sprite_offset_x": 0 },
+        "02": { "label": "直通快速", "sprite_offset_x": -60 },
+        "03": { "label": "快速", "sprite_offset_x": -120 },
+        "04": { "label": "特別快速", "sprite_offset_x": -180 },
+        "05": { "label": "丹波路快速", "sprite_offset_x": -240 },
+        "06": { "label": "紀州路快速", "sprite_offset_x": -300 },
+        "07": { "label": "みやこ路快速", "sprite_offset_x": -360 },
+        "08": { "label": "ライナー", "sprite_offset_x": -420 },
+        "09": { "label": "区間快速", "sprite_offset_x": -480 },
+        "10": { "label": "普通", "sprite_offset_x": -540 },
+        "11": { "label": "シャトル", "sprite_offset_x": -600 },
+        "12": { "label": "特急", "sprite_offset_x": -660 },
+        "13": { "label": "急行", "sprite_offset_x": -720 },
+        "14": { "label": "寝台特急", "sprite_offset_x": -780 },
+        "15": { "label": "SL", "sprite_offset_x": -840 },
+        "16": { "label": "観光列車", "sprite_offset_x": -900 },
+        "17": { "label": "瑞風", "sprite_offset_x": -960 },
+        "18": { "label": "臨時", "sprite_offset_x": -1020 },
+        "19": { "label": "臨時特急", "sprite_offset_x": -1080 }
+      }
+    },
+    "kinki": {
+      "used_by": [
+        "kinki（一部線区）"
+      ],
+      "base_class": "trainlabel",
+      "type_class_pattern": "trainlabel-{type}",
+      "color_class_pattern": "trainlabel-{line_color_code}",
+      "sprite_pattern": "https://www.train-guide.westjr.co.jp/v9.1.5/img/labels/traintype_{line_color_code}@1x.png",
+      "types": {
+        "01": { "label": "特急", "sprite_offset_x": -900 },
+        "02": { "label": "特急", "sprite_offset_x": -900 },
+        "03": { "label": "寝台特急", "sprite_offset_x": -960 },
+        "06": { "label": "新快速", "sprite_offset_x": 0 },
+        "07": { "label": "新快速", "sprite_offset_x": 0 },
+        "08": { "label": "快速", "sprite_offset_x": -120 },
+        "09": { "label": "快速", "sprite_offset_x": -120 },
+        "10": { "label": "普通", "sprite_offset_x": -720 },
+        "11": { "label": "普通", "sprite_offset_x": -720 },
+        "16": { "label": "ライナー", "sprite_offset_x": -540 },
+        "17": { "label": "特別快速", "sprite_offset_x": -180 },
+        "18": { "label": "区間快速", "sprite_offset_x": -660 },
+        "19": { "label": "臨時", "sprite_offset_x": -1020 },
+        "20": { "label": "特急", "sprite_offset_x": -900 },
+        "21": { "label": "寝台特急", "sprite_offset_x": -960 },
+        "24": { "label": "新快速", "sprite_offset_x": 0 },
+        "25": { "label": "快速", "sprite_offset_x": -120 },
+        "26": { "label": "普通", "sprite_offset_x": -720 },
+        "27": { "label": "特別快速", "sprite_offset_x": -180 },
+        "28": { "label": "区間快速", "sprite_offset_x": -660 },
+        "29": { "label": "丹波路快速", "sprite_offset_x": -240 },
+        "30": { "label": "関空快速", "sprite_offset_x": -420 },
+        "31": { "label": "紀州路快速", "sprite_offset_x": -300 },
+        "32": { "label": "大和路快速", "sprite_offset_x": -360 },
+        "35": { "label": "特急", "sprite_offset_x": -900 },
+        "37": { "label": "関空／紀州路快速", "sprite_offset_x": -480 },
+        "38": { "label": "みやこ路快速", "sprite_offset_x": -840 },
+        "39": { "label": "直通快速", "sprite_offset_x": -60 },
+        "40": { "label": "B快速", "sprite_offset_x": -600 },
+        "41": { "label": "シャトル", "sprite_offset_x": -780 },
+        "42": { "label": "新快速", "sprite_offset_x": 0 },
+        "43": { "label": "新快速", "sprite_offset_x": 0 },
+        "44": { "label": "新快速", "sprite_offset_x": 0 },
+        "45": { "label": "新快速", "sprite_offset_x": 0 },
+        "46": { "label": "新快速", "sprite_offset_x": 0 },
+        "47": { "label": "快速", "sprite_offset_x": -120 },
+        "48": { "label": "快速", "sprite_offset_x": -120 },
+        "49": { "label": "快速", "sprite_offset_x": -120 },
+        "50": { "label": "快速", "sprite_offset_x": -120 },
+        "51": { "label": "快速", "sprite_offset_x": -120 },
+        "52": { "label": "普通", "sprite_offset_x": -720 },
+        "53": { "label": "普通", "sprite_offset_x": -720 },
+        "54": { "label": "普通", "sprite_offset_x": -720 },
+        "55": { "label": "普通", "sprite_offset_x": -720 },
+        "56": { "label": "普通", "sprite_offset_x": -720 },
+        "57": { "label": "直通快速", "sprite_offset_x": -60 },
+        "58": { "label": "直通快速", "sprite_offset_x": -60 },
+        "59": { "label": "区間快速", "sprite_offset_x": -660 },
+        "60": { "label": "区間快速", "sprite_offset_x": -660 },
+        "61": { "label": "大和路快速", "sprite_offset_x": -360 },
+        "62": { "label": "大和路快速", "sprite_offset_x": -360 },
+        "63": { "label": "快速", "sprite_offset_x": -120 },
+        "64": { "label": "快速", "sprite_offset_x": -120 },
+        "65": { "label": "普通", "sprite_offset_x": -720 },
+        "66": { "label": "普通", "sprite_offset_x": -720 },
+        "67": { "label": "丹波路快速", "sprite_offset_x": -240 },
+        "68": { "label": "丹波路快速", "sprite_offset_x": -240 },
+        "69": { "label": "みやこ路快速", "sprite_offset_x": -840 },
+        "70": { "label": "みやこ路快速", "sprite_offset_x": -840 },
+        "71": { "label": "新快速", "sprite_offset_x": 0 },
+        "72": { "label": "新快速", "sprite_offset_x": 0 }
+      },
+      "undefined_type_codes": [
+        "04",
+        "05",
+        "12",
+        "13",
+        "14",
+        "15",
+        "22",
+        "23",
+        "33",
+        "34",
+        "36"
+      ]
+    }
+  },
+  "sources": [
+    "https://www.train-guide.westjr.co.jp/v9.1.5/css/kmileh8V.css",
+    "https://www.train-guide.westjr.co.jp/v9.1.5/css/Dhn0h-1k.css",
+    "https://www.train-guide.westjr.co.jp/v9.1.5/img/labels/traintype_a@1x.png",
+    "https://www.train-guide.westjr.co.jp/v9.1.5/img/labels/traintype_2@1x.png",
+    "https://www.train-guide.westjr.co.jp/api/v3/kyoto.json",
+    "https://www.train-guide.westjr.co.jp/api/v3/hokuriku.json"
+  ]
+}

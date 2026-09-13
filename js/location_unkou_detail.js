@@ -9,11 +9,170 @@ const DETAILED_TRAIN_INFORMATION_DIALOG_TITLES = {
 	"kr": "열차 상세 정보"
 };
 
+let toeiDetailRequestSerial = 0;
 $(function ($) {
 	let lang = document.documentElement.dataset.lang;
 	// 列車のアイコンをクリックしたときの動き
 	$(document).on("click", ".ressha-icon .ressha", function() {
+		window.TokyuCarDetail?.reset();
 		let lang = document.documentElement.dataset.lang;
+		const clickedItem = this;
+		const clickedDataset = clickedItem.dataset;
+		if (clickedDataset.source === "keisei" && clickedDataset.keisei_loading === "1") return;
+		const toeiSerial = ++toeiDetailRequestSerial;
+		if (clickedDataset.source === "tokyu" && clickedDataset.tokyu_formation_request && clickedDataset.tokyu_formation_loaded !== "1") {
+			loading_animation_display();
+			let request;
+			try { request = JSON.parse(clickedDataset.tokyu_formation_request); } catch (_) { loading_animation_hidden(); return; }
+			window.TokyuLocationAdapter.loadDentoFormation(request).then(function(detail) {
+				if (toeiSerial !== toeiDetailRequestSerial) return;
+				if (get_param_rosen() !== clickedDataset.source_rosen) { loading_animation_hidden(); return; }
+				const target = clickedItem.isConnected ? clickedItem : Array.from(document.querySelectorAll(".ressha[data-source='tokyu']")).find(item => item.dataset.cbango === clickedDataset.cbango && item.dataset.source_rosen === clickedDataset.source_rosen && item.dataset.tokyu_formation_request === clickedDataset.tokyu_formation_request);
+				if (!target) { loading_animation_hidden(); return; }
+				if (detail) {
+					let cars = target.dataset.ryosu || "";
+					if (!cars && Number.isInteger(detail.cars) && detail.cars > 0 && detail.cars <= 20) cars = detail.cars + ({ja:"両",en:" car(s)",tc:"節車廂",sc:"节车厢",kr:"량 편성"}[lang] || "両");
+					target.dataset.ryosu = cars + "（" + escape_detail_html(detail.formation) + "）";
+					if (detail.vehicle) target.dataset.tokyu_vehicle_detail = JSON.stringify(detail);
+				}
+				target.dataset.tokyu_formation_loaded = "1";
+				$(target).trigger("click");
+				if (!detail) target.dataset.tokyu_formation_loaded = "0";
+			});
+			return;
+		}
+		if (clickedDataset.source === "keisei" && clickedDataset.keisei_loaded !== "1") {
+			clickedDataset.keisei_loading = "1";
+			loading_animation_display();
+			window.KeiseiLocationAdapter.loadDetail(clickedDataset.cbango, clickedDataset.source_rosen, clickedDataset.keisei_date)
+				.then(rows => ({ rows, failed: false }), () => ({ rows: [], failed: true }))
+				.then(function(result) {
+					clickedDataset.keisei_loading = "0";
+					if (toeiSerial !== toeiDetailRequestSerial) return;
+					if (get_param_rosen() !== clickedDataset.source_rosen) { loading_animation_hidden(); return; }
+					const target = clickedItem.isConnected ? clickedItem : Array.from(document.querySelectorAll(".ressha[data-source='keisei']")).find(item => item.dataset.cbango === clickedDataset.cbango && item.dataset.source_rosen === clickedDataset.source_rosen);
+					if (!target) { loading_animation_hidden(); return; }
+					target.dataset.keisei_timetable = JSON.stringify(result.rows);
+					target.dataset.keisei_loaded = "1";
+					$(target).trigger("click");
+					if (result.failed) target.dataset.keisei_loaded = "0";
+				});
+			return;
+		}
+		if (clickedDataset.source === "toei" && clickedDataset.toei_request && clickedDataset.toei_loaded !== "1") {
+			loading_animation_display();
+			let request;
+			try { request = JSON.parse(clickedDataset.toei_request); }
+			catch (_) { loading_animation_hidden(); return; }
+			window.ToeiTimetableAdapter.load(request)
+				.catch(function() { return { rows: [], message: "時刻表を取得できませんでした。列車を選び直して再取得してください。", failed: true }; })
+				.then(function(detail) {
+					if (toeiSerial !== toeiDetailRequestSerial) return;
+					if (get_param_rosen() !== String(request.rosen)) { loading_animation_hidden(); return; }
+					const target = clickedItem.isConnected ? clickedItem : Array.from(document.querySelectorAll(".ressha[data-source='toei']")).find(item => item.dataset.cbango === request.number && item.dataset.source_rosen === String(request.rosen));
+					if (!target) { loading_animation_hidden(); return; }
+					target.dataset.toei_timetable = JSON.stringify(detail.rows || []);
+					target.dataset.toei_loaded = "1";
+					$(target).trigger("click");
+					if (detail.failed) target.dataset.toei_loaded = "0";
+				});
+			return;
+		}
+		if (clickedDataset.source === "tx" && clickedDataset.tx_loaded !== "1") {
+			if (clickedDataset.tx_loading === "1") return;
+			clickedDataset.tx_loading = "1";
+			loading_animation_display();
+			window.TxLocationAdapter.loadDetail(clickedDataset.cbango)
+				.then(function(rows) { clickedDataset.tx_timetable = JSON.stringify(rows); clickedDataset.tx_error = ""; })
+				.catch(function() { clickedDataset.tx_timetable = "[]"; clickedDataset.tx_error = "1"; })
+				.finally(function() {
+					clickedDataset.tx_loading = "0";
+					if (get_param_rosen() !== "151") { loading_animation_hidden(); return; }
+					const target = clickedItem.isConnected ? clickedItem : Array.from(document.querySelectorAll(".ressha[data-source='tx']")).find(item => item.dataset.cbango === clickedDataset.cbango);
+					if (!target) { loading_animation_hidden(); return; }
+					target.dataset.tx_timetable = clickedDataset.tx_timetable;
+					target.dataset.tx_error = clickedDataset.tx_error;
+					target.dataset.tx_loaded = "1";
+					$(target).trigger("click");
+					if (clickedDataset.tx_error) target.dataset.tx_loaded = "0";
+				});
+			return;
+		}
+		$("#resshaDetail").toggleClass("toei-detail", clickedDataset.source === "toei");
+		$("#resshaDetail").toggleClass("keikyu-detail", clickedDataset.source === "keikyu");
+		$("#keikyuAlertNotice").prop("hidden", !(clickedDataset.source === "keikyu" && clickedDataset.keikyu_alert === "1"));
+		if (clickedDataset.source === "keikyu" && clickedDataset.keikyu_detail_key && clickedDataset.keikyu_loaded !== "1") {
+			if (clickedDataset.keikyu_loading === "1") return;
+			clickedDataset.keikyu_loading = "1";
+			loading_animation_display();
+			window.KeikyuLocationAdapter.loadDetail(clickedDataset.keikyu_detail_key)
+				.catch(function() { return null; })
+				.then(function(detail) {
+					const target = clickedItem.isConnected ? clickedItem : Array.from(document.querySelectorAll(".ressha-icon .ressha")).find(function(item) {
+						return item.dataset.source === "keikyu" && item.dataset.keikyu_id === clickedDataset.keikyu_id;
+					});
+					clickedDataset.keikyu_loading = "0";
+					if (!target) { loading_animation_hidden(); return; }
+					if (detail) {
+						apply_keikyu_detail_to_icon(target, detail);
+					}
+					target.dataset.keikyu_loaded = "1";
+					$(target).trigger("click");
+				});
+			return;
+		}
+		if (clickedDataset.jrkyushu_train_navi_request && clickedDataset.jrkyushu_timetable_loaded !== "1") {
+			if (clickedDataset.jrkyushu_timetable_loading === "1") return;
+			clickedDataset.jrkyushu_timetable_loading = "1";
+			loading_animation_display();
+			prepare_jrkyushu_train_navi_dataset(clickedDataset)
+				.catch(function() {
+					clickedDataset.jrkyushu_timetable = "[]";
+					return null;
+				})
+				.then(function(response) {
+					const targetItem = clickedItem.isConnected ? clickedItem : Array.from(document.querySelectorAll(".ressha-icon .ressha")).find(function(item) {
+						return item.dataset.cbango === clickedDataset.cbango && item.dataset.source === clickedDataset.source;
+					});
+					if (!targetItem) {
+						loading_animation_hidden();
+						return;
+					}
+					if (response && targetItem !== clickedItem && window.JrKyushuTrainNaviAdapter) {
+						window.JrKyushuTrainNaviAdapter.applyResponseToDataset(targetItem.dataset, response, document.documentElement.dataset.lang || "ja");
+					} else {
+						targetItem.dataset.jrkyushu_timetable = clickedDataset.jrkyushu_timetable || "[]";
+					}
+					targetItem.dataset.jrkyushu_timetable_loading = "0";
+					targetItem.dataset.jrkyushu_timetable_loaded = "1";
+					$(targetItem).trigger("click");
+				});
+			return;
+		}
+		if (clickedDataset.source === "jrcentral" && clickedDataset.jrcentral_timetable_loaded !== "1") {
+			if (clickedDataset.jrcentral_timetable_loading === "1") return;
+			clickedDataset.jrcentral_timetable_loading = "1";
+			loading_animation_display();
+			prepare_jrcentral_timetable_dataset(clickedDataset)
+				.catch(function() {
+					clickedDataset.jrcentral_timetable = "[]";
+				})
+				.then(function() {
+					const trainKey = clickedDataset.jrcentral_train_key || "";
+					const targetItem = clickedItem.isConnected ? clickedItem : Array.from(document.querySelectorAll(".ressha-icon .ressha")).find(function(item) {
+						return item.dataset.source === "jrcentral" && item.dataset.jrcentral_train_key === trainKey;
+					});
+					if (!targetItem) {
+						loading_animation_hidden();
+						return;
+					}
+					targetItem.dataset.jrcentral_timetable = clickedDataset.jrcentral_timetable || "[]";
+					targetItem.dataset.jrcentral_timetable_loading = "0";
+					targetItem.dataset.jrcentral_timetable_loaded = "1";
+					$(targetItem).trigger("click");
+				});
+			return;
+		}
 		// ローディングアニメーションを表示
 		loading_animation_display();
 
@@ -23,11 +182,19 @@ $(function ($) {
 			// ヘッダータイトル
 			$("#headerTitle").text(DETAILED_TRAIN_INFORMATION_DIALOG_TITLES[lang]);
 			// 列車種別名
-			if (lang == "ja") $("#resshaTypeName").text(dataset.ressha_type_name);
+			if (lang == "ja") {
+				const typeName = dataset.ressha_type_name || "";
+				const typeNameLength = Array.from(typeName).length;
+				$("#resshaTypeName")
+					.text(typeName)
+					.toggleClass("long-label", typeNameLength >= 6)
+					.toggleClass("very-long-label", typeNameLength >= 9);
+			}
 			// 行先
 			$("#shuEki").html(dataset.shu_eki);
 			// 両数
 			$("#ryosu").html(dataset.ryosu);
+			window.TokyuCarDetail?.bind(dataset);
 			// 運行状態名
 			$("#resshaDetailUnkouName").html(dataset.unkou_name);
 			// 運行状態詳細
@@ -48,6 +215,9 @@ $(function ($) {
 			}
 			// 列車種別コード
 			if (lang == "ja") $("#resshaDetail").attr("dataResshaTypeColor", dataset.ressha_type);
+			const icon = this.querySelector(".icon-img");
+			const iconTypeColor = icon ? window.getComputedStyle(icon).getPropertyValue("--train-type-color").trim() : "";
+			$("#resshaTypeName").css("background-color", iconTypeColor);
 			// 運行状態コード
 			$("#resshaDetail").attr("dataUnkou", dataset.unkou);
 			// 遅れ詳細
@@ -104,17 +274,17 @@ $(function ($) {
 			let now = Date.now() >>> 16;
 			//運行番号
 			// 運行番号（列車番号のラベルと数値を分けて制御）
-			$("#cbangoDetail").text(dataset.cbango);
+			$("#cbangoDetail").text(Object.prototype.hasOwnProperty.call(dataset, "display_cbango") ? dataset.display_cbango : dataset.cbango);
 			$("#cbangoIcon").removeClass("hide");
 			$("#cbangoDetail").removeClass("hide");
 
-			if (dataset.source === "jreast" || dataset.source === "dokotre" || dataset.source === "jrshinkansen") {
+			if (dataset.source === "tokyu" || dataset.source === "keisei" || dataset.source === "tx" || dataset.source === "keikyu" || dataset.source === "toei" || dataset.source === "jreast" || dataset.source === "dokotre" || dataset.source === "jrshinkansen" || dataset.source === "jrwest" || dataset.source === "jrshikoku" || dataset.source === "jrcentral" || dataset.source === "jrkyushu" || dataset.source === "jrkyushu-doredore" || dataset.jrkyushu_train_navi_request) {
 				$("#unkouDetailMain").hide();
 				$.getJSON("./original/location_master" + (lang === "ja" ? "" : "_" + lang) + ".json?" + now)
 					.done(function(posNameMasterBase) {
 						const posKey = String(dataset.pos || "").trim();
 						$("#posDetailText").text(posNameMasterBase[posKey] || dataset.pos_name || posKey || "");
-						$("#aisho").text(dataset.aisho || dataset.ressha_type_name || "");
+						$("#aisho").text(get_detail_train_name_text(dataset));
 						create_jreast_daiya(dataset);
 						$('#resshaDetailMessage').empty();
 						$('#resshaDetailMessage').hide();
@@ -126,7 +296,7 @@ $(function ($) {
 					.fail(function() {
 						const posKey = String(dataset.pos || "").trim();
 						$("#posDetailText").text(dataset.pos_name || posKey || "");
-						$("#aisho").text(dataset.aisho || dataset.ressha_type_name || "");
+						$("#aisho").text(get_detail_train_name_text(dataset));
 						create_jreast_daiya(dataset);
 						$('#resshaDetailMessage').empty();
 						$('#resshaDetailMessage').hide();
@@ -194,6 +364,7 @@ $(function ($) {
 
 	// 運行詳細ボックス内の｢閉じる｣ボタンをクリックしたときの動き
 	$(document).on("click", "#resshaDetail, #resshaDetail .close", function() {
+		toeiDetailRequestSerial++;
 		// 運行情報ボックスを閉じる。
 		$("#resshaDetail").fadeOut("fast");
 		$('#resshaDetailMain').fadeOut("fast");
@@ -230,6 +401,12 @@ $(function ($) {
 	});
 });
 
+function get_detail_train_name_text(_dataset) {
+	const baseText = _dataset.aisho || _dataset.ressha_type_name || "";
+	const typeChange = _dataset.source === "jrwest" ? (_dataset.jrwest_type_change || "") : "";
+	return [baseText, typeChange].filter(Boolean).join("　");
+}
+
 /*
  * JR東日本形式の時刻表データを表示する
  */
@@ -238,8 +415,16 @@ function create_jreast_daiya(_dataset) {
 	let timetable = [];
 	try {
 		const timetableText =
+			_dataset.source === "keisei" ? _dataset.keisei_timetable :
+			_dataset.source === "toei" ? _dataset.toei_timetable :
+			_dataset.source === "tx" ? _dataset.tx_timetable :
+			_dataset.source === "keikyu" ? _dataset.keikyu_timetable :
 			_dataset.source === "dokotre" ? _dataset.dokotre_timetable :
 			_dataset.source === "jrshinkansen" ? _dataset.jrshinkansen_timetable :
+			_dataset.source === "jrwest" ? _dataset.jrwest_timetable :
+			_dataset.source === "jrshikoku" ? _dataset.jrshikoku_timetable :
+			_dataset.source === "jrcentral" ? _dataset.jrcentral_timetable :
+			_dataset.source === "jrkyushu" || _dataset.jrkyushu_train_navi_request ? _dataset.jrkyushu_timetable :
 			_dataset.jreast_timetable;
 		timetable = JSON.parse(timetableText || "[]");
 	} catch (_error) {
@@ -295,7 +480,7 @@ function unique_jreast_timetable_rows(_timetable) {
 		if (row && row.note) return true;
 		const stationName = row && row.stationName ? row.stationName : "";
 		const time = select_jreast_daiya_time(row);
-		const key = stationName;
+		const key = row.stationKey || stationName;
 		if (!stationName || !time || seen.has(key)) return false;
 		seen.add(key);
 		return true;
