@@ -7,7 +7,8 @@ const source=adapter.createClient({now:()=>clock,fetchImpl:async (url,options)=>
 }});
 const load=(operation,direction)=>source.loadDentoFormation({operation,direction});
 const results=await Promise.all([load(3,'up'),load(3,'up')]);
-assert.deepEqual(results[0],{formation:'2134F',cars:10});assert.equal(calls,1);
+assert.equal(results[0].formation,'2134F');assert.equal(results[0].cars,10);assert.equal(calls,1);
+assert.equal(results[0].vehicle.carDetails.length,10);
 clock+=60001;await load(3,'up');assert.equal(calls,2);
 assert.equal(await load('../3','up'),null);assert.equal(await load(3,'sideways'),null);assert.equal(calls,2);
 for(const body of [{},{unit_number:'000000'},{unit_number:'<script>'}]){
@@ -26,5 +27,6 @@ const other=adapter.createClient({fetchImpl:async url=>{
   assert.equal(url,'https://train-info.tokyuapp.com/lines/26003/trains/3/directions/down');
   return Response.json({unit_number:'123456'});
 }});
-assert.deepEqual(await other.loadDentoFormation({operation:3,direction:'down'}),{formation:'123456',cars:0});
+const otherResult = await other.loadDentoFormation({operation:3,direction:'down'});
+assert.equal(otherResult.formation,'123456');assert.equal(otherResult.cars,0);
 console.log('Dento formation: direct URL, formatting, cache, deduplication, invalid/empty/error responses passed.');
