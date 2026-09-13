@@ -8,6 +8,8 @@
   function routeFor(id) { return master.routes.find(r => [r.rosen,r.key,r.tidLineId,r.internalLineId].includes(String(id))); }
   function positionFor(train, route) {
     if (!train || typeof train.up !== 'boolean') return null;
+    // This track code denotes the Sotetsu-side interval, not the station platform.
+    if (route.key === 'shinyokohama' && String(train.station_id) === '983' && String(train.track_number) === '3') return null;
     const direction = train.up ? 'U' : 'D';
     if (train.station_id != null) {
       const station = route.stations.find(s => s.id === String(train.station_id));

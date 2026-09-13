@@ -28,6 +28,17 @@ assert.equal(master.routes.length,8);
 const ty = adapter.routeFor('toyoko'), dt = adapter.routeFor('dento'), sh = adapter.routeFor('sh');
 assert.equal(sh.tidLineId,'26009');
 assert.equal(sh.file,'shinyokohama.json');
+for (const up of [true,false]) {
+  for (const track_number of [3,'3']) {
+    const row={line_id:26009,station_id:983,track_number,up,train_number:'03340010'};
+    assert.equal(adapter.positionFor(row,sh),null);
+    assert.equal(adapter.normalize({data:{trains:[row]},fetchedAt:now},sh.rosen).trains.length,0);
+  }
+  for (const track_number of [1,2,4,undefined]) {
+    assert.equal(adapter.positionFor({station_id:'983',track_number,up},sh).name,'新横浜');
+  }
+  assert.equal(adapter.positionFor({station_id:982,track_number:3,up},sh).name,'新綱島');
+}
 assert.equal(adapter.destinationFor({destination_station_code:78},ty),'渋谷');
 assert.equal(adapter.destinationFor({destination_station_code:78},dt),'鷺沼');
 assert.equal(adapter.destinationFor({destination_station_code:33},ty),'副都心線直通');
