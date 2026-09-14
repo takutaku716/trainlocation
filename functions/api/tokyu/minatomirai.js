@@ -44,9 +44,30 @@ export function convertMinatomirai(documents) {
   }
   return trains;
 }
-export function mergeMinatomirai(base, extra) {
+export function collectDestinations(documents) {
+  const destinations=new Map();
+  for(const document of documents){
+    const row=decode({mapValue:{fields:document.fields||{}}});
+    if(!Number.isInteger(row.index)||row.index<0||row.index>50)continue;
+    for(const train of [...(row.trains||[]),...(row.convergences||[]).flatMap(c=>c.trains||[])]){
+      const number=String(train.tid_train_number??'');
+      const destination=typeof train.destination==='string'?train.destination.trim():'';
+      if(!/^\d{1,12}$/.test(number)||!['UP','DOWN'].includes(train.direction)||!destination)continue;
+      const key=number+':'+(train.direction==='UP');
+      // Conflicting snapshots must not assign an arbitrary destination.
+      if(destinations.has(key)&&destinations.get(key)!==destination)destinations.set(key,null);
+      else if(!destinations.has(key))destinations.set(key,destination);
+    }
+  }
+  return destinations;
+}
+export function mergeMinatomirai(base, extra, destinations=new Map()) {
   const identities=new Set(extra.map(t=>t.train_number+':'+t.up));
-  return {...base,trains:[...base.trains.filter(t=>!identities.has(String(t.train_number)+':'+t.up)),...extra]};
+  const trains=base.trains.filter(t=>!identities.has(String(t.train_number)+':'+t.up)).map(train=>{
+    const destination=typeof train.up==='boolean'?destinations.get(String(train.train_number)+':'+train.up):null;
+    return destination?{...train,destination}:train;
+  });
+  return {...base,trains:[...trains,...extra]};
 }
 export function createMinatomiraiSource({refreshToken,fetchImpl=(...args)=>fetch(...args),now=()=>Date.now(),timeoutMs=12000}={}) {
   let token=null,pending=null;
@@ -77,7 +98,7 @@ export function createMinatomiraiSource({refreshToken,fetchImpl=(...args)=>fetch
         if(!Array.isArray(data.documents)||data.nextPageToken)throw Error('Incomplete Minatomirai positions');
         const indexes=new Set(data.documents.map(d=>Number(d.fields?.index?.integerValue)).filter(i=>i>=41&&i<=50));
         if(indexes.size!==10)throw Error('Incomplete Minatomirai positions');
-        return convertMinatomirai(data.documents);
+        return {trains:convertMinatomirai(data.documents),destinations:collectDestinations(data.documents)};
       }catch(error){if(error.status!==401||attempt===1)throw error;token=null;}
     }
   }

@@ -48,6 +48,12 @@
 みなとみらい線の取得失敗は東横線に波及させず、`minatomirai.ok=false` を返す。
 追加データは古いキャッシュで補わない。既存の15秒キャッシュと共通UIを使用する。
 
+同じFirestore応答のindex0～50から、東横線既存列車の行先も補完する。
+`train_number` と `tid_train_number`、上下方向が一致する場合のみ、有効な
+`destination` を追加する。`destination_station_code` や位置・種別・両数などは変更しない。
+空欄・不一致・行先が競合するレコードは補完しない。表示は既存実装どおり、
+`destination` を優先し、なければ行先コードで変換する。追加のネットワーク取得は行わない。
+
 追加テスト: `node tools/test_minatomirai.mjs`、`node tools/test_minatomirai_ui.cjs`。
 
 w-tid は `https://w-tid.jp/tokyu/iketama.json` と

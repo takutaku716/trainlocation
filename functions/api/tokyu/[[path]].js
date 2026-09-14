@@ -47,8 +47,8 @@ export function createTokyuSource({ fetchImpl = (...args) => fetch(...args), now
       if (key === 'toyoko' && minatomirai) {
         try {
           const extra = await minatomirai.load();
-          data = mergeMinatomirai(data, extra);
-          extension = {ok:true,count:extra.length,fetchedAt:now()};
+          data = mergeMinatomirai(data, extra.trains, extra.destinations);
+          extension = {ok:true,count:extra.trains.length,fetchedAt:now()};
         } catch (error) {
           const known=['Minatomirai position mismatch','Incomplete Minatomirai positions','Invalid Minatomirai authentication','Minatomirai authentication not configured'];
           extension = {ok:false,error:known.includes(error.message)?error.message:'Minatomirai unavailable',...(error.stage?{stage:error.stage,status:error.status}:{})};

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {createRequire} from 'node:module';
-import {convertMinatomirai,mergeMinatomirai,createMinatomiraiSource} from '../functions/api/tokyu/minatomirai.js';
+import {convertMinatomirai,mergeMinatomirai,collectDestinations,createMinatomiraiSource} from '../functions/api/tokyu/minatomirai.js';
 import {createTokyuSource} from '../functions/api/tokyu/[[path]].js';
 const require=createRequire(import.meta.url),adapter=require('../js/tokyu_location_adapter');
 const fixture=JSON.parse(fs.readFileSync('testdata/tokyu/minatomirai.json','utf8'));
@@ -26,6 +26,22 @@ assert.equal(normalized.trains[0].pos,'TOKYU159P21_22D');
 assert.equal(normalized.trains[9].pos,'TOKYU159P26U');
 const base={trains:[{...extra[0],station_id:5},{train_number:'1',up:true}]};
 assert.equal(mergeMinatomirai(base,extra).trains.length,11);
+const destDoc=(trains,convergences=[])=>({fields:encode({index:20,trains,convergences}).mapValue.fields});
+const destinations=collectDestinations([destDoc([
+  {...fixture.train,tid_train_number:'0001',destination:' 和光市 '},
+  {...fixture.train,tid_train_number:'0002',destination:'   '},
+  {...fixture.train,tid_train_number:'0003',destination:'渋谷'},
+  {...fixture.train,tid_train_number:'0003',destination:'和光市'}
+],[{trains:[{...fixture.train,tid_train_number:'0004',destination:'元町・中華街'}]}])]);
+const original={trains:['0001','0002','0003','0004','0005'].map(train_number=>({train_number,up:true,line_id:26001,station_id:26,kind:'普',destination_station_code:78,delay_time:2,num_of_cars:8}))};
+const enriched=mergeMinatomirai(original,[],destinations);
+assert.deepEqual(enriched.trains[0],{...original.trains[0],destination:'和光市'});
+assert.equal(original.trains[0].destination,undefined);
+for(const i of [1,2,4])assert.deepEqual(enriched.trains[i],original.trains[i]);
+assert.equal(enriched.trains[3].destination,'元町・中華街');
+assert.equal(mergeMinatomirai({trains:[{...original.trains[0],up:false}]},[],destinations).trains[0].destination,undefined);
+assert.equal(adapter.destinationFor(enriched.trains[0],adapter.routeFor(159)),'和光市');
+assert.equal(adapter.destinationFor(enriched.trains[1],adapter.routeFor(159)),'渋谷');
 let authCalls=0,reads=0,clock=0;
 const client=createMinatomiraiSource({refreshToken:'fixture',now:()=>clock,fetchImpl:async(url,opts)=>{
   assert.ok(opts.signal);
