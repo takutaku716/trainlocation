@@ -1,4 +1,5 @@
 #message .tokyu-source-status { margin: 8px 10px; font-size: 14px; line-height: 1.5; text-align: left; overflow-wrap: anywhere; }
+.tokyu-station-number { display: block; flex: 0 0 38px; width: 38px; height: 38px; margin: 1px 13px 1px 5px; }
 .tokyu-formation-link { appearance: none; border: 0; padding: 0; background: none; color: #006b9c; font: inherit; text-decoration: underline; cursor: pointer; }
 .tokyu-formation-link:focus-visible, .tokyu-car-back:focus-visible { outline: 2px solid #006b9c; outline-offset: 3px; }
 #tokyuCarDetailMain { padding: 0 12px 14px; color: #222; font-size: 14px; line-height: 1.5; }

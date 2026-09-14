@@ -86,3 +86,4 @@ const existing = new Set(JSON.parse(content).map(r => r.rosen));
 const languages = value => Object.fromEntries(['ja', 'en', 'tc', 'sc', 'kr'].map(l => [l, value]));
 const additions = routes.filter(r => !existing.has(r.rosen)).map(r => ({ rosen: r.rosen, rosenName: languages(r.name), kukanName: languages(`[${r.stations[0].name}～${r.stations.at(-1).name}間]`), area: '15' }));
 if (additions.length) fs.writeFileSync(masterPath, content.replace('[', '[\n' + additions.map(r => JSON.stringify(r) + ',').join('\n')));
+require('./add_tokyu_station_numbering.cjs').apply();
