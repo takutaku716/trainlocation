@@ -22,6 +22,12 @@ for (const route of routes) {
     const file = path.join(root, $(image).attr('src'));
     const content = fs.readFileSync(file);
     assert.ok(file.endsWith('.svg') ? content.toString().includes('<svg') : content.subarray(0,8).toString('hex') === '89504e470d0a1a0a');
+    if ($(image).attr('alt').startsWith('MM')) {
+      assert.ok(file.endsWith('.svg'));
+      const svg = load(content.toString(), {xmlMode:true});
+      assert.equal(svg('path').length, 7);
+      assert.equal(svg('image, text, script, foreignObject').length, 0);
+    }
   }
   if (route.key === 'toyoko') assert.deepEqual($('[key="TOKYU159S21"]').siblings('img').toArray().map(e => $(e).attr('alt')), ['TY21','MM01']);
   assert.equal($('[key^="TOKYU"]').length, route.stations.length);
@@ -32,6 +38,10 @@ if (process.argv.includes('--ui')) (async () => {
   const { chromium } = require('playwright');
   const browser = await chromium.launch({headless:true,channel:'msedge'});
   try {
+    const preview = await browser.newPage({viewport:{width:1000,height:190}});
+    await preview.setContent('<style>body{display:flex;gap:12px;margin:12px}svg{width:150px;height:150px}</style>' + Array.from({length:6}, (_, i) => fs.readFileSync(path.join(root, `images/station/minatomirai/mm0${i+1}.svg`), 'utf8')).join(''));
+    await preview.screenshot({path:path.join(root, '.tmp/mm-vectors-preview.png')});
+    await preview.close();
     for (const width of [375, 1280]) {
       const page = await browser.newPage({viewport:{width,height:900}});
       await page.route('**/api/tokyu/**', r => r.fulfill({json:{data:{trains:[]},fetchedAt:Date.now()}}));

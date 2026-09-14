@@ -5,24 +5,6 @@ const root = path.join(__dirname, '..');
 const manifestPath = path.join(root, 'original/tokyu_station_numbering.json');
 const mmStations = { '横浜':'mm01', '新高島':'mm02', 'みなとみらい':'mm03', '馬車道':'mm04', '日本大通り':'mm05', '元町・中華街':'mm06' };
 
-async function downloadMinatomirai() {
-  const source = 'https://www.mm21railway.co.jp/';
-  const response = await fetch(source);
-  if (!response.ok) throw new Error(`Minatomirai master: HTTP ${response.status}`);
-  const $ = load(await response.text());
-  const directory = path.join(root, 'images/station/minatomirai');
-  fs.mkdirSync(directory, { recursive:true });
-  for (const code of Object.values(mmStations)) {
-    const src = $(`img[alt="${code.toUpperCase()}"]`).first().attr('src');
-    if (!src) throw new Error(`Missing official image: ${code}`);
-    const result = await fetch(new URL(src, source));
-    if (!result.ok) throw new Error(`${code}: HTTP ${result.status}`);
-    const bytes = Buffer.from(await result.arrayBuffer());
-    if (bytes.subarray(0, 8).toString('hex') !== '89504e470d0a1a0a') throw new Error(`Invalid PNG: ${code}`);
-    fs.writeFileSync(path.join(directory, `${code}.png`), bytes);
-  }
-}
-
 async function download() {
   const source = 'https://www.tokyu.co.jp/railway/station/';
   const response = await fetch(source);
@@ -73,7 +55,7 @@ function apply() {
       if (!pattern.test(html)) throw new Error(`Missing station element: ${key}`);
       const icons = [];
       if (code) icons.push({ code, file:`tokyu/${code}.svg` });
-      if (mmCode) icons.push({ code:mmCode, file:`minatomirai/${mmCode}.png` });
+      if (mmCode) icons.push({ code:mmCode, file:`minatomirai/${mmCode}.svg` });
       const markup = icons.map(icon => `<img class="tokyu-station-number" src="./images/station/${icon.file}" alt="${icon.code.toUpperCase()}" width="38" height="38">`).join('');
       html = html.replace(pattern, `<div class="stalist-eki-contents">${markup}<div key="${key}">`);
     }
@@ -84,7 +66,6 @@ module.exports = { apply };
 if (require.main === module) {
   (async () => {
     if (process.argv.includes('--download')) await download();
-    if (process.argv.includes('--download-mm')) await downloadMinatomirai();
     apply();
   })().catch(error => { console.error(error); process.exitCode = 1; });
 }
