@@ -44,9 +44,9 @@ export function createTokyuSource({ fetchImpl = (...args) => fetch(...args), now
       let data = thirdParty ? await request('https://w-tid.jp/tokyu/' + file) : await signed(file);
       if (!data || !Array.isArray(data.trains)) throw new Error('在線JSON形式不正');
       let extension;
-      if (key === 'toyoko' && minatomirai) {
+      if (!thirdParty && minatomirai) {
         try {
-          const extra = await minatomirai.load();
+          const extra = await minatomirai.load(key,data.trains);
           data = mergeMinatomirai(data, extra.trains, extra.destinations);
           extension = {ok:true,count:extra.trains.length,fetchedAt:now()};
         } catch (error) {
@@ -56,7 +56,7 @@ export function createTokyuSource({ fetchImpl = (...args) => fetch(...args), now
       }
       const fetchedAt = now();
       entry.expires = fetchedAt + ttl;
-      return {data, fetchedAt, source:thirdParty ? 'w-tid' : 'signed', file, ...(extension ? {minatomirai:extension} : {})};
+      return {data, fetchedAt, source:thirdParty ? 'w-tid' : 'signed', file, ...(extension ? {[key==='toyoko'?'minatomirai':'destinationSupplement']:extension} : {})};
     })().catch(error => {
       // Negative cache avoids hammering an unavailable feed, without serving stale trains.
       entry.expires = now() + ttl;

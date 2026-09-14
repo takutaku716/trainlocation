@@ -35,7 +35,7 @@
 ### みなとみらい線の統合
 
 `toyoko` のみ、Firebase `rabbit-uh-prod` の
-`running/versions/v2.1/tymm/trackings` から `index=41～50` を変換・追加する。
+`running/versions/v2.1/ty/trackings` から `index=41～50` を変換・追加する。
 横浜駅(index40)は署名付きJSON側を維持する。位置IDとindexを両方照合し、
 既存の駅コード927～931、駅間コード71～75へ変換する。
 `line_id` と `train_line_id` は東横線の共通表示・編成判定用に26001とし、
@@ -48,11 +48,25 @@
 みなとみらい線の取得失敗は東横線に波及させず、`minatomirai.ok=false` を返す。
 追加データは古いキャッシュで補わない。既存の15秒キャッシュと共通UIを使用する。
 
-同じFirestore応答のindex0～50から、東横線既存列車の行先も補完する。
+Firestoreの `ty/trackings` から、東横線既存列車と併走する目黒線列車の行先も補完する。
 `train_number` と `tid_train_number`、上下方向が一致する場合のみ、有効な
 `destination` を追加する。`destination_station_code` や位置・種別・両数などは変更しない。
 空欄・不一致・行先が競合するレコードは補完しない。表示は既存実装どおり、
-`destination` を優先し、なければ行先コードで変換する。追加のネットワーク取得は行わない。
+`destination` を優先し、なければ行先コードで変換する。位置追加と行先補完は同じ `ty` 応答を使用する。
+`tymm` には目黒線の併走列車が含まれないため取得しない。位置IDの `tymm-` 接頭辞はそのまま使用する。
+
+目黒線は `mg`、新横浜線は `sh`、田園都市線は `dt`、大井町線は `om` の
+`trackings` を同じ匿名認証で取得し、同様に行先だけを補完する。
+これらの路線では位置を追加しない。indexの50件制限も適用しない（田園都市線は53位置）。
+通常の `trains` と併走区間の `convergences[].trains` の両方を対象とする。
+照合キーは所属線区・列車番号・上下方向。所属線区はJSON側の `train_line_id` を優先し、
+Firestore側の `affiliated_line_id`（欠損時は位置やconvergenceの線区）に対応付ける。
+東横・みなとみらいは26001、目黒26002、田園都市26003、大井町26004、新横浜26009。
+同番号でも所属線区の異なる列車には行先を混同しない。成功・失敗は既存の路線別15秒キャッシュに従う。
+表示路線の応答に該当列車がない場合は、`train_line_id` に対応するFirestoreも参照する。
+例: 東横線画面にある目黒線列車が `ty` に含まれなければ `mg` で補完する。
+追加参照は不足する所属線区だけとし、各Firestore応答は15秒間キャッシュ・同時要求共用する。
+追加参照に失敗しても主路線のデータと取得済みの行先を維持する。
 
 追加テスト: `node tools/test_minatomirai.mjs`、`node tools/test_minatomirai_ui.cjs`。
 
