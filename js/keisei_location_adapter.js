@@ -36,7 +36,7 @@
       const label = kind?.name || "種別不明";
       const dest = destination(train.ik);
       trains.push({ cbango: number, displayTrainNumber: number, type: "3", typeLabel: label,
-        name: label.endsWith("ライナー") ? label : label + "列車", pos: pos.key, posName: pos.name,
+        name: label, pos: pos.key, posName: pos.name,
         chien: Math.max(0, Number(train.dl) || 0), ryosu: Math.max(0, Number(train.sr) || 0),
         shuEkiSimple: dest?.name ? Array.from(dest.name)[0] : "？", shuEkiName: dest?.name || "行先不明", shuEkiKey: "",
         status: "1", statusDetail: "", senku: route.rosen, source: "keisei", sourceRosen: route.rosen,

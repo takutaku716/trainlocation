@@ -354,8 +354,7 @@
 
 	function defaultTrainName(type) {
 		const label = type && type.label ? type.label : "";
-		if (!label) return "列車";
-		return label === "入替車両" ? label : label + "列車";
+		return label;
 	}
 
 	function isTrainNumberInRanges(trainNumber, ranges) {

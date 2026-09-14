@@ -71,6 +71,7 @@ assert.equal(t.typeLabel,'通勤特急'); assert.equal(t.chien,3); assert.equal(
 for (const [kind,label,short] of [['普','各停','各'],['Ｇ','G各','G'],['Ｂ','B各','B'],['急','急行','急'],['特','特急','特'],['Ｓ','S-TRAIN','S'],['準','準急','準'],['通','通勤特急','通特'],['Ｆ','Fライナー','F'],['回','回送','回']]) {
   const actual = adapter.normalize({data:{trains:[{...train,kind}]},fetchedAt:now},159).trains[0];
   assert.equal(actual.typeLabel,label); assert.equal(actual.tokyu.typeSimple,short);
+  assert.equal(actual.name,({'各停':'各駅停車','G各':'各駅停車（高津・二子新地通過）','B各':'各駅停車（高津・二子新地停車）'})[label] || label);
 }
 const bLocal = adapter.normalize({data:{trains:[{...train,kind:'普',train_line_id:26004}]},fetchedAt:now},159).trains[0];
 assert.equal(bLocal.typeLabel,'B各'); assert.equal(bLocal.tokyu.typeSimple,'B');

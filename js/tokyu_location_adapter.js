@@ -5,6 +5,7 @@
   'use strict';
   const types = {'普':['各停','各'],'Ｇ':['G各','G'],'Ｂ':['B各','B'],'急':['急行','急'],'特':['特急','特'],'通':['通勤特急','通特'],'準':['準急','準'],'回':['回送','回'],'Ｓ':['S-TRAIN','S'],'Ｆ':['Fライナー','F']};
   const kindCodes = {2:'普',3:'Ｓ',4:'急',5:'特',6:'回',7:'Ｆ',8:'Ｇ',10:'準',11:'通'};
+  const detailNames = {'各停':'各駅停車','B各':'各駅停車（高津・二子新地停車）','G各':'各駅停車（高津・二子新地通過）'};
   function routeFor(id) { return master.routes.find(r => [r.rosen,r.key,r.tidLineId,r.internalLineId].includes(String(id))); }
   function positionFor(train, route) {
     if (!train || typeof train.up !== 'boolean') return null;
@@ -77,7 +78,7 @@
       if (type[0] === '各停' && String(row.train_line_id ?? row.line_id) === '26004') type = types['Ｂ'];
       const destination = destinationFor(row, route);
       const cars = Number(row.num_of_cars);
-      trains.push({cbango:number, displayTrainNumber:trainNumberLabel(number), iconTrainNumber:operationLabel(row.operation_number,row.train_line_id ?? row.line_id), type:'3', typeLabel:type[0], name:type[0] + (type[0].endsWith('ライナー') || type[0] === 'S-TRAIN' ? '' : '列車'),
+      trains.push({cbango:number, displayTrainNumber:trainNumberLabel(number), iconTrainNumber:operationLabel(row.operation_number,row.train_line_id ?? row.line_id), type:'3', typeLabel:type[0], name:detailNames[type[0]] || type[0],
         pos:pos.key,posName:pos.name,chien:Math.max(0,Math.floor(Number(row.delay_time)||0)),
         shuEkiSimple:destination === '行先不明' ? '？' : Array.from(destination)[0],shuEkiName:destination,shuEkiKey:'',
         ryosu:Number.isInteger(cars) && cars > 0 && cars < 99 ? cars : 0,status:'1',statusDetail:'',senku:route.rosen,source:'tokyu',sourceRosen:route.rosen,

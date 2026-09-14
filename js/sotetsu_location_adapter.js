@@ -30,7 +30,7 @@
       seen.add(number);
       const kind=master.kinds[train.train_kind_id]||['種別不明','？'];
       const destination=master.destinations[train.destination_station_id]||'行先不明';
-      trains.push({cbango:number,displayTrainNumber:operationLabel||number,iconTrainNumber:operationLabel||number,type:'3',typeLabel:kind[0],name:kind[0]+'列車',pos:pos.key,posName:pos.name,
+      trains.push({cbango:number,displayTrainNumber:operationLabel||number,iconTrainNumber:operationLabel||number,type:'3',typeLabel:kind[0],name:kind[0],pos:pos.key,posName:pos.name,
         chien:Math.max(0,Math.floor(Number(train.delay)||0)),shuEkiSimple:destination==='行先不明'?'？':Array.from(destination)[0],shuEkiName:destination,shuEkiKey:'',
         ryosu:Number.isInteger(train.train_length_id)&&train.train_length_id>0&&train.train_length_id<=20?train.train_length_id:0,
         status:'1',statusDetail:'',senku:route.rosen,source:'sotetsu',sourceRosen:route.rosen,sotetsu:{typeSimple:kind[1],position:train.position}});

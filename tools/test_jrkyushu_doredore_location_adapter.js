@@ -20,13 +20,13 @@ assert.strictEqual(normalized.location.trains.length, 3);
 assert.strictEqual(normalized.location.trains[0].pos, "JQK02P001D");
 assert.strictEqual(normalized.location.trains[0].type, "9");
 assert.strictEqual(normalized.location.trains[0].typeLabel, "区間快速");
-assert.strictEqual(normalized.location.trains[0].name, "区間快速列車");
+assert.strictEqual(normalized.location.trains[0].name, "区間快速");
 assert.strictEqual(normalized.location.trains[0].jrKyushu.trainNavi.currentStationName, "門司港");
 assert.deepStrictEqual(normalized.location.trains[0].jrKyushu.trainNavi.candidateStationNames, ["門司港", "門司"]);
 assert.strictEqual(normalized.location.trains[1].pos, "JQK02P002U");
 assert.strictEqual(normalized.location.trains[1].type, "9");
 assert.strictEqual(normalized.location.trains[1].typeLabel, "区間快速");
-assert.strictEqual(normalized.location.trains[1].name, "区間快速列車");
+assert.strictEqual(normalized.location.trains[1].name, "区間快速");
 assert.strictEqual(normalized.location.trains[1].chien, 3);
 assert.strictEqual(normalized.location.trains[1].jrKyushu.trainNavi.currentStationName, "門司");
 assert.deepStrictEqual(normalized.location.trains[1].jrKyushu.trainNavi.candidateStationNames, ["門司", "門司港"]);
@@ -60,7 +60,7 @@ const ordinary = adapter.normalize(`
 <tr title="KUKAN1" id="EKINO201"><td class="auto-style1">宮崎</td><td title="6863M" background="image/Mdwn.png">西都城行<br><br>定刻</td></tr>
 `, { sourceId: "10" }).location.trains[0];
 assert.strictEqual(ordinary.cbango, "6863M");
-assert.strictEqual(ordinary.name, "普通列車");
+assert.strictEqual(ordinary.name, "普通");
 
 const routeHtml = adapter.buildRouteHtml(html, { sourceId: "2" });
 assert.match(routeHtml, /eki-panel hirendo/);

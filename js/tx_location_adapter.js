@@ -54,7 +54,7 @@
       const labelColor = type[0] === "区間快速" ? "3" : ["快速", "通勤快速"].includes(type[0]) ? "2" : "";
       const vehicle = fleet(train.train_orchestration_number);
       const destination = stationName(train.destination_station_id);
-      return [{ cbango: number, displayTrainNumber: number, type: "3", typeLabel: type[0], name: type[0] + "列車",
+      return [{ cbango: number, displayTrainNumber: number, type: "3", typeLabel: type[0], name: type[0],
         pos: pos.key, posName: pos.name, chien: Math.max(0, Math.floor(Number(train.delay) / 60) || 0),
         shuEkiSimple: destination === "行先不明" ? "？" : Array.from(destination)[0], shuEkiName: destination, shuEkiKey: "",
         ryosu: Math.max(0, Number(train.train_length_id) || 0), status: "1", statusDetail: "", senku: route.rosen, source: "tx", sourceRosen: route.rosen,

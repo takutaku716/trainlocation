@@ -60,7 +60,7 @@
         ? PREFIXES[position.record.line_code] + "-" + (Number(row.direction) - 1) + "-" + number : "";
       const detail = getCachedDetail(detailKey);
       trains.push({ cbango: number, displayTrainNumber: number === "0" ? "" : number,
-        type: "3", typeLabel, name: typeLabel === "普通" ? "普通列車" : typeLabel,
+        type: "3", typeLabel, name: typeLabel,
         pos: position.key, posName: position.name, chien: Math.max(0, Number(row.late_minutes) || 0),
         shuEkiSimple: detail && detail.destination ? destinationShort(detail.destination) : "？",
         shuEkiName: detail && detail.destination || "行先取得不可", shuEkiKey: "", ryosu: detail ? parseInt(detail.cars.normalize("NFKC"), 10) || "" : "",
