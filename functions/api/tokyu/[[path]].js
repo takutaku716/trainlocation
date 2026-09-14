@@ -2,7 +2,7 @@ import {createMinatomiraiSource,mergeMinatomirai} from './minatomirai.js';
 const ISSUER = 'https://fp5owad3w3.execute-api.ap-northeast-1.amazonaws.com/prod/external-data-url';
 const SIGNED_HOST = 'external-data-user.s3.ap-northeast-1.amazonaws.com';
 const SOURCES = Object.freeze({toyoko:'toyoko.json',meguro:'meguro.json',dento:'dento.json',oimachi:'oimachi.json',shinyokohama:'shinyokohama.json',ikegami:'iketama.json',tamagawa:'iketama.json',setagaya:'setagaya.json'});
-const THIRD_PARTY = new Set(['iketama.json','setagaya.json']);
+const FIRESTORE_LINES = new Set(['ikegami','tamagawa','setagaya']);
 export function createTokyuSource({ fetchImpl = (...args) => fetch(...args), now = () => Date.now(), timeoutMs = 12000, minatomirai = null } = {}) {
   const cache = new Map();
   async function request(url, headers = {}) {
@@ -36,15 +36,16 @@ export function createTokyuSource({ fetchImpl = (...args) => fetch(...args), now
   function load(key) {
     const file = SOURCES[key];
     if (!file) return Promise.reject(new Error('データソース未設定'));
-    const cached = cache.get(file);
+    const cached = cache.get(key);
     if (cached && cached.expires > now()) return cached.promise;
-    const thirdParty = THIRD_PARTY.has(file), ttl = thirdParty ? 60000 : 15000;
+    const firestore = FIRESTORE_LINES.has(key), ttl = 15000;
     const entry = {expires:Infinity, promise:null};
     entry.promise = (async () => {
-      let data = thirdParty ? await request('https://w-tid.jp/tokyu/' + file) : await signed(file);
+      if(firestore&&!minatomirai)throw Error('Firestore authentication not configured');
+      let data = firestore ? {trains:(await minatomirai.load(key)).trains} : await signed(file);
       if (!data || !Array.isArray(data.trains)) throw new Error('在線JSON形式不正');
       let extension;
-      if (!thirdParty && minatomirai) {
+      if (!firestore && minatomirai) {
         try {
           const extra = await minatomirai.load(key,data.trains);
           data = mergeMinatomirai(data, extra.trains, extra.destinations);
@@ -56,13 +57,13 @@ export function createTokyuSource({ fetchImpl = (...args) => fetch(...args), now
       }
       const fetchedAt = now();
       entry.expires = fetchedAt + ttl;
-      return {data, fetchedAt, source:thirdParty ? 'w-tid' : 'signed', file, ...(extension ? {[key==='toyoko'?'minatomirai':'destinationSupplement']:extension} : {})};
+      return {data, fetchedAt, source:firestore ? 'firestore' : 'signed', file, ...(extension ? {[key==='toyoko'?'minatomirai':'destinationSupplement']:extension} : {})};
     })().catch(error => {
       // Negative cache avoids hammering an unavailable feed, without serving stale trains.
       entry.expires = now() + ttl;
       throw error;
     });
-    cache.set(file, entry);
+    cache.set(key, entry);
     return entry.promise;
   }
   return {load};
@@ -79,7 +80,7 @@ export async function onRequestGet({request, env = {}, cacheStorage = globalThis
   const headers = {'content-type':'application/json; charset=utf-8','cache-control':'no-store','x-content-type-options':'nosniff'};
   if (url.search || !Object.hasOwn(SOURCES,key)) return Response.json({error:'データソース未設定'}, {status:400, headers});
   // The cache key contains only a fixed public filename, never a signed URL.
-  const cacheKey = new Request(url.origin + '/tokyu-cache-v2/' + (token?'mm/':'base/') + SOURCES[key]);
+  const cacheKey = new Request(url.origin + '/tokyu-cache-v3/' + (token?'mm/':'base/') + key);
   if (cacheStorage) {
     const hit = await cacheStorage.match(cacheKey);
     if (hit) return new Response(hit.body, {status:hit.status, headers});
@@ -87,7 +88,7 @@ export async function onRequestGet({request, env = {}, cacheStorage = globalThis
   try {
     const payload = await (token?configuredSource:source).load(key);
     if (cacheStorage) {
-      const put = cacheStorage.put(cacheKey, Response.json(payload, {headers:{'cache-control':THIRD_PARTY.has(payload.file)?'max-age=60':'max-age=15'}}));
+      const put = cacheStorage.put(cacheKey, Response.json(payload, {headers:{'cache-control':'max-age=15'}}));
       if (waitUntil) waitUntil(put); else await put;
     }
     return Response.json(payload, {headers});

@@ -1,6 +1,7 @@
+import {LOCAL_LINES,convertLocalLine} from './local-lines.js';
 const API_KEY = 'AIzaSyDzceIXYf7HP3vrQA5BHGHJpbVM_ZgA_HU';
 const FIRESTORE = 'https://firestore.googleapis.com/v1/projects/rabbit-uh-prod/databases/(default)/documents/running/versions/v2.1/';
-const COLLECTIONS = {toyoko:'ty',meguro:'mg',shinyokohama:'sh',dento:'dt',oimachi:'om'};
+const COLLECTIONS = {toyoko:'ty',meguro:'mg',shinyokohama:'sh',dento:'dt',oimachi:'om',ikegami:'ik',tamagawa:'tm',setagaya:'sg'};
 const LINE_IDS = {ty:'26001',tymm:'26001',mg:'26002',sh:'26009',dt:'26003',om:'26004'};
 const OWN_SOURCES = {26001:'toyoko',26002:'meguro',26003:'dento',26004:'oimachi',26009:'shinyokohama'};
 const POSITIONS = [
@@ -106,6 +107,7 @@ export function createMinatomiraiSource({refreshToken,fetchImpl=(...args)=>fetch
       try{
         const data=await request(FIRESTORE+COLLECTIONS[key]+'/trackings?pageSize=100',{headers:{authorization:'Bearer '+await idToken()}});
         if(!Array.isArray(data.documents)||data.nextPageToken)throw Error('Incomplete Minatomirai positions');
+        if(Object.hasOwn(LOCAL_LINES,key))return {trains:convertLocalLine(data.documents.map(d=>decode({mapValue:{fields:d.fields}})),key),destinations:new Map()};
         if(key==='toyoko'){
           const indexes=new Set(data.documents.map(d=>Number(d.fields?.index?.integerValue)).filter(i=>i>=41&&i<=50));
           if(indexes.size!==10)throw Error('Incomplete Minatomirai positions');

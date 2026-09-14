@@ -86,14 +86,14 @@ async function testClient() {
   const raw = JSON.parse(fs.readFileSync('testdata/tokyu/iketama.json'));
   const client = adapter.createClient({now:()=>clock,fetchImpl:async()=>{calls++;return Response.json({data:raw,fetchedAt:clock});}});
   await Promise.all([client.load('ikegami'),client.load('tamagawa'),client.load('ikegami')]);
-  assert.equal(calls,1);
-  clock += 59000; await client.load('tamagawa'); assert.equal(calls,1);
-  clock += 1001; await client.load('ikegami'); assert.equal(calls,2);
+  assert.equal(calls,2);
+  clock += 14000; await client.load('tamagawa'); assert.equal(calls,2);
+  clock += 1001; await client.load('ikegami'); assert.equal(calls,3);
   const failed = adapter.createClient({fetchImpl:async()=>Response.json({error:'HTTP 403'},{status:502})});
   const error = await failed.load('toyoko');
   assert.equal(error.trains.length,0); assert.equal(error.tokyu.error,'HTTP 403');
   assert.equal(adapter.statusText(error),'');
-  assert.ok(adapter.statusText(await client.load('ikegami')).includes('w-tid取得（第三者配信）'));
+  assert.equal(adapter.statusText(await client.load('ikegami')),'');
   const bad = adapter.createClient({fetchImpl:async()=>new Response('<html>')});
   assert.match((await bad.load('toyoko')).tokyu.error,/形式不正/);
   const stale = adapter.createClient({now:()=>now,fetchImpl:async()=>Response.json({data:{trains:[]},fetchedAt:now-130000})});

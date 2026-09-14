@@ -162,13 +162,13 @@
     async function load(id) {
       const route = routeFor(id);
       if (!route) throw new Error('データソース未設定');
-      const ttl = route.source === 'w-tid' ? 60000 : 15000;
+      const ttl = 15000;
       try {
-        let entry = cache.get(route.file);
+        let entry = cache.get(route.key);
         if (!entry || entry.expires <= now()) {
           entry = {expires:Infinity,promise:null};
           entry.promise = request(route).then(data => {entry.expires=data.fetchedAt+ttl;return data;},error=>{entry.expires=now()+ttl;throw error;});
-          cache.set(route.file,entry);
+          cache.set(route.key,entry);
         }
         const data = await entry.promise;
         if (now() - data.fetchedAt > 120000 || data.fetchedAt - now() > 60000) throw new Error('取得データの日時が古いか不正です');
@@ -185,7 +185,7 @@
     return {load,loadDentoFormation};
   }
   function statusText(data) {
-    return data.tokyu.source === 'w-tid' ? 'w-tid取得（第三者配信）' : '';
+    return '';
   }
   return {routeFor,positionFor,destinationFor,operationLabel,trainNumberLabel,formationFor,normalize,apiUrl,dentoVehicleFor,createClient,statusText,...createClient()};
 }));

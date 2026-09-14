@@ -41,7 +41,7 @@ Object.assign(destinations.dtom, {45:'半蔵門線直通',79:'たまプラーザ
 delete destinations.tymg['0']; delete destinations.dtom['0'];
 const routes = definitions.map(([key, internalLineId, tidLineId, name, color], i) => {
   const route = { rosen: String(159 + i), key, internalLineId, tidLineId, name, color,
-    source: i < 5 ? 'signed' : 'w-tid', file: ['ikegami', 'tamagawa'].includes(key) ? 'iketama.json' : key + '.json', stations: [], sections: {} };
+    source: i < 5 ? 'signed' : 'firestore', file: ['ikegami', 'tamagawa'].includes(key) ? 'iketama.json' : key + '.json', stations: [], sections: {} };
   if (tables.linedata[key]) {
     const entries = tables.linedata[key].sections;
     route.stations = entries.filter(s => s.station_id != null).map(s => ({id: String(s.station_id), name: s.station_name}));

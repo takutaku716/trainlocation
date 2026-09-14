@@ -27,16 +27,18 @@ for(const bad of ['https://evil.test/toyoko.json','https://prod-hitachi-tid-in-h
 }
 for(const body of ['not-json','{}','{"error":"CORS error: origin not allowed."}']){
   const source=createTokyuSource({fetchImpl:async()=>new Response(body)});
-  await assert.rejects(source.load('ikegami'));
+  await assert.rejects(source.load('toyoko'));
 }
 let clock=1,calls=0;
-const cached=createTokyuSource({now:()=>clock,fetchImpl:async url=>{calls++;assert.equal(url,'https://w-tid.jp/tokyu/iketama.json');return Response.json({trains:[]});}});
-await Promise.all([cached.load('ikegami'),cached.load('tamagawa')]);assert.equal(calls,1);
-clock+=59999;await cached.load('ikegami');assert.equal(calls,1);
-clock+=2;await cached.load('tamagawa');assert.equal(calls,2);
-await assert.rejects(cached.load('kodomo'),/未設定/);assert.equal(calls,2);
+const cached=createTokyuSource({now:()=>clock,fetchImpl:async()=>{throw Error('Unexpected external fetch');},minatomirai:{load:async key=>{calls++;return {trains:[{line:key}]};}}});
+const pair=await Promise.all([cached.load('ikegami'),cached.load('tamagawa')]);assert.equal(calls,2);
+assert.equal(pair[0].data.trains[0].line,'ikegami');assert.equal(pair[1].data.trains[0].line,'tamagawa');
+assert.equal(pair[0].source,'firestore');
+clock+=14999;await cached.load('ikegami');assert.equal(calls,2);
+clock+=2;await cached.load('tamagawa');assert.equal(calls,3);
+await assert.rejects(cached.load('kodomo'),/未設定/);assert.equal(calls,3);
 const timeout=createTokyuSource({timeoutMs:5,fetchImpl:async(url,{signal})=>new Promise((_,reject)=>signal.addEventListener('abort',()=>reject(new Error('aborted'))))});
-await assert.rejects(timeout.load('setagaya'),/タイムアウト/);
+await assert.rejects(timeout.load('toyoko'),/タイムアウト/);
 assert.equal((await onRequestGet({request:new Request('https://test/api/tokyu/kodomo')})).status,400);
 assert.equal((await onRequestGet({request:new Request('https://test/api/tokyu/toyoko?url=evil')})).status,400);
 assert.equal((await worker.fetch(new Request('https://test/api/tokyu/toyoko'),{},{})).status,403);

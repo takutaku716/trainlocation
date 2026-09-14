@@ -14,9 +14,9 @@
 | 田園都市線 | 161 | 26003 | dento / dento.json | 署名付きJSON |
 | 大井町線 | 162 | 26004 | oimachi / oimachi.json | 署名付きJSON |
 | 東急新横浜線 | 163 | 26009 | shinyokohama / shinyokohama.json | 署名付きJSON |
-| 池上線 | 164 | 26005 | ikegami / iketama.json | w-tid |
-| 東急多摩川線 | 165 | 26006 | tamagawa / iketama.json | w-tid |
-| 世田谷線 | 166 | 26007 | setagaya / setagaya.json | w-tid |
+| 池上線 | 164 | 26005 | ikegami / iketama.json | Firestore ik |
+| 東急多摩川線 | 165 | 26006 | tamagawa / iketama.json | Firestore tm |
+| 世田谷線 | 166 | 26007 | setagaya / setagaya.json | Firestore sg |
 
 新横浜線の内部IDは `sh`。路線と変換表は `js/tokyu_routes.js` に定義する。
 
@@ -70,14 +70,15 @@ Firestore側の `affiliated_line_id`（欠損時は位置やconvergenceの線区
 
 追加テスト: `node tools/test_minatomirai.mjs`、`node tools/test_minatomirai_ui.cjs`。
 
-w-tid は `https://w-tid.jp/tokyu/iketama.json` と
-`https://w-tid.jp/tokyu/setagaya.json` の固定URLのみ使用する。
-取得間隔は署名付き15秒、w-tid60秒。ブラウザー・サーバーでファイル単位に
-キャッシュし、池上線と多摩川線の取得を共用する。通信中の要求も共用する。
+w-tidへの通信は廃止した。池上・多摩川・世田谷線は同じFirestore認証を使用し、
+`ik`・`tm`・`sg` の駅・駅間を従来のコードへ変換する。
+取得間隔は全路線15秒。ブラウザー・サーバーで路線別にキャッシュする。
+池上線と多摩川線はfileラベルこそ同じだがデータは別で、キャッシュを混用しない。
+同じ路線の通信中の要求は共用する。
 各通信は12秒でタイムアウトする。障害は同じ期間だけ負のキャッシュに保存し、
 古い列車を現在の在線として表示しない。取得状況の診断データは内部に保持し、
 ファイル名・最終取得時刻・件数の表示は行わない。障害時は共通エラー表示を使う。
-w-tid路線のみ第三者配信の表示を残す。時刻は配信元の更新日時ではなく取得日時。
+第三者配信の表示は廃止した。時刻は配信元の更新日時ではなく取得日時。
 
 ## 変換
 
@@ -94,7 +95,7 @@ w-tid路線のみ第三者配信の表示を残す。時刻は配信元の更新
 - アイコンは運行番号を表示する。例: 目黒線441は41T。
   内部識別には元の `train_number` を保持する。詳細表示は先頭・末尾が0の8桁を
   `09942310` から `994-231` のように整形する。それ以外の形式は変更しない。
-- w-tidで行先が空欄の場合は行先不明。情報がない行先や両数は推測しない。
+- Firestoreで行先が空欄の場合は行先不明。情報がない行先や両数は推測しない。
   取得サンプルでは個々の列車の遅延情報が得られないため、独自の遅延推定はしない。
 - 今回は在線の追加のみ。列車時刻表の新規取得は実装していない。
 - アイコン色はw-tidの種別文字色に合わせる。各停・B各はblue、G各・S-TRAINは
