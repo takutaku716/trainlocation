@@ -51,13 +51,14 @@ function apply() {
       const code = stations[aliases[station.name] || station.name]?.[prefix];
       if (!code && !mmCode) throw new Error(`Missing numbering: ${route.key} ${station.name}`);
       const key = `TOKYU${route.rosen}S${station.index}`;
-      const pattern = new RegExp(`<div class="stalist-eki-contents(?: non-icon)?">(?:<img[^>]*>)*<div key="${key}">`);
+      const pattern = new RegExp(`<div class="stalist-eki-link" style="border-color:#[a-fA-F0-9]+"><div class="stalist-eki-contents(?: non-icon)?">(?:<img[^>]*>)*<div key="${key}">`);
       if (!pattern.test(html)) throw new Error(`Missing station element: ${key}`);
       const icons = [];
       if (code) icons.push({ code, file:`tokyu/${code}.svg` });
       if (mmCode) icons.push({ code:mmCode, file:`minatomirai/${mmCode}.svg` });
       const markup = icons.map(icon => `<img class="tokyu-station-number" src="./images/station/${icon.file}" alt="${icon.code.toUpperCase()}" width="38" height="38">`).join('');
-      html = html.replace(pattern, `<div class="stalist-eki-contents">${markup}<div key="${key}">`);
+      const borderColor = mmCode && mmCode !== 'mm01' ? '#4468b1' : route.color;
+      html = html.replace(pattern, `<div class="stalist-eki-link" style="border-color:${borderColor}"><div class="stalist-eki-contents">${markup}<div key="${key}">`);
     }
     fs.writeFileSync(file, html);
   }

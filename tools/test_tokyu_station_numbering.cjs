@@ -31,6 +31,10 @@ for (const route of routes) {
   }
   if (route.key === 'toyoko') assert.deepEqual($('[key="TOKYU159S21"]').siblings('img').toArray().map(e => $(e).attr('alt')), ['TY21','MM01']);
   assert.equal($('[key^="TOKYU"]').length, route.stations.length);
+  for (const station of route.stations) {
+    const color = route.key === 'toyoko' && station.index > 21 ? '#4468b1' : route.color;
+    assert.equal($(`[key="TOKYU${route.rosen}S${station.index}"]`).closest('.stalist-eki-link').attr('style'), `border-color:${color}`);
+  }
 }
 console.log('All eight Tokyu routes: numbering, assets and station count passed.');
 
@@ -57,6 +61,7 @@ if (process.argv.includes('--ui')) (async () => {
         })), `${width}: ${route.key}`);
         if (['toyoko', 'shinyokohama'].includes(route.key)) await page.screenshot({path:path.join(root, `.tmp/tokyu-numbering-${route.key}-${width}.png`)});
         if (route.key === 'toyoko') {
+          assert.equal(await page.locator('[alt="TY21"]').evaluate(img => parseFloat(getComputedStyle(img).marginRight) + parseFloat(getComputedStyle(img.nextElementSibling).marginLeft)), 2);
           await page.locator('[key="TOKYU159S21"]').scrollIntoViewIfNeeded();
           await page.screenshot({path:path.join(root, `.tmp/mm-numbering-${width}.png`)});
         }
