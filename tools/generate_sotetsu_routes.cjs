@@ -24,3 +24,4 @@ const file='master/rosen_name_master.json',text=fs.readFileSync(file,'utf8'),exi
 const lang=value=>Object.fromEntries(['ja','en','tc','sc','kr'].map(l=>[l,value]));
 const additions=routes.filter(r=>!existing.some(e=>e.rosen===r.rosen)).map(r=>({rosen:r.rosen,rosenName:lang(r.name),kukanName:lang(`[${r.stations[0].name}～${r.stations.at(-1).name}間]`),area:'16'}));
 if(additions.length)fs.writeFileSync(file,text.replace('[','[\n'+additions.map(r=>JSON.stringify(r)+',').join('\n')));
+require('./add_sotetsu_station_numbering.cjs').apply();

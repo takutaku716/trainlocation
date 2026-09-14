@@ -1,3 +1,5 @@
+.sotetsu-station-number { display: block; flex: 0 0 38px; width: 38px; height: 38px; margin: 1px 13px 1px 5px; }
+#stationList .eki-panel .eki-contents .stalist-eki-link:has(.sotetsu-station-number) { max-width: none; width: max-content; padding-right: 8px; white-space: nowrap; }
 #stationList .ressha[data-source="sotetsu"] .icon-img { --train-type-color: #789; background-image: url('../images/home/train_icon.svg'); }
 #stationList .ressha[data-source="sotetsu"]:is([data-ressha_type_name="特急"],[data-ressha_type_name="通勤特急"]) .icon-img { --train-type-color: #e60012; background-image: url('../images/home/train_icon_red.svg'); }
 #stationList .ressha[data-source="sotetsu"]:is([data-ressha_type_name="急行"],[data-ressha_type_name="通勤急行"]) .icon-img { --train-type-color: #f39800; background-image: url('../images/home/train_icon_orange.svg'); }
