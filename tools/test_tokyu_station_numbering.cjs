@@ -5,7 +5,7 @@ const { load } = require('../.tmp/tokyu-tools/node_modules/cheerio');
 const { routes } = require('../js/tokyu_routes');
 const root = path.join(__dirname, '..');
 const expected = {
-  toyoko: Array.from({length:21}, (_, i) => `ty${String(i+1).padStart(2,'0')}`),
+  toyoko: [...Array.from({length:21}, (_, i) => `ty${String(i+1).padStart(2,'0')}`), ...Array.from({length:6}, (_, i) => `mm${String(i+1).padStart(2,'0')}`)],
   meguro: Array.from({length:13}, (_, i) => `mg${String(i+1).padStart(2,'0')}`),
   dento: Array.from({length:27}, (_, i) => `dt${String(i+1).padStart(2,'0')}`),
   oimachi: [...Array.from({length:15}, (_, i) => `om${String(i+1).padStart(2,'0')}`), 'dt08', 'dt09', 'om16'],
@@ -18,7 +18,12 @@ for (const route of routes) {
   const $ = load(fs.readFileSync(path.join(root, `rosen/rosen_${route.rosen}.html`), 'utf8'));
   const images = $('img.tokyu-station-number').toArray();
   assert.deepEqual(images.map(e => $(e).attr('alt').toLowerCase()), expected[route.key]);
-  for (const image of images) assert.ok(fs.readFileSync(path.join(root, $(image).attr('src')), 'utf8').includes('<svg'));
+  for (const image of images) {
+    const file = path.join(root, $(image).attr('src'));
+    const content = fs.readFileSync(file);
+    assert.ok(file.endsWith('.svg') ? content.toString().includes('<svg') : content.subarray(0,8).toString('hex') === '89504e470d0a1a0a');
+  }
+  if (route.key === 'toyoko') assert.deepEqual($('[key="TOKYU159S21"]').siblings('img').toArray().map(e => $(e).attr('alt')), ['TY21','MM01']);
   assert.equal($('[key^="TOKYU"]').length, route.stations.length);
 }
 console.log('All eight Tokyu routes: numbering, assets and station count passed.');
@@ -41,6 +46,10 @@ if (process.argv.includes('--ui')) (async () => {
           return img.offsetWidth === 38 && a.right <= b.left && img.parentElement.scrollWidth <= img.parentElement.clientWidth;
         })), `${width}: ${route.key}`);
         if (['toyoko', 'shinyokohama'].includes(route.key)) await page.screenshot({path:path.join(root, `.tmp/tokyu-numbering-${route.key}-${width}.png`)});
+        if (route.key === 'toyoko') {
+          await page.locator('[key="TOKYU159S21"]').scrollIntoViewIfNeeded();
+          await page.screenshot({path:path.join(root, `.tmp/mm-numbering-${width}.png`)});
+        }
       }
       await page.close();
     }
