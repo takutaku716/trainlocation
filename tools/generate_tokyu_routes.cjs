@@ -64,7 +64,10 @@ const routes = definitions.map(([key, internalLineId, tidLineId, name, color], i
       });
     });
   }
-  route.stations.forEach((s, index) => { s.index = index + 1; });
+  route.stations.forEach((s, index) => {
+    s.index = index + 1;
+    if (s.name === '南町田') s.name = '南町田グランベリーパーク';
+  });
   return route;
 });
 for (const route of routes) {

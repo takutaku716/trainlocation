@@ -4,6 +4,7 @@ const path = require('node:path');
 const { load } = require('../.tmp/tokyu-tools/node_modules/cheerio');
 const { routes } = require('../js/tokyu_routes');
 const root = path.join(__dirname, '..');
+assert.equal(routes.find(r => r.key === 'dento').stations[24].name, '南町田グランベリーパーク');
 const expected = {
   toyoko: [...Array.from({length:21}, (_, i) => `ty${String(i+1).padStart(2,'0')}`), ...Array.from({length:6}, (_, i) => `mm${String(i+1).padStart(2,'0')}`)],
   meguro: Array.from({length:13}, (_, i) => `mg${String(i+1).padStart(2,'0')}`),
@@ -46,7 +47,7 @@ if (process.argv.includes('--ui')) (async () => {
     await preview.setContent('<style>body{display:flex;gap:12px;margin:12px}svg{width:150px;height:150px}</style>' + Array.from({length:6}, (_, i) => fs.readFileSync(path.join(root, `images/station/minatomirai/mm0${i+1}.svg`), 'utf8')).join(''));
     await preview.screenshot({path:path.join(root, '.tmp/mm-vectors-preview.png')});
     await preview.close();
-    for (const width of [375, 1280]) {
+    for (const width of [320, 375, 1280]) {
       const page = await browser.newPage({viewport:{width,height:900}});
       await page.route('**/api/tokyu/**', r => r.fulfill({json:{data:{trains:[]},fetchedAt:Date.now()}}));
       for (const route of routes) {
@@ -64,6 +65,16 @@ if (process.argv.includes('--ui')) (async () => {
           assert.equal(await page.locator('[alt="TY21"]').evaluate(img => parseFloat(getComputedStyle(img).marginRight) + parseFloat(getComputedStyle(img.nextElementSibling).marginLeft)), 2);
           await page.locator('[key="TOKYU159S21"]').scrollIntoViewIfNeeded();
           await page.screenshot({path:path.join(root, `.tmp/mm-numbering-${width}.png`)});
+        }
+        if (route.key === 'dento') {
+          const station = page.locator('[key="TOKYU161S25"]');
+          assert.equal(await station.innerText(), '南町田グランベリーパーク');
+          assert.ok(await station.evaluate(el => {
+            const bounds = el.closest('.stalist-eki-link').getBoundingClientRect();
+            return getComputedStyle(el).whiteSpace === 'nowrap' && el.clientHeight <= 20 && bounds.left >= 0 && bounds.right <= innerWidth;
+          }));
+          await station.scrollIntoViewIfNeeded();
+          await page.screenshot({path:path.join(root, `.tmp/minamimachida-${width}.png`)});
         }
       }
       await page.close();
