@@ -1,0 +1,15 @@
+{
+  "positions":[
+    [41,"tymm-yokohama_tymm-shintakashima","SECTION"],
+    [42,"tymm-shintakashima","STATION"],
+    [43,"tymm-shintakashima_tymm-minatomirai","SECTION"],
+    [44,"tymm-minatomirai","STATION"],
+    [45,"tymm-minatomirai_tymm-bashamichi","SECTION"],
+    [46,"tymm-bashamichi","STATION"],
+    [47,"tymm-bashamichi_tymm-nihonoodoori","SECTION"],
+    [48,"tymm-nihonoodoori","STATION"],
+    [49,"tymm-nihonoodoori_tymm-motomomachichukagai","SECTION"],
+    [50,"tymm-motomomachichukagai","STATION"]
+  ],
+  "train":{"tid_train_number":"07752120","tid_operation_number":775,"tid_affiliation":"副","tid_orchestration_number":"70","kind":"COMMUTERS_LIMITED_EXPRESS","direction":"UP","destination":"和光市","number_of_cars":"10","delay_time":2}
+}

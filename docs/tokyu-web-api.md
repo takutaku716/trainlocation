@@ -30,7 +30,25 @@
 `external-data-user.s3.ap-northeast-1.amazonaws.com`、要求したファイルのパスを検証する。
 署名パラメーターの生成、フロントへの返却、ログへの保存は行わない。
 署名付きGETが403の場合に限り、URL再発行から1回だけ再試行する。
-内部用S3、Firebase、秘密鍵、認証情報は使用しない。
+内部用S3や秘密鍵は使用しない。みなとみらい線の追加分のみ、以下のFirestore経路を使用する。
+
+### みなとみらい線の統合
+
+`toyoko` のみ、Firebase `rabbit-uh-prod` の
+`running/versions/v2.1/tymm/trackings` から `index=41～50` を変換・追加する。
+横浜駅(index40)は署名付きJSON側を維持する。位置IDとindexを両方照合し、
+既存の駅コード927～931、駅間コード71～75へ変換する。
+`line_id` と `train_line_id` は東横線の共通表示・編成判定用に26001とし、
+元の路線と位置は `source_line_id: tymm`、`source_index` に保持する。
+列番と上下が同じ重複は追加側を優先する。種別・行先・所属・編成番号・両数も変換する。
+
+匿名認証のリフレッシュトークンはWorker Secret `TOKYU_FIREBASE_REFRESH_TOKEN` に
+設定する。トークンを配信JSON・ログ・リポジトリへ保存しない。アクセス用トークンは
+有効期限内で再利用し、リクエストごとの匿名アカウント作成は行わない。
+みなとみらい線の取得失敗は東横線に波及させず、`minatomirai.ok=false` を返す。
+追加データは古いキャッシュで補わない。既存の15秒キャッシュと共通UIを使用する。
+
+追加テスト: `node tools/test_minatomirai.mjs`、`node tools/test_minatomirai_ui.cjs`。
 
 w-tid は `https://w-tid.jp/tokyu/iketama.json` と
 `https://w-tid.jp/tokyu/setagaya.json` の固定URLのみ使用する。

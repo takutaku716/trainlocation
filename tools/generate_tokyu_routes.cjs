@@ -45,7 +45,7 @@ const routes = definitions.map(([key, internalLineId, tidLineId, name, color], i
   if (tables.linedata[key]) {
     const entries = tables.linedata[key].sections;
     route.stations = entries.filter(s => s.station_id != null).map(s => ({id: String(s.station_id), name: s.station_name}));
-    if (key === 'toyoko') route.stations = route.stations.slice(0, route.stations.findIndex(s => s.name === '横浜') + 1);
+    if (key === 'toyoko') route.stations.forEach(s => { if (s.name === '元町中華街') s.name = '元町・中華街'; });
     let index = 0;
     for (const entry of entries) {
       if (entry.station_id != null) index++;
