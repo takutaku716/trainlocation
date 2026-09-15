@@ -4,6 +4,8 @@
  */
 
 /* サイドメニュー（開始） */
+.private-line-symbols { display: inline-flex; flex: 0 0 auto; align-items: center; gap: 2px; }
+.private-line-symbols img { display: block; width: 28px; height: 28px; }
 .side-menu {
 	width: 320px;
 	z-index: 21;
