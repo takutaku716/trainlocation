@@ -1,7 +1,7 @@
 (function(root, factory) {
-  if (typeof module === "object" && module.exports) module.exports = factory();
+  if (typeof module === "object" && module.exports) module.exports = factory(require('../original/tx_formation.json'));
   else root.TxLocationAdapter = factory();
-}(typeof self !== "undefined" ? self : this, function() {
+}(typeof self !== "undefined" ? self : this, function(formationTable) {
   "use strict";
   const stations = ["秋葉原", "新御徒町", "浅草", "南千住", "北千住", "青井", "六町", "八潮", "三郷中央", "南流山", "流山セントラルパーク", "流山おおたかの森", "柏の葉キャンパス", "柏たなか", "守谷", "みらい平", "みどりの", "万博記念公園", "研究学園", "つくば"].map((name, i) => ({ id: i + 11, index: i + 1, name }));
   const route = { rosen: "151", name: "つくばエクスプレス", stations };
@@ -11,14 +11,30 @@
   let pendingLoad = null;
   let operationStatus = null;
   const detailCache = new Map();
+  let pendingFormations = null;
+  async function loadFormations() {
+    if (formationTable) return;
+    if (!pendingFormations) pendingFormations = (async () => {
+      const response = await fetch('./original/tx_formation.json', {signal:AbortSignal.timeout(10000),cache:'no-store'});
+      if (!response.ok) throw new Error('TX formation table unavailable');
+      const table = await response.json();
+      if (!Array.isArray(table.groups) || !table.groups.every(g => typeof g.series === 'string' && g.formations && typeof g.formations === 'object')) throw new Error('Invalid TX formation table');
+      formationTable = table;
+    })().finally(() => { pendingFormations = null; });
+    return pendingFormations;
+  }
   function routeFor(id) { return String(id) === route.rosen ? route : null; }
   function stationName(id) { return stations.find(s => s.id === Number(id))?.name || "行先不明"; }
-  function fleet(number) {
+  function fleet(number, table = formationTable) {
     const n = Number(number);
-    if (n >= 1 && n <= 14) return { name: "TX-1000系", style: "tx1000" };
-    if ((n >= 67 && n <= 70) || (n >= 72 && n <= 73)) return { name: "TX-2000系（増備車）", style: "tx2000-zoubi" };
-    if (n >= 81 && n <= 85) return { name: "TX-3000系", style: "tx3000" };
-    return { name: "TX-2000系", style: "tx2000" };
+    if (Number.isInteger(n) && n > 0) for (const group of table?.groups || []) {
+      const formation = group.formations[String(n)];
+      if (typeof formation !== 'string' || !formation) continue;
+      const note = typeof group.note === 'string' ? group.note : '';
+      return {name:group.series + (note ? '（'+note+'）' : ''), style:group.style || 'tx2000',
+        formation, detail:group.series+'・'+formation+(note ? '('+note+')' : '')};
+    }
+    return { name: "TX-2000系", style: "tx2000", formation:'', detail:'TX-2000系' };
   }
   function dateFor(updatedAt) {
     if (updatedAt == null || !Number.isFinite(Number(updatedAt)) || Number(updatedAt) <= 0) throw new Error("TX更新日時が不正です。");
@@ -58,7 +74,7 @@
         pos: pos.key, posName: pos.name, chien: Math.max(0, Math.floor(Number(train.delay) / 60) || 0),
         shuEkiSimple: destination === "行先不明" ? "？" : Array.from(destination)[0], shuEkiName: destination, shuEkiKey: "",
         ryosu: Math.max(0, Number(train.train_length_id) || 0), status: "1", statusDetail: "", senku: route.rosen, source: "tx", sourceRosen: route.rosen,
-        tx: { typeSimple: type[1], labelColor, fleet: vehicle.name, style: vehicle.style, date, position: train.position } }];
+        tx: { typeSimple: type[1], labelColor, fleet: vehicle.name, formation:vehicle.formation, vehicleDetail:vehicle.detail, style: vehicle.style, date, position: train.position } }];
     });
     const text = new Date(Number(raw.updated_at) * 1000 + 9 * 3600000).toISOString().slice(0, 19).replace("T", " ") + " 現在";
     return { trains, time: Object.fromEntries(["ja", "en", "tc", "sc", "kr"].map(lang => [lang, text])),
@@ -83,6 +99,8 @@
   async function loadFresh() {
     try {
       const raw = await getJson("tid/trains.json");
+      // A missing optional formation table must not hide the train positions.
+      try { await loadFormations(); } catch (_) {}
       const data = normalize(raw);
       current = raw;
       try {

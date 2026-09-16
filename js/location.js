@@ -4180,7 +4180,7 @@ function create_ressha_detail(_objItem, _nowRow, _typeData, _ekiData) {
 			} else if (_nowRow.source === "jrshinkansen" && jrShinkansenSeries) {
 				_objItem.dataset.ryosu += "（" + jrShinkansenSeries + "）";
 			} else if (_nowRow.source === "tx" && _nowRow.tx.fleet) {
-				_objItem.dataset.ryosu += "（" + _nowRow.tx.fleet + "）";
+				_objItem.dataset.ryosu += "（" + escape_detail_html(_nowRow.tx.vehicleDetail || _nowRow.tx.fleet) + "）";
 			} else if (_nowRow.source === "tokyu" && _nowRow.tokyu.formation) {
 				_objItem.dataset.ryosu += "（" + escape_detail_html(_nowRow.tokyu.formation) + "）";
 			}

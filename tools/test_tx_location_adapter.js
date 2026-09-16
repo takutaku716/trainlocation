@@ -17,9 +17,18 @@ async function main() {
   assert.equal(rows[2].posName, '浅草→南千住 間');
   assert.equal(rows[0].shuEkiName, '秋葉原');
   for (const n of [1,14]) assert.equal(adapter.fleet(n).style, 'tx1000');
-  for (const n of [67,68,69,70,72,73]) assert.equal(adapter.fleet(n).style, 'tx2000-zoubi');
+  for (const n of [67,68,69,70,71,72,73]) assert.equal(adapter.fleet(n).style, 'tx2000-zoubi');
   for (const n of [81,85]) assert.equal(adapter.fleet(n).style, 'tx3000');
-  for (const n of [0,15,66,71,74,80,86,null]) assert.equal(adapter.fleet(n).style, 'tx2000');
+  for (const n of [0,15,66,74,80,86,null]) assert.equal(adapter.fleet(n).style, 'tx2000');
+  for (const [from,to,base] of [[1,14,1600],[51,66,2600],[67,73,2600],[81,85,3600]]) {
+    for(let n=from;n<=to;n++) {
+      assert.equal(adapter.fleet(n).formation,`${base+n}F`);
+      assert.equal(adapter.fleet(String(n)).formation,`${base+n}F`);
+      assert.equal(adapter.fleet(n).detail.includes('(増備車)'),n>=67&&n<=73);
+    }
+  }
+  for(const n of [null,0,15,50,74,80,86,1.5,'invalid']) assert.equal(adapter.fleet(n).formation,'');
+  assert.equal(adapter.fleet(91,{groups:[{series:'追加形式',formations:{91:'4091F'}}]}).formation,'4091F');
   for (let id = 1; id <= 15; id++) assert.notEqual(adapter.normalize({...raw, trains:[{...raw.trains[0], train_kind_id:id}]}).trains[0].typeLabel, '種別不明');
   assert.equal(adapter.dateFor(Date.parse('2026-09-08T15:00:00Z') / 1000), '2026-09-09');
   assert.equal(adapter.dateFor(Date.parse('2026-09-08T14:59:59Z') / 1000), '2026-09-08');
