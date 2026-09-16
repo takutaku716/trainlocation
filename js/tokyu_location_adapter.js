@@ -83,7 +83,7 @@
         shuEkiSimple:destination === '行先不明' ? '？' : Array.from(destination)[0],shuEkiName:destination,shuEkiKey:'',
         ryosu:Number.isInteger(cars) && cars > 0 && cars < 99 ? cars : 0,status:'1',statusDetail:'',senku:route.rosen,source:'tokyu',sourceRosen:route.rosen,
         tokyu:{typeSimple:type[1],operationNumber:row.operation_number,trainLineId:row.train_line_id,trackNumber:row.track_number,
-          dentoRequest:route.key === 'dento' && String(row.train_line_id || row.line_id) === '26003' && /^\d{1,3}$/.test(String(row.operation_number)) ? {operation:row.operation_number,direction:row.up?'up':'down'} : null,
+          dentoRequest:vehicleRequestFor(row,route,formations,pos,type),
           formation:['toyoko','meguro','shinyokohama','oimachi'].includes(route.key) || (route.key === 'dento' && String(row.train_line_id || row.line_id) === '26004') ? formationFor(row,formations) : ''}});
     }
     const text = new Date(envelope.fetchedAt + 9*3600000).toISOString().slice(0,19).replace(/-/g,'/').replace('T',' ') + ' 現在';
@@ -95,6 +95,38 @@
     if (!route) throw new Error('データソース未設定');
     const local = typeof location !== 'undefined' && /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
     return (local ? '' : 'https://trainlocation-tokyu-proxy.densha716.workers.dev') + '/api/tokyu/' + route.key;
+  }
+  function vehicleRequestFor(row, route, formations, pos, type) {
+    const line = String(row.train_line_id || row.line_id);
+    if (route.key === 'dento' && line === '26003' && /^\d{1,3}$/.test(String(row.operation_number))) return {operation:row.operation_number,direction:row.up?'up':'down'};
+    const formation = formationFor(row,formations);
+    if (!['toyoko','meguro'].includes(route.key) || !['26001','26002'].includes(line) || !formation) return null;
+    const section = route.sections[String(row.section_id)];
+    const last = section ? route.stations[(row.up ? section.to : section.from)-1]?.name : pos.name;
+    return {source:'cars',formation,cars:Number(row.num_of_cars),trainLineId:line,
+      affiliation:row.affiliation === '南' && Number(row.operation_number)>=500 && Number(row.operation_number)<=599 ? '埼' : row.affiliation,
+      trainOrchestrationNumber:String(row.train_orchestration_number).padStart(2,'0'),direction:row.up?'up':'down',
+      currentStation:pos.name.replace('→','〜').replace(/ 間$/,''),lastStopStation:last,toTime:'-',
+      operationNumber:String(row.operation_number),kind:type[0] === '各停' ? '各駅停車' : type[0]};
+  }
+  function carsVehicleFor(data, masterData, request, fetchedAt) {
+    if (!Array.isArray(data?.info) || typeof data.info[0] !== 'string') return null;
+    const candidates = (masterData[request.trainLineId === '26001' ? 'toyoko' : 'meguro'] || []).filter(row=>row.carType === data.info[0] && Number(row.numOfCars) === request.cars);
+    const layout = candidates.find(row=>row.trainCode?.includes(request.trainOrchestrationNumber)) || candidates.find(row=>row.trainCode?.length === 0);
+    const raw = data.info[1];
+    const noCrowd = (request.trainLineId === '26002' && (data.info[0] === '3020' || (['5080','9000'].includes(data.info[0]) && ['31','32','33','35','36','38'].includes(request.trainOrchestrationNumber))) && request.cars === 8);
+    const carDetails = Array.from({length:request.cars},(_,i)=>{
+      const car = layout?.cars?.find(c=>Number(c.carNumber) === i+1);
+      const value = noCrowd ? NaN : Number(raw?.train_cars?.find(c=>String(c.name) === String(i+1))?.congestion);
+      const congestion = Number.isInteger(value) && value>=1 && value<=13 ? (value<=2?1:value===3?2:value<=7?3:value<=10?4:value<=12?5:6) : null;
+      const seats = Array.isArray(car?.seatPosition) ? car.seatPosition : [];
+      const doors = values=>[seats.slice(0,2).some(s=>values.includes(s))?1:null,seats.slice(2,4).some(s=>values.includes(s))?4:null].filter(Boolean);
+      // Official car_infos maps source slots 1/0/3/2 to top-left/right, bottom-left/right.
+      const equipmentSlots = [1,0,3,2].map(index=>seats[index] === '優' ? 'priority' : ['車','F'].includes(seats[index]) ? 'free' : null);
+      return {number:i+1,congestion,priorityDoors:doors(['優']),freeDoors:doors(['車','F']),equipmentSlots,weakCooling:car?.weakAirConditioning === 'TRUE',
+        qSeat:/^411[2-5]F$/.test(request.formation) && [4,5].includes(i+1),layoutKnown:!!car};
+    });
+    return {formation:request.formation,cars:request.cars,vehicle:{equipment:true,showAirMode:false,carDetails,fetchedAt}};
   }
   function dentoVehicleFor(data, formation, fetchedAt) {
     function temperature(value) {
@@ -117,7 +149,29 @@
   function createClient({fetchImpl=(...args)=>fetch(...args), now=()=>Date.now(), timeoutMs=50000}={}) {
     const cache = new Map(), lastSuccess = new Map();
     const dentoCache = new Map();
+    let carsMaster;
+    async function loadCarsFormation(request) {
+      if (!['26001','26002'].includes(request.trainLineId) || !Number.isInteger(request.cars) || request.cars<1 || request.cars>20 || !/^[A-Za-z0-9-]{1,21}$/.test(request.formation)) return null;
+      const key = JSON.stringify(request);
+      let entry = dentoCache.get(key);
+      if (!entry || entry.expires <= now()) {
+        for (const [k,v] of dentoCache) if (v.expires<=now()) dentoCache.delete(k);
+        entry = {expires:Infinity,promise:null};
+        entry.promise = (async()=>{
+          if (!carsMaster) carsMaster = fetchImpl('./original/tokyu_cars_master.json',{signal:AbortSignal.timeout(10000)})
+            .then(r=>{if(!r.ok) throw new Error('Car master unavailable');return r.json();}).catch(error=>{carsMaster=null;throw error;});
+          const masterData = await carsMaster;
+          const {source,formation,cars,...body} = request;
+          const response = await fetchImpl('https://cars-info.tokyuapp.com/fetchInfo',{method:'POST',credentials:'omit',cache:'no-store',signal:AbortSignal.timeout(10000),headers:{'Content-Type':'application/x-www-form-urlencoded; charset=UTF-8'},body:JSON.stringify(body)});
+          if (!response.ok) return null;
+          return carsVehicleFor(await response.json(),masterData,request,now());
+        })().catch(()=>null).then(result=>{entry.expires=now()+(result?60000:15000);return result;});
+        dentoCache.set(key,entry);
+      }
+      return entry.promise;
+    }
     async function loadDentoFormation(request) {
+      if (request?.source === 'cars') return loadCarsFormation(request);
       if (!request || !/^\d{1,3}$/.test(String(request.operation)) || !['up','down'].includes(request.direction)) return null;
       const key = Number(request.operation) + '/' + request.direction;
       let entry = dentoCache.get(key);
@@ -188,5 +242,5 @@
   function statusText(data) {
     return '';
   }
-  return {routeFor,positionFor,destinationFor,operationLabel,trainNumberLabel,formationFor,normalize,apiUrl,dentoVehicleFor,createClient,statusText,...createClient()};
+  return {routeFor,positionFor,destinationFor,operationLabel,trainNumberLabel,formationFor,normalize,apiUrl,dentoVehicleFor,carsVehicleFor,createClient,statusText,...createClient()};
 }));
