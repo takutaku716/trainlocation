@@ -80,6 +80,8 @@ jrkyushu:timetable:YYYY-MM-DD:index
 jrkyushu:timetable:YYYY-MM-DD:train:765A
 ```
 
+Stored timetable keys expire at 00:00 JST two calendar days after the service date. For example, `2026-05-26` data expires at `2026-05-28 00:00 JST`.
+
 ## Notes
 
 - The Worker stores scheduled timetable data, not live delay data.

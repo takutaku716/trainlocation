@@ -1,0 +1,15 @@
+{
+  "unit_number":"005103", "temp":21.5,
+  "cars":[
+    {"number":1,"passenger_rate":2,"temp":22.5,"air_mode":"除湿"},
+    {"number":2,"passenger_rate":2,"temp":27.5,"air_mode":"除湿"},
+    {"number":3,"passenger_rate":1,"temp":23,"air_mode":"除湿"},
+    {"number":4,"passenger_rate":2,"temp":22.5,"air_mode":"除湿"},
+    {"number":5,"passenger_rate":2,"temp":22.5,"air_mode":"除湿"},
+    {"number":6,"passenger_rate":3,"temp":23.5,"air_mode":"除湿"},
+    {"number":7,"passenger_rate":3,"temp":24.5,"air_mode":"除湿"},
+    {"number":8,"passenger_rate":2,"temp":22.5,"air_mode":"除湿"},
+    {"number":9,"passenger_rate":2,"temp":22.5,"air_mode":"除湿"},
+    {"number":10,"passenger_rate":2,"temp":23,"air_mode":"除湿"}
+  ]
+}

@@ -459,10 +459,7 @@ function find_train_list_rosen_master(rosen) {
 }
 
 function get_train_list_param_rosen() {
-	const params = location.hash.slice(1).split("&");
-	if (params.length > 0 && params[0].indexOf("rosen=") >= 0) {
-		const rosen = params[0].slice(-2);
-		if (TRAIN_LIST_DISPLAY_ROSENS.includes(rosen)) return rosen;
-	}
+	const rosen = new URLSearchParams(location.hash.slice(1)).get("rosen") || "";
+	if (TRAIN_LIST_DISPLAY_ROSENS.includes(rosen)) return rosen;
 	return TRAIN_LIST_DEFAULT_ROSEN;
 }

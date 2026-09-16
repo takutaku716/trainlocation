@@ -68,6 +68,13 @@
 		"12": "\u3064\u3070\u3081"
 	};
 	const DESTINATION_UNAVAILABLE = "\u884c\u5148\u53d6\u5f97\u4e0d\u53ef";
+	const CENTRAL_FORMATION_TYPE_NAMES_16_CARS = {
+		"1": "N700S(J/H\u7de8\u6210)",
+		"2": "N700A(G/F\u7de8\u6210)",
+		"3": "N700a(X/K\u7de8\u6210)"
+	};
+	const CENTRAL_FORMATION_ICON_AED = 3;
+	const CENTRAL_FORMATION_ICON_CREW_ROOM = 6;
 
 	const KYUSHU_POSITION_NAMES = [
 		"\u535a\u591a",
@@ -193,6 +200,7 @@
 		const stationIndexById = new Map(CENTRAL_STATION_ORDER.map((id, index) => [String(id), index]));
 		const trainNameMap = Object.assign({}, CENTRAL_TRAIN_NAMES, extractCentralTrainNameMap(masterData));
 		const centralTrainInfoMap = options && options.centralTrainInfoMap ? options.centralTrainInfoMap : {};
+		const centralFormationMap = options && options.centralFormationMap ? options.centralFormationMap : {};
 
 		["1", "2"].forEach((bound) => {
 			const suffix = bound === "1" ? "U" : "D";
@@ -202,7 +210,7 @@
 				const index = stationIndexById.get(String(entry.station));
 				if (typeof index !== "number") return;
 				const posNumber = index * 2 + 1;
-				addCentralTrains(trains, entry.trains, "JT01P" + pad2(posNumber) + suffix, fallbackDestination, trainNameMap, centralTrainInfoMap, options, bound);
+				addCentralTrains(trains, entry.trains, "JT01P" + pad2(posNumber) + suffix, fallbackDestination, trainNameMap, centralTrainInfoMap, centralFormationMap, options, bound);
 			});
 
 			const betweenStations = locationInfo.betweenStation && locationInfo.betweenStation.bounds && locationInfo.betweenStation.bounds[bound] ? locationInfo.betweenStation.bounds[bound] : [];
@@ -211,14 +219,14 @@
 				if (typeof index !== "number") return;
 				const posNumber = bound === "1" ? index * 2 : index * 2 + 2;
 				if (posNumber < 1 || posNumber > 68) return;
-				addCentralTrains(trains, entry.trains, "JT01P" + pad2(posNumber) + suffix, fallbackDestination, trainNameMap, centralTrainInfoMap, options, bound);
+				addCentralTrains(trains, entry.trains, "JT01P" + pad2(posNumber) + suffix, fallbackDestination, trainNameMap, centralTrainInfoMap, centralFormationMap, options, bound);
 			});
 		});
 
 		return trains;
 	}
 
-	function addCentralTrains(output, rawTrains, pos, fallbackDestination, trainNameMap, centralTrainInfoMap, options, bound) {
+	function addCentralTrains(output, rawTrains, pos, fallbackDestination, trainNameMap, centralTrainInfoMap, centralFormationMap, options, bound) {
 		if (!Array.isArray(rawTrains)) return;
 		rawTrains.forEach((rawTrain) => {
 			const trainNumber = String(rawTrain.trainNumber || rawTrain.train || "").trim();
@@ -234,6 +242,7 @@
 				options && options.kyushuTimetableMap
 			);
 			const partialSuspension = getCentralPartialSuspension(rawTrain, bound, options);
+			const formation = getCentralFormation(rawTrain, centralTrainInfoMap, centralFormationMap);
 			output.push(buildTrain({
 				cbango: displayTrainNumber,
 				name: makeDisplayTrainName(trainName, trainNumber),
@@ -244,7 +253,7 @@
 				source: "jrshinkansen",
 				sourceRosen: "59",
 				senku: options && options.senku ? options.senku : "59",
-				ryosu: "",
+				ryosu: formation.carCount,
 				status: partialSuspension ? 2 : 1,
 				statusDetail: partialSuspension ? partialSuspension.detail : "",
 				extra: {
@@ -255,6 +264,8 @@
 						rawTrainNumber: trainNumber,
 						track: rawTrain.track || "",
 						sot: rawTrain.sot || "",
+						formationNumber: formation.formationNumber,
+						formationType: formation.formationType,
 						startingStation: getCentralStartingStationId(rawTrain, centralTrainInfoMap),
 						terminalStation: getCentralTerminalStationId(rawTrain, centralTrainInfoMap),
 						timetable: timetable
@@ -262,6 +273,63 @@
 				}
 			}));
 		});
+	}
+
+	function getCentralFormation(rawTrain, centralTrainInfoMap, centralFormationMap) {
+		const trainInfo = centralTrainInfoMap[getCentralTrainInfoKey(rawTrain)];
+		const trainRows = trainInfo && trainInfo.trainInfo && Array.isArray(trainInfo.trainInfo.trains) ? trainInfo.trainInfo.trains : [];
+		const formationNumber = trainRows.length > 0 ? trainRows[0].formationNumber : null;
+		const formationInfo = formationNumber === null || typeof formationNumber === "undefined" ? null : centralFormationMap[String(formationNumber)];
+		if (!formationInfo) return { formationNumber: "", carCount: "", formationType: "" };
+		const carCount = Number(formationInfo.carCount || 0);
+		return {
+			formationNumber: String(formationNumber),
+			carCount: Number.isFinite(carCount) && carCount > 0 ? carCount : "",
+			formationType: getCentralFormationType(formationInfo)
+		};
+	}
+
+	function getCentralFormationType(formationInfo) {
+		if (!formationInfo || typeof formationInfo !== "object") return "\u4e0d\u660e";
+		const carCount = Number(formationInfo.carCount);
+		const carInfo = String(formationInfo.carInfo === null || typeof formationInfo.carInfo === "undefined" ? "" : formationInfo.carInfo);
+
+		if (carCount === 16) {
+			return CENTRAL_FORMATION_TYPE_NAMES_16_CARS[carInfo] || "\u305d\u306e\u4ed6";
+		}
+		if (carCount === 8 && carInfo === "99") {
+			return getCentralEightCarFormationType(formationInfo.formationIconInfo);
+		}
+		if (carCount === 6 && carInfo === "0") {
+			return "800\u7cfb";
+		}
+		return "\u305d\u306e\u4ed6";
+	}
+
+	function getCentralEightCarFormationType(formationIconInfo) {
+		if (!Array.isArray(formationIconInfo)) return "\u305d\u306e\u4ed6\uff088\u4e21\uff09";
+		const car4 = formationIconInfo[3];
+		const car6 = formationIconInfo[5];
+		if (!car4 || !car6) return "\u305d\u306e\u4ed6\uff088\u4e21\uff09";
+
+		if (Number(car6.carKind) === 3) {
+			return "N700\u7cfb(S/R\u7de8\u6210)";
+		}
+		const car4HasCrewEquipment = hasCentralCrewEquipment(car4.formationIconList);
+		const car6HasCrewEquipment = hasCentralCrewEquipment(car6.formationIconList);
+		if (car4HasCrewEquipment && !car6HasCrewEquipment) {
+			return "N700a(P\u7de8\u6210)";
+		}
+		if (car6HasCrewEquipment && !car4HasCrewEquipment) {
+			return "500\u7cfb/700\u7cfb";
+		}
+		return "\u305d\u306e\u4ed6\uff088\u4e21\uff09";
+	}
+
+	function hasCentralCrewEquipment(formationIconList) {
+		if (!Array.isArray(formationIconList)) return false;
+		const icons = formationIconList.map((value) => Number(value));
+		return icons.indexOf(CENTRAL_FORMATION_ICON_AED) >= 0 && icons.indexOf(CENTRAL_FORMATION_ICON_CREW_ROOM) >= 0;
 	}
 
 	function resolveCentralOfficialTrainNumber(trainName, rawTrainNumber, bound, options) {
@@ -765,6 +833,7 @@
 
 	global.JrShinkansenLocationAdapter = {
 		normalize: normalize,
-		parseKyushuRows: parseKyushuRows
+		parseKyushuRows: parseKyushuRows,
+		getCentralFormationType: getCentralFormationType
 	};
 }(window));

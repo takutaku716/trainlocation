@@ -1,0 +1,83 @@
+{
+  "trains": [
+    {
+      "operation_number": 3,
+      "line_id": 26007,
+      "up": false,
+      "track_number": -1,
+      "kind": "普",
+      "affiliation": "",
+      "delay_time": 0,
+      "train_orchestration_number": "",
+      "num_of_cars": "",
+      "destination": "",
+      "station_id": 1014
+    },
+    {
+      "operation_number": 1,
+      "line_id": 26007,
+      "up": true,
+      "track_number": 1,
+      "kind": "普",
+      "affiliation": "",
+      "delay_time": 0,
+      "train_orchestration_number": "",
+      "num_of_cars": "",
+      "destination": "",
+      "section_id": 217
+    },
+    {
+      "operation_number": 2,
+      "line_id": 26007,
+      "up": true,
+      "track_number": 1,
+      "kind": "普",
+      "affiliation": "",
+      "delay_time": 0,
+      "train_orchestration_number": "",
+      "num_of_cars": "",
+      "destination": "",
+      "station_id": 784
+    },
+    {
+      "operation_number": 5,
+      "line_id": 26007,
+      "up": true,
+      "track_number": 1,
+      "kind": "普",
+      "affiliation": "",
+      "delay_time": 0,
+      "train_orchestration_number": "",
+      "num_of_cars": "",
+      "destination": "",
+      "station_id": 1009
+    },
+    {
+      "operation_number": 4,
+      "line_id": 26007,
+      "up": false,
+      "track_number": -1,
+      "kind": "普",
+      "affiliation": "",
+      "delay_time": 0,
+      "train_orchestration_number": "",
+      "num_of_cars": "",
+      "destination": "",
+      "section_id": 202
+    },
+    {
+      "operation_number": 6,
+      "line_id": 26007,
+      "up": true,
+      "track_number": 1,
+      "kind": "普",
+      "affiliation": "",
+      "delay_time": 0,
+      "train_orchestration_number": "",
+      "num_of_cars": "",
+      "destination": "",
+      "station_id": 1011
+    }
+  ],
+  "name_full": "setagaya"
+}

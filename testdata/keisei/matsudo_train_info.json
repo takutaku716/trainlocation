@@ -1,0 +1,62 @@
+[
+  {
+    "delayminute": 0,
+    "laststop": "くぬぎ山",
+    "trainPositionInfoPK": {
+      "blockno": "05H",
+      "orbitnumber": "1RT",
+      "sectionid": 3,
+      "sectionidSub": 1,
+      "stationid": 23
+    },
+    "trainno": 508
+  },
+  {
+    "delayminute": 0,
+    "laststop": "くぬぎ山",
+    "trainPositionInfoPK": {
+      "blockno": "04H",
+      "orbitnumber": "116T",
+      "sectionid": 25,
+      "sectionidSub": 1,
+      "stationid": 12
+    },
+    "trainno": 506
+  },
+  {
+    "delayminute": 1,
+    "laststop": "松戸",
+    "trainPositionInfoPK": {
+      "blockno": "01H",
+      "orbitnumber": "220T",
+      "sectionid": 42,
+      "sectionidSub": 1,
+      "stationid": 0
+    },
+    "trainno": 180
+  },
+  {
+    "delayminute": 0,
+    "laststop": "くぬぎ山",
+    "trainPositionInfoPK": {
+      "blockno": "02H",
+      "orbitnumber": "195T",
+      "sectionid": 112,
+      "sectionidSub": 1,
+      "stationid": 0
+    },
+    "trainno": 725
+  },
+  {
+    "delayminute": 0,
+    "laststop": "新津田沼",
+    "trainPositionInfoPK": {
+      "blockno": "04H",
+      "orbitnumber": "71T",
+      "sectionid": 131,
+      "sectionidSub": 1,
+      "stationid": 16
+    },
+    "trainno": 217
+  }
+]

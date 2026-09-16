@@ -1,0 +1,8 @@
+name = "trainlocation-odpt-proxy"
+main = "workers/odpt_proxy.js"
+compatibility_date = "2026-09-07"
+workers_dev = true
+preview_urls = false
+# Existing ODPT_ACCESS_TOKEN_2026 secret stays in Cloudflare. Never put it here.
+[observability]
+enabled = false

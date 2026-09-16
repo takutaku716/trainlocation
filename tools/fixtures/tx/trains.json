@@ -1,0 +1,9 @@
+{
+  "updated_at": 1788877436,
+  "trains": [
+    {"station_id":13,"next_station_id":null,"position":61,"direction":"up","train_kind_id":1,"delay":0,"train_number":"5398","train_length_id":6,"destination_station_id":11,"train_orchestration_number":13},
+    {"station_id":25,"next_station_id":24,"position":310,"direction":"up","train_kind_id":2,"delay":119,"train_number":"4100","train_length_id":6,"destination_station_id":11,"train_orchestration_number":72},
+    {"station_id":13,"next_station_id":14,"position":114,"direction":"down","train_kind_id":5,"delay":120,"train_number":"3001","train_length_id":6,"destination_station_id":30,"train_orchestration_number":81},
+    {"station_id":25,"next_station_id":null,"position":122,"direction":"down","train_kind_id":14,"delay":59,"train_number":"2001","train_length_id":6,"destination_station_id":30,"train_orchestration_number":62}
+  ]
+}
