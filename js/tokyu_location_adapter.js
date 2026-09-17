@@ -43,20 +43,24 @@
     return String(value ?? '').replace(/^0(\d{3})(\d{3})0$/, '$1-$2');
   }
   function formationFor(train, formations) {
+    const line = String(train.train_line_id || train.line_id);
     if (String(train.train_line_id || train.line_id) === '26004') {
       const raw = train.train_orchestration_number;
       if (raw == null || !/^\d{1,2}$/.test(String(raw))) return '';
       const name = formations?.oimachi_systems?.[String(Number(train.num_of_cars))]?.[String(raw).padStart(2,'0')];
       return typeof name === 'string' ? name.trim() : '';
     }
-    if (!['26001','26002','26009'].includes(String(train.train_line_id || train.line_id))) return '';
-    const affiliation = train.affiliation;
+    if (!['26001','26002'].includes(line)) return '';
+    const operation = Number(train.operation_number);
+    const affiliation = line === '26002' && train.affiliation === '南' && Number(train.num_of_cars) === 6 && Number.isInteger(operation) && operation >= 500 && operation <= 599 ? '埼' : train.affiliation;
     if (!['急','み','相','副','東','西','都','南','埼'].includes(affiliation)) return '';
     const raw = train.train_orchestration_number;
     if (raw == null || !/^\d{1,2}$/.test(String(raw))) return '';
     const cars = affiliation === 'み' ? 8 : ['東','西'].includes(affiliation) ? 10 : Number(train.num_of_cars);
-    const group = formations?.tokyu_systems?.[String(cars) + affiliation];
-    const name = group?.[String(raw).padStart(2,'0')];
+    const groupKey = String(cars) + affiliation;
+    const numberKey = String(raw).padStart(2,'0');
+    const system = line === '26001' ? formations?.toyoko_systems : formations?.meguro_systems;
+    const name = system?.[groupKey]?.[numberKey];
     return typeof name === 'string' ? name.trim() : '';
   }
   function normalize(envelope, id, formations) {
@@ -197,10 +201,10 @@
       if (!formationCache || formationCache.expires <= now()) {
         const entry = {expires:Infinity,promise:null};
         entry.promise = (async()=>{
-          const response = await fetchImpl('./original/tokyu_formation.json?20260911b',{signal:AbortSignal.timeout(5000)});
+          const response = await fetchImpl('./original/tokyu_formation.json?20260918c',{signal:AbortSignal.timeout(5000)});
           if (!response.ok) throw new Error('Formation master unavailable');
           const data = await response.json();
-          if (!data?.tokyu_systems || typeof data.tokyu_systems !== 'object') throw new Error('Invalid formation master');
+          if (!data?.toyoko_systems || !data?.meguro_systems || typeof data.toyoko_systems !== 'object' || typeof data.meguro_systems !== 'object') throw new Error('Invalid formation master');
           return data;
         })().catch(()=>{entry.expires=now()+60000;return null;});
         formationCache = entry;
