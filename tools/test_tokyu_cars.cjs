@@ -1,7 +1,7 @@
 const assert = require('node:assert/strict');
 const adapter = require('../js/tokyu_location_adapter');
 const formations = require('../original/tokyu_formation.json');
-const master = require('../original/tokyu_cars_master.json');
+const master = require('../original/cars_master.json');
 const body = {info:['4000',{train_cars:Array.from({length:13},(_,i)=>({name:String(i+1),congestion:String(i+1)}))}]};
 function train(id,cars=10) {
   const route=adapter.routeFor(id);
@@ -20,6 +20,14 @@ const converted=adapter.carsVehicleFor(body,master,request,1);
 assert.deepEqual(converted.vehicle.carDetails.map(c=>c.congestion),[1,1,2,3,3,3,3,4,4,4]);
 assert.ok(converted.vehicle.carDetails.some(c=>c.weakCooling));
 assert.ok(converted.vehicle.carDetails.some(c=>c.freeDoors.length));
+for (const code of ['11','12','13','14','15']) {
+  const result=adapter.carsVehicleFor(body,master,{...request,trainOrchestrationNumber:code,formation:'41'+code+'F'},1);
+  const inserted=code==='11'?[6,7]:[4,5];
+  for(const number of inserted) assert.deepEqual(result.vehicle.carDetails[number-1].equipmentSlots,[null,'free','priority','priority']);
+  assert.equal(result.vehicle.carDetails[8].weakCooling,true);
+  assert.equal(result.vehicle.carDetails.filter(c=>c.qSeat).length,code==='11'?0:2);
+}
+assert.deepEqual(master.toyoko.find(row=>row.carType==='4000' && row.trainCode.includes('13')).trainCode,['12','13','14','15']);
 const asymmetric = {toyoko:[{carType:'4000',numOfCars:'10',trainCode:[],cars:[{carNumber:'1',seatPosition:['優','車','F','運']}]}]};
 assert.deepEqual(adapter.carsVehicleFor(body,asymmetric,request,1).vehicle.carDetails[0].equipmentSlots,['free','priority',null,'free']);
 for (const number of [4111,4112,4113,4114,4115,4116]) {
@@ -32,7 +40,7 @@ assert.ok(adapter.carsVehicleFor({info:['3020',body.info[1]]},master,meguro,1).v
 (async()=>{
   let count=0,clock=1000;
   const client=adapter.createClient({now:()=>clock,fetchImpl:async(url,options)=>{
-    if(url.includes('tokyu_cars_master'))return Response.json(master);
+    if(url.includes('cars_master'))return Response.json(master);
     count++;assert.equal(url,'https://cars-info.tokyuapp.com/fetchInfo');assert.equal(options.method,'POST');
     assert.equal(JSON.parse(options.body).trainLineId,'26001');assert.equal(options.credentials,'omit');
     return Response.json(body);
@@ -41,7 +49,7 @@ assert.ok(adapter.carsVehicleFor({info:['3020',body.info[1]]},master,meguro,1).v
   assert.equal(count,1);assert.equal(results[0].formation,'4101F');
   clock+=60001;await client.loadDentoFormation(request);assert.equal(count,2);
   for(const response of [()=>new Response('',{status:503}),()=>new Response('bad'),()=>Response.json({}),()=>{throw Error('network');}]) {
-    const broken=adapter.createClient({fetchImpl:async url=>url.includes('tokyu_cars_master')?Response.json(master):response()});
+    const broken=adapter.createClient({fetchImpl:async url=>url.includes('cars_master')?Response.json(master):response()});
     assert.equal(await broken.loadDentoFormation(request),null);
   }
   console.log('Toyoko/Meguro car details: request, mapping, equipment, empty data, caching and failures passed.');

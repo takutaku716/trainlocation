@@ -158,7 +158,7 @@
         for (const [k,v] of dentoCache) if (v.expires<=now()) dentoCache.delete(k);
         entry = {expires:Infinity,promise:null};
         entry.promise = (async()=>{
-          if (!carsMaster) carsMaster = fetchImpl('./original/tokyu_cars_master.json',{signal:AbortSignal.timeout(10000)})
+          if (!carsMaster) carsMaster = fetchImpl('./original/cars_master.json?20260918a',{signal:AbortSignal.timeout(10000),cache:'no-store'})
             .then(r=>{if(!r.ok) throw new Error('Car master unavailable');return r.json();}).catch(error=>{carsMaster=null;throw error;});
           const masterData = await carsMaster;
           const {source,formation,cars,...body} = request;

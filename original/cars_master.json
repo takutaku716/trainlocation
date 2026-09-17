@@ -1626,6 +1626,8 @@
       "numOfCars": "10",
       "trainCode": [
         "12",
+        "13",
+        "14",
         "15"
       ],
       "cars": [
@@ -2543,6 +2545,125 @@
             "優",
             "-",
             "-"
+          ]
+        }
+      ]
+    },
+    {
+      "carType": "4000",
+      "numOfCars": "10",
+      "trainCode": [
+        "11"
+      ],
+      "cars": [
+        {
+          "carNumber": "1",
+          "womenOnly": "TRUE",
+          "weakAirConditioning": "FALSE",
+          "seatPosition": [
+            "運",
+            "運",
+            "優",
+            "優"
+          ]
+        },
+        {
+          "carNumber": "2",
+          "womenOnly": "FALSE",
+          "weakAirConditioning": "FALSE",
+          "seatPosition": [
+            "-",
+            "-",
+            "優",
+            "車"
+          ]
+        },
+        {
+          "carNumber": "3",
+          "womenOnly": "FALSE",
+          "weakAirConditioning": "FALSE",
+          "seatPosition": [
+            "-",
+            "-",
+            "優",
+            "優"
+          ]
+        },
+        {
+          "carNumber": "4",
+          "womenOnly": "FALSE",
+          "weakAirConditioning": "FALSE",
+          "seatPosition": [
+            "-",
+            "-",
+            "優",
+            "優"
+          ]
+        },
+        {
+          "carNumber": "5",
+          "womenOnly": "FALSE",
+          "weakAirConditioning": "FALSE",
+          "seatPosition": [
+            "-",
+            "-",
+            "優",
+            "優"
+          ]
+        },
+        {
+          "carNumber": "6",
+          "womenOnly": "FALSE",
+          "weakAirConditioning": "FALSE",
+          "seatPosition": [
+            "F",
+            "-",
+            "優",
+            "優"
+          ]
+        },
+        {
+          "carNumber": "7",
+          "womenOnly": "FALSE",
+          "weakAirConditioning": "FALSE",
+          "seatPosition": [
+            "F",
+            "-",
+            "優",
+            "優"
+          ]
+        },
+        {
+          "carNumber": "8",
+          "womenOnly": "FALSE",
+          "weakAirConditioning": "FALSE",
+          "seatPosition": [
+            "-",
+            "-",
+            "優",
+            "優"
+          ]
+        },
+        {
+          "carNumber": "9",
+          "womenOnly": "FALSE",
+          "weakAirConditioning": "TRUE",
+          "seatPosition": [
+            "車",
+            "-",
+            "優",
+            "優"
+          ]
+        },
+        {
+          "carNumber": "10",
+          "womenOnly": "FALSE",
+          "weakAirConditioning": "FALSE",
+          "seatPosition": [
+            "優",
+            "優",
+            "運",
+            "運"
           ]
         }
       ]

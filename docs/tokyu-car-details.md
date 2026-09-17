@@ -8,7 +8,10 @@
 - 参照ページ: https://tokyu-tid.s3.amazonaws.com/car_infos
 - 編成・混雑情報: `POST https://cars-info.tokyuapp.com/fetchInfo`
 - 車両設備マスター: https://tokyu-master-data.s3-ap-northeast-1.amazonaws.com/cars_master.json
-- 設備マスターの保存先: `original/tokyu_cars_master.json`（2026-09-17取得）。更新時はこのJSONを差し替える。
+- 設備マスターの参照先: `original/cars_master.json`（2026-09-17取得分に編成別補正を追加）。公式データへ丸ごと差し替えると補正が失われるため、更新時は補正を維持する。
+
+4111Fは旧5173Fの8両配置を基に、6・7号車を挿入。両車とも小さい号車番号側の右にフリースペース、大きい号車番号側の両側に優先席を配置する（1号車側を上にした図）。
+4113F・4114Fは旧5167F・5168Fの8両配置に4・5号車を挿入した結果、4112F・4115Fと同一になるため、同じエントリーの `trainCode` に13・14を登録する。
 
 POSTは参照ページと同じJSON本文とContent-Typeを使う。APIは `Access-Control-Allow-Origin: *` を返すため直接取得する。
 APIレスポンスに含まれるリクエスト診断情報は保存・表示しない。
