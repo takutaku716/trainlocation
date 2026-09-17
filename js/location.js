@@ -3211,6 +3211,17 @@ function set_responsive() {
  * 列車アイコンを描画する。
  */
 function create_ressha_icon(_param_rosen, _nowData, _typeData, _ekiData) {
+    const parallelCounts = new Map();
+    const parallelRange = {159:[8,13],160:[8,13],161:[7,10],162:[15,18]}[String(_param_rosen)];
+    if (parallelRange) {
+        document.querySelectorAll('#stationList .ressha-icon').forEach(slot => {
+            const match = Array.from(slot.classList).map(c => c.match(/^TOKYU(?:159|160|161|162)P(\d+)(?:_(\d+))?([UD])$/)).find(Boolean);
+            if (!match || Number(match[1]) < parallelRange[0] || Number(match[2] || match[1]) > parallelRange[1]) return;
+            slot.classList.add('tokyu-parallel-slot');
+            slot.classList.toggle('up', match[3] === 'U');
+            slot.closest('.ressha-contents').classList.add('tokyu-parallel-contents');
+        });
+    }
 	if (is_odpt_location_rosen(_param_rosen)) {
 		$("#timestamp").text("");
 		$("header").data("timestamp", "");
@@ -3227,6 +3238,17 @@ function create_ressha_icon(_param_rosen, _nowData, _typeData, _ekiData) {
 		if (windowWidth > 1000) add = 325;
 
 		if (pos != "" && $("." + pos).length > 0) {
+			if (nowRow.source === 'tokyu' && $("." + pos).hasClass('tokyu-parallel-slot')) {
+                const up = pos.endsWith('U');
+                const inner = ['26002','26004'].includes(String(nowRow.tokyu?.trainLineId));
+                const column = up ? (inner ? 2 : 1) : (inner ? 1 : 2);
+                const key = pos + ':' + column;
+                const row = (parallelCounts.get(key) || 0) + 1;
+                parallelCounts.set(key, row);
+                const item = up ? create_html_up_ressha_icon(nowRow, _typeData, _ekiData) : create_html_down_ressha_icon(nowRow, _typeData, _ekiData);
+                $(item).css({gridColumn:column,gridRow:row}).appendTo('.' + pos);
+                return;
+            }
 			if (nowRow.jrShikoku && nowRow.jrShikoku.isForecastWindow) {
 				$("." + pos).append(create_html_jrshikoku_forecast_row(nowRow, _typeData, _ekiData));
 			} else if (nowRow.jrShikoku && pos.slice(-1) === "U") {

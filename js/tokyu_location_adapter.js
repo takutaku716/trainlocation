@@ -151,6 +151,7 @@
     return {outsideTemperature:temperature(data.temp),showAirMode,carDetails,fetchedAt};
   }
   function createClient({fetchImpl=(...args)=>fetch(...args), now=()=>Date.now(), timeoutMs=50000}={}) {
+    const testMode = typeof location !== 'undefined' && new URLSearchParams(location.search).get('tokyu_test') === 'parallel';
     const cache = new Map(), lastSuccess = new Map();
     const dentoCache = new Map();
     let carsMaster;
@@ -212,10 +213,15 @@
       return formationCache.promise;
     }
     async function request(route) {
-      const response = await fetchImpl(apiUrl(route.rosen),{cache:'no-store',signal:AbortSignal.timeout(timeoutMs)});
+      const fixture = testMode && ['toyoko','meguro','dento','oimachi'].includes(route.key);
+      const response = await fetchImpl(fixture ? './testdata/tokyu_parallel_trains.json' : apiUrl(route.rosen),{cache:'no-store',signal:AbortSignal.timeout(timeoutMs)});
       let data;
       try { data = await response.json(); } catch { throw new Error('在線JSON形式不正'); }
       if (!response.ok || data.error) throw new Error(data.error || `HTTP ${response.status}`);
+      if (fixture) {
+        if (data.testOnly !== true || !Array.isArray(data.data?.trains)) throw new Error('テストJSON形式不正');
+        data.fetchedAt = now();
+      }
       return data;
     }
     async function load(id) {
@@ -234,6 +240,10 @@
         const needsOimachiFormations = route.key === 'dento' && data.data?.trains?.some(row => row && String(row.line_id) === route.tidLineId && String(row.train_line_id || row.line_id) === '26004');
         const formations = ['toyoko','meguro','shinyokohama','oimachi'].includes(route.key) || needsOimachiFormations ? await loadFormations() : null;
         const result = normalize(data,route.rosen,formations);
+        if (testMode && ['toyoko','meguro','dento','oimachi'].includes(route.key)) {
+          for (const lang of Object.keys(result.time)) result.time[lang] = '【テストデータ】' + result.time[lang];
+          result.trains.forEach(train=>{train.tokyu.dentoRequest=null;});
+        }
         lastSuccess.set(route.rosen,data.fetchedAt);
         return result;
       } catch (error) {
