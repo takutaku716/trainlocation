@@ -5,6 +5,18 @@
 #stationList .eki-panel .ressha-contents.tokyu-parallel-contents { max-height: none; padding-bottom: 2px; }
 #stationList .eki-panel .ressha-contents .ressha-icon.tokyu-parallel-slot { display: grid; grid-template-columns: repeat(2,52px); grid-auto-rows: 76px; width: 104px; flex: 0 0 104px; direction: ltr; }
 #stationList .eki-panel .ressha-contents .ressha-icon.tokyu-parallel-slot > div.ressha { display: inline-grid; }
+/* Keep four 52px icon lanes; use the gaps between systems for the two tracks. */
+#stationList:has(.tokyu-parallel-contents) .eki-panel > .senro-img { display: none; }
+#stationList:has(.tokyu-parallel-contents) .eki-panel::before { content: ''; position: absolute; top: -3px; bottom: -3px; left: 50%; width: 17px; box-sizing: border-box; border-left: 2px solid #000; border-right: 2px solid #000; background: repeating-linear-gradient(to bottom,#000 0 22px,#fff 22px 44px); transform: translateX(-50%); z-index: 17; pointer-events: none; }
+#stationList .eki-panel .ressha-contents .ressha-icon.tokyu-parallel-slot { column-gap: 24px; width: 128px; flex-basis: 128px; margin-left: 4px; margin-right: 0; }
+#stationList .eki-panel .ressha-contents .ressha-icon.tokyu-parallel-slot.up { margin-left: 0; margin-right: 4px; }
+#stationList .eki-panel:has(.tokyu-parallel-contents) > .senro-img { display: none; }
+#stationList .eki-panel:has(.tokyu-parallel-contents)::before,
+#stationList .eki-panel:has(.tokyu-parallel-contents)::after { content: ''; position: absolute; top: -3px; bottom: -3px; width: 17px; box-sizing: border-box; border-left: 2px solid #000; border-right: 2px solid #000; background: repeating-linear-gradient(to bottom,#000 0 22px,#fff 22px 44px); transform: translateX(-50%); z-index: 17; pointer-events: none; }
+#stationList:has(.tokyu-parallel-contents) .eki-panel:has(.tokyu-parallel-contents)::before { left: calc(50% - 68px); }
+#stationList .eki-panel:has(.tokyu-parallel-contents)::after { left: calc(50% + 68px); }
+#stationList .eki-panel.eki:has(.tokyu-parallel-contents)::before,
+#stationList .eki-panel.eki:has(.tokyu-parallel-contents)::after { bottom: -13px; }
 .tokyu-station-number { display: block; flex: 0 0 38px; width: 38px; height: 38px; margin: 1px 13px 1px 5px; }
 .tokyu-station-number:has(+ .tokyu-station-number) { margin-right: 2px; }
 .tokyu-station-number + .tokyu-station-number { margin-left: 0; }

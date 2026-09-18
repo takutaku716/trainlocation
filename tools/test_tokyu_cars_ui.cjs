@@ -4,7 +4,7 @@ const adapter=require('../js/tokyu_location_adapter');
 (async()=>{
   const browser=await chromium.launch({headless:true,channel:'msedge'});
   try {
-    for(const [id,width,cars,type,formation] of [[159,390,10,'4000','4112F'],[159,320,10,'4000','4115F'],[160,1280,8,'3000','3101F'],[160,320,8,'3000','3101F']]) {
+    for(const [id,width,cars,type,formation] of [[159,390,10,'4000','4112F'],[159,320,10,'4000','4115F'],[160,1280,8,'3000','3101F'],[160,320,8,'3000','3101F'],[163,320,10,'4000','4112F'],[163,1280,8,'3000','3101F']]) {
       const page=await browser.newPage({viewport:{width,height:900}});
       const route=adapter.routeFor(id);
       let fail=false;
@@ -12,7 +12,7 @@ const adapter=require('../js/tokyu_location_adapter');
       await page.route('**/api/mainte/**',r=>r.fulfill({json:{lines:[],status:0}}));
       await page.route('https://cors-proxy-*/**',r=>r.fulfill({json:r.request().url().includes('ressha_type_master')||r.request().url().includes('eki_master')?[]:{lines:[]}}));
       await page.route('**/api/tokyu/'+route.key,r=>r.fulfill({json:{fetchedAt:Date.now(),data:{trains:[{
-        line_id:route.tidLineId,train_line_id:route.tidLineId,station_id:route.stations[0].id,
+        line_id:route.tidLineId,train_line_id:id===163?(cars===10?26001:26002):route.tidLineId,station_id:route.stations[0].id,
         up:id===160,operation_number:51,train_number:'00511230',kind:'急',num_of_cars:cars,affiliation:'急',train_orchestration_number:formation.slice(2,4),destination:'日吉'
       }]}}}));
       await page.route('https://cars-info.tokyuapp.com/**',r=>r.fulfill(fail?{status:503,body:''}:{json:{info:[type,{train_cars:Array.from({length:cars},(_,i)=>({name:String(i+1),congestion:'3'}))}]}}));
@@ -38,7 +38,7 @@ const adapter=require('../js/tokyu_location_adapter');
         assert.deepEqual(await panel.locator('tbody tr:has(.tokyu-q-seat) .tokyu-car-number').allTextContents(),['4','5']);
       }
       await page.waitForFunction(()=>Array.from(document.querySelectorAll('.tokyu-equipment-symbol img')).every(img=>img.complete && img.naturalWidth>0));
-      assert.ok((await panel.locator('.tokyu-travel-direction').innerText()).includes(id===160?'↑ 目黒':'↓ 横浜'));
+      assert.ok((await panel.locator('.tokyu-travel-direction').innerText()).includes(id===163?'↓ 新横浜':id===160?'↑ 目黒':'↓ 横浜'));
       assert.ok((await panel.locator('th:has(.tokyu-leading-car)').innerText()).startsWith(id===160?'1':String(cars)));
       await page.screenshot({path:'.tmp/tokyu-cars-'+id+'.png'});
       await page.getByRole('button',{name:'列車詳細に戻る'}).click();

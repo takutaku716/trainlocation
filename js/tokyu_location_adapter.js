@@ -104,7 +104,7 @@
     const line = String(row.train_line_id || row.line_id);
     if (route.key === 'dento' && line === '26003' && /^\d{1,3}$/.test(String(row.operation_number))) return {operation:row.operation_number,direction:row.up?'up':'down'};
     const formation = formationFor(row,formations);
-    if (!['toyoko','meguro'].includes(route.key) || !['26001','26002'].includes(line) || !formation) return null;
+    if (!['toyoko','meguro','shinyokohama'].includes(route.key) || !['26001','26002'].includes(line) || !formation) return null;
     const section = route.sections[String(row.section_id)];
     const last = section ? route.stations[(row.up ? section.to : section.from)-1]?.name : pos.name;
     return {source:'cars',formation,cars:Number(row.num_of_cars),trainLineId:line,

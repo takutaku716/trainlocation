@@ -80,7 +80,7 @@
     try { request = JSON.parse(dataset.tokyu_formation_request || '{}'); } catch (_) {}
     const up = request.direction === 'up';
     const directionKnown = ['up','down'].includes(request.direction);
-    const ends = request.trainLineId === '26002' ? ['目黒','日吉・新横浜'] : request.source === 'cars' ? ['渋谷','横浜・新横浜'] : ['渋谷','中央林間'];
+    const ends = String(dataset.source_rosen) === '163' ? [request.trainLineId === '26002' ? '目黒' : '渋谷','新横浜'] : request.trainLineId === '26002' ? ['目黒','日吉・新横浜'] : request.source === 'cars' ? ['渋谷','横浜・新横浜'] : ['渋谷','中央林間'];
     const back = element('button','tokyu-car-back',l.back);
     back.type = 'button';
     back.addEventListener('click',()=>{reset();formationButton?.focus();});

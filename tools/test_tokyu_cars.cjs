@@ -16,6 +16,13 @@ assert.equal(request.currentStation,'渋谷');
 const meguro=normalized(160,train(160,8)).tokyu.dentoRequest;
 assert.equal(meguro.trainLineId,'26002');
 assert.ok(meguro.formation);
+for (const [line,cars,name] of [[26001,10,'4101F'],[26002,8,'3101F']]) {
+  const request=normalized(163,{...train(163,cars),train_line_id:line}).tokyu.dentoRequest;
+  assert.equal(request.trainLineId,String(line));
+  assert.equal(request.formation,name);
+  assert.equal(request.currentStation,'日吉');
+}
+assert.equal(normalized(163,train(163,8)).tokyu.dentoRequest,null);
 const converted=adapter.carsVehicleFor(body,master,request,1);
 assert.deepEqual(converted.vehicle.carDetails.map(c=>c.congestion),[1,1,2,3,3,3,3,4,4,4]);
 assert.ok(converted.vehicle.carDetails.some(c=>c.weakCooling));
