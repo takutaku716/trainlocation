@@ -2,6 +2,7 @@ const JST_OFFSET_MS = 9 * 60 * 60 * 1000;
 const CACHE_KEY_PREFIX = "jrkyushu:timetable";
 const JREAST_TRAIN_NUMBER_CACHE_KEY_PREFIX = "jreast:shinkansen:train-numbers";
 const JREAST_TIMETABLE_BASE_URL = "https://timetables.jreast.co.jp";
+const JRKYUSHU_TRAIN_NAVI_API_BASE = "https://www.goto-mirai.jrkyushu.co.jp/api/";
 const MAX_DETAIL_FETCHES = 500;
 const DETAIL_BATCH_SIZE = 15;
 const japaneseHolidayCache = new Map();
@@ -57,6 +58,15 @@ export default {
 		if (url.pathname.endsWith("/jreast-shinkansen/train-numbers")) {
 			return getJreastShinkansenTrainNumbers(env, url);
 		}
+		if (url.pathname.endsWith("/trainnavi/operation-status")) {
+			return proxyTrainNaviOperationStatus(url);
+		}
+		if (url.pathname.endsWith("/trainnavi/train-info")) {
+			return proxyTrainNaviTrainInfo(url);
+		}
+		if (url.pathname.endsWith("/trainnavi/timetable")) {
+			return resolveTrainNaviTimetable(url);
+		}
 		const trainNumber = getTimetableTrainNumber(url.pathname);
 		if (trainNumber) {
 			return getTimetableResponse(env, trainNumber, url.searchParams.get("date"));
@@ -87,6 +97,382 @@ async function getTimetableResponse(env, trainNumber, requestedDate) {
 	const value = await env.JRKYUSHU_TIMETABLE_KV.get(trainKey(serviceDate, trainNumber));
 	if (!value) return jsonResponse({ ok: false, error: "Not Found" }, { status: 404 });
 	return new Response(value, { headers: JSON_HEADERS });
+}
+
+async function proxyTrainNaviOperationStatus(url) {
+	try {
+		const params = buildTrainNaviOperationStatusParams(url.searchParams);
+		const data = await fetchTrainNaviJson("station/operationStatus", params, 10);
+		return jsonResponse(data, { headers: { "cache-control": "public, max-age=10" } });
+	} catch (error) {
+		return trainNaviErrorResponse(error);
+	}
+}
+
+async function proxyTrainNaviTrainInfo(url) {
+	try {
+		const params = buildTrainNaviTrainInfoParams(url.searchParams);
+		const data = await fetchTrainNaviJson("station/trainInfo", params, 30);
+		return jsonResponse(data, { headers: { "cache-control": "public, max-age=30" } });
+	} catch (error) {
+		return trainNaviErrorResponse(error);
+	}
+}
+
+async function resolveTrainNaviTimetable(url) {
+	try {
+		let input = parseTrainNaviTimetableRequest(url.searchParams);
+		const stationInputs = input.currentStationCode ? [input] : await resolveTrainNaviStationInputs(input);
+		input = stationInputs[0];
+		let identity = input.identity;
+		let train = null;
+
+		if (identity.trainSignCode === null) {
+			const inferredIdentity = inferTrainNaviIdentity(input);
+			if (inferredIdentity) {
+				for (const candidateInput of stationInputs) {
+					try {
+						const directInfoData = await fetchTrainNaviInfo(candidateInput, inferredIdentity);
+						const directTrain = selectTrainNaviInfoRow(directInfoData, inferredIdentity, true);
+						if (!directTrain) continue;
+						input = candidateInput;
+						identity = inferredIdentity;
+						train = directTrain;
+						break;
+					} catch (_error) {
+						// Some trains use exceptional identity values; operationStatus remains the fallback.
+					}
+				}
+			}
+
+			if (!train) {
+				identity = null;
+				for (const candidateInput of stationInputs) {
+					const operationParams = buildTrainNaviOperationStatusParams(new URLSearchParams({
+						drivingRouteCode: candidateInput.drivingRouteCode,
+						stationCode: candidateInput.currentStationCode,
+						upperLowerKbn: candidateInput.upperLowerKbn,
+						lang: candidateInput.lang
+					}));
+					let operationData;
+					try {
+						operationData = await fetchTrainNaviJson("station/operationStatus", operationParams, 10);
+					} catch (_error) {
+						continue;
+					}
+					identity = resolveTrainNaviIdentity(operationData, candidateInput);
+					if (identity) {
+						input = candidateInput;
+						break;
+					}
+				}
+			}
+			if (!train && !identity) {
+				return jsonResponse({
+					ok: true,
+					matched: false,
+					reason: "train-not-found",
+					timetable: []
+				}, { headers: { "cache-control": "public, max-age=10" } });
+			}
+		}
+
+		if (!train) {
+			const infoData = await fetchTrainNaviInfo(input, identity);
+			train = selectTrainNaviInfoRow(infoData, identity);
+		}
+		if (!train) {
+			return jsonResponse({
+				ok: true,
+				matched: false,
+				reason: "timetable-not-found",
+				timetable: []
+			}, { headers: { "cache-control": "public, max-age=15" } });
+		}
+
+		return jsonResponse({
+			ok: true,
+			matched: true,
+			identity: pickTrainNaviIdentity(train),
+			train: normalizeTrainNaviTrain(train),
+			timetable: normalizeTrainNaviTimetable(train)
+		}, { headers: { "cache-control": "public, max-age=30" } });
+	} catch (error) {
+		return trainNaviErrorResponse(error);
+	}
+}
+
+function inferTrainNaviIdentity(input) {
+	const signCodes = { "": 0, M: 1, D: 2, C: 3, H: 10 };
+	if (!Object.prototype.hasOwnProperty.call(signCodes, input.trainSignName)) return null;
+	return Object.assign({}, input.identity, {
+		trainSignCode: signCodes[input.trainSignName]
+	});
+}
+
+function fetchTrainNaviInfo(input, identity) {
+	const infoParams = buildTrainNaviTrainInfoParams(new URLSearchParams({
+		drivingRouteCode: input.drivingRouteCode,
+		stationCode: input.stationCode,
+		currentStationCode: input.currentStationCode,
+		trainCrownCode: String(identity.trainCrownCode),
+		trainNumber: String(identity.trainNumber),
+		trainSignCode: String(identity.trainSignCode),
+		trainGenkai: String(identity.trainGenkai),
+		trainCompanyCode: String(identity.trainCompanyCode),
+		drivingBaseDate: identity.drivingBaseDate,
+		isVisibleAllTrain: "true",
+		lang: input.lang
+	}));
+	return fetchTrainNaviJson("station/trainInfo", infoParams, 30);
+}
+
+function parseTrainNaviTimetableRequest(searchParams) {
+	const parsedTrainNumber = parseTrainNaviDisplayNumber(requireTrainNaviText(searchParams, "trainNumber", /^\d{1,6}[A-Za-z]?$/));
+	const drivingBaseDate = normalizeDate(searchParams.get("drivingBaseDate")) || getServiceDate().ymd;
+	const signCodeText = optionalTrainNaviText(searchParams, "trainSignCode", /^\d{1,3}$/);
+	const currentStationCode = optionalTrainNaviText(searchParams, "currentStationCode", /^\d{1,12}$/);
+	const drivingRouteCode = optionalTrainNaviText(searchParams, "drivingRouteCode", /^\d{1,8}$/);
+	const stationCode = optionalTrainNaviText(searchParams, "stationCode", /^\d{1,12}$/) || currentStationCode;
+	const currentStationName = optionalTrainNaviText(searchParams, "currentStationName", /^.{1,40}$/);
+	const drivingRouteName = optionalTrainNaviText(searchParams, "drivingRouteName", /^.{1,40}$/);
+	if ((!currentStationCode || !drivingRouteCode) && (!currentStationName || !drivingRouteName)) {
+		throw trainNaviRequestError("station code or station/route name is required");
+	}
+	return {
+		drivingRouteCode,
+		stationCode,
+		currentStationCode,
+		currentStationName,
+		drivingRouteName,
+		upperLowerKbn: requireTrainNaviText(searchParams, "upperLowerKbn", /^[12]$/),
+		lang: normalizeTrainNaviLanguage(searchParams.get("lang")),
+		trainNumber: parsedTrainNumber.number,
+		trainSignName: parsedTrainNumber.signName,
+		drivingBaseDate,
+		identity: {
+			trainCrownCode: Number(optionalTrainNaviText(searchParams, "trainCrownCode", /^\d{1,3}$/) || 0),
+			trainNumber: parsedTrainNumber.number,
+			trainSignCode: signCodeText === "" ? null : Number(signCodeText),
+			trainGenkai: Number(optionalTrainNaviText(searchParams, "trainGenkai", /^\d{1,3}$/) || 0),
+			trainCompanyCode: Number(optionalTrainNaviText(searchParams, "trainCompanyCode", /^\d{1,3}$/) || 1),
+			drivingBaseDate
+		}
+	};
+}
+
+async function resolveTrainNaviStationInput(input) {
+	const stationInputs = await resolveTrainNaviStationInputs(input);
+	return stationInputs[0];
+}
+
+async function resolveTrainNaviStationInputs(input) {
+	const searchData = await fetchTrainNaviJson("findStationInput", new URLSearchParams({
+		inputString: input.currentStationName,
+		lang: input.lang
+	}), 86400);
+	const stationRows = Array.isArray(searchData) ? searchData : [];
+	const normalizedStationName = normalizeTrainNaviLookupText(input.currentStationName);
+	const station = stationRows.find((row) => normalizeTrainNaviLookupText(row && row.stationName) === normalizedStationName) || stationRows[0];
+	if (!station || !station.stationCode) throw trainNaviRequestError("station not found");
+
+	const stationCode = String(station.stationCode);
+	const detail = await fetchTrainNaviJson("stationDetailInfo", new URLSearchParams({
+		stationCode,
+		lang: input.lang
+	}), 86400);
+	const routes = detail && Array.isArray(detail.drivingNumberingDirectionList) ? detail.drivingNumberingDirectionList : [];
+	const normalizedRouteName = normalizeTrainNaviLookupText(input.drivingRouteName);
+	const exactRoutes = routes.filter((row) => normalizeTrainNaviLookupText(row && row.drivingRouteName) === normalizedRouteName);
+	const partialRoutes = routes.filter((row) => {
+		if (exactRoutes.includes(row)) return false;
+		const candidate = normalizeTrainNaviLookupText(row && row.drivingRouteName);
+		return candidate && (candidate.includes(normalizedRouteName) || normalizedRouteName.includes(candidate));
+	});
+	const remainingRoutes = routes.filter((row) => !exactRoutes.includes(row) && !partialRoutes.includes(row));
+	let orderedRoutes = exactRoutes.concat(partialRoutes, remainingRoutes);
+	if (!orderedRoutes.length && routes.length === 1) orderedRoutes = routes.slice();
+	if (!orderedRoutes.length) throw trainNaviRequestError("route not found at station");
+
+	return orderedRoutes.map((route) => {
+		const routeCode = String(route.guidanceDrivingRouteCode || route.drivingRouteCode || "");
+		if (!/^\d{1,8}$/.test(routeCode)) return null;
+		return Object.assign({}, input, {
+			drivingRouteCode: routeCode,
+			stationCode,
+			currentStationCode: stationCode
+		});
+	}).filter(Boolean);
+}
+
+function normalizeTrainNaviLookupText(value) {
+	return String(value || "")
+		.replace(/[\s・･]/g, "")
+		.replace(/[()（）]/g, "")
+		.replace(/本線$/, "線")
+		.replace(/福北ゆたか線$/, "篠栗線")
+		.toLowerCase();
+}
+
+function buildTrainNaviOperationStatusParams(searchParams) {
+	return new URLSearchParams({
+		drivingRouteCode: requireTrainNaviText(searchParams, "drivingRouteCode", /^\d{1,8}$/),
+		stationCode: requireTrainNaviText(searchParams, "stationCode", /^\d{1,12}$/),
+		upperLowerKbn: requireTrainNaviText(searchParams, "upperLowerKbn", /^[12]$/),
+		lang: normalizeTrainNaviLanguage(searchParams.get("lang"))
+	});
+}
+
+function buildTrainNaviTrainInfoParams(searchParams) {
+	return new URLSearchParams({
+		drivingRouteCode: requireTrainNaviText(searchParams, "drivingRouteCode", /^\d{1,8}$/),
+		stationCode: requireTrainNaviText(searchParams, "stationCode", /^\d{1,12}$/),
+		currentStationCode: requireTrainNaviText(searchParams, "currentStationCode", /^\d{1,12}$/),
+		trainCrownCode: optionalTrainNaviText(searchParams, "trainCrownCode", /^\d{1,3}$/) || "0",
+		trainNumber: requireTrainNaviText(searchParams, "trainNumber", /^\d{1,6}$/),
+		trainSignCode: requireTrainNaviText(searchParams, "trainSignCode", /^\d{1,3}$/),
+		trainGenkai: optionalTrainNaviText(searchParams, "trainGenkai", /^\d{1,3}$/) || "0",
+		trainCompanyCode: optionalTrainNaviText(searchParams, "trainCompanyCode", /^\d{1,3}$/) || "1",
+		drivingBaseDate: normalizeDate(searchParams.get("drivingBaseDate")) || getServiceDate().ymd,
+		isVisibleAllTrain: searchParams.get("isVisibleAllTrain") === "false" ? "false" : "true",
+		lang: normalizeTrainNaviLanguage(searchParams.get("lang"))
+	});
+}
+
+async function fetchTrainNaviJson(path, params, cacheTtl) {
+	const upstreamUrl = new URL(path, JRKYUSHU_TRAIN_NAVI_API_BASE);
+	upstreamUrl.search = params.toString();
+	const response = await fetch(upstreamUrl.toString(), {
+		headers: {
+			accept: "application/json",
+			"user-agent": "trainlocation train navi timetable"
+		},
+		cf: {
+			cacheEverything: true,
+			cacheTtl
+		}
+	});
+	if (!response.ok) {
+		const error = new Error("JR Kyushu Train Navi request failed: " + response.status);
+		error.status = response.status >= 400 && response.status < 500 ? 400 : 502;
+		throw error;
+	}
+	return response.json();
+}
+
+function resolveTrainNaviIdentity(operationData, input) {
+	const rows = Array.isArray(operationData && operationData.trainInfoList) ? operationData.trainInfoList : [];
+	let candidates = rows.filter((row) => Number(row && row.trainNumber) === input.trainNumber);
+	if (input.trainSignName) {
+		candidates = candidates.filter((row) => String(row && row.trainSignName || "").toUpperCase() === input.trainSignName);
+	}
+	const sameDate = candidates.filter((row) => normalizeDate(row && row.drivingBaseDate) === input.drivingBaseDate);
+	if (sameDate.length) candidates = sameDate;
+	const active = candidates.filter((row) => !row.operationCompleted);
+	if (active.length) candidates = active;
+	if (candidates.length !== 1) return null;
+	return pickTrainNaviIdentity(candidates[0]);
+}
+
+function selectTrainNaviInfoRow(infoData, identity, strict) {
+	const rows = Array.isArray(infoData && infoData.trainInfoDataList) ? infoData.trainInfoDataList : [];
+	return rows.find((row) => sameTrainNaviIdentity(row, identity)) || (strict ? null : rows[0]) || null;
+}
+
+function sameTrainNaviIdentity(row, identity) {
+	return Number(row && row.trainNumber) === Number(identity && identity.trainNumber) &&
+		Number(row && row.trainSignCode) === Number(identity && identity.trainSignCode) &&
+		Number(row && row.trainCrownCode || 0) === Number(identity && identity.trainCrownCode || 0) &&
+		Number(row && row.trainGenkai || 0) === Number(identity && identity.trainGenkai || 0) &&
+		Number(row && row.trainCompanyCode || 1) === Number(identity && identity.trainCompanyCode || 1);
+}
+
+function pickTrainNaviIdentity(row) {
+	return {
+		trainCrownCode: Number(row && row.trainCrownCode || 0),
+		trainNumber: Number(row && row.trainNumber || 0),
+		trainSignCode: Number(row && row.trainSignCode || 0),
+		trainSignName: String(row && row.trainSignName || ""),
+		trainGenkai: Number(row && row.trainGenkai || 0),
+		trainCompanyCode: Number(row && row.trainCompanyCode || 1),
+		drivingBaseDate: normalizeDate(row && row.drivingBaseDate) || ""
+	};
+}
+
+function normalizeTrainNaviTrain(row) {
+	return {
+		trainNumber: String(Number(row.trainNumber || 0)) + String(row.trainSignName || ""),
+		trainKindName: String(row.trainKindName || row.trainKindInformationName || ""),
+		nickName: String(row.nickName || ""),
+		destinationStationName: String(row.destinationStationName || ""),
+		cars: Number(row.cars) > 0 ? Number(row.cars) : null,
+		delayMinutes: row.delayMinutes === null || row.delayMinutes === undefined || row.delayMinutes === "" ?
+			null : (Number.isFinite(Number(row.delayMinutes)) ? Number(row.delayMinutes) : null),
+		suspension: row.suspension === true,
+		operationCompleted: row.operationCompleted === true
+	};
+}
+
+function normalizeTrainNaviTimetable(row) {
+	const stationRows = row && row.stopStationData && Array.isArray(row.stopStationData.stationDataList) ? row.stopStationData.stationDataList : [];
+	return stationRows.map((station) => {
+		const main = station && station.mainTrainData || {};
+		const arrival = normalizeTrainNaviTime(main.arrivalTime);
+		const departure = normalizeTrainNaviTime(main.departureTime);
+		return {
+			stationName: String(station && station.stationName || ""),
+			planArrival: arrival,
+			planDeparture: departure,
+			time: departure || arrival,
+			startingStation: main.startingStation === true,
+			terminalStation: main.terminalStation === true,
+			platform: station && station.departurePlatform !== null && station.departurePlatform !== undefined ? String(station.departurePlatform) : ""
+		};
+	}).filter((station) => station.stationName && station.time);
+}
+
+function normalizeTrainNaviTime(value) {
+	const match = String(value || "").match(/^(\d{1,2}):(\d{2})/);
+	return match ? String(Number(match[1])).padStart(2, "0") + ":" + match[2] : "";
+}
+
+function parseTrainNaviDisplayNumber(value) {
+	const match = String(value || "").trim().toUpperCase().match(/^0*(\d+)([A-Z]?)$/);
+	if (!match) throw trainNaviRequestError("invalid trainNumber");
+	return { number: Number(match[1]), signName: match[2] || "" };
+}
+
+function requireTrainNaviText(searchParams, name, pattern) {
+	const value = String(searchParams.get(name) || "").trim();
+	if (!value || !pattern.test(value)) throw trainNaviRequestError("invalid " + name);
+	return value;
+}
+
+function optionalTrainNaviText(searchParams, name, pattern) {
+	const raw = searchParams.get(name);
+	if (raw === null || raw === "") return "";
+	const value = String(raw).trim();
+	if (!pattern.test(value)) throw trainNaviRequestError("invalid " + name);
+	return value;
+}
+
+function normalizeTrainNaviLanguage(value) {
+	const language = String(value || "ja").toLowerCase();
+	return ["ja", "en", "ko", "zh-cn", "zh-tw"].includes(language) ? language : "ja";
+}
+
+function trainNaviRequestError(message) {
+	const error = new Error(message);
+	error.status = 400;
+	return error;
+}
+
+function trainNaviErrorResponse(error) {
+	const status = Number(error && error.status) || 502;
+	return jsonResponse({
+		ok: false,
+		error: status === 400 ? String(error && error.message || "Bad Request") : "JR Kyushu Train Navi is unavailable"
+	}, { status });
 }
 
 async function getJreastShinkansenTrainNumbers(env, url) {

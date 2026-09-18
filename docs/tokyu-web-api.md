@@ -1,0 +1,156 @@
+# 東急線の在線データ
+
+## 取得経路
+
+ブラウザーは `/api/tokyu/{key}` だけを使用する。ローカルは
+`node tools/local_server.js 8795`、GitHub Pages は専用 Worker
+`https://trainlocation-tokyu-proxy.densha716.workers.dev` を経由する。
+既存の京急用 Worker は変更しない。
+
+| 路線 | 路線番号 | TID ID | key / JSON | 取得元 |
+| --- | --- | --- | --- | --- |
+| 東横線 | 159 | 26001 | toyoko / toyoko.json | 署名付きJSON |
+| 目黒線 | 160 | 26002 | meguro / meguro.json | 署名付きJSON |
+| 田園都市線 | 161 | 26003 | dento / dento.json | 署名付きJSON |
+| 大井町線 | 162 | 26004 | oimachi / oimachi.json | 署名付きJSON |
+| 東急新横浜線 | 163 | 26009 | shinyokohama / shinyokohama.json | 署名付きJSON |
+| 池上線 | 164 | 26005 | ikegami / iketama.json | Firestore ik |
+| 東急多摩川線 | 165 | 26006 | tamagawa / iketama.json | Firestore tm |
+| 世田谷線 | 166 | 26007 | setagaya / setagaya.json | Firestore sg |
+
+新横浜線の内部IDは `sh`。路線と変換表は `js/tokyu_routes.js` に定義する。
+
+署名発行は指定された公開API
+`https://fp5owad3w3.execute-api.ap-northeast-1.amazonaws.com/prod/external-data-url?key={file}`
+を使う。2026-09-10 の確認では小文字の `origin` ヘッダーと
+`https://tokyu-tid.s3.amazonaws.com` の組み合わせで成功した。
+大文字の `Origin` では同じ値でも拒否された。
+
+返された署名URLは HTTPS、ホスト
+`external-data-user.s3.ap-northeast-1.amazonaws.com`、要求したファイルのパスを検証する。
+署名パラメーターの生成、フロントへの返却、ログへの保存は行わない。
+署名付きGETが403の場合に限り、URL再発行から1回だけ再試行する。
+内部用S3や秘密鍵は使用しない。みなとみらい線の追加分のみ、以下のFirestore経路を使用する。
+
+### みなとみらい線の統合
+
+`toyoko` のみ、Firebase `rabbit-uh-prod` の
+`running/versions/v2.1/ty/trackings` から `index=41～50` を変換・追加する。
+横浜駅(index40)は署名付きJSON側を維持する。位置IDとindexを両方照合し、
+既存の駅コード927～931、駅間コード71～75へ変換する。
+`line_id` と `train_line_id` は東横線の共通表示・編成判定用に26001とし、
+元の路線と位置は `source_line_id: tymm`、`source_index` に保持する。
+列番と上下が同じ重複は追加側を優先する。種別・行先・所属・編成番号・両数も変換する。
+
+匿名認証のリフレッシュトークンはWorker Secret `TOKYU_FIREBASE_REFRESH_TOKEN` に
+設定する。トークンを配信JSON・ログ・リポジトリへ保存しない。アクセス用トークンは
+有効期限内で再利用し、リクエストごとの匿名アカウント作成は行わない。
+みなとみらい線の取得失敗は東横線に波及させず、`minatomirai.ok=false` を返す。
+追加データは古いキャッシュで補わない。既存の15秒キャッシュと共通UIを使用する。
+
+Firestoreの `ty/trackings` から、東横線既存列車と併走する目黒線列車の行先も補完する。
+`train_number` と `tid_train_number`、上下方向が一致する場合のみ、有効な
+`destination` を追加する。`destination_station_code` や位置・種別・両数などは変更しない。
+空欄・不一致・行先が競合するレコードは補完しない。表示は既存実装どおり、
+`destination` を優先し、なければ行先コードで変換する。位置追加と行先補完は同じ `ty` 応答を使用する。
+`tymm` には目黒線の併走列車が含まれないため取得しない。位置IDの `tymm-` 接頭辞はそのまま使用する。
+
+目黒線は `mg`、新横浜線は `sh`、田園都市線は `dt`、大井町線は `om` の
+`trackings` を同じ匿名認証で取得し、同様に行先だけを補完する。
+これらの路線では位置を追加しない。indexの50件制限も適用しない（田園都市線は53位置）。
+通常の `trains` と併走区間の `convergences[].trains` の両方を対象とする。
+照合キーは所属線区・列車番号・上下方向。所属線区はJSON側の `train_line_id` を優先し、
+Firestore側の `affiliated_line_id`（欠損時は位置やconvergenceの線区）に対応付ける。
+東横・みなとみらいは26001、目黒26002、田園都市26003、大井町26004、新横浜26009。
+同番号でも所属線区の異なる列車には行先を混同しない。成功・失敗は既存の路線別15秒キャッシュに従う。
+表示路線の応答に該当列車がない場合は、`train_line_id` に対応するFirestoreも参照する。
+例: 東横線画面にある目黒線列車が `ty` に含まれなければ `mg` で補完する。
+追加参照は不足する所属線区だけとし、各Firestore応答は15秒間キャッシュ・同時要求共用する。
+追加参照に失敗しても主路線のデータと取得済みの行先を維持する。
+
+追加テスト: `node tools/test_minatomirai.mjs`、`node tools/test_minatomirai_ui.cjs`。
+
+w-tidへの通信は廃止した。池上・多摩川・世田谷線は同じFirestore認証を使用し、
+`ik`・`tm`・`sg` の駅・駅間を従来のコードへ変換する。
+取得間隔は全路線15秒。ブラウザー・サーバーで路線別にキャッシュする。
+池上線と多摩川線はfileラベルこそ同じだがデータは別で、キャッシュを混用しない。
+同じ路線の通信中の要求は共用する。
+各通信は12秒でタイムアウトする。障害は同じ期間だけ負のキャッシュに保存し、
+古い列車を現在の在線として表示しない。取得状況の診断データは内部に保持し、
+ファイル名・最終取得時刻・件数の表示は行わない。障害時は共通エラー表示を使う。
+第三者配信の表示は廃止した。時刻は配信元の更新日時ではなく取得日時。
+
+## 変換
+
+駅・駅間コード、行先コードと運行番号表記は
+[w-tid公開ページ](https://w-tid.jp/tokyutid.html?meguro) の対応表を参照。
+世田谷線の配置は解析時に保存した公開路線HTMLの駅・区間IDを参照。
+既存の駅パネル・線路・上下アイコン・詳細ウィンドウを共用する。
+
+- `line_id` で対象路線を選別する。並走区間では `train_line_id` が異なる列車も表示する。
+- `station_id` があれば駅、なければ `section_id` の駅間。`up` が上り方向。
+- 行先変換表は東横・目黒・新横浜系と田園都市・大井町系を分ける。
+  例: 78は前者で渋谷、後者で鷺沼。直通線区コードを特定の終着駅に置き換えない。
+- `delay_time` は分。`num_of_cars` が0または99のとき両数は表示しない。
+- アイコンは運行番号を表示する。例: 目黒線441は41T。
+  内部識別には元の `train_number` を保持する。詳細表示は先頭・末尾が0の8桁を
+  `09942310` から `994-231` のように整形する。それ以外の形式は変更しない。
+- Firestoreで行先が空欄の場合は行先不明。情報がない行先や両数は推測しない。
+  取得サンプルでは個々の列車の遅延情報が得られないため、独自の遅延推定はしない。
+- 今回は在線の追加のみ。列車時刻表の新規取得は実装していない。
+- アイコン色はw-tidの種別文字色に合わせる。各停・B各はblue、G各・S-TRAINは
+  limegreen、急行はred、特急・Fライナーはdarkorange、準急はforestgreen、通勤特急は
+  orangered。回送のみ従来のグレー。既存SVGの塗り色だけを変更し、形・文字サイズは維持。
+  大井町線のB各判定には表示路線ではなく `train_line_id` を使い、並走区間でも区別する。
+
+## テスト・再生成
+
+田園都市線の編成は詳細クリック時だけ公開API
+`https://train-info.tokyuapp.com/lines/26003/trains/{operation}/directions/{up|down}`
+をブラウザから直接照会する。`Access-Control-Allow-Origin: *` を確認済みで、
+Proxyは不要。認証情報は送信せず、取得先を固定する。在線JSONの取得経路は変更しない。
+成功は60秒、空応答・失敗は15秒キャッシュし、同時要求を共用する。
+`002134` は `2134F`、それ以外の識別形式は切り詰めずそのまま表示する。
+在線で両数が未取得の場合のみAPIの車両一覧件数を補う。種別・行先はこのAPIで上書きしない。
+
+田園都市線のAPIから編成を取得できた場合のみ、詳細の編成名を車両情報ボタンにする。
+同じレスポンスの `temp` を外気温、`cars[].temp` を車内温度、
+`cars[].passenger_rate` を混雑度の段階値として表示する（パーセントには換算しない）。
+`51xxF` の5000系のみ `cars[].air_mode` の空調モード列を表示する。
+欠損・無効な値は `—`。行先・種別・現在地は既存の在線表示を使用する。
+車両情報は取得時刻付きのスナップショットで、編成クリック時には再取得せず、
+既存の詳細内で切り替える。「列車詳細に戻る」またはEscapeで元に戻る。
+混雑アイコンはローカルの東急アプリ4.24.0解析資料の `vector_crowd_lv1`～`lv6` を
+`tools/build_tokyu_crowd_icons.ps1` でSVGに変換している。
+
+東横線・目黒線・新横浜線の編成は `original/tokyu_formation.json` を参照して判定し、
+詳細の両数の後ろに括弧書きで表示する。添付の参考実装に合わせ、所属が「み」の場合は
+8両、「東」「西」の場合は10両の対照表を使用する。それ以外は取得した両数を使う。
+このため現在の参考ロジックでは対照表内の `8西` は使用しない。
+判定不能時は非表示。対照表の読み込み失敗時も在線は維持し、60秒後から再試行する。
+対照表の正常取得結果はページ内で共用する。
+
+```text
+node tools/test_tokyu_location_adapter.cjs
+node tools/test_tokyu_proxy.mjs
+node tools/test_tokyu_formation.cjs
+node tools/test_tokyu_dento_formation.mjs
+node tools/test_tokyu_formation_detail.cjs
+node tools/test_tokyu_vehicle.cjs
+node tools/test_tokyu_vehicle_ui.cjs
+npx wrangler deploy --config wrangler.tokyu.toml
+```
+
+車両情報UIテストはローカルサーバー（既定8796）とPlaywrightが必要。
+`TOKYU_TEST_URL` でURL、`PLAYWRIGHT_CHANNEL` で使用ブラウザを指定できる。
+1280・390・320px幅で車両行、画像、戻る操作、横はみ出しを確認する。
+
+テストは `testdata/tokyu` の公開JSONを使用し、実APIに依存しない。
+全8路線の駅・駅間アンカーと上下方向、行先表の分離、種別、遅延、運行番号、
+空データ、不正JSON、タイムアウト、403再発行上限、キャッシュ共用を検証する。
+
+マスターの再生成には開発用の cheerio@1.1.2 と acorn@8.15.0 を
+`.tmp/tokyu-tools` にインストールし、公開ページを
+`.tmp/tokyu-source/tokyutid.html` と `.tmp/tokyu-source/setagaya.html` に配置して
+`node tools/generate_tokyu_routes.cjs` を実行する。ダウンロードしたJavaScriptは実行せず、
+ASTからリテラルの対応表のみを抽出する。

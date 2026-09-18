@@ -1,0 +1,2 @@
+.area-name-label.tx { border-left: 5px solid #d50038; }
+.tx-station-number { display: inline-block; min-width: 2em; padding: 2px 4px; color: white; background: #d50038; border-radius: 4px; font-size: 12px; text-align: center; }

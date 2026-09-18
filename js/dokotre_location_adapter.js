@@ -427,7 +427,7 @@
 		if (nickname && nicknameNo && nicknameNo !== "0") return nickname + nicknameNo + "号";
 		if (nickname) return nickname;
 		if (String(trainType) === "8") return "快速";
-		return "普通列車";
+		return "普通";
 	}
 
 	function mapTrainType(diagram, statusRow) {

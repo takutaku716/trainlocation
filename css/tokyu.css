@@ -1,0 +1,80 @@
+#message .tokyu-source-status { margin: 8px 10px; font-size: 14px; line-height: 1.5; text-align: left; overflow-wrap: anywhere; }
+/* Fixed system lanes on shared Tokyu sections, including stations. */
+#stationList .eki-panel.eki:has(.tokyu-parallel-contents) { max-height: none; margin-bottom: 10px; }
+#stationList .eki-panel.eki > .eki-contents > .tokyu-parallel-contents { margin-bottom: -10px; }
+#stationList .eki-panel .ressha-contents.tokyu-parallel-contents { max-height: none; padding-bottom: 2px; }
+#stationList .eki-panel .ressha-contents .ressha-icon.tokyu-parallel-slot { display: grid; grid-template-columns: repeat(2,52px); grid-auto-rows: 76px; width: 104px; flex: 0 0 104px; direction: ltr; }
+#stationList .eki-panel .ressha-contents .ressha-icon.tokyu-parallel-slot > div.ressha { display: inline-grid; }
+/* Keep four 52px icon lanes; use the gaps between systems for the two tracks. */
+#stationList:has(.tokyu-parallel-contents) .eki-panel > .senro-img { display: none; }
+#stationList:has(.tokyu-parallel-contents) .eki-panel::before { content: ''; position: absolute; top: -3px; bottom: -3px; left: 50%; width: 17px; box-sizing: border-box; border-left: 2px solid #000; border-right: 2px solid #000; background: repeating-linear-gradient(to bottom,#000 0 22px,#fff 22px 44px); transform: translateX(-50%); z-index: 17; pointer-events: none; }
+#stationList .eki-panel .ressha-contents .ressha-icon.tokyu-parallel-slot { column-gap: 24px; width: 128px; flex-basis: 128px; margin-left: 4px; margin-right: 0; }
+#stationList .eki-panel .ressha-contents .ressha-icon.tokyu-parallel-slot.up { margin-left: 0; margin-right: 4px; }
+#stationList .eki-panel:has(.tokyu-parallel-contents) > .senro-img { display: none; }
+#stationList .eki-panel:has(.tokyu-parallel-contents)::before,
+#stationList .eki-panel:has(.tokyu-parallel-contents)::after { content: ''; position: absolute; top: -3px; bottom: -3px; width: 17px; box-sizing: border-box; border-left: 2px solid #000; border-right: 2px solid #000; background: repeating-linear-gradient(to bottom,#000 0 22px,#fff 22px 44px); transform: translateX(-50%); z-index: 17; pointer-events: none; }
+#stationList:has(.tokyu-parallel-contents) .eki-panel:has(.tokyu-parallel-contents)::before { left: calc(50% - 68px); }
+#stationList .eki-panel:has(.tokyu-parallel-contents)::after { left: calc(50% + 68px); }
+#stationList .eki-panel.eki:has(.tokyu-parallel-contents)::before,
+#stationList .eki-panel.eki:has(.tokyu-parallel-contents)::after { bottom: -13px; }
+.tokyu-station-number { display: block; flex: 0 0 38px; width: 38px; height: 38px; margin: 1px 13px 1px 5px; }
+.tokyu-station-number:has(+ .tokyu-station-number) { margin-right: 2px; }
+.tokyu-station-number + .tokyu-station-number { margin-left: 0; }
+#stationList .eki-panel .eki-contents .stalist-eki-link:has([key="TOKYU161S25"]) { max-width: none; width: max-content; padding-right: 8px; white-space: nowrap; }
+.tokyu-formation-link { appearance: none; border: 0; padding: 0; background: none; color: #006b9c; font: inherit; text-decoration: underline; cursor: pointer; }
+.tokyu-formation-link:focus-visible, .tokyu-car-back:focus-visible { outline: 2px solid #006b9c; outline-offset: 3px; }
+#tokyuCarDetailMain { padding: 0 12px 14px; color: #222; font-size: 14px; line-height: 1.5; }
+#tokyuCarDetailMain[hidden] { display: none; }
+.tokyu-car-back { display: block; padding: 10px 0; border: 0; background: none; color: #006b9c; font: inherit; text-decoration: underline; cursor: pointer; }
+.tokyu-car-heading { padding: 12px; background: #009b83; color: #fff; text-align: center; overflow-wrap: anywhere; }
+.tokyu-car-heading h3 { margin: 0; font-size: 18px; line-height: 1.5; }
+.tokyu-car-heading p { margin: 4px 0 0; }
+.tokyu-car-meta { padding: 10px 8px; background: #f5f6f6; }
+.tokyu-car-meta p { margin: 0; overflow-wrap: anywhere; }
+.tokyu-car-outside { font-weight: bold; }
+.tokyu-car-time { font-size: 12px; color: #666; }
+.tokyu-travel-direction { color: #006b60; font-weight: bold; padding-top: 6px; }
+.tokyu-formation-end { padding: 7px 0; text-align: center; color: #006b60; font-weight: bold; }
+.tokyu-leading-car { display: block; margin-top: 7px; color: #006b60; font-size: 12px; }
+.tokyu-car-table.has-car-diagrams th:first-child { width: 44px; }
+.tokyu-car-table.has-car-diagrams th:nth-child(2) { width: 56px; }
+.tokyu-car-diagram { box-sizing: border-box; width: 108px; height: 136px; margin: 3px auto; border: 2px solid #789; border-radius: 6px; display: grid; grid-template-rows: repeat(4,1fr); background: #f8fafb; }
+.tokyu-door-band { display: grid; grid-template-columns: 14px 1fr 14px; align-items: center; }
+.tokyu-door { background: white; border: 1px solid #789; font-size: 10px; line-height: 18px; color: #555; }
+.tokyu-door-band .tokyu-door:first-child { margin-left: -4px; }
+.tokyu-door-band .tokyu-door:last-child { margin-right: -4px; }
+.tokyu-door-equipment { display: flex; justify-content: space-between; min-width: 0; }
+.tokyu-equipment-slot { display: flex; align-items: center; justify-content: center; width: 34px; min-height: 24px; }
+.tokyu-equipment-symbol { display: inline-flex; flex-shrink: 0; width: 22px; height: 24px; align-items: center; justify-content: center; font-size: 22px; line-height: 1; }
+.tokyu-equipment-symbol img { display: block; }
+.tokyu-equipment-symbol.free { width: 34px; }
+.tokyu-equipment-symbol.cool { width: 24px; height: 26px; background: #0058b8; color: white; font-size: 21px; font-weight: bold; border-radius: 2px; }
+.tokyu-car-layout { display: grid; grid-template-columns: 108px 26px; gap: 4px; justify-content: center; align-items: center; }
+.tokyu-car-badges { display: flex; justify-content: center; }
+.tokyu-q-seat { margin: 2px 0 5px; font-size: 12px; font-weight: bold; color: #8b2942; }
+.tokyu-equipment-legend { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 12px; padding: 7px 0; }
+.tokyu-equipment-legend:empty { display: none; }
+.tokyu-equipment-legend > span { display: inline-flex; align-items: center; gap: 3px; }
+.tokyu-car-table { width: 100%; table-layout: fixed; border-collapse: collapse; text-align: center; font-size: 14px; }
+.tokyu-car-table th, .tokyu-car-table td { padding: 5px 2px; border-bottom: 1px solid #ccc; overflow-wrap: anywhere; }
+.tokyu-car-table thead th { font-weight: normal; font-size: 12px; padding: 9px 2px; }
+.tokyu-car-table th:first-child { width: 52px; }
+.tokyu-car-number { box-sizing: border-box; position: relative; display: flex; align-items: center; justify-content: center; width: 38px; height: 38px; margin: auto; border: 1px solid #009b83; color: #007f6d; background: #fff; }
+.tokyu-car-number::before, .tokyu-car-number::after { content: ''; position: absolute; left: 14px; width: 6px; height: 5px; border-left: 2px solid #999; border-right: 2px solid #999; }
+.tokyu-car-number::before { top: -6px; }
+.tokyu-car-number::after { bottom: -6px; }
+.tokyu-crowd { display: inline-flex; align-items: center; justify-content: center; gap: 4px; min-height: 30px; vertical-align: middle; }
+.tokyu-crowd img { display: block; width: 30px; height: 30px; }
+.tokyu-crowd-level { font-size: 12px; color: #555; }
+.tokyu-car-temperature { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.tokyu-car-legend { margin-top: 12px; font-size: 12px; }
+.tokyu-car-legend summary { cursor: pointer; }
+.tokyu-car-legend > div { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding-top: 8px; }
+.tokyu-sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+#stationList .eki-panel .ressha-contents .ressha-icon .ressha[data-source="tokyu"]:is([data-ressha_type_name="各停"],[data-ressha_type_name="B各"]) .icon-img { --train-type-color: #0000ff; background-image: url("../images/home/tokyu/train_icon_blue.svg"); }
+#stationList .eki-panel .ressha-contents .ressha-icon .ressha[data-source="tokyu"]:is([data-ressha_type_name="G各"],[data-ressha_type_name="S-TRAIN"]) .icon-img { --train-type-color: #32cd32; background-image: url("../images/home/tokyu/train_icon_limegreen.svg"); }
+#stationList .eki-panel .ressha-contents .ressha-icon .ressha[data-source="tokyu"][data-ressha_type_name="急行"] .icon-img { --train-type-color: #ff0000; background-image: url("../images/home/tokyu/train_icon_red.svg"); }
+#stationList .eki-panel .ressha-contents .ressha-icon .ressha[data-source="tokyu"]:is([data-ressha_type_name="特急"],[data-ressha_type_name="Fライナー"]) .icon-img { --train-type-color: #ff8c00; background-image: url("../images/home/tokyu/train_icon_darkorange.svg"); }
+#stationList .eki-panel .ressha-contents .ressha-icon .ressha[data-source="tokyu"][data-ressha_type_name="準急"] .icon-img { --train-type-color: #228b22; background-image: url("../images/home/tokyu/train_icon_forestgreen.svg"); }
+#stationList .eki-panel .ressha-contents .ressha-icon .ressha[data-source="tokyu"][data-ressha_type_name="通勤特急"] .icon-img { --train-type-color: #ff4500; background-image: url("../images/home/tokyu/train_icon_orangered.svg"); }
+#stationList .eki-panel .ressha-contents .ressha-icon .ressha[data-source="tokyu"][data-ressha_type_name="回送"] .icon-img { --train-type-color: #789; background-image: url("../images/home/train_icon.svg"); }

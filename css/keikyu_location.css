@@ -1,0 +1,5 @@
+.area-name-label.keikyu { border-left: 5px solid #e60012; }
+.keikyu-station-number { display: inline-block; padding: 2px 4px; color: white; background: #e60012; border-radius: 4px; font-size: 12px; }
+.keikyu-location-status { margin: 8px 12px; line-height: 1.6; }
+.keikyu-location-status { padding: 8px 12px; background: #fff1f1; border-left: 4px solid #e60012; }
+.keikyu-location-status:empty { display: none; }

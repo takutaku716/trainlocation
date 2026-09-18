@@ -1,0 +1,113 @@
+{
+  "source": "https://www.sotetsu.co.jp/train/stations/",
+  "stations": {
+    "横浜": {
+      "file": "yokohama.svg",
+      "source": "https://www.sotetsu.co.jp/train/stations/yokohama/"
+    },
+    "平沼橋": {
+      "file": "hiranumabashi.svg",
+      "source": "https://www.sotetsu.co.jp/train/stations/hiranumabashi/"
+    },
+    "西横浜": {
+      "file": "nishiyokohama.svg",
+      "source": "https://www.sotetsu.co.jp/train/stations/nishiyokohama/"
+    },
+    "天王町": {
+      "file": "tennocho.svg",
+      "source": "https://www.sotetsu.co.jp/train/stations/tennocho/"
+    },
+    "星川": {
+      "file": "hoshikawa.svg",
+      "source": "https://www.sotetsu.co.jp/train/stations/hoshikawa/"
+    },
+    "和田町": {
+      "file": "wadamachi.svg",
+      "source": "https://www.sotetsu.co.jp/train/stations/wadamachi/"
+    },
+    "上星川": {
+      "file": "kamihoshikawa.svg",
+      "source": "https://www.sotetsu.co.jp/train/stations/kamihoshikawa/"
+    },
+    "西谷": {
+      "file": "nishiya.svg",
+      "source": "https://www.sotetsu.co.jp/train/stations/nishiya/"
+    },
+    "鶴ケ峰": {
+      "file": "tsurugamine.svg",
+      "source": "https://www.sotetsu.co.jp/train/stations/tsurugamine/"
+    },
+    "二俣川": {
+      "file": "futamatagawa.svg",
+      "source": "https://www.sotetsu.co.jp/train/stations/futamatagawa/"
+    },
+    "希望ケ丘": {
+      "file": "kibogaoka.svg",
+      "source": "https://www.sotetsu.co.jp/train/stations/kibogaoka/"
+    },
+    "三ツ境": {
+      "file": "mitsukyo.svg",
+      "source": "https://www.sotetsu.co.jp/train/stations/mitsukyo/"
+    },
+    "瀬谷": {
+      "file": "seya.svg",
+      "source": "https://www.sotetsu.co.jp/train/stations/seya/"
+    },
+    "大和": {
+      "file": "yamato.svg",
+      "source": "https://www.sotetsu.co.jp/train/stations/yamato/"
+    },
+    "相模大塚": {
+      "file": "sagamiotsuka.svg",
+      "source": "https://www.sotetsu.co.jp/train/stations/sagamiotsuka/"
+    },
+    "さがみ野": {
+      "file": "sagamino.svg",
+      "source": "https://www.sotetsu.co.jp/train/stations/sagamino/"
+    },
+    "かしわ台": {
+      "file": "kashiwadai.svg",
+      "source": "https://www.sotetsu.co.jp/train/stations/kashiwadai/"
+    },
+    "海老名": {
+      "file": "ebina.svg",
+      "source": "https://www.sotetsu.co.jp/train/stations/ebina/"
+    },
+    "南万騎が原": {
+      "file": "minamimakigahara.svg",
+      "source": "https://www.sotetsu.co.jp/train/stations/minamimakigahara/"
+    },
+    "緑園都市": {
+      "file": "ryokuentoshi.svg",
+      "source": "https://www.sotetsu.co.jp/train/stations/ryokuentoshi/"
+    },
+    "弥生台": {
+      "file": "yayoidai.svg",
+      "source": "https://www.sotetsu.co.jp/train/stations/yayoidai/"
+    },
+    "いずみ野": {
+      "file": "izumino.svg",
+      "source": "https://www.sotetsu.co.jp/train/stations/izumino/"
+    },
+    "いずみ中央": {
+      "file": "izumichuo.svg",
+      "source": "https://www.sotetsu.co.jp/train/stations/izumichuo/"
+    },
+    "ゆめが丘": {
+      "file": "yumegaoka.svg",
+      "source": "https://www.sotetsu.co.jp/train/stations/yumegaoka/"
+    },
+    "湘南台": {
+      "file": "shonandai.svg",
+      "source": "https://www.sotetsu.co.jp/train/stations/shonandai/"
+    },
+    "新横浜": {
+      "file": "shinyokohama.svg",
+      "source": "https://www.sotetsu.co.jp/train/stations/shinyokohama/"
+    },
+    "羽沢横浜国大": {
+      "file": "hazawayokohamakokudai.svg",
+      "source": "https://www.sotetsu.co.jp/train/stations/hazawayokohamakokudai/"
+    }
+  }
+}

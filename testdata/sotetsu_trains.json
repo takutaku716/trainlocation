@@ -1,0 +1,12 @@
+{
+  "updated_at":1789312731,
+  "trains":[
+    {"station_id":1,"next_station_id":null,"direction":"down","position":0,"line_id":1,"train_number":"1001","train_kind_id":0,"delay":2,"train_length_id":10,"destination_station_id":42},
+    {"station_id":null,"next_station_id":21,"direction":"down","position":1,"line_id":2,"train_number":"2001","train_kind_id":7,"delay":0,"train_length_id":10,"destination_station_id":27},
+    {"station_id":null,"next_station_id":10,"direction":"up","position":1,"line_id":2,"train_number":"2002","train_kind_id":5,"delay":0,"train_length_id":10,"destination_station_id":1},
+    {"station_id":null,"next_station_id":29,"direction":"up","position":1,"line_id":3,"train_number":"3002","train_kind_id":4,"delay":0,"train_length_id":8,"destination_station_id":118},
+    {"station_id":null,"next_station_id":8,"direction":"down","position":1,"line_id":3,"train_number":"3001","train_kind_id":6,"delay":0,"train_length_id":10,"destination_station_id":19},
+    {"station_id":61,"next_station_id":null,"direction":"up","position":0,"line_id":301,"train_number":"9999","train_kind_id":4,"delay":0,"train_length_id":8,"destination_station_id":118},
+    {"station_id":29,"next_station_id":null,"direction":"down","position":0,"line_id":3,"train_number":"K334","train_kind_id":4,"delay":0,"train_length_id":8,"destination_station_id":19}
+  ]
+}

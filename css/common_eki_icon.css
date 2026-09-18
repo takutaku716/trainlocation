@@ -78,6 +78,87 @@ span.eki-icon {
 	span.eki-icon.icon-B {
 		border-color: #e0429b;
 	}
+	/* JR四国 */
+	span.eki-icon.jrshikoku-eki-icon.jrshikoku-icon-Y,
+	span.eki-icon.jrshikoku-eki-icon.jrshikoku-icon-U {
+		border-color: #f8b500;
+	}
+	span.eki-icon.jrshikoku-eki-icon.jrshikoku-icon-S {
+		border-color: #a4b0da;
+	}
+	span.eki-icon.jrshikoku-eki-icon.jrshikoku-icon-D,
+	span.eki-icon.jrshikoku-eki-icon.jrshikoku-icon-K {
+		border-color: #df5280;
+	}
+	span.eki-icon.jrshikoku-eki-icon.jrshikoku-icon-T {
+		border-color: #8cc220;
+	}
+	span.eki-icon.jrshikoku-eki-icon.jrshikoku-icon-B {
+		border-color: #145c7d;
+	}
+	span.eki-icon.jrshikoku-eki-icon.jrshikoku-icon-N {
+		border-color: #8a2155;
+	}
+	span.eki-icon.jrshikoku-eki-icon.jrshikoku-icon-G {
+		border-color: #019157;
+	}
+	/* 土佐くろしお鉄道 ごめん・なはり線 */
+	span.eki-icon.jrshikoku-eki-icon.jrshikoku-icon-GN {
+		border-color: #858585;
+		color: #000;
+		font-size: 12px;
+	}
+	/* JR東海：路線記号と駅番号を上下に分けた矩形 */
+	span.eki-icon.jrcentral-eki-icon {
+		background-color: #fff;
+		border: 2px solid var(--jrcentral-line-color);
+		border-radius: 0;
+		box-sizing: border-box;
+		color: #111;
+		flex-flow: column;
+		font-size: 12px;
+		gap: 0;
+		letter-spacing: 0;
+		line-height: 1;
+		margin: 0;
+		max-height: 36px;
+		max-width: 32px;
+		min-height: 36px;
+		min-width: 32px;
+		overflow: hidden;
+		padding: 0;
+	}
+	span.eki-icon.jrcentral-eki-icon .kigo {
+		align-items: center;
+		background-color: var(--jrcentral-line-color);
+		color: #fff;
+		display: flex;
+		font-size: 12px;
+		height: 17px;
+		justify-content: center;
+		line-height: 1;
+		width: 100%;
+	}
+	span.eki-icon.jrcentral-eki-icon .number {
+		align-items: center;
+		background-color: #fff;
+		color: #111;
+		display: flex;
+		font-size: 12px;
+		height: 15px;
+		justify-content: center;
+		line-height: 1;
+		width: 100%;
+	}
+	span.eki-icon.jrcentral-eki-icon.jrcentral-icon-CA { --jrcentral-line-color: #ff7e1c; }
+	span.eki-icon.jrcentral-eki-icon.jrcentral-icon-CF { --jrcentral-line-color: #406f90; }
+	span.eki-icon.jrcentral-eki-icon.jrcentral-icon-CJ { --jrcentral-line-color: #05a88a; }
+	span.eki-icon.jrcentral-eki-icon.jrcentral-icon-CG { --jrcentral-line-color: #a61e2b; }
+	span.eki-icon.jrcentral-eki-icon.jrcentral-icon-CE { --jrcentral-line-color: #76432c; }
+	span.eki-icon.jrcentral-eki-icon.jrcentral-icon-CD { --jrcentral-line-color: #719cdf; }
+	span.eki-icon.jrcentral-eki-icon.jrcentral-icon-CI { --jrcentral-line-color: #b1a548; }
+	span.eki-icon.jrcentral-eki-icon.jrcentral-icon-CB { --jrcentral-line-color: #3d733d; }
+	span.eki-icon.jrcentral-eki-icon.jrcentral-icon-CC { --jrcentral-line-color: #6b3174; }
 	/* 枝番用 */
 	span.eki-icon .eda {
 		font-size: 12px;
